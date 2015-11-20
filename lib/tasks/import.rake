@@ -1,19 +1,22 @@
+require 'net/ftp'
+
 namespace :import do
   desc 'Load days worth of files from NWS FTP server'
-  task :files, :date do
+  task :files, [:date] => :environment do |t, args|
     args.with_defaults(date: yesterday)
 
     client = Net::FTP.new('ftp.ncep.noaa.gov')
     client.login
     client.passive = true
-    client.chdir("pub/data/nccf/com/urma/prod/urma2p5.#{date}")
+    client.chdir("pub/data/nccf/com/urma/prod/urma2p5.#{args[:date]}")
     files = client.list('*anl_ndfd*')
     filenames = files.map { |file| file.split.last }
+    FileUtils.mkpath("../gribdata/#{args[:date]}")
     filenames.each do |filename|
-      #TODO: create new folder and save data inside
-      client.get(filename)
-      puts "File saved: #{filename}"
+      client.get(filename, "../gribdata/#{args[:date]}/#{args[:date]}.#{filename}")
+      puts "File saved: #{args[:date]}.#{filename}"
     end
+    puts "All files saved successfully"
   end
 
   desc 'Read files and load relevant data into DBs'
