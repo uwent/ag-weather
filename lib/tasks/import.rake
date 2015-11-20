@@ -20,11 +20,7 @@ namespace :import do
   end
 
   desc 'Read files and load relevant data into DBs'
-  task data_from_files: :environment do #TODO allow parameters for specific date, and lat/long
-
-    lat = 44.811349
-    long = -91.498494
-    date = "20151101"
+  task :single_point, [:lat, :long, :date] => :environment do |t, args|
 
     DATA_TYPE_SHORTNAME = {
       elevation: 'orog',
@@ -34,25 +30,22 @@ namespace :import do
       cloud_cover: 'tcc'
     }
 
-    files = Dir["../gribdata/#{date}/*"] #TODO ensure we only grab grib2 files to prevent errors
+    files = Dir["../gribdata/#{args[:date]}/*"] #TODO ensure we only grab grib2 files to prevent errors
     hourly_temps = []
 
     files.each do |file|
-      hour = /t(..)z/.match(file)[1]
-
-      #temp
-      hourly_temps << get_data_point(lat, long, file, DATA_TYPE_SHORTNAME[:temperature])
-
-      #save to DB
-      WeatherDatum.create(
-        max_temperature: K_to_F(hourly_temps.max),
-        min_temperature: K_to_F(hourly_temps.min),
-        avg_temperature: K_to_F(hourly_temps.inject(:+) / hourly_temps.count),
-        latitude: lat,
-        longitude: long,
-        date: Date.parse(date))
+      hourly_temps << get_data_point(args[:lat], args[:long], file, DATA_TYPE_SHORTNAME[:temperature])
     end
 
+    WeatherDatum.create(
+      max_temperature: K_to_F(hourly_temps.max),
+      min_temperature: K_to_F(hourly_temps.min),
+      avg_temperature: K_to_F(hourly_temps.inject(:+) / hourly_temps.count),
+      latitude: args[:lat],
+      longitude: args[:long],
+      date: Date.parse(args[:date]))
+    puts "data point saved for #{args[:lat]} by #{args[:long]} on #{args[:date]}"
+    puts "#{WeatherDatum.last.inspect}"
   end
 end
 
