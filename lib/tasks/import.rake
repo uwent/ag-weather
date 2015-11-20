@@ -45,9 +45,9 @@ namespace :import do
 
       #save to DB
       WeatherDatum.create(
-        max_temperature: hourly_temps.max,
-        min_temperature: hourly_temps.min,
-        avg_temperature: hourly_temps.inject(:+) / hourly_temps.count,
+        max_temperature: K_to_F(hourly_temps.max),
+        min_temperature: K_to_F(hourly_temps.min),
+        avg_temperature: K_to_F(hourly_temps.inject(:+) / hourly_temps.count),
         latitude: lat,
         longitude: long,
         date: Date.parse(date))
@@ -69,4 +69,8 @@ def get_data_point(lat, long, file, data_type)
   data_json = `grib_ls -j -w shortName=#{data_type} -l #{lat},#{long} #{file}`
   data_hash = JSON.parse(data_json)
   data_hash.first['neighbours'].first['value']
+end
+
+def K_to_F(kelvin_temp)
+  (kelvin_temp - 273.15) * 1.8 + 32
 end
