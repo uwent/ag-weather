@@ -54,10 +54,6 @@ namespace :import do
     end
 
   end
-
-  desc 'Delete data'
-  task clean: :environment do
-  end
 end
 
 def yesterday
