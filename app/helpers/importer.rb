@@ -1,18 +1,9 @@
 class Importer
 
   def self.save_files
-    client = Net::FTP.new('ftp.ncep.noaa.gov')
-    client.login
-    client.passive = true
-    client.chdir("pub/data/nccf/com/urma/prod/urma2p5.#{args[:date]}")
-    files = client.list('*anl_ndfd*')
-    filenames = files.map { |file| file.split.last }
-    FileUtils.mkpath("../gribdata/#{args[:date]}")
-    filenames.each do |filename|
-      client.get(filename, "../gribdata/#{args[:date]}/#{args[:date]}.#{filename}")
-      puts "File saved: #{args[:date]}.#{filename}"
-    end
-    puts "All files saved successfully"
+    client = contact_server
+    filenames = find_files_for(date,client)
+    save_files_locally(date, filenames)
   end
 
   def self.save_single_data_point(lat, long, date)
@@ -43,6 +34,28 @@ class Importer
   end
 
   private
+
+  def contact_server
+    client = Net::FTP.new('ftp.ncep.noaa.gov')
+    client.login
+    client.passive = true
+    client
+  end
+
+  def find_files_for(date, client)
+    client.chdir("pub/data/nccf/com/urma/prod/urma2p5.#{date}")
+    files = client.list('*anl_ndfd*')
+    files.map { |file| file.split.last }
+  end
+
+  def save_files_locally(date, filenames)
+    FileUtils.mkpath("../gribdata/#{date}")
+    filenames.each do |filename|
+      client.get(filename, "../gribdata/#{date}/#{date}.#{filename}")
+      puts "File saved: #{date}.#{filename}"
+    end
+    puts "All files saved successfully"
+  end
 
   def yesterday
     date = Date.today - 1
