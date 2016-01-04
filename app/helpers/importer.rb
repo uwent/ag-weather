@@ -32,8 +32,6 @@ class Importer
     files.map { |file| file.split.last }
   end
 
-  private
-
   def self.find_saved_files
     Dir["../gribdata/#{@@date}/*"] #TODO ensure we only grab grib2 files to prevent errors
   end
