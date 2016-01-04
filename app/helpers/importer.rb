@@ -91,4 +91,8 @@ class Importer
   def self.K_to_C(kelvin_temp)
     kelvin_temp - 273.15
   end
+
+  def self.dew_point_to_vapor_pressure(dew_point_temp)
+    6.11 * 10 ^ ((7.5 * dew_point_temp) / (237.3 + dew_point_temp))
+  end
 end
