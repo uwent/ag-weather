@@ -4,7 +4,7 @@ class Importer
     elevation: 'orog',
     temperature: '2t',
     pressure: 'sp',
-    dew_point_temp: '2d',
+    dew_point: '2d',
     cloud_cover: 'tcc'
   }
 
@@ -19,7 +19,7 @@ class Importer
     @@long = long
     @@date = date
 
-    data_types = [:temperature]   #Eventually get this from user?
+    data_types = [:temperature, :dew_point]   #Eventually get this from user?
 
     files = find_saved_files
     hourly_data = get_data_from_files(files, data_types)
@@ -65,7 +65,8 @@ class Importer
     WeatherDatum.create(
       max_temperature: K_to_C(hourly_data[:temperature].max),
       min_temperature: K_to_C(hourly_data[:temperature].min),
-      avg_temperature: K_to_C(hourly_data[:temperature].inject(:+) / hourly_data[:temperature].count),
+      avg_temperature: K_to_C(average(hourly_data[:temperature])),
+      vapor_pressure: dew_point_to_vapor_pressure(average(hourly_data[:dew_point])),
       latitude: @@lat,
       longitude: @@long,
       date: Date.parse(@@date))
@@ -92,7 +93,11 @@ class Importer
     kelvin_temp - 273.15
   end
 
-  def self.dew_point_to_vapor_pressure(dew_point_temp)
-    6.11 * 10 ^ ((7.5 * dew_point_temp) / (237.3 + dew_point_temp))
+  def self.dew_point_to_vapor_pressure(dew_point)
+    6.11 * 10 ** ((7.5 * dew_point) / (237.3 + dew_point))
+  end
+
+  def self.average(array)
+    array.inject(:+) / array.count
   end
 end
