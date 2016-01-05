@@ -2,6 +2,7 @@ Rails.application.routes.draw do
 
   resources :evapotranspirations, only: [:show, :index]
   resources :insolations, only: [:index]
+  resources :degree_days, only: [:show]
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
