@@ -1,12 +1,12 @@
 class EvapotranspirationsController < ApplicationController
 
-  def index
+  def show
     @map = "path/to/evapotranspiration/map.img"
 
     render json: @map
   end
 
-  def show
+  def index
     render nothing: true
   end
 end
