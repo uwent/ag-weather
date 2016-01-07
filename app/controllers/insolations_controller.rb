@@ -1,8 +1,6 @@
 class InsolationsController < ApplicationController
 
   def show
-    @maps = ["path/to/map1.img","path/to/map2.img"]
-
-    render json: @maps
+    render json: { west_map: "path/to/map1.img", east_map: "path/to/map2.img" }
   end
 end

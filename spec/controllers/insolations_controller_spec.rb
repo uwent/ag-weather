@@ -4,16 +4,22 @@ RSpec.describe InsolationsController, type: :controller do
   let(:response_hash) { JSON.parse(response.body) }
 
   describe '#show' do
-    it 'returns 200 status' do
-      get :show, id: '2016-01-06'
+    context 'when the request is valid' do
+      it 'is okay' do
+        get :show, id: '2016-01-06'
 
-      expect(response).to have_http_status(:ok)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'has the correct response structure' do
+        get :show, id: '2016-01-06'
+
+        expect(response_hash.keys).to include('west_map', 'east_map')
+      end
     end
 
-    it 'returns paths to two images' do
-      get :show, id: '2016-01-06'
-
-      expect(response_hash.length).to eq(2)
+    context 'when the request is invalid' do
+      it 'is no content'
     end
   end
 end
