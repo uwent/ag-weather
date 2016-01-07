@@ -19,7 +19,7 @@ Retrieve insolation maps for a given date
         + west_map: path/to/map1.img (string, required)
         + east_map: path/to/map2.img (string, required)
 
-# Group Evapotranspirations (ET)
+# Group Evapotranspirations
 
 ## Evapotranspiration [/evapotranspirations/{date}]
 
@@ -64,15 +64,7 @@ Retrieve ET data for the specified coordinates and dates.
 Retrieve a map of the degree days for the specified method
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes
-        + alfalfa_weevil: path/to/map1.img (string, required)
-        + corn_development: path/to/map2.img (string, required)
-        + corn_stalk_borer: path/to/map3.img (string, required)
-        + cranberry: path/to/map4.img (string, required)
-        + euro_corn_borer: path/to/map5.img (string, required)
-        + potato: path/to/map5.img (string, required)
-        + seedcorn_maggot: path/to/map6.img (string, required)
-        + tree_pest: path/to/map6.img (string, required)
+    + Attributes (array[Degree Day Map])
 
 # Data Structures
 
@@ -80,3 +72,8 @@ Retrieve a map of the degree days for the specified method
 
 + date: 2016-01-01 (string, requried)
 + value: 0.01 (number, required)
+
+## Degree Day Map (object)
+
++ type: alfalfa weevil (string, required)
++ map: path/to/degree_day/map.img (string, required)
