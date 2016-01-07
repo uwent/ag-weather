@@ -5,4 +5,8 @@ class DegreeDaysController < ApplicationController
 
     render json: @map
   end
+
+  def index
+    render nothing: true
+  end
 end
