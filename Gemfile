@@ -18,4 +18,6 @@ group :development, :test do
   gem 'spring'
   gem 'web-console', '~> 2.0'
   gem 'rspec_junit_formatter', '0.2.2'
+  gem 'webmock'
+  gem 'rspec-rails'
 end
