@@ -3,3 +3,7 @@
 ## Getting Started
 
 ## Endpoints
+
+## Endpoint Testing
+
+    RAILS_ENV=test bundle exec rake dredd
