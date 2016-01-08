@@ -13,15 +13,7 @@ RSpec.describe DegreeDaysController, type: :controller do
     it 'has the correct response structure' do
       get :show, id: '2016-01-07'
 
-      expect(response_hash.keys).to include(
-        'alfalfa_weevil',
-        'corn_development',
-        'corn_stalk_borer',
-        'cranberry',
-        'euro_corn_borer',
-        'potato',
-        'seedcorn_maggot',
-        'tree_pest')
+      expect(response_hash.first.keys).to match(['type', 'map'])
     end
   end
 
