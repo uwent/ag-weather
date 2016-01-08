@@ -25,13 +25,13 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
   describe '#show' do
     context 'when the request is valid' do
-      it 'returns 200 status' do
+      it 'is okay' do
         get :show, id: '2016-01-07'
 
         expect(response).to have_http_status(:ok)
       end
 
-      it 'returns a path to an image' do
+      it 'has the correct response structure' do
         get :show, id: '2016-01-07'
 
         expect(response_hash.keys).to match(['map'])
