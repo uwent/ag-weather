@@ -1,0 +1,79 @@
+FORMAT: 1A
+
+# Agricultural Weather Service
+
+# Group Insolations
+
+## Insolation [/insolations/{date}]
+
++ Parameters
+
+    + date: 2016-01-07 (string, required) - the desired date
+
+### View insolation [GET]
+
+Retrieve insolation maps for a given date
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes
+        + west_map: path/to/map1.img (string, required)
+        + east_map: path/to/map2.img (string, required)
+
+# Group Evapotranspirations
+
+## Evapotranspiration [/evapotranspirations/{date}]
+
++ Parameters
+
+    + date: `2016-01-07` (string, required) - the desired date
+
+### Show Evapotranspiration [GET]
+
+Retrieve the ET map for Wisconsin for a given date
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes
+        + map: path/to/map1.img (string, required)
+
+## Evapotranspirations [/evapotranspirations{?lat,long,start_date,end_date}]
+
++ Parameters
+
+    + lat: 42.8 (number, required) - the latitude
+    + long: 270.423 (number, required) - the longitude
+    + start_date: 2016-01-01 (string, required) - the start date
+    + end_date: 2016-01-07 (string, required) - the end date
+
+### List Evapotranspirations [GET]
+
+Retrieve ET data for the specified coordinates and dates.
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (array[ET Reading])
+
+# Group Degree Days
+
+## Degree Day [/degree_days/{date}]
+
++ Parameters
+
+    + date: `2016-01-07` (string, required) - the desired date
+
+### Show Degree Days [GET]
+
+Retrieve a map of the degree days for the specified method
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (array[Degree Day Map])
+
+# Data Structures
+
+## ET Reading (object)
+
++ date: 2016-01-01 (string, requried)
++ value: 0.01 (number, required)
+
+## Degree Day Map (object)
+
++ type: alfalfa weevil (string, required)
++ map: path/to/degree_day/map.img (string, required)
