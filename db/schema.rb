@@ -16,8 +16,8 @@ ActiveRecord::Schema.define(version: 20160108221253) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "completed_imports", force: :cascade do |t|
-    t.string   "type"
+  create_table "data_imports", force: :cascade do |t|
+    t.string   "data_type"
     t.datetime "readings_from"
     t.string   "status"
     t.datetime "created_at",    null: false

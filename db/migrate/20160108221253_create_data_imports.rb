@@ -1,7 +1,7 @@
 class CreateDataImports < ActiveRecord::Migration
   def change
-    create_table :completed_imports do |t|
-      t.string   :type
+    create_table :data_imports do |t|
+      t.string   :data_type
       t.datetime :readings_from
       t.string   :status
 
