@@ -1,5 +1,13 @@
 class InsolationImporter
 
+  def self.fetch
+    days_to_load = DataImport.days_to_load_for('insolation')
+
+    days_to_load.each do |day|
+      InsolationImporter.fetch_day(day)
+    end
+  end
+
   def self.fetch_day(date)
     east_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
     west_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLWEST/INSOLWEST.#{formatted_date(date)}"
@@ -9,6 +17,8 @@ class InsolationImporter
 
     west_response = HTTParty.get(west_url)
     import_insolation_data(west_response,date)
+
+    DataImport.loaded_successfully('insolation', date)
   end
 
   def self.import_insolation_data(http_response,date)
