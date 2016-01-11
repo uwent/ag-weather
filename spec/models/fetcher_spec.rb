@@ -1,9 +1,7 @@
 require 'rails_helper'
 require 'net/ftp'
-# require 'fakefs/spec_helpers'
 
 describe Fetcher do
-  # include FakeFS::SpecHelpers
 
   describe '.fetch_day' do
     let(:date) { Date.new(2016,1,5) }
