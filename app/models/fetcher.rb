@@ -7,7 +7,7 @@ class Fetcher
     filenames = find_remote_files_for(simple_date)
     save_files_locally(simple_date, filenames, folder_path)
 
-    "some.date.grb2"
+    filenames.map { |file| simple_date + file }
   end
 
   def self.contact_server
