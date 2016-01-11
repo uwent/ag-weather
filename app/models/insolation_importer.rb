@@ -33,9 +33,9 @@ class InsolationImporter
       next if !inside_wi_mn_box?(lat, long)
 
       InsolationDatum.create(
-        insolation: row[0],
-        latitude: row[1],
-        longitude: row[2],
+        insolation: value,
+        latitude: lat,
+        longitude: long,
         date: date
       )
     end
