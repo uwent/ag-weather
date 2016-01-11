@@ -7,7 +7,7 @@ class DataImport < ActiveRecord::Base
   end
 
   def self.days_to_load_for(type)
-    successful_dates = for_type(type).successful.pluck(:readings_from)
+    successful_dates = for_type(type).successful.pluck(:readings_on)
 
     earliest_date.upto(Date.yesterday).reject do |date|
       successful_dates.include?(date)
@@ -27,10 +27,10 @@ class DataImport < ActiveRecord::Base
   end
 
   def self.create_successful_load(type, date)
-    successful.for_type(type).where(readings_from: date).create!
+    successful.for_type(type).where(readings_on: date).create!
   end
 
   def self.create_unsuccessful_load(type, date)
-    unsuccessful.for_type(type).where(readings_from: date).create!
+    unsuccessful.for_type(type).where(readings_on: date).create!
   end
 end

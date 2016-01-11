@@ -17,11 +17,11 @@ ActiveRecord::Schema.define(version: 20160108221253) do
   enable_extension "plpgsql"
 
   create_table "data_imports", force: :cascade do |t|
-    t.string   "data_type"
-    t.datetime "readings_from"
-    t.string   "status"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.string   "data_type",   null: false
+    t.date     "readings_on", null: false
+    t.string   "status",      null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "evapotranspiration_data", force: :cascade do |t|

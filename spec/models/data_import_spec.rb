@@ -23,7 +23,7 @@ RSpec.describe DataImport, type: :model do
       let!(:succesful_load) { DataImport.create!(
         data_type: 'insolation',
         status: 'successful',
-        readings_from: Date.today - DataImport::DAYS_BACK_WINDOW.days)}
+        readings_on: Date.today - DataImport::DAYS_BACK_WINDOW.days)}
 
       it 'returns all other days' do
         dates_to_load = [Date.yesterday, Date.today - 2.days]
