@@ -23,23 +23,16 @@ class DataImport < ActiveRecord::Base
       end
     end
 
-    dates_to_load
+  def self.for_type(type)
+    where(data_type: type)
   end
 
-  def self.successful_load(type, date)
-    DataImport.create!(
-      data_type: type,
-      status: 'completed',
-      readings_from: date
-    )
+  def self.successful
+    where(status: 'successful')
   end
 
-  def self.unsuccessful_load(type, date)
-    DataImport.create!(
-      data_type: type,
-      status: 'attempted',
-      readings_from: date
-    )
+  def self.unsuccessful
+    where(status: 'unsuccessful')
   end
 
 end
