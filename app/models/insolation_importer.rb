@@ -13,15 +13,15 @@ class InsolationImporter
     west_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLWEST/INSOLWEST.#{formatted_date(date)}"
 
     east_response = HTTParty.get(east_url)
-    import_insolation_data(east_response,date)
+    import_insolation_data(east_response, date)
 
     west_response = HTTParty.get(west_url)
-    import_insolation_data(west_response,date)
+    import_insolation_data(west_response, date)
 
-    DataImport.loaded_successfully('insolation', date)
+    DataImport.successful_load('insolation', date)
   end
 
-  def self.import_insolation_data(http_response,date)
+  def self.import_insolation_data(http_response, date)
     http_response.body.each_line do |line|
       row = line.split
 
