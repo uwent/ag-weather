@@ -32,27 +32,27 @@ RSpec.describe DataImport, type: :model do
       end
     end
 
-    describe '.succesful_load' do
+    describe '.create_succesful_load' do
       it 'creates a new DataImport record' do
-        expect{ DataImport.successful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
+        expect{ DataImport.create_successful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
       end
 
-      it 'creates a record with status completed' do
-        newRecord = DataImport.successful_load('insolation', Date.today)
+      it 'creates a record with status successful' do
+        newRecord = DataImport.create_successful_load('insolation', Date.today)
 
-        expect(newRecord.status).to eq 'completed'
+        expect(newRecord.status).to eq 'successful'
       end
     end
 
-    describe '.unsuccesful_load' do
+    describe '.create_unsuccessful_load' do
       it 'creates a new DataImport record' do
-        expect{ DataImport.unsuccessful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
+        expect{ DataImport.create_unsuccessful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
       end
 
-      it 'creates a record with status attempted' do
-        newRecord = DataImport.unsuccessful_load('insolation', Date.today)
+      it 'creates a record with status unsuccessful' do
+        newRecord = DataImport.create_unsuccessful_load('insolation', Date.today)
 
-        expect(newRecord.status).to eq 'attempted'
+        expect(newRecord.status).to eq 'unsuccessful'
       end
     end
   end

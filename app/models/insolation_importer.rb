@@ -18,7 +18,9 @@ class InsolationImporter
     west_response = HTTParty.get(west_url)
     import_insolation_data(west_response, date)
 
-    DataImport.successful_load('insolation', date)
+    DataImport.create_successful_load('insolation', date)
+  rescue
+    DataImport.create_unsuccessful_load('insolation', date)
   end
 
   def self.import_insolation_data(http_response, date)
