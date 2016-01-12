@@ -40,6 +40,7 @@ class Importer
     hourly_data = Hash.new { |hash, key| hash[key] = [] }
 
     files.each do |file|
+      puts "Trying file: #{file}"
       get_data_point(file, data_types, hourly_data)
     end
 
