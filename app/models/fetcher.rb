@@ -18,7 +18,7 @@ class Fetcher
 
   def self.find_remote_files_for(date)
     @@client.chdir("pub/data/nccf/com/urma/prod/urma2p5.#{date}")
-    files = @@client.list('*anl_ndfd*')
+    files = @@client.list('*anl_ndfd.grb2')
     files.map { |file| file.split.last }
   end
 
