@@ -6,12 +6,13 @@ describe Fetcher do
   describe '.fetch_day' do
     let(:date) { Date.new(2016,1,5) }
     let(:client_mock) { instance_double("Net::FTP") }
+    let(:listed_files) { %w(a.grb2 b.grb2 c.grb) }
 
     before do
       allow(client_mock).to receive(:login)
       allow(client_mock).to receive(:passive=)
       allow(client_mock).to receive(:chdir)
-      allow(client_mock).to receive(:list).and_return(['a','b','c'])
+      allow(client_mock).to receive(:list).and_return(listed_files)
       allow(client_mock).to receive(:get)
 
       allow(Net::FTP).to receive(:new).with('ftp.ncep.noaa.gov')
@@ -19,7 +20,10 @@ describe Fetcher do
     end
 
     it 'return file name(s) it saved' do
-      expect(Fetcher.fetch_day(date)).to include('.grb2')
+      saved_files = Fetcher.fetch_day(date)
+      saved_files.zip(listed_files).each do |saved_file, listed_file|
+        expect(saved_file).to match(listed_file)
+      end
     end
 
     it 'attempts to contact ftp server' do
