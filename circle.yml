@@ -5,6 +5,9 @@ machine:
     version: 0.12.0
 
 dependencies:
+  cache_directories:
+    - /home/ubuntu/nvm/versions/node/v0.12.0/bin
+    - /home/ubuntu/nvm/versions/node/v0.12.0/lib/node_modules
   pre:
     - sudo apt-get update
   post:
