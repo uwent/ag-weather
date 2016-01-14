@@ -95,7 +95,9 @@ class Importer
   end
 
   def self.dew_point_to_vapor_pressure(dew_point)
-    6.11 * 10 ** ((7.5 * dew_point) / (237.3 + dew_point))
+    # units in: dew point in K
+    6.105 * exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / dew_point)))
+    # units out: vapor pressure in mb
   end
 
   def self.average(array)
