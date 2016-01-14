@@ -101,6 +101,6 @@ class Importer
   end
 
   def self.average(array)
-    array.inject(:+) / array.count
+    (array.max + array.min) / 2
   end
 end
