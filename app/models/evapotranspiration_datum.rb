@@ -10,7 +10,7 @@ class EvapotranspirationDatum < ActiveRecord::Base
 
     lat_values.each do |lat|
       long_values.each do |long|
-        calculate_et_for_point(lat, long, date)
+        create_et_for_point(lat, long, date)
       end
     end
 
@@ -20,27 +20,30 @@ class EvapotranspirationDatum < ActiveRecord::Base
     raise e
   end
 
-  def self.calculate_et_for_point(lat, long, date)
+  def self.create_et_for_point(lat, long, date)
     weather = WeatherDatum.find_by(latitude: lat, longitude: long, date: date)
     insol = InsolationDatum.find_by(latitude: lat, longitude: long, date: date)
-    #TODO: probably should get some error checking in here if we don't have one of these points
 
-    # inputs: all temperatures in C; vapor pressure in kPa; insolation in MJ/day
-    potential_et = AgwxBiophys.et(
-      weather.max_temperature,
-      weather.min_temperature,
-      weather.avg_temperature,
-      weather.vapor_pressure,
-      insol.insolation,
-      date.yday,
-      lat
-    )
+    if weather && insol
+      # inputs: all temperatures in C; vapor pressure in kPa; insolation in MJ/day
+      potential_et = et(
+        weather.max_temperature,
+        weather.min_temperature,
+        weather.avg_temperature,
+        weather.vapor_pressure,
+        insol.insolation,
+        date.yday,
+        lat
+      )
 
-    create(potential_et: potential_et, latitude: lat, longitude: long, date: date)
+      create(potential_et: potential_et, latitude: lat, longitude: long, date: date)
+    else
+      nil
+    end
   end
 
   def self.data_sources_loaded?(date)
-    !!DataImport.for_type('weather').successful.find_by(readings_on: date) &&
-    !!DataImport.for_type('insolation').successful.find_by(readings_on: date)
+    DataImport.for_type('weather').successful.find_by(readings_on: date) &&
+    DataImport.for_type('insolation').successful.find_by(readings_on: date)
   end
 end
