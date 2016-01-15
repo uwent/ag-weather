@@ -1,4 +1,5 @@
 class EvapotranspirationDatum < ActiveRecord::Base
+  extend AgwxBiophys::ET
 
   def self.calculate_et_for_date(date)
     raise ActiveRecord::RecordNotFound unless data_sources_loaded?(date)
