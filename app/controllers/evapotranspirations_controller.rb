@@ -19,4 +19,19 @@ class EvapotranspirationsController < ApplicationController
 
     render json: et_readings
   end
+
+  def calculate_et
+    render json: {
+      inputs: params,
+      value: EvapotranspirationDatum.et(
+        params[:max_temp].to_f,
+        params[:min_temp].to_f,
+        params[:avg_temp].to_f,
+        params[:vapor_p].to_f,
+        params[:insol].to_i,
+        params[:doy].to_i,
+        params[:lat].to_f
+      )
+    }
+  end
 end
