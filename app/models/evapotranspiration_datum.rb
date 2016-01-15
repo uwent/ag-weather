@@ -1,6 +1,14 @@
 class EvapotranspirationDatum < ActiveRecord::Base
   extend AgwxBiophys::ET
 
+  def self.create_et_data
+    days_to_load = DataImport.days_to_load_for('evapotranspiration')
+
+    days_to_load.each do |day|
+      EvapotranspirationDatum.calculate_et_for_date(day)
+    end
+  end
+
   def self.calculate_et_for_date(date)
     raise ActiveRecord::RecordNotFound unless data_sources_loaded?(date)
 
