@@ -42,4 +42,22 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       it 'is no content'
     end
   end
+
+  describe '#calculate_et' do
+    it 'correctly formats the response' do
+      get :calculate_et, {
+        max_temp: 12.5,
+        min_temp: 8.9,
+        avg_temp: 10.7,
+        vapor_p: 1.6,
+        insol: 561,
+        doy: 123,
+        lat: 43
+      }
+
+      response_hash = JSON.parse(response.body)
+
+      expect(response_hash.keys).to match(['inputs','value'])
+    end
+  end
 end
