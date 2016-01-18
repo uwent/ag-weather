@@ -4,6 +4,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
   let(:date) { Date.today }
   let(:lat) { 43 }
   let(:long) { 89.7 }
+  let(:new_et_point) { EvapotranspirationDatum.new(latitude: lat, longitude: long, date: date) }
 
   describe 'already_done?' do
     context 'ET point for same lat, long, and date exists' do
@@ -12,40 +13,67 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        new_et_point = EvapotranspirationDatum.new(latitude: lat, longitude: long, date: date)
-        byebug
         expect(new_et_point.already_done?).to be true
       end
     end
 
-
+    context 'No other ET points exist' do
+      it 'is false' do
+        expect(new_et_point.already_done?).to be false
+      end
+    end
   end
 
+  describe 'has_data?' do
+    context 'weather and and insolation data imported' do
+      before do
+        WeatherDatum.create(latitude: lat, longitude: long, date: date)
+        InsolationDatum.create(latitude: lat, longitude: long, date: date)
+      end
 
-  # describe 'create_et_for_point' do
+      it 'is true' do
+        expect(new_et_point.has_data?).to be true
+      end
+    end
 
+    context 'only weather data has been imported' do
+      before do
+        WeatherDatum.create(latitude: lat, longitude: long, date: date)
+      end
 
-  #   context 'prereq data is loaded' do
-  #     before do
-  #       WeatherDatum.create(latitude: lat, longitude: long, date: date,
-  #         max_temperature: 12.5,
-  #         min_temperature: 8.9,
-  #         avg_temperature: 10.7,
-  #         vapor_pressure:  1.6
-  #       )
-  #       InsolationDatum.create(latitude: lat, longitude: long, date: date, insolation: 561)
-  #     end
+      it 'is false' do
+        expect(new_et_point.has_data?).to be false
+      end
+    end
+  end
 
-  #     it 'returns the potential et value' do
-  #       expect(EvapotranspirationDatum.create_et_for_point(lat, long, date)).to be_a(EvapotranspirationDatum)
-  #     end
-  #   end
+  describe 'calculate_et' do
+    context 'when weather and insolation data imported' do
+      before do
+        InsolationDatum.create(latitude: lat, longitude: long, date: date, insolation: 561)
+        WeatherDatum.create(latitude: lat, longitude: long, date: date,
+          max_temperature: 12.5,
+          min_temperature: 8.9,
+          avg_temperature: 10.7,
+          vapor_pressure:  1.6
+        )
+      end
 
-  #   context 'prereq data is not loaded' do
-  #     it 'does not try and calculate a potential et' do
-  #       expect(EvapotranspirationDatum).to_not receive(:et)
-  #       EvapotranspirationDatum.create_et_for_point(lat, long, date)
-  #     end
-  #   end
-  # end
+      it 'fills in the potential_et field' do
+        new_et_point.calculate_et
+
+        expect(new_et_point.reload.potential_et).to be_a(BigDecimal)
+      end
+
+      it 'is true' do
+        expect(new_et_point.calculate_et).to be true
+      end
+
+      it 'saves itself' do
+        new_et_point.calculate_et
+
+        expect(new_et_point.reload.id).to_not be nil
+      end
+    end
+  end
 end

@@ -1,7 +1,5 @@
 class EvapotranspirationDatum < ActiveRecord::Base
-  extend AgwxBiophys::ET
-
-  attr_accessible :latitude, :longitude, :date
+  include AgwxBiophys::ET
 
   def calculate_et
     return unless has_data?
@@ -17,11 +15,11 @@ class EvapotranspirationDatum < ActiveRecord::Base
       latitude
     ).first
 
-    save!
+    update_attributes!(potential_et: potential_et)
   end
 
   def has_data?
-    weather && insolation
+    !!weather && !!insolation
   end
 
   def weather
