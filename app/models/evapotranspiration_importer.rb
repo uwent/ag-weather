@@ -10,9 +10,8 @@ class EvapotranspirationImporter
   def self.calculate_et_for_date(date)
     return unless data_sources_loaded?(date)
 
-    #TODO: The WI/MN boundaries need to be constants that live somewhere
-    lat_values = 42.step(50,0.1).to_a
-    long_values = 86.step(98,0.1).to_a
+    lat_values = WiMn::S_LAT.step(WiMn::N_LAT,0.1).to_a
+    long_values = WiMn::E_LONG.step(WiMn::W_LONG,0.1).to_a
 
     lat_values.each do |lat|
       long_values.each do |long|

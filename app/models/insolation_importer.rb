@@ -1,4 +1,5 @@
 class InsolationImporter
+  extend WiMn
 
   def self.fetch
     days_to_load = DataImport.days_to_load_for('insolation')
@@ -32,7 +33,7 @@ class InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next if !inside_wi_mn_box?(lat, long)
+      next unless inside_wi_mn_box?(lat, long)
 
       InsolationDatum.create(
         insolation: value,
@@ -45,9 +46,5 @@ class InsolationImporter
 
   def self.formatted_date(date)
     "#{date.year}#{date.yday.to_s.rjust(3, '0')}"
-  end
-
-  def self.inside_wi_mn_box?(lat, long)
-    (lat > 42 && lat < 50) && (long > 86 && long < 98)
   end
 end
