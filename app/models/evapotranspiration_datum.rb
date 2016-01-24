@@ -1,6 +1,5 @@
 class EvapotranspirationDatum < ActiveRecord::Base
   include AgwxBiophys::ET
-  extend AgwxBiophys::ET
 
   def calculate_et
     return unless has_data?

@@ -23,7 +23,7 @@ class EvapotranspirationsController < ApplicationController
   def calculate_et
     render json: {
       inputs: params,
-      value: EvapotranspirationDatum.et(
+      value: EvapotranspirationDatum.new.et(
         params[:max_temp].to_f,
         params[:min_temp].to_f,
         params[:avg_temp].to_f,
