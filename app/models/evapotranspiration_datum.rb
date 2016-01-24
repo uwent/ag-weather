@@ -19,7 +19,7 @@ class EvapotranspirationDatum < ActiveRecord::Base
   end
 
   def has_data?
-    !!weather && !!insolation
+    weather && insolation
   end
 
   def weather
@@ -31,6 +31,6 @@ class EvapotranspirationDatum < ActiveRecord::Base
   end
 
   def already_done?
-    !!EvapotranspirationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+    EvapotranspirationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 end

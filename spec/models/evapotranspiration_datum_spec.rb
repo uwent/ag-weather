@@ -13,13 +13,13 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        expect(new_et_point.already_done?).to be true
+        expect(new_et_point.already_done?).to be_truthy
       end
     end
 
     context 'No other ET points exist' do
       it 'is false' do
-        expect(new_et_point.already_done?).to be false
+        expect(new_et_point.already_done?).to be_falsey
       end
     end
   end
@@ -32,7 +32,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        expect(new_et_point.has_data?).to be true
+        expect(new_et_point.has_data?).to be_truthy
       end
     end
 
@@ -42,7 +42,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is false' do
-        expect(new_et_point.has_data?).to be false
+        expect(new_et_point.has_data?).to be_falsey
       end
     end
   end
