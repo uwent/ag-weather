@@ -6,25 +6,25 @@ RSpec.describe EvapotranspirationDatum, type: :model do
   let(:long) { 89.7 }
   let(:new_et_point) { EvapotranspirationDatum.new(latitude: lat, longitude: long, date: date) }
 
-  describe 'already_done?' do
+  describe 'already_calculated?' do
     context 'ET point for same lat, long, and date exists' do
       before do
         EvapotranspirationDatum.create(latitude: lat, longitude: long, date: date)
       end
 
       it 'is true' do
-        expect(new_et_point.already_done?).to be_truthy
+        expect(new_et_point.already_calculated?).to be_truthy
       end
     end
 
     context 'No other ET points exist' do
       it 'is false' do
-        expect(new_et_point.already_done?).to be_falsey
+        expect(new_et_point.already_calculated?).to be_falsey
       end
     end
   end
 
-  describe 'has_data?' do
+  describe 'has_required_data?' do
     context 'weather and and insolation data imported' do
       before do
         WeatherDatum.create(latitude: lat, longitude: long, date: date)
@@ -32,7 +32,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        expect(new_et_point.has_data?).to be_truthy
+        expect(new_et_point.has_required_data?).to be_truthy
       end
     end
 
@@ -42,7 +42,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is false' do
-        expect(new_et_point.has_data?).to be_falsey
+        expect(new_et_point.has_required_data?).to be_falsey
       end
     end
   end

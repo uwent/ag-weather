@@ -2,8 +2,8 @@ class EvapotranspirationDatum < ActiveRecord::Base
   include AgwxBiophys::ET
 
   def calculate_et
-    return unless has_data?
-    return if already_done?
+    return unless has_required_data?
+    return if already_calculated?
 
     potential_et = et(
       weather.max_temperature,
@@ -18,7 +18,7 @@ class EvapotranspirationDatum < ActiveRecord::Base
     update_attributes!(potential_et: potential_et)
   end
 
-  def has_data?
+  def has_required_data?
     weather && insolation
   end
 
@@ -30,7 +30,7 @@ class EvapotranspirationDatum < ActiveRecord::Base
     @insolation ||= InsolationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 
-  def already_done?
+  def already_calculated?
     EvapotranspirationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 end
