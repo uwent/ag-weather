@@ -1,7 +1,14 @@
 # Agricultural Weather API 
 [[Circle CI](url)](https://circleci.com/gh/adorableio/ag-weather)
 
-## Getting Started
+## Daily Process
+
+Early every morning we will run a sequence of steps:
+* Save NOAA grib files locally (`WeatherFetcher.fetch`)
+* Load weather data from grib files into DB (`WeatherImporter.import`)
+* Load insolation data from SSEC server into DB (`InsolationImporter.fetch`)
+* Calculate ET data and save to DB (`EvapotranspirationImporter.create_et_data`)
+* Generate map images for insolation, ET, and different degree day formulas (???)
 
 ## Endpoints
 
