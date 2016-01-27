@@ -4,6 +4,25 @@
 ## Description
 This project is to support the UW-Extension's Agricultural Weather Service.  Included are the tools to load weather and insolation data from remote sources, calculate and store daily evapotranspiration data, calculate multiple formulas of degreee days, generate and save state-wide maps to display this data, and provide access to all of this information through public endpoints.
 
+## Setup
+* clone the project
+* Install dependencies
+```
+bundle install
+```
+* Create database and schema
+```
+bundle exec rake db:create db:migrate
+```
+* Import data (This will take a looooong time; probably several hours)
+  * open the rails console `bundle exec rails c`
+  * follow the steps in parantheses in the Daily Process section
+
+* Start server
+```
+rails s
+```
+
 
 ## Daily Process
 
