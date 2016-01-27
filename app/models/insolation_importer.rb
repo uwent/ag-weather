@@ -1,5 +1,4 @@
 class InsolationImporter
-  extend WiMn
 
   def self.fetch
     days_to_load = DataImport.days_to_load_for('insolation')
@@ -33,7 +32,7 @@ class InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next unless inside_wi_mn_box?(lat, long)
+      next unless WiMn.inside_wi_mn_box?(lat, long)
 
       InsolationDatum.create(
         insolation: value,

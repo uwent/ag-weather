@@ -10,17 +10,12 @@ class EvapotranspirationImporter
   def self.calculate_et_for_date(date)
     return unless data_sources_loaded?(date)
 
-    lat_values = WiMn::S_LAT.step(WiMn::N_LAT,0.1).to_a
-    long_values = WiMn::E_LONG.step(WiMn::W_LONG,0.1).to_a
-
-    lat_values.each do |lat|
-      long_values.each do |long|
-        EvapotranspirationDatum.new(
+    WiMn.each_point do |lat, long|
+      EvapotranspirationDatum.new(
           latitude: lat,
           longitude: long,
           date: date
         ).calculate_et
-      end
     end
 
     DataImport.create_successful_load('evapotranspiration', date)
