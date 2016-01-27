@@ -61,6 +61,13 @@ Will return a JSON object with paths to the maps for all the different Degree Da
     GET /degree_days{?lat& long& start_date& end_date& formula& lower_bound& (upper_bound)}
 Will return a JSON object with the total degree days for the input parameters
 
-### Endpoint Testing
+### Testing
 
-    RAILS_ENV=test bundle exec rake dredd
+#### - RSpec
+```
+bundle exec rspec
+```
+#### - Endpoints
+```
+RAILS_ENV=test bundle exec rake dredd
+```
