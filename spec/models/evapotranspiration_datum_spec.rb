@@ -13,13 +13,13 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        expect(new_et_point.already_calculated?).to be_truthy
+        expect(new_et_point).to be_already_calculated
       end
     end
 
     context 'No other ET points exist' do
       it 'is false' do
-        expect(new_et_point.already_calculated?).to be_falsey
+        expect(new_et_point).not_to be_already_calculated
       end
     end
   end
@@ -32,7 +32,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is true' do
-        expect(new_et_point.has_required_data?).to be_truthy
+        expect(new_et_point).to have_required_data
       end
     end
 
@@ -42,7 +42,7 @@ RSpec.describe EvapotranspirationDatum, type: :model do
       end
 
       it 'is false' do
-        expect(new_et_point.has_required_data?).to be_falsey
+        expect(new_et_point).not_to have_required_data
       end
     end
   end
@@ -61,12 +61,12 @@ RSpec.describe EvapotranspirationDatum, type: :model do
 
       it 'fills in the potential_et field' do
         new_et_point.calculate_et
-
         expect(new_et_point.reload.potential_et).to be_a(BigDecimal)
       end
 
       it 'is true' do
-        expect(new_et_point.calculate_et).to be true
+        new_et_point.calculate_et
+        expect(new_et_point).to be_persisted
       end
 
       it 'saves itself' do
