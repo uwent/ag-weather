@@ -8,7 +8,7 @@ RSpec.describe DataImport, type: :model do
     end
 
     it 'only lists days that are within the defined range' do
-      earliest_date = Date.today - DataImport::DAYS_BACK_WINDOW
+      earliest_date = Date.current - DataImport::DAYS_BACK_WINDOW
 
       expect(DataImport.days_to_load_for('insolation').min).to be >= earliest_date
     end
@@ -23,10 +23,10 @@ RSpec.describe DataImport, type: :model do
       let!(:succesful_load) { DataImport.create!(
         data_type: 'insolation',
         status: 'successful',
-        readings_on: Date.today - DataImport::DAYS_BACK_WINDOW.days)}
+        readings_on: Date.current - DataImport::DAYS_BACK_WINDOW.days)}
 
       it 'returns all other days' do
-        dates_to_load = [Date.yesterday, Date.today - 2.days]
+        dates_to_load = [Date.yesterday, Date.current - 2.days]
 
         expect(DataImport.days_to_load_for('insolation')).to match_array(dates_to_load)
       end
@@ -34,11 +34,11 @@ RSpec.describe DataImport, type: :model do
 
     describe '.create_succesful_load' do
       it 'creates a new DataImport record' do
-        expect{ DataImport.create_successful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
+        expect{ DataImport.create_successful_load('insolation', Date.current) }.to change(DataImport, :count).by 1
       end
 
       it 'creates a record with status successful' do
-        newRecord = DataImport.create_successful_load('insolation', Date.today)
+        newRecord = DataImport.create_successful_load('insolation', Date.current)
 
         expect(newRecord.status).to eq 'successful'
       end
@@ -46,11 +46,11 @@ RSpec.describe DataImport, type: :model do
 
     describe '.create_unsuccessful_load' do
       it 'creates a new DataImport record' do
-        expect{ DataImport.create_unsuccessful_load('insolation', Date.today) }.to change(DataImport, :count).by 1
+        expect{ DataImport.create_unsuccessful_load('insolation', Date.current) }.to change(DataImport, :count).by 1
       end
 
       it 'creates a record with status unsuccessful' do
-        newRecord = DataImport.create_unsuccessful_load('insolation', Date.today)
+        newRecord = DataImport.create_unsuccessful_load('insolation', Date.current)
 
         expect(newRecord.status).to eq 'unsuccessful'
       end

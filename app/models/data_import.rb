@@ -3,7 +3,7 @@ class DataImport < ActiveRecord::Base
   DAYS_BACK_WINDOW = 3
 
   def self.earliest_date
-    earliest_date = Date.today - DAYS_BACK_WINDOW
+    earliest_date = Date.current - DAYS_BACK_WINDOW
   end
 
   def self.days_to_load_for(type)
