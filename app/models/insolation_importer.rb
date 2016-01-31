@@ -1,7 +1,7 @@
 class InsolationImporter
 
   def self.fetch
-    days_to_load = DataImport.days_to_load_for('insolation')
+    days_to_load = InsolationDataImport.days_to_load_for
 
     days_to_load.each do |day|
       InsolationImporter.fetch_day(day)
@@ -18,9 +18,9 @@ class InsolationImporter
     west_response = HTTParty.get(west_url)
     import_insolation_data(west_response, date)
 
-    DataImport.create_successful_load('insolation', date)
+    InsolationDataImport.create_successful_load(date)
   rescue
-    DataImport.create_unsuccessful_load('insolation', date)
+    InsolationDataImport.create_unsuccessful_load(date)
   end
 
   def self.import_insolation_data(http_response, date)

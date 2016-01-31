@@ -5,7 +5,7 @@ RSpec.describe InsolationImporter, type: :model do
   describe '.fetch' do
     it 'runs fetch_day for every day returned by DataImport' do
       unloaded_days = [Date.yesterday, Date.today - 3.days]
-      allow(DataImport).to receive(:days_to_load_for).with('insolation')
+      allow(InsolationDataImport).to receive(:days_to_load_for)
         .and_return(unloaded_days)
 
       expect(InsolationImporter).to receive(:fetch_day).exactly(unloaded_days.count).times

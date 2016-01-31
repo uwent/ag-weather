@@ -1,0 +1,2 @@
+class WeatherDataImport < DataImport
+end

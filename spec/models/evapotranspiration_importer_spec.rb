@@ -8,8 +8,8 @@ RSpec.describe EvapotranspirationImporter, type: :model do
 
     context 'insolation and weather data have successfully been imported' do
       before do
-        DataImport.create_successful_load('weather', date)
-        DataImport.create_successful_load('insolation', date)
+        WeatherDataImport.create_successful_load(date)
+        InsolationDataImport.create_successful_load(date)
       end
 
       it 'adds a data_import record' do
@@ -31,7 +31,7 @@ RSpec.describe EvapotranspirationImporter, type: :model do
   describe '.create_et_data' do
     it 'runs calculate_et_for_date for every day returned by DataImport' do
       unloaded_days = [Date.yesterday, Date.today - 2.days]
-      expect(DataImport).to receive(:days_to_load_for).with('evapotranspiration')
+      expect(EvapotranspirationDataImport).to receive(:days_to_load_for)
         .and_return(unloaded_days)
 
       expect(EvapotranspirationImporter).to receive(:calculate_et_for_date).exactly(unloaded_days.count).times
