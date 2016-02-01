@@ -18,10 +18,6 @@ RSpec.describe EvapotranspirationImporter, type: :model do
     end
 
     context 'insolation and weather data not imported' do
-      it 'will return a record not found error' do
-        expect{ action }.to raise_error(ActiveRecord::RecordNotFound)
-      end
-
       it 'will create an unsuccessful data import record' do
         expect{ action rescue nil }.to change(DataImport.unsuccessful, :count)
       end

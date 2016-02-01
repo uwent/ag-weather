@@ -19,9 +19,10 @@ class EvapotranspirationImporter
     end
 
     EvapotranspirationDataImport.create_successful_load(date)
-  rescue StandardError => e
+  rescue ActiveRecord::RecordNotFound => e
     EvapotranspirationDataImport.create_unsuccessful_load(date)
-    raise e
+    Rails.logger.error("Failed to calculate evapotranspiration for #{date}.")
+    Rails.logger.error(e.backtrace)
   end
 
   def self.data_sources_loaded?(date)
