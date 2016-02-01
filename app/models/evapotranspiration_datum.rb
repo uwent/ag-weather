@@ -2,8 +2,8 @@ class EvapotranspirationDatum < ActiveRecord::Base
   include AgwxBiophys::ET
 
   def calculate_et
-    return unless has_required_data?
-    return if already_calculated?
+    return false unless has_required_data?
+    return self if already_calculated?
 
     potential_et = et(
       weather.max_temperature,

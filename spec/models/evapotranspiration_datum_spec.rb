@@ -1,15 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe EvapotranspirationDatum, type: :model do
-  let(:date) { Date.today }
-  let(:lat) { 43 }
-  let(:long) { 89.7 }
-  let(:new_et_point) { EvapotranspirationDatum.new(latitude: lat, longitude: long, date: date) }
+  let(:new_et_point) { FactoryGirl.build(:evapotranspiration_datum) }
 
   describe 'already_calculated?' do
     context 'ET point for same lat, long, and date exists' do
       before do
-        EvapotranspirationDatum.create(latitude: lat, longitude: long, date: date)
+        FactoryGirl.create(:evapotranspiration_datum)
       end
 
       it 'is true' do
@@ -27,8 +24,8 @@ RSpec.describe EvapotranspirationDatum, type: :model do
   describe 'has_required_data?' do
     context 'weather and and insolation data imported' do
       before do
-        WeatherDatum.create(latitude: lat, longitude: long, date: date)
-        InsolationDatum.create(latitude: lat, longitude: long, date: date)
+        FactoryGirl.create(:weather_datum)
+        FactoryGirl.create(:insolation_datum)
       end
 
       it 'is true' do
@@ -38,7 +35,17 @@ RSpec.describe EvapotranspirationDatum, type: :model do
 
     context 'only weather data has been imported' do
       before do
-        WeatherDatum.create(latitude: lat, longitude: long, date: date)
+        FactoryGirl.create(:weather_datum)
+      end
+
+      it 'is false' do
+        expect(new_et_point).not_to have_required_data
+      end
+    end
+
+    context 'only insolation data has been imported' do
+      before do
+        FactoryGirl.create(:insolation_datum)
       end
 
       it 'is false' do
@@ -50,29 +57,52 @@ RSpec.describe EvapotranspirationDatum, type: :model do
   describe 'calculate_et' do
     context 'when weather and insolation data imported' do
       before do
-        InsolationDatum.create(latitude: lat, longitude: long, date: date, insolation: 561)
-        WeatherDatum.create(latitude: lat, longitude: long, date: date,
-          max_temperature: 12.5,
-          min_temperature: 8.9,
-          avg_temperature: 10.7,
-          vapor_pressure:  1.6
-        )
+        FactoryGirl.create(:insolation_datum)
+        FactoryGirl.create(:weather_datum)
+      end
+
+      it 'is true' do
+        expect(new_et_point.calculate_et).to be_truthy
+      end
+
+      it 'saves itself' do
+        new_et_point.calculate_et
+        expect(new_et_point).to be_persisted
       end
 
       it 'fills in the potential_et field' do
         new_et_point.calculate_et
         expect(new_et_point.reload.potential_et).to be_a(BigDecimal)
       end
+    end
 
-      it 'is true' do
-        new_et_point.calculate_et
-        expect(new_et_point).to be_persisted
+    context 'when only weather data present' do
+      before do
+        FactoryGirl.create(:weather_datum)
       end
 
-      it 'saves itself' do
-        new_et_point.calculate_et
+      it 'is false' do
+        expect(new_et_point.calculate_et).to be_falsey
+      end
 
-        expect(new_et_point.reload.id).to_not be nil
+      it 'does not get saved' do
+        new_et_point.calculate_et
+        expect(new_et_point).not_to be_persisted
+      end
+    end
+
+    context 'when only insolation data present' do
+      before do
+        FactoryGirl.create(:insolation_datum)
+      end
+
+      it 'is false' do
+        expect(new_et_point.calculate_et).to be_falsey
+      end
+
+      it 'does not get saved' do
+        new_et_point.calculate_et
+        expect(new_et_point).not_to be_persisted
       end
     end
   end

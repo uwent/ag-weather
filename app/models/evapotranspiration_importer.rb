@@ -19,7 +19,7 @@ class EvapotranspirationImporter
     end
 
     EvapotranspirationDataImport.create_successful_load(date)
-  rescue StandardError=>e
+  rescue StandardError => e
     EvapotranspirationDataImport.create_unsuccessful_load(date)
     raise e
   end

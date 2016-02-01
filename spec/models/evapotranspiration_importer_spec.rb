@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe EvapotranspirationImporter, type: :model do
-  let(:date) { Date.today }
+  let(:date) { Date.current }
 
   describe 'calculate_et_for_date' do
     let(:action) { EvapotranspirationImporter.calculate_et_for_date(date) }
