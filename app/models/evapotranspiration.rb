@@ -27,7 +27,7 @@ class Evapotranspiration < ActiveRecord::Base
   end
 
   def insolation
-    @insolation ||= InsolationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 
   def already_calculated?

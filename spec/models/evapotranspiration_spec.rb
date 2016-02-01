@@ -25,7 +25,7 @@ RSpec.describe Evapotranspiration, type: :model do
     context 'weather and and insolation data imported' do
       before do
         FactoryGirl.create(:weather_datum)
-        FactoryGirl.create(:insolation_datum)
+        FactoryGirl.create(:insolation)
       end
 
       it 'is true' do
@@ -45,7 +45,7 @@ RSpec.describe Evapotranspiration, type: :model do
 
     context 'only insolation data has been imported' do
       before do
-        FactoryGirl.create(:insolation_datum)
+        FactoryGirl.create(:insolation)
       end
 
       it 'is false' do
@@ -57,7 +57,7 @@ RSpec.describe Evapotranspiration, type: :model do
   describe 'calculate_et' do
     context 'when weather and insolation data imported' do
       before do
-        FactoryGirl.create(:insolation_datum)
+        FactoryGirl.create(:insolation)
         FactoryGirl.create(:weather_datum)
       end
 
@@ -93,7 +93,7 @@ RSpec.describe Evapotranspiration, type: :model do
 
     context 'when only insolation data present' do
       before do
-        FactoryGirl.create(:insolation_datum)
+        FactoryGirl.create(:insolation)
       end
 
       it 'is false' do
