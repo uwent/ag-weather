@@ -35,7 +35,7 @@ class InsolationImporter
       next unless WiMn.inside_wi_mn_box?(lat, long)
 
       Insolation.create(
-        insolation: value,
+        recording: value,
         latitude: lat,
         longitude: long,
         date: date

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160201012141) do
+ActiveRecord::Schema.define(version: 20160201021837) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,7 +34,7 @@ ActiveRecord::Schema.define(version: 20160201012141) do
   end
 
   create_table "insolations", force: :cascade do |t|
-    t.decimal  "insolation"
+    t.decimal  "recording"
     t.decimal  "latitude",   precision: 10, scale: 6
     t.decimal  "longitude",  precision: 10, scale: 6
     t.date     "date"

@@ -10,7 +10,7 @@ class Evapotranspiration < ActiveRecord::Base
       weather.min_temperature,
       weather.avg_temperature,
       weather.vapor_pressure,
-      insolation.insolation,
+      insolation.recording,
       date.yday,
       latitude
     ).first
