@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class EvapotranspirationDatumTest < ActiveSupport::TestCase
+class EvapotranspirationTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

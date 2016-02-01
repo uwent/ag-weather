@@ -11,7 +11,7 @@ class EvapotranspirationImporter
     return unless data_sources_loaded?(date)
 
     WiMn.each_point do |lat, long|
-      EvapotranspirationDatum.new(
+      Evapotranspiration.new(
           latitude: lat,
           longitude: long,
           date: date

@@ -1,4 +1,4 @@
-class EvapotranspirationDatum < ActiveRecord::Base
+class Evapotranspiration < ActiveRecord::Base
   include AgwxBiophys::ET
 
   def calculate_et
@@ -31,6 +31,6 @@ class EvapotranspirationDatum < ActiveRecord::Base
   end
 
   def already_calculated?
-    EvapotranspirationDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+    Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 end

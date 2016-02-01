@@ -1,12 +1,12 @@
 require 'rails_helper'
 
-RSpec.describe EvapotranspirationDatum, type: :model do
-  let(:new_et_point) { FactoryGirl.build(:evapotranspiration_datum) }
+RSpec.describe Evapotranspiration, type: :model do
+  let(:new_et_point) { FactoryGirl.build(:evapotranspiration) }
 
   describe 'already_calculated?' do
     context 'ET point for same lat, long, and date exists' do
       before do
-        FactoryGirl.create(:evapotranspiration_datum)
+        FactoryGirl.create(:evapotranspiration)
       end
 
       it 'is true' do

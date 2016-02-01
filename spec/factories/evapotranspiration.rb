@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :evapotranspiration_datum do
+  factory :evapotranspiration do
     latitude 43.0
     longitude 89.7
     date Date.current
