@@ -6,7 +6,7 @@ class DataImport < ActiveRecord::Base
     Date.current - DAYS_BACK_WINDOW
   end
 
-  def self.days_to_load_for
+  def self.days_to_load
     successful_dates = successful.pluck(:readings_on)
 
     earliest_date.upto(Date.yesterday).reject do |date|

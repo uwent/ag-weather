@@ -1,7 +1,7 @@
 class InsolationImporter
 
   def self.fetch
-    days_to_load = InsolationDataImport.days_to_load_for
+    days_to_load = InsolationDataImport.days_to_load
 
     days_to_load.each do |day|
       InsolationImporter.fetch_day(day)

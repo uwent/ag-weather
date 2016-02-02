@@ -1,6 +1,6 @@
 class EvapotranspirationImporter
   def self.create_et_data
-    days_to_load = EvapotranspirationDataImport.days_to_load_for
+    days_to_load = EvapotranspirationDataImport.days_to_load
 
     days_to_load.each do |day|
       calculate_et_for_date(day)
