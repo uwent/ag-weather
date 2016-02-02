@@ -65,7 +65,7 @@ RSpec.describe Evapotranspiration, type: :model do
         expect(new_et_point.calculate_et).to be_truthy
       end
 
-      it 'saves itself' do
+       it 'is persisted' do
         new_et_point.calculate_et
         expect(new_et_point).to be_persisted
       end
@@ -85,7 +85,7 @@ RSpec.describe Evapotranspiration, type: :model do
         expect(new_et_point.calculate_et).to be_falsey
       end
 
-      it 'does not get saved' do
+      it 'is not persisted' do
         new_et_point.calculate_et
         expect(new_et_point).not_to be_persisted
       end
@@ -100,7 +100,7 @@ RSpec.describe Evapotranspiration, type: :model do
         expect(new_et_point.calculate_et).to be_falsey
       end
 
-      it 'does not get saved' do
+      it 'is not persisted' do
         new_et_point.calculate_et
         expect(new_et_point).not_to be_persisted
       end
