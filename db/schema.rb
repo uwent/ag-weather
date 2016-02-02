@@ -11,20 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160108221253) do
+ActiveRecord::Schema.define(version: 20160202023001) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "data_imports", force: :cascade do |t|
-    t.string   "data_type",   null: false
+    t.string   "type"
     t.date     "readings_on", null: false
     t.string   "status",      null: false
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
   end
 
-  create_table "evapotranspiration_data", force: :cascade do |t|
+  create_table "evapotranspirations", force: :cascade do |t|
     t.decimal  "potential_et"
     t.decimal  "latitude",     precision: 10, scale: 6
     t.decimal  "longitude",    precision: 10, scale: 6
@@ -33,8 +33,8 @@ ActiveRecord::Schema.define(version: 20160108221253) do
     t.datetime "updated_at",                            null: false
   end
 
-  create_table "insolation_data", force: :cascade do |t|
-    t.decimal  "insolation"
+  create_table "insolations", force: :cascade do |t|
+    t.decimal  "recording"
     t.decimal  "latitude",   precision: 10, scale: 6
     t.decimal  "longitude",  precision: 10, scale: 6
     t.date     "date"

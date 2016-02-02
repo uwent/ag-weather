@@ -5,7 +5,7 @@ RSpec.describe InsolationImporter, type: :model do
   describe '.fetch' do
     it 'runs fetch_day for every day returned by DataImport' do
       unloaded_days = [Date.yesterday, Date.today - 3.days]
-      allow(DataImport).to receive(:days_to_load_for).with('insolation')
+      allow(InsolationDataImport).to receive(:days_to_load)
         .and_return(unloaded_days)
 
       expect(InsolationImporter).to receive(:fetch_day).exactly(unloaded_days.count).times
@@ -27,7 +27,7 @@ RSpec.describe InsolationImporter, type: :model do
       end
 
       it 'adds only good insolation data to the DB' do
-        expect{ InsolationImporter.fetch_day(date) }.to change(InsolationDatum, :count).by(2)
+        expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(2)
       end
     end
   end
@@ -43,24 +43,6 @@ RSpec.describe InsolationImporter, type: :model do
       date = Date.new(2016, 6, 6)
 
       expect(InsolationImporter.formatted_date(date)).to eq('2016158')
-    end
-  end
-
-  describe '.inside_wi_mn_box?' do
-    it 'is true for Kenosha, WI' do
-      expect(InsolationImporter.inside_wi_mn_box?(42.5, 87.8)).to be true
-    end
-
-    it 'is true for International Falls, MN' do
-      expect(InsolationImporter.inside_wi_mn_box?(48.6, 93.4)).to be true
-    end
-
-    it 'is false for Winnipeg, CANADA' do
-      expect(InsolationImporter.inside_wi_mn_box?(50.1, 97.2)).to be false
-    end
-
-    it 'is false for Detroit, MI' do
-      expect(InsolationImporter.inside_wi_mn_box?(42.3, 83.1)).to be false
     end
   end
 

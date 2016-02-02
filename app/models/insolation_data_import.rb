@@ -1,0 +1,2 @@
+class InsolationDataImport < DataImport
+end
