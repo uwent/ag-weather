@@ -22,4 +22,5 @@ group :development, :test do
   gem 'webmock'
   gem 'simplecov'
   gem 'factory_girl_rails'
+  gem 'guard-rspec', require: false
 end
