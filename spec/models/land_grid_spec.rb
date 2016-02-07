@@ -70,7 +70,7 @@ RSpec.describe LandGrid  do
     end
 
     it "should give the maximum latitude if passed higher value" do
-      expect(land_grid.closest_latitude(max_lat + 1)).to eq max_lat
+      expect(land_grid.closest_latitude(max_lat + 1)).to eq 9.8
     end
 
     it "should return the closest legal latitude to passed value" do
@@ -161,6 +161,39 @@ RSpec.describe LandGrid  do
 
     it "should indicate a maximum longitude on grid is true" do
       expect(land_grid.include_longitude? 20.0).to be_truthy
+    end
+  end
+
+  context "[]=" do
+    let (:land_grid) { LandGrid.new(15, 20, 15, 20, 0.5)}
+
+    it "should raise error if latitude is not defined in grid" do
+      expect{ land_grid[17.1, 15] = 'foo'}.to raise_error(IndexError)
+    end
+
+    it "should raise error if longitude is not defined in grid" do
+      expect{ land_grid[15.5, 16.99] = 'foo'}.to raise_error(IndexError)
+    end
+
+    it "should store value at proper point" do
+      land_grid[15.5, 15] = 'foo'
+      expect(land_grid[15.5, 15]).to eq 'foo'
+    end
+  end
+
+  context "[]" do
+    let (:land_grid) { LandGrid.new(15, 20, 15, 20, 0.5)}
+
+    it "should raise error if latitude is not defined in grid" do
+      expect{ land_grid[17.1, 15]}.to raise_error(IndexError)
+    end
+
+    it "should raise error if longitude is not defined in grid" do
+      expect{ land_grid[15.5, 16.99]}.to raise_error(IndexError)
+    end
+
+    it "should store value at proper point" do
+      expect(land_grid[15.5, 15]).to be_nil
     end
   end
 
