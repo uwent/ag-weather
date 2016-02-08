@@ -27,7 +27,7 @@ RSpec.describe InsolationImporter, type: :model do
       end
 
       it 'adds only good insolation data to the DB' do
-        expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(2)
+         expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(1)
       end
     end
   end
