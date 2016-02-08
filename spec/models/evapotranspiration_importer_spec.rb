@@ -26,7 +26,7 @@ RSpec.describe EvapotranspirationImporter, type: :model do
 
   describe '.create_et_data' do
     it 'runs calculate_et_for_date for every day returned by DataImport' do
-      unloaded_days = [Date.yesterday, Date.today - 2.days]
+      unloaded_days = [Date.yesterday, Date.current - 2.days]
       expect(EvapotranspirationDataImport).to receive(:days_to_load)
         .and_return(unloaded_days)
 
