@@ -1,16 +1,17 @@
 require 'open3'
-class WeatherDay 
-
+class WeatherHour 
+  NO_VALUE = -9999
+  
   def initialize()
     @data = {
-      pressure: LandGrid.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, 
+      dew_point: LandGrid.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, 
                              WiMn::W_LONG, WiMn::STEP),
       temperature: LandGrid.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, 
                                 WiMn::W_LONG, WiMn::STEP)
     }
     WiMn.each_point do |lat, long| 
       temp_data[lat, long] = []
-      pressure_data[lat, long] = []
+      dew_point_data[lat, long] = []
     end
   end
 
@@ -18,12 +19,12 @@ class WeatherDay
     @data[:temperature]
   end
 
-  def pressure_data
-    @data[:pressure]
+  def dew_point_data
+    @data[:dew_point]
   end
 
   def grid_for_key(data_type)
-    return pressure_data if data_type == 'sp'
+    return dew_point_data if data_type == '2d'
     return temp_data if data_type == '2t'
   end
 
@@ -35,7 +36,7 @@ class WeatherDay
   end
 
   def load_from(filename)
-    cmd = "grib_get_data -w shortName=2t/sp -p shortName #{filename}"
+    cmd = "grib_get_data -w shortName=2t/2d -p shortName #{filename}"
     _, stdout, _ = Open3.popen3(cmd)
     stdout.each do |line| 
       (lat, long, data, type) = line.split
@@ -49,10 +50,12 @@ class WeatherDay
   end
 
   def temperature_at(lat, long)
-    closest(lat, long, temp_data[lat, long])
+    reading = closest(lat, long, temp_data[lat, long])
+    reading ? reading.value : NO_VALUE
   end
 
-  def pressure_at(lat, long)
-    closest(lat, long, pressure_data[lat, long])
+  def dew_point_at(lat, long)
+    reading = closest(lat, long, dew_point_data[lat, long])
+    reading ? reading.value : NO_VALUE
   end
 end

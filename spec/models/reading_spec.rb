@@ -47,4 +47,9 @@ RSpec.describe Reading  do
       expect(reading.distance(10.1, 25.1).round(2)).to eql 15.61
     end
   end
+
+  it "has a to_s defined" do
+    reading = Reading.new(10, 25, 17.9)
+    expect(reading.to_s).to eq '(10, 25): 17.9'
+  end
 end

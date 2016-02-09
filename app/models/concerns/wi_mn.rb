@@ -7,7 +7,7 @@ module WiMn
   STEP   = 0.1
 
   def self.inside_wi_mn_box?(lat, long)
-    (lat > S_LAT && lat < N_LAT) && (long > E_LONG && long < W_LONG)
+    (lat >= S_LAT && lat <= N_LAT) && (long >= E_LONG && long <= W_LONG)
   end
 
   def self.latitudes
