@@ -5,9 +5,9 @@ RSpec.describe WeatherHour do
   let (:dew_point_key) { '2d' }
   let (:weather_hour) { WeatherHour.new }
   
-  # it 'has the grib tools available' do
-  #   expect(system('grib_info')).to be(true)
-  # end
+  it 'has the grib tools available' do
+    expect(system('grib_info')).to be(true)
+  end
   
   context "initialization" do
     it "can be created" do
