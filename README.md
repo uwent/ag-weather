@@ -20,7 +20,7 @@ bundle exec rake db:create db:migrate
 
 * Start server
 ```
-rails s
+bundle exec rails s
 ```
 
 
