@@ -5,10 +5,9 @@ RSpec.describe WeatherHour do
   let (:dew_point_key) { '2d' }
   let (:weather_hour) { WeatherHour.new }
   
-
-  it 'has the grib tools available' do
-    expect(system('grib_info')).to be(true)
-  end
+  # it 'has the grib tools available' do
+  #   expect(system('grib_info')).to be(true)
+  # end
   
   context "initialization" do
     it "can be created" do
@@ -81,7 +80,7 @@ RSpec.describe WeatherHour do
 
   context "temperature_at" do
     it "should return no value if no temperature stored at lat, long" do
-      expect(weather_hour.temperature_at(WiMn::N_LAT, WiMn::E_LONG)).to eql WeatherHour::NO_VALUE
+      expect(weather_hour.temperature_at(WiMn::N_LAT, WiMn::E_LONG)).to be_nil
     end
     
     it "should return temperature at closest lat, long " do
@@ -95,7 +94,7 @@ RSpec.describe WeatherHour do
 
   context "dew_point_at" do
     it "should return no value if no dew point stored at lat, long" do
-      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::E_LONG)).to eql WeatherHour::NO_VALUE
+      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::E_LONG)).to be_nil
     end
 
     it "should return dew_point at closest lat, long " do

@@ -1,7 +1,5 @@
 require 'open3'
 class WeatherHour 
-  NO_VALUE = -9999
-  
   def initialize()
     @data = {
       dew_point: LandGrid.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, 
@@ -51,11 +49,11 @@ class WeatherHour
 
   def temperature_at(lat, long)
     reading = closest(lat, long, temp_data[lat, long])
-    reading ? reading.value : NO_VALUE
+    reading && reading.value
   end
 
   def dew_point_at(lat, long)
     reading = closest(lat, long, dew_point_data[lat, long])
-    reading ? reading.value : NO_VALUE
+    reading && reading.value
   end
 end
