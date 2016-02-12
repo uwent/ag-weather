@@ -1,5 +1,5 @@
 # Agricultural Weather API 
-[[Circle CI](url)](https://circleci.com/gh/adorableio/ag-weather)
+[![Circle CI](https://circleci.com/gh/adorableio/ag-weather.svg?style=svg)](https://circleci.com/gh/adorableio/ag-weather)
 
 ## Description
 This project is to support the UW-Extension's Agricultural Weather Service.  Included are the tools to load weather and insolation data from remote sources, calculate and store daily evapotranspiration data, calculate multiple formulas of degreee days, generate and save state-wide maps to display this data, and provide access to all of this information through public endpoints.
