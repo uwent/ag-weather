@@ -1,4 +1,5 @@
 class WeatherDay 
+  attr_accessor :date
 
   def initialize(date)
     @date = date
@@ -13,7 +14,8 @@ class WeatherDay
   end
 
   def load_from(dirname)
-    Dir["dirname/*.grb2"].each do |filename|
+    Dir["#{dirname}/*.grb2"].each do |filename|
+      Rails.logger.info("WeatherDay :: Loading #{filename}")
       wh = WeatherHour.new()
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
