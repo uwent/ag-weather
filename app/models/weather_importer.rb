@@ -33,4 +33,41 @@ class WeatherImporter
       client.get(filename, "#{local_dir(date)}/#{date}.#{filename}" )
     end
   end
+
+  def self.load_database_for(date)
+    weather_day = WeatherDay.new(date)
+    weather_day.load_from(local_dir(date))
+    persist_day_to_db(weather_day)
+  end
+
+  def self.persist_day_to_db(weather_day)
+    WiMn.each_point do |lat, long|
+      temperatures = weather_day.temperatures_at(lat, long) || next
+      dew_points = weather_day.dew_points_at(lat, long) || next
+
+      WeatherDatum.create(
+        latitude: lat,
+        longitude: long,
+        date: weather_day.date,
+        max_temperature: K_to_C(temperatures.max),
+        min_temperature: K_to_C(temperatures.min),
+        avg_temperature: K_to_C(weather_average(temperatures)),
+        vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)))
+    end
+  end
+
+  def self.K_to_C(kelvin)
+    kelvin - 273.15
+  end
+
+  def self.dew_point_to_vapor_pressure(dew_point)
+    # units in: dew point in K
+    vapor_p_mb = 6.105 * Math.exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / dew_point)))
+    vapor_p_mb / 10
+  end
+
+  def self.weather_average(array)
+    return 0.0 if array.empty?
+    (array.max + array.min) / 2
+  end
 end
