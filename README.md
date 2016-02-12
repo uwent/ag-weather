@@ -36,6 +36,7 @@ Early every morning we will run a sequence of steps:
 ## Endpoints
 
 ### Insolation
+The following is a summary of this project's API. For full documentation, see [our API Blueprint](apiary.apib).
 
 #### - Show
     GET /insolations/:date
