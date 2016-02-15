@@ -2,11 +2,11 @@ require 'rails_helper'
 require 'net/ftp'
 
 RSpec.describe WeatherImporter, type: :model do
-  let (:today) { Date.current}
+  let (:today) { Date.new(2016, 2, 1) }
 
   describe '.remote_dir' do
     it "should get the proper remote directory given a date" do
-      expect(WeatherImporter.remote_dir(Date.current)).to eql "pub/data/nccf/com/urma/prod/urma2p5.#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.remote_dir(today)).to eql "/pub/data/nccf/com/urma/prod/urma2p5.#{today.strftime('%Y%m%d')}"
     end
   end
 
@@ -18,8 +18,7 @@ RSpec.describe WeatherImporter, type: :model do
 
     it "should create local directories if they don't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkpath).with("#{WeatherImporter::LOCAL_BASE_DIR}/gribdata").once
-      expect(FileUtils).to receive(:mkpath).with("#{WeatherImporter::LOCAL_BASE_DIR}/gribdata/#{today.strftime('%Y%m%d')}").once
+      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/gribdata/#{today.strftime('%Y%m%d')}").once
       WeatherImporter.local_dir(today)
     end
   end
@@ -39,20 +38,24 @@ RSpec.describe WeatherImporter, type: :model do
         expect(Net::FTP).to receive(:new).with('ftp.ncep.noaa.gov').and_return(ftp_client_mock)
         WeatherImporter.connect_to_server
       end
-      
+
       it "should set the connection to passive" do
         expect(ftp_client_mock).to receive(:passive=).with(true)
         WeatherImporter.connect_to_server
       end
-      
+
       it "should return the ftp client" do
         expect(WeatherImporter.connect_to_server).to be ftp_client_mock
       end
     end
 
     describe "get the files from the FTP server" do
-      it 'should change to the appropriate directory on the remote server' do
-        expect(ftp_client_mock).to receive(:chdir)
+      before do
+        allow(FileUtils).to receive(:mv)
+      end
+      it 'should change to the appropriate directories on the remote server' do
+        expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
+        expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
         WeatherImporter.fetch_files(today)
       end
 
@@ -62,7 +65,7 @@ RSpec.describe WeatherImporter, type: :model do
       end
     end
   end
-  
+
   describe "load the database for a date" do
     let(:weather_day) { instance_double("WeatherDay") }
     before do
@@ -72,7 +75,7 @@ RSpec.describe WeatherImporter, type: :model do
       allow(weather_day).to receive(:dew_points_at)
       allow(weather_day).to receive(:date)
     end
-    
+
     it "should load a WeatherDay" do
       expect(WeatherDay).to receive(:new).with(today).and_return(weather_day)
       WeatherImporter.load_database_for(today)
@@ -97,6 +100,20 @@ RSpec.describe WeatherImporter, type: :model do
     end
     it "should return 0 for an empty array" do
       expect(WeatherImporter.weather_average([])).to eql 0.0
+    end
+  end
+
+  describe 'central time' do
+    it 'should return a time for a given date and hour in Central Time' do
+      expect(WeatherImporter.central_time(today, 0).zone).to eq 'CST'
+    end
+
+    it 'should set the hour as given' do
+      expect(WeatherImporter.central_time(today, 0).hour).to eq 0
+    end
+
+    it 'should set the date as given' do
+      expect(WeatherImporter.central_time(today, 0).to_date).to eq today
     end
   end
 

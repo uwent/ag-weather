@@ -1,5 +1,5 @@
 class WeatherImporter
-  REMOTE_BASE_DIR = "pub/data/nccf/com/urma/prod"
+  REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
 
   def self.remote_dir(date)
@@ -7,10 +7,8 @@ class WeatherImporter
   end
 
   def self.local_dir(date)
-    gribdir = "#{LOCAL_BASE_DIR}/gribdata"
-    FileUtils.mkpath(gribdir) unless Dir.exists?(gribdir)
-    savedir = "#{gribdir}/#{date.strftime('%Y%m%d')}"
-    FileUtils.mkpath(savedir) unless Dir.exists?(savedir)
+    savedir = "#{LOCAL_BASE_DIR}/gribdata/#{date.strftime('%Y%m%d')}"
+    FileUtils.mkdir_p(savedir)
     savedir
   end
 
@@ -27,10 +25,19 @@ class WeatherImporter
 
   def self.fetch_files(date)
     client = connect_to_server
-    client.chdir(remote_dir(date))
-    0.upto(23) do |hour|
-      filename = remote_file_name(hour)
-      client.get(filename, "#{local_dir(date)}/#{date}.#{filename}" )
+
+    start = central_time(date, 0)
+    last = central_time(date, 23)
+
+    (start.to_i..last.to_i).step(1.hour) do |time_in_sec|
+      time = Time.at(time_in_sec).utc
+      client.chdir(remote_dir(time.to_date))
+      filename = remote_file_name(time.hour)
+      local_file = "#{local_dir(date)}/#{date}.#{filename}"
+      unless File.exist?(local_file)
+        client.get(filename, "#{local_file}_part")
+        FileUtils.mv("#{local_file}_part", local_file)
+      end
     end
   end
 
@@ -69,5 +76,11 @@ class WeatherImporter
   def self.weather_average(array)
     return 0.0 if array.empty?
     (array.max + array.min) / 2
+  end
+
+  def self.central_time(date, hour)
+    Time.use_zone("Central Time (US & Canada)") do
+      Time.zone.local(date.year, date.month, date.day, hour)
+    end
   end
 end
