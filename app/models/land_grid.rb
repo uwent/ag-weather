@@ -1,11 +1,8 @@
 class LandGrid
-#  attr_accessor :min_latitude, :max_latitude
-#  attr_accessor :min_longitude, :max_longitude
-#  attr_accessor :step
   EPSILON = 0.000001
 
   def self.number_of_points(min, max, step)
-    1 + ((max - min)/step).round(6).floor
+    1 + ((max - min) / step).round(6).floor
   end
 
   def initialize(min_lat, max_lat, min_long, max_long, step)
@@ -29,14 +26,14 @@ class LandGrid
   def closest_latitude(lat)
     return @min_latitude if lat < @min_latitude
     return latitude_at_index(latitude_points - 1) if lat > @max_latitude
-    closest_index = ((lat - @min_latitude)/@step).round
+    closest_index = ((lat - @min_latitude) / @step).round
     return latitude_at_index(closest_index)
   end
 
   def closest_longitude(long)
     return @min_longitude if long < @min_longitude
-    return longitude_at_index(longitude_points-1) if long > @max_longitude
-    closest_index = ((long - @min_longitude)/@step).round
+    return longitude_at_index(longitude_points - 1) if long > @max_longitude
+    closest_index = ((long - @min_longitude) / @step).round
     return longitude_at_index(closest_index)
   end
 
@@ -52,23 +49,23 @@ class LandGrid
     return (idx * @step + @min_longitude).round(6)
   end
 
-  def include_latitude?(lat)
+  def includes_latitude?(lat)
     (closest_latitude(lat) - lat).abs < EPSILON
   end
 
-  def include_longitude?(long)
+  def includes_longitude?(long)
     (closest_longitude(long) - long).abs < EPSILON
   end
 
   def [](lat, long)
-    raise IndexError, "latitude [#{lat}] not defined in grid" unless include_latitude?(lat)
-    raise IndexError, "longitude [#{long}] not defined in grid" unless include_longitude?(long)
+    raise IndexError, "latitude [#{lat}] not defined in grid" unless includes_latitude?(lat)
+    raise IndexError, "longitude [#{long}] not defined in grid" unless includes_longitude?(long)
     @data[index_for_latitude(lat)][index_for_longitude(long)]
   end
 
   def []=(lat, long, value)
-    raise IndexError, "latitude [#{lat}] not defined in grid" unless include_latitude?(lat)
-    raise IndexError, "longitude [#{long}] not defined in grid" unless include_longitude?(long)
+    raise IndexError, "latitude [#{lat}] not defined in grid" unless includes_latitude?(lat)
+    raise IndexError, "longitude [#{long}] not defined in grid" unless includes_longitude?(long)
     @data[index_for_latitude(lat)][index_for_longitude(long)] = value
   end
 

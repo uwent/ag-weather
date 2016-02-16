@@ -120,47 +120,47 @@ RSpec.describe LandGrid  do
     end
   end
 
-  context "include_latitude?" do
+  context "includes_latitude?" do
     let (:land_grid) { LandGrid.new(15, 20, 15, 20, 0.15)}
 
     it "should indicate a latitude in range but not on the grid" do
-      expect(land_grid.include_latitude?(15.2)).to be_falsey
+      expect(land_grid.includes_latitude?(15.2)).to be_falsey
     end
 
     it "should indicate a latitude lower than min is not on grid" do
-      expect(land_grid.include_latitude?(14.85)).to be_falsey
+      expect(land_grid.includes_latitude?(14.85)).to be_falsey
     end
 
     it "should indicate a latitude higher than max is not on grid" do
-      expect(land_grid.include_latitude?(20.15)).to be_falsey
+      expect(land_grid.includes_latitude?(20.15)).to be_falsey
     end
 
     it "should indicate a actual latitude on grid is true" do
-      expect(land_grid.include_latitude?(15.90)).to be_truthy
+      expect(land_grid.includes_latitude?(15.90)).to be_truthy
     end
   end
 
-  context "include_longitude?" do
+  context "includes_longitude?" do
     let (:land_grid) { LandGrid.new(15, 20, 15, 20, 0.5)}
 
     it "should indicate a longitude in range but not on the grid" do
-      expect(land_grid.include_longitude? 15.49).to be_falsey
+      expect(land_grid.includes_longitude? 15.49).to be_falsey
     end
 
     it "should indicate a longitude lower than min is not on grid" do
-      expect(land_grid.include_longitude? 14.5).to be_falsey
+      expect(land_grid.includes_longitude? 14.5).to be_falsey
     end
 
     it "should indicate a longitude higher than max is not on grid" do
-      expect(land_grid.include_longitude? 20.5).to be_falsey
+      expect(land_grid.includes_longitude? 20.5).to be_falsey
     end
 
     it "should indicate a minimum longitude on grid is true" do
-      expect(land_grid.include_longitude? 15.0).to be_truthy
+      expect(land_grid.includes_longitude? 15.0).to be_truthy
     end
 
     it "should indicate a maximum longitude on grid is true" do
-      expect(land_grid.include_longitude? 20.0).to be_truthy
+      expect(land_grid.includes_longitude? 20.0).to be_truthy
     end
   end
 
