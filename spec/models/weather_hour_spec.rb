@@ -4,47 +4,39 @@ RSpec.describe WeatherHour do
   let (:temp_key) { '2t' }
   let (:dew_point_key) { '2d' }
   let (:weather_hour) { WeatherHour.new }
-  
+
   it 'has the grib tools available' do
-    expect(system('grib_info')).to be(true)
+    expect(system('grib_info > /dev/null')).to be(true)
   end
-  
+
   context "initialization" do
     it "can be created" do
       expect(weather_hour).to_not be_nil
     end
-
-    it "has temperature data" do
-      expect(weather_hour.temp_data).to be_a_kind_of(LandGrid)
-    end
-
-    it "has dew point data" do
-      expect(weather_hour.dew_point_data).to be_a_kind_of(LandGrid)
-    end
   end
 
-  context "grid for key" do
+  context "data key" do
     it "maps '2d' from grib file to dew_point_data" do
-      expect(weather_hour.grid_for_key(dew_point_key)).to eq weather_hour.dew_point_data
+      expect(weather_hour.data_key(dew_point_key)).to eq :dew_points
     end
-    it "maps '2t' from grib file to dew_point_data" do
-      expect(weather_hour.grid_for_key(temp_key)).to eq weather_hour.temp_data
+    it "maps '2t' from grib file to temperature_data" do
+      expect(weather_hour.data_key(temp_key)).to eq :temperatures
     end
   end
 
   context "store" do
-    it "should add an element to the temperature land grid" do
-      expect { 
-        weather_hour.store(temp_key, WiMn::N_LAT, WiMn::E_LONG, 17) 
-      }.to change { 
-        weather_hour.temp_data[WiMn::N_LAT, WiMn::E_LONG].length 
+    it "should add an element to the temperatures" do
+      expect {
+        weather_hour.store(temp_key, WiMn::N_LAT, WiMn::E_LONG, 17)
+      }.to change {
+        weather_hour.data[WiMn::N_LAT, WiMn::E_LONG][:temperatures].length
       }.by(1)
     end
-    it "should add an element to the dew point land grid" do
-      expect { 
-        weather_hour.store(dew_point_key, WiMn::S_LAT, WiMn::W_LONG, 17) 
-      }.to change { 
-        weather_hour.dew_point_data[WiMn::S_LAT, WiMn::W_LONG].length 
+    it "should add an element to the dew points" do
+      expect {
+        weather_hour.store(dew_point_key, WiMn::S_LAT, WiMn::W_LONG, 17)
+      }.to change {
+        weather_hour.data[WiMn::S_LAT, WiMn::W_LONG][:dew_points].length
       }.by(1)
     end
   end
@@ -82,11 +74,11 @@ RSpec.describe WeatherHour do
     it "should return no value if no temperature stored at lat, long" do
       expect(weather_hour.temperature_at(WiMn::N_LAT, WiMn::E_LONG)).to be_nil
     end
-    
+
     it "should return temperature at closest lat, long " do
-      weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG, 1) 
-      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.05, 2) 
-      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.01, 3) 
+      weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG, 1)
+      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.05, 2)
+      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.01, 3)
       weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG + 0.05, 4)
       expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::W_LONG)).to eql 3
     end
@@ -98,12 +90,10 @@ RSpec.describe WeatherHour do
     end
 
     it "should return dew_point at closest lat, long " do
-      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.05, WiMn::W_LONG, 1) 
-      weather_hour.store(dew_point_key, WiMn::N_LAT, WiMn::W_LONG - 0.04, 2) 
-      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.01, WiMn::W_LONG - 0.01, 3) 
+      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.05, WiMn::W_LONG, 1)
+      weather_hour.store(dew_point_key, WiMn::N_LAT, WiMn::W_LONG - 0.04, 2)
+      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.01, WiMn::W_LONG - 0.01, 3)
       expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::W_LONG)).to eql 3
     end
   end
 end
-
-

@@ -12,7 +12,7 @@ RSpec.describe WeatherDay do
   end
 
   context "load from files" do
-    it "should load whether hour for each file in passed directory" do
+    it "should load weather hour for each file in passed directory" do
       allow(Dir).to receive(:[]).and_return(["foo/a.grb2", "foo/b.grb2"])
                                              
       expect(weather_day).to receive(:add_data_from_weather_hour).twice
