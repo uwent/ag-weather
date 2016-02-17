@@ -11,6 +11,7 @@ gem 'turbolinks'
 gem 'uglifier', '>= 1.3.0'
 gem 'httparty'
 gem 'agwx_biophys'
+gem 'activerecord-import'
 
 group :development, :test do
   gem 'byebug'
