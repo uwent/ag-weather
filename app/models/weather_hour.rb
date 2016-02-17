@@ -20,8 +20,7 @@ class WeatherHour
 
   def store(data_type, lat, long, value)
     key = data_key(data_type)
-    closest_lat = @data.closest_latitude(lat)
-    closest_long = @data.closest_longitude(long)
+    closest_lat, closest_long = @data.closest_point(lat, long)
     @data[closest_lat, closest_long][key] << Reading.new(lat, long, value)
   end
 
