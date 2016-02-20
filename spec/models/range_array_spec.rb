@@ -52,9 +52,9 @@ RSpec.describe RangeArray  do
     end
 
     it "will find the actual point value for index in range" do
-      expect(ra.point_at_index(0)).to eql 0.0
-      expect(ra.point_at_index(5)).to eql 2.5
-      expect(ra.point_at_index(20)).to eql 10.0
+      expect(ra.point_at_index(0)).to eq 0.0
+      expect(ra.point_at_index(5)).to eq 2.5
+      expect(ra.point_at_index(20)).to eq 10.0
     end
   end
 

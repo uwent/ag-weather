@@ -13,30 +13,30 @@ RSpec.describe Reading  do
     let (:reading) { Reading.new(50, 45, 17.0) }
     
     it 'can read latitude' do
-      expect(reading.latitude).to eql 50
+      expect(reading.latitude).to eq 50
     end
 
     it 'can write latitude' do
       reading.latitude = 20
-      expect(reading.latitude).to eql 20
+      expect(reading.latitude).to eq 20
     end
 
     it 'can read longitude' do
-      expect(reading.longitude).to eql 45
+      expect(reading.longitude).to eq 45
     end
 
     it 'can write longitude' do
       reading.longitude = 15
-      expect(reading.longitude).to eql 15
+      expect(reading.longitude).to eq 15
     end
 
     it 'can read value' do
-      expect(reading.value).to eql 17.0
+      expect(reading.value).to eq 17.0
     end
 
     it 'can write value' do
       reading.value = 34.5
-      expect(reading.value).to eql 34.5
+      expect(reading.value).to eq 34.5
     end
   end
 
@@ -44,7 +44,7 @@ RSpec.describe Reading  do
     let (:reading) { Reading.new(10, 25, 17.9) }
 
     it 'can compute the distance in km from another point' do
-      expect(reading.distance(10.1, 25.1).round(2)).to eql 15.61
+      expect(reading.distance(10.1, 25.1).round(2)).to eq 15.61
     end
   end
 

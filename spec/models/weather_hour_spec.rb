@@ -50,7 +50,7 @@ RSpec.describe WeatherHour do
     it 'should read data in range from popen3' do
       expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{WiMn::S_LAT} #{360.0 - WiMn::E_LONG} 17.0 2t"], []])
       weather_hour.load_from('file.name')
-      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::E_LONG)).to eql 17.0
+      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::E_LONG)).to eq 17.0
     end
   end
 
@@ -62,7 +62,7 @@ RSpec.describe WeatherHour do
                    Reading.new(16.5, 17.0, 19),
                    Reading.new(17.2, 17.2, 20)
                  ]
-      expect(weather_hour.closest(17.0, 17.0, readings)).to eql readings[1]
+      expect(weather_hour.closest(17.0, 17.0, readings)).to eq readings[1]
     end
 
     it "should return null if given empty array" do
@@ -80,7 +80,7 @@ RSpec.describe WeatherHour do
       weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.05, 2)
       weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.01, 3)
       weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG + 0.05, 4)
-      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::W_LONG)).to eql 3
+      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::W_LONG)).to eq 3
     end
   end
 
@@ -93,7 +93,7 @@ RSpec.describe WeatherHour do
       weather_hour.store(dew_point_key, WiMn::N_LAT + 0.05, WiMn::W_LONG, 1)
       weather_hour.store(dew_point_key, WiMn::N_LAT, WiMn::W_LONG - 0.04, 2)
       weather_hour.store(dew_point_key, WiMn::N_LAT + 0.01, WiMn::W_LONG - 0.01, 3)
-      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::W_LONG)).to eql 3
+      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::W_LONG)).to eq 3
     end
   end
 end

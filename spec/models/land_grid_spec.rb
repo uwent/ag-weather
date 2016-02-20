@@ -37,7 +37,7 @@ RSpec.describe LandGrid  do
     let(:land_grid) { LandGrid.new(min_lat, max_lat, min_long, max_long, step) }
 
     it "should find a point passed in if coincides with a defined point" do
-      expect(land_grid.closest_point(11, 4)).to eql [11.0, 4.0]
+      expect(land_grid.closest_point(11, 4)).to eq [11.0, 4.0]
     end
 
     it "should give the minimum latitude if passed lower value" do

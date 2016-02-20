@@ -6,14 +6,14 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe '.remote_dir' do
     it "should get the proper remote directory given a date" do
-      expect(WeatherImporter.remote_dir(today)).to eql "/pub/data/nccf/com/urma/prod/urma2p5.#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.remote_dir(today)).to eq "/pub/data/nccf/com/urma/prod/urma2p5.#{today.strftime('%Y%m%d')}"
     end
   end
 
   describe ".local_dir" do
     let (:today) { Date.current }
     it "should return the local directory to store the weather files" do
-      expect(WeatherImporter.local_dir(today)).to eql "/tmp/gribdata/#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.local_dir(today)).to eq "/tmp/gribdata/#{today.strftime('%Y%m%d')}"
     end
 
     it "should create local directories if they don't exist" do
@@ -96,10 +96,10 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe '.weather_average' do
     it "should return the 'average' (sum of low and high/2) of an array" do
-      expect(WeatherImporter.weather_average([0.0, 1.0, 5.0, 10.0])).to eql 5.0
+      expect(WeatherImporter.weather_average([0.0, 1.0, 5.0, 10.0])).to eq 5.0
     end
     it "should return 0 for an empty array" do
-      expect(WeatherImporter.weather_average([])).to eql 0.0
+      expect(WeatherImporter.weather_average([])).to eq 0.0
     end
   end
 
