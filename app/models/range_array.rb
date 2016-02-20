@@ -23,8 +23,7 @@ class RangeArray
   def closest_point(point)
     return @range.min if point < @range.min
     return point_at_index(number_of_points - 1) if point > @range.max
-    closest_index = ((point - @range.min) / @step).round
-    return point_at_index(closest_index)
+    return point_at_index(closest_index(point))
   end
 
   def includes_point?(point)
@@ -33,7 +32,7 @@ class RangeArray
 
   def index_for_point(point)
     raise IndexError, "point [#{point}] not defined in RangeArray" unless (includes_point? point)
-    ((point - @range.min) / @step).round
+    closest_index(point)
   end
 
   def [](point)
@@ -43,4 +42,9 @@ class RangeArray
   def []=(point, value)
     @data[index_for_point(point)] = value
   end
+
+  private 
+    def closest_index(point)
+      ((point - @range.min) / @step).round
+    end
 end
