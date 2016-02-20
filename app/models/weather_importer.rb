@@ -62,7 +62,7 @@ class WeatherImporter
                       avg_temperature: K_to_C(weather_average(temperatures)),
                       vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)))
     end
-    WeatherDatum.import weather_data
+    WeatherDatum.import(weather_data, validate: false)
   end
 
   def self.K_to_C(kelvin)
