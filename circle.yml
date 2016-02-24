@@ -5,6 +5,7 @@ machine:
 dependencies:
   pre:
     - npm install -g dredd
+    - sudo apt-get install libgrib-api-tools
 
 test:
   post:

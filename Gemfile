@@ -11,6 +11,7 @@ gem 'turbolinks'
 gem 'uglifier', '>= 1.3.0'
 gem 'httparty'
 gem 'agwx_biophys'
+gem 'activerecord-import'
 
 group :development, :test do
   gem 'byebug'
@@ -22,4 +23,5 @@ group :development, :test do
   gem 'webmock'
   gem 'simplecov'
   gem 'factory_girl_rails'
+  gem 'guard-rspec', require: false
 end

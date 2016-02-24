@@ -4,7 +4,7 @@ RSpec.describe InsolationImporter, type: :model do
 
   describe '.fetch' do
     it 'runs fetch_day for every day returned by DataImport' do
-      unloaded_days = [Date.yesterday, Date.today - 3.days]
+      unloaded_days = [Date.yesterday, Date.current - 3.days]
       allow(InsolationDataImport).to receive(:days_to_load)
         .and_return(unloaded_days)
 
@@ -15,7 +15,7 @@ RSpec.describe InsolationImporter, type: :model do
   end
 
   describe '.fetch_day' do
-    let(:date) { Date.today }
+    let(:date) { Date.current }
 
     context 'when valid data is found' do
       before do
@@ -27,7 +27,7 @@ RSpec.describe InsolationImporter, type: :model do
       end
 
       it 'adds only good insolation data to the DB' do
-        expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(2)
+         expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(2)
       end
     end
   end
