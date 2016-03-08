@@ -28,6 +28,7 @@ class DegreeDaysCalculator
     average_degree_days(min, max, base)
   end
 
+  # Reference: http://libcatalog.cimmyt.org/download/reprints/97465.pdf
   def self.sine_degree_days(min, max, base = DEFAULT_BASE,
                             upper = DEFAULT_UPPER)
 

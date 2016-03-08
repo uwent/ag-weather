@@ -25,32 +25,32 @@ RSpec.describe DegreeDaysCalculator, type: :model do
   end
 
   it 'should calculate modified degree days' do
-    # min < max < base < high
+    # min < max < base < upper
     expect(DegreeDaysCalculator.modified_degree_days(30, 39, 40, 90)).to eq 0.0
-    # min <  base < max < high
+    # min <  base < max < upper
     expect(DegreeDaysCalculator.modified_degree_days(30, 45, 40, 90)).to eq 2.5
-    # min <  base < high < max
+    # min <  base < upper < max
     expect(DegreeDaysCalculator.modified_degree_days(38, 100, 40, 90)).to eq 25.0
-    # base < min < max < high
+    # base < min < max < upper
     expect(DegreeDaysCalculator.modified_degree_days(47, 80, 40, 90)).to eq 23.5
-    # base < min < high < max
+    # base < min < upper < max
     expect(DegreeDaysCalculator.modified_degree_days(63, 95, 40, 90)).to eq 36.5
-    # base < high < min < max
+    # base < upper < min < max
     expect(DegreeDaysCalculator.modified_degree_days(90, 95, 40, 80)).to eq 40.0
   end
 
   it 'should calculate sine degree days' do
-    # min < max < base < high
+    # min < max < base < upper
     expect(DegreeDaysCalculator.sine_degree_days(30, 39, 40, 90)).to eq 0.0
-    # min <  base < max < high
+    # min <  base < max < upper
     expect(DegreeDaysCalculator.sine_degree_days(30, 45, 40, 90)).to be_within(EPSILON).of(1.2712244)
-    # min <  base < high < max
+    # min <  base < upper < max
     expect(DegreeDaysCalculator.sine_degree_days(38, 100, 40, 90)).to be_within(EPSILON).of(27.419432)
-    # base < min < max < high
+    # base < min < max < upper
     expect(DegreeDaysCalculator.sine_degree_days(47, 80, 40, 90)).to eq 23.5
-    # base < min < high < max
+    # base < min < upper < max
     expect(DegreeDaysCalculator.sine_degree_days(63, 95, 40, 90)).to be_within(EPSILON).of(38.1473627)
-    # base < high < min < max
+    # base < upper < min < max
     expect(DegreeDaysCalculator.sine_degree_days(90, 95, 40, 80)).to eq 40.0
   end
 end
