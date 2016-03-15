@@ -1,19 +1,15 @@
 class Evapotranspiration < ActiveRecord::Base
-  include AgwxBiophys::ET
 
   def calculate_et
     return false unless has_required_data?
     return self if already_calculated?
 
-    potential_et = et(
-      weather.max_temperature,
-      weather.min_temperature,
-      weather.avg_temperature,
+    potential_et = EvapotranspirationCalculator.et(                                 (weather.max_temperature + weather.min_temperature) / 2.0,
       weather.vapor_pressure,
       insolation.recording,
       date.yday,
       latitude
-    ).first
+    )
 
     update_attributes!(potential_et: potential_et)
   end
