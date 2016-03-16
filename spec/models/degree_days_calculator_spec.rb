@@ -10,10 +10,10 @@ RSpec.describe DegreeDaysCalculator, type: :model do
     expect(DegreeDaysCalculator.to_fahrenheit(100)).to eq 212
   end
 
-  it 'should convert fahrenheit to celciust' do
+  it 'should convert fahrenheit to celcius' do
     expect(DegreeDaysCalculator.to_celcius(-40)).to eq(-40)
     expect(DegreeDaysCalculator.to_celcius(32)).to eq 0
-    expect(DegreeDaysCalculator.to_celcius(73.94)).to be_within(0.00001).of 23.3
+    expect(DegreeDaysCalculator.to_celcius(73.94)).to be_within(EPSILON).of 23.3
     expect(DegreeDaysCalculator.to_celcius(212)).to eq 100
   end
 
