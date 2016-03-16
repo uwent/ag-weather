@@ -41,22 +41,28 @@ class DegreeDaysCalculator
     alpha = (max - min) / 2.0
     # max is between base and upper, min is less than base
     if (max <= upper && min < base)
-      o1 = Math.asin((base - average) / alpha)
-      return INVERSE_PI * ((average - base) * (Math::PI / 2 - o1) +
-                           alpha * Math.cos(o1))
+      time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
+      return INVERSE_PI *
+        ((average - base) *  (Math::PI / 2 - time_of_base_threshold_in_radians) +
+         alpha * Math.cos(time_of_base_threshold_in_radians))
     # max is greater than upper and min is between base and upper
     elsif (max > upper && min >= base)
-      o2 = Math.asin((upper - average) / alpha)
-      return INVERSE_PI * ((average - base) * (o2 + Math::PI/2) +
-                           (upper - base) * (Math::PI / 2 - o2) -
-                           alpha * Math.cos(o2))
+      time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
+      return INVERSE_PI * ((average - base) *
+                           (time_of_upper_threshold_in_radians + Math::PI/2) +
+                           (upper - base) *
+                           (Math::PI / 2 - time_of_upper_threshold_in_radians) -
+                           alpha * Math.cos(time_of_upper_threshold_in_radians))
     # max is greater than upper and min is less than base
     elsif (max > upper && min < base)
-      o1 = Math.asin((base - average) / alpha)
-      o2 = Math.asin((upper - average) / alpha)
-      return INVERSE_PI * ((average - base) * (o2 - o1) +
-                           alpha * (Math.cos(o1) - Math.cos(o2)) +
-                           (upper - base) * (Math::PI / 2 - o2))
+      time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
+      time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
+      return INVERSE_PI *
+        ((average - base) *
+         (time_of_upper_threshold_in_radians - time_of_base_threshold_in_radians) +
+         alpha * (Math.cos(time_of_base_threshold_in_radians) -
+                  Math.cos(time_of_upper_threshold_in_radians)) +
+         (upper - base) * (Math::PI / 2 - time_of_upper_threshold_in_radians))
     end
   end
 end
