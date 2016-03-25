@@ -1,5 +1,7 @@
 require "rails_helper"
 
+# All resultant numbers have been pulled from UC-Davis degree calculator:
+# http://www.ipm.ucdavis.edu/WEATHER/index.html
 RSpec.describe DegreeDaysCalculator, type: :model do
   EPSILON = 0.000001
 
