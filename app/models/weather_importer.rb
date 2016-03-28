@@ -1,3 +1,4 @@
+require 'net/ftp'
 class WeatherImporter
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
@@ -8,7 +9,7 @@ class WeatherImporter
     days_to_load.each do |day|
       self.fetch_files(day)
       self.load_database_for(day)
-      FileUtils.rm_r self.local_dir(date)
+      FileUtils.rm_r self.local_dir(day)
     end
   end
 
