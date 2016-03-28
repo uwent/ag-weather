@@ -2,6 +2,16 @@ class WeatherImporter
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
 
+  def self.fetch
+    days_to_load = WeatherDataImport.days_to_load
+
+    days_to_load.each do |day|
+      self.fetch_files(day)
+      self.load_database_for(day)
+      FileUtils.rm_r self.local_dir(date)
+    end
+  end
+
   def self.remote_dir(date)
     "#{REMOTE_BASE_DIR}/urma2p5.#{date.strftime('%Y%m%d')}"
   end
@@ -45,6 +55,7 @@ class WeatherImporter
     weather_day = WeatherDay.new(date)
     weather_day.load_from(local_dir(date))
     persist_day_to_db(weather_day)
+    WeatherDataImport.create_successful_load(date)
   end
 
   def self.persist_day_to_db(weather_day)
