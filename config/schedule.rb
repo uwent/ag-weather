@@ -20,6 +20,6 @@
 # Learn more: http://github.com/javan/whenever
 
 every :day, at: '4am' do
-  runner InsolationImporter.fetch
-  runner WeatherImporter.fetch
+  runner "InsolationImporter.fetch"
+  runner "WeatherImporter.fetch"
 end

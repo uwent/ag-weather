@@ -1,11 +1,14 @@
 # config valid only for current version of Capistrano
 lock '3.4.0'
 
+branch = ENV['BRANCH'] || 'master'
+
 set :application, 'ag-weather'
 set :repo_url, 'git@github.com:adorableio/ag-weather.git'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
+set :branch, branch
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, '/home/deploy/ag-weather'
