@@ -12,7 +12,6 @@ gem 'uglifier', '>= 1.3.0'
 gem 'httparty'
 gem 'agwx_biophys'
 gem 'activerecord-import'
-gem 'whenever', :require => false
 
 group :development, :test do
   gem 'byebug'
@@ -30,4 +29,6 @@ end
 group :development do
   gem "capistrano", "~> 3.4"
   gem 'capistrano-rbenv', '~> 2.0'
+  gem 'capistrano-rails',   '~> 1.1', require: false
+  gem 'capistrano-bundler', '~> 1.1', require: false
 end
