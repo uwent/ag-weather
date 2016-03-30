@@ -18,6 +18,8 @@
 # end
 
 # Learn more: http://github.com/javan/whenever
+set :output, "/tmp/whenever.log"
+
 
 every :day, at: '4am' do
   runner "InsolationImporter.fetch"
