@@ -22,7 +22,7 @@ set :output, "/tmp/whenever.log"
 set :env_path,    '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ':task' :output }
 
-every :day, at: '4am' do
+every :day, at: '5am' do
   runner "InsolationImporter.fetch"
   runner "WeatherImporter.fetch"
 end
