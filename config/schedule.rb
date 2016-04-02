@@ -24,5 +24,8 @@ job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :en
 
 every :day, at: '5am' do
   runner "InsolationImporter.fetch"
+end
+
+every :day, at: '6am' do # seems the earliest all the data for the day is there
   runner "WeatherImporter.fetch"
 end
