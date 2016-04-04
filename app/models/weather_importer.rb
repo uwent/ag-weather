@@ -46,7 +46,11 @@ class WeatherImporter
       filename = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{filename}"
       unless File.exist?(local_file)
-        client.get(filename, "#{local_file}_part")
+        begin
+          client.get(filename, "#{local_file}_part")
+        rescue Net::FTPPermError
+          Rails.logger.warn("Unable to get weather file: #{filename}")
+        end
         FileUtils.mv("#{local_file}_part", local_file)
       end
     end
