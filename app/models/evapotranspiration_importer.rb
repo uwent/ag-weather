@@ -16,6 +16,9 @@ class EvapotranspirationImporter
     weather = WeatherDatum.land_grid_for_date(date)
     insols = Insolation.land_grid_for_date(date)
 
+    # remove old data and reload
+    Evapotranspiration.where(date: date).delete_all
+
     ets = []
     WiMn.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
