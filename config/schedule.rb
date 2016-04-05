@@ -29,3 +29,7 @@ end
 every :day, at: '6am' do # seems the earliest all the data for the day is there
   runner "WeatherImporter.fetch"
 end
+
+every :day, at: '6:30am' do
+  runner "EvapotranspirationImporter.create_et_data"
+end

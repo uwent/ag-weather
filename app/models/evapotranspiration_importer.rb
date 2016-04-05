@@ -34,7 +34,7 @@ class EvapotranspirationImporter
     end
 
     Evapotranspiration.import(ets, validate: false)
-      EvapotranspirationDataImport.create_successful_load(date)
+    EvapotranspirationDataImport.create_successful_load(date)
   end
 
   def self.data_sources_loaded?(date)
