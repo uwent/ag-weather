@@ -24,7 +24,9 @@ bundle exec rails s
 ```
 
 ## Deployment
-* bundle exec cap production deploy
+```
+bundle exec cap production deploy
+```
 
 ## Daily Process
 
