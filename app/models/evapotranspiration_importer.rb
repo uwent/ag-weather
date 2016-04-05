@@ -8,25 +8,34 @@ class EvapotranspirationImporter
   end
 
   def self.calculate_et_for_date(date)
-    return unless data_sources_loaded?(date)
-
-    WiMn.each_point do |lat, long|
-      Evapotranspiration.new(
-          latitude: lat,
-          longitude: long,
-          date: date
-        ).calculate_et
+    unless data_sources_loaded?(date)
+      EvapotranspirationDataImport.create_unsuccessful_load(date)
+      return
     end
 
-    EvapotranspirationDataImport.create_successful_load(date)
-  rescue ActiveRecord::RecordNotFound => e
-    EvapotranspirationDataImport.create_unsuccessful_load(date)
-    Rails.logger.error("Failed to calculate evapotranspiration for #{date}.")
-    Rails.logger.error(e.backtrace)
+    weather = WeatherDatum.land_grid_for_date(date)
+    insols = Insolation.land_grid_for_date(date)
+
+    ets = []
+    WiMn.each_point do |lat, long|
+      if weather[lat, long].nil? || insols[lat, long].nil?
+        Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
+        next
+      end
+
+      et = Evapotranspiration.new(latitude: lat,
+                                  longitude: long,
+                                  date: date)
+      et.potential_et = et.calc_et(insols[lat, long], weather[lat, long])
+      ets << et
+    end
+
+    Evapotranspiration.import(ets, validate: false)
+      EvapotranspirationDataImport.create_successful_load(date)
   end
 
   def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by!(readings_on: date) &&
-      InsolationDataImport.successful.find_by!(readings_on: date)
+    WeatherDataImport.successful.find_by(readings_on: date) &&
+      InsolationDataImport.successful.find_by(readings_on: date)
   end
 end
