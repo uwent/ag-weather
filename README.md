@@ -1,4 +1,4 @@
-# Agricultural Weather API 
+# Agricultural Weather API
 [![Circle CI](https://circleci.com/gh/adorableio/ag-weather.svg?style=svg&circle-token=467dfd3ec0f5d33330548a6d939f94d52d3f07ec)](https://circleci.com/gh/adorableio/ag-weather)
 
 ## Description
@@ -23,6 +23,10 @@ bundle exec rake db:create db:migrate
 bundle exec rails s
 ```
 
+## Deployment
+```
+bundle exec cap production deploy
+```
 
 ## Daily Process
 

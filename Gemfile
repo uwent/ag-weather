@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-
+gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '~> 4.1.0'
 gem 'jbuilder', '~> 2.0'
 gem 'jquery-rails'
@@ -12,6 +12,7 @@ gem 'uglifier', '>= 1.3.0'
 gem 'httparty'
 gem 'agwx_biophys'
 gem 'activerecord-import'
+gem 'whenever'
 
 group :development, :test do
   gem 'byebug'
@@ -24,4 +25,11 @@ group :development, :test do
   gem 'simplecov'
   gem 'factory_girl_rails'
   gem 'guard-rspec', require: false
+end
+
+group :development do
+  gem "capistrano", "~> 3.4"
+  gem 'capistrano-rbenv', '~> 2.0'
+  gem 'capistrano-rails',   '~> 1.1', require: false
+  gem 'capistrano-bundler', '~> 1.1', require: false
 end

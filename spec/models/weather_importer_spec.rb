@@ -33,6 +33,21 @@ RSpec.describe WeatherImporter, type: :model do
       allow(Net::FTP).to receive(:new).with('ftp.ncep.noaa.gov').and_return(ftp_client_mock)
     end
 
+    describe '.fetch' do
+      it 'get and load files for every day returned by DataImport' do
+        unloaded_days = [Date.yesterday, Date.current - 3.days]
+        allow(WeatherDataImport).to receive(:days_to_load)
+          .and_return(unloaded_days)
+
+        expect(WeatherImporter).to receive(:fetch_files)
+          .exactly(unloaded_days.count).times
+        expect(WeatherImporter).to receive(:load_database_for)
+          .exactly(unloaded_days.count).times
+
+        WeatherImporter.fetch
+      end
+    end
+
     describe "connect to remote FTP server" do
       it "should connect to the NOAA server" do
         expect(Net::FTP).to receive(:new).with('ftp.ncep.noaa.gov').and_return(ftp_client_mock)
@@ -61,6 +76,12 @@ RSpec.describe WeatherImporter, type: :model do
 
       it 'should try to a file for every hour' do
         expect(ftp_client_mock).to receive(:get).exactly(24).times
+        WeatherImporter.fetch_files(today)
+      end
+
+      it 'should log an error for file not found' do
+        expect(ftp_client_mock).to receive(:get).and_raise(Net::FTPPermError)
+        expect(Rails.logger).to receive(:warn)
         WeatherImporter.fetch_files(today)
       end
     end

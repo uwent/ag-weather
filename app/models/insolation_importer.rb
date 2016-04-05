@@ -10,13 +10,9 @@ class InsolationImporter
 
   def self.fetch_day(date)
     east_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
-    west_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLWEST/INSOLWEST.#{formatted_date(date)}"
 
     east_response = HTTParty.get(east_url)
     import_insolation_data(east_response, date)
-
-    west_response = HTTParty.get(west_url)
-    import_insolation_data(west_response, date)
 
     InsolationDataImport.create_successful_load(date)
   rescue
@@ -24,6 +20,7 @@ class InsolationImporter
   end
 
   def self.import_insolation_data(http_response, date)
+    insolations = []
     http_response.body.each_line do |line|
       row = line.split
 
@@ -34,13 +31,13 @@ class InsolationImporter
       next if value == -99999
       next unless WiMn.inside_wi_mn_box?(lat, long)
 
-      Insolation.create(
-        recording: value,
-        latitude: lat,
-        longitude: long,
-        date: date
-      )
+      insolations << Insolation.new(
+                       recording: value,
+                       latitude: lat,
+                       longitude: long,
+                       date: date)
     end
+    Insolation.import(insolations, validate: false)
   end
 
   def self.formatted_date(date)
