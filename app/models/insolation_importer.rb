@@ -32,7 +32,7 @@ class InsolationImporter
       next unless WiMn.inside_wi_mn_box?(lat, long)
 
       insolations << Insolation.new(
-                       recording: value,
+                       recording: value/100.0,
                        latitude: lat,
                        longitude: long,
                        date: date)
