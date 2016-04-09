@@ -1,6 +1,6 @@
 class Evapotranspiration < ActiveRecord::Base
 
-  def self.land_grid_for_date
+  def self.land_grid_for_date(date)
     et_grid = LandGrid.wi_mn_grid
 
     Evapotranspiration.where(date: date).each do |et|
