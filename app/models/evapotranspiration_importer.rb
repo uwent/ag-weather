@@ -14,7 +14,7 @@ class EvapotranspirationImporter
     end
 
     weather = WeatherDatum.land_grid_for_date(date)
-    insols = Insolation.land_grid_for_date(date)
+    insols = Insolation.land_grid_values_for_date(date)
 
     # remove old data and reload
     Evapotranspiration.where(date: date).delete_all

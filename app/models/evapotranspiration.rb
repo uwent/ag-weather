@@ -1,20 +1,20 @@
 class Evapotranspiration < ActiveRecord::Base
 
-  def self.land_grid_for_date(date)
+  def self.land_grid_values_for_date(date)
     et_grid = LandGrid.wi_mn_grid
 
     Evapotranspiration.where(date: date).each do |et|
-      et_grid[et.latitude, et.longitude] = et
+      et_grid[et.latitude, et.longitude] = et.potential_et
     end
 
     et_grid
   end
 
-  def calculate_et(insol, weather_data)
+  def calculate_et(insolation, weather_data)
     EvapotranspirationCalculator.et(
       (weather_data.max_temperature + weather_data.min_temperature) / 2.0,
       weather_data.vapor_pressure,
-      insol.recording,
+      insolation,
       date.yday,
       latitude)
   end
