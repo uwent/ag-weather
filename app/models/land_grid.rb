@@ -5,6 +5,10 @@ class LandGrid
     1 + ((max - min) / step).round(6).floor
   end
 
+  def self.wi_mn_grid
+    self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
+  end
+
   def initialize(min_lat, max_lat, min_long, max_long, step)
     raise TypeError, "minimum latitude must be less than maximum latitude" if (min_lat >= max_lat)
     raise TypeError, "minimum longitude must be less than maximum longitude" if (min_long >= max_long)
