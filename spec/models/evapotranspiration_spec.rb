@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Evapotranspiration, type: :model do
+  EPSILON = 0.000001
+
   let(:new_et_point) { FactoryGirl.build(:evapotranspiration) }
 
   describe 'already_calculated?' do
@@ -55,55 +57,11 @@ RSpec.describe Evapotranspiration, type: :model do
   end
 
   describe 'calculate_et' do
-    context 'when weather and insolation data imported' do
-      before do
-        FactoryGirl.create(:insolation)
-        FactoryGirl.create(:weather_datum)
-      end
+    let(:insol) { FactoryGirl.create(:insolation) }
+    let(:weather) { FactoryGirl.create(:weather_datum) }
 
-      it 'is true' do
-        expect(new_et_point.calculate_et).to be_truthy
-      end
-
-       it 'is persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).to be_persisted
-      end
-
-      it 'fills in the potential_et field' do
-        new_et_point.calculate_et
-        expect(new_et_point.reload.potential_et).to be_a(BigDecimal)
-      end
-    end
-
-    context 'when only weather data present' do
-      before do
-        FactoryGirl.create(:weather_datum)
-      end
-
-      it 'is false' do
-        expect(new_et_point.calculate_et).to be_falsey
-      end
-
-      it 'is not persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).not_to be_persisted
-      end
-    end
-
-    context 'when only insolation data present' do
-      before do
-        FactoryGirl.create(:insolation)
-      end
-
-      it 'is false' do
-        expect(new_et_point.calculate_et).to be_falsey
-      end
-
-      it 'is not persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).not_to be_persisted
-      end
+    it 'should calculate a value for give insolation and weather' do
+      expect(new_et_point.calculate_et(insol, weather)).to be_within(EPSILON).of(4.8552734) 
     end
   end
 end
