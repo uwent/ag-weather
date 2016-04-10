@@ -1,5 +1,5 @@
 module ImageCreator
-  IMAGE_STEP = 0.2
+  IMAGE_STEP = 0.1
   GNUPLOT = "/usr/local/bin/gnuplot"
   IMAGEMAGICK_COMP = "/usr/bin/composite"
 
