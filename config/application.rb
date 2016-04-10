@@ -22,5 +22,10 @@ module AgWeather
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+
+    # Image generation and service configuration
+    config.x.image.temp_directory = 'tmp'
+    config.x.image.file_dir = 'public'
+    config.x.image.url_path = ''
   end
 end
