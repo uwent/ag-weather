@@ -1,5 +1,15 @@
 class LandGrid
+  include Enumerable
+
   EPSILON = 0.000001
+
+  def each(&block)
+    @data.each do |row|
+      row.each do |value|
+        block.call(value)
+      end
+    end
+  end
 
   def self.number_of_points(min, max, step)
     1 + ((max - min) / step).round(6).floor

@@ -117,6 +117,19 @@ RSpec.describe RangeArray  do
     end
   end
 
+  context "enumerable" do
+    let (:ra) { RangeArray.new(5.0, 11.0, 0.5) }
+
+    it "implements each" do
+      expect(ra).to respond_to(:each)
+    end
+
+    it "yields to each member of range" do
+      expect { |b| ra.each(&b) }.to yield_control.exactly(13).times
+    end
+  end
+
+
   context "[]" do
     let (:ra) { RangeArray.new(10, 15, 0.1) }
     it "will not find a value for point less than minimum" do
