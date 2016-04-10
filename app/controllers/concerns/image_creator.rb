@@ -38,9 +38,14 @@ module ImageCreator
     image_fullpath = File.join(Rails.configuration.x.image.file_dir,
                                image_name)
 
-    %x(#{GNUPLOT} -e "plottitle='#{title}'" -e "max_v=#{max_value}" -e "outfile='#{temp_image}'" -e "infile='#{datafile_name}'" lib/color_contour.gp)
+    gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'\" -e \"max_v=#{max_value}\" -e \"outfile='#{temp_image}'\" -e \"infile='#{datafile_name}'\" lib/color_contour.gp)"
+    Rails.logger.debug("GNUPLOT CMD: #{gnuplot_cmd}")
+    %x(#{gnuplot_cmd})
 
-    %x(#{IMAGEMAGICK_COMP} -colors 64 wi_mn_trans.png #{temp_image} #{image_fullpath})
+    image_cmd = "#{IMAGEMAGICK_COMP} -colors 64 wi_mn_trans.png #{temp_image} #{image_fullpath}"
+    Rails.logger.debug("IMAGEMAGICK CMD: #{image_cmd}")
+    %x(#{image_cmd})
+
     # File.delete(temp_image)
     return image_name
   end
