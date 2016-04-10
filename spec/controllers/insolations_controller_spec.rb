@@ -14,7 +14,7 @@ RSpec.describe InsolationsController, type: :controller do
       it 'has the correct response structure' do
         get :show, id: '2016-01-06'
 
-        expect(response_hash.keys).to include('west_map', 'east_map')
+        expect(response_hash.keys).to include('map')
       end
     end
 

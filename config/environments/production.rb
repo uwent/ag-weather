@@ -76,4 +76,9 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+
+  # Image generation and service configuration
+  config.x.image.temp_directory = 'tmp'
+  config.x.image.file_dir = '/usr/share/nginx/html'
+  config.x.image.url_path = ''
 end

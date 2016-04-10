@@ -1,9 +1,17 @@
 class EvapotranspirationsController < ApplicationController
 
   def show
-    @map = "path/to/evapotranspiration/map.img"
+    date = Date.parse(params[:id])
 
-    render json: { map: @map }
+    unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
+      render json: { map: File.join(ImageCreator.url_path, 'no_data.png') }
+    else
+      ets = Evapotranspiration.land_grid_values_for_date(date)
+      title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+      image_name = ImageCreator.create_image(ets, title,
+                                             "evapo_#{date.to_s(:number)}")
+      render json: { map: File.join(ImageCreator.url_path, image_name) }
+    end
   end
 
   def index
