@@ -70,6 +70,22 @@ Retrieve  weather data for the specified coordinates and dates.
 
 # Group Degree Days
 
+## Degree Day [/degree_days{?lat,long,start_date,base_temp,upper_temp}]]
+
++ Parameters
+    + lat: 42.8 (number, required) - the latitude
+    + long: 270.423 (number, required) - the longitude
+    + start_date: `2016-01-01` (string, required) - the start date
+    + base_temp: 50 (number, required) - base temperature
+    + upper_temp: 86 (number, required) - upper temperature limit
+
+### List Degree Day Data [GET]
+
+Retrieve  weather data for the specified coordinates and dates.
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (array[Degree Day Value])
+
 ## Degree Day [/degree_days/{date}]
 
 + Parameters
@@ -97,6 +113,11 @@ Retrieve a map of the degree days for the specified method
 + avg_temp: 0.01 (number, required)
 + max_temp: 0.01 (number, required)
 + pressure: 0.01 (number, required)
+
+## Degree Day Value
+
++ date: 2016-01-01 (string, requried)
++ value: 23.4 (number, required)
 
 ## Degree Day Map (object)
 
