@@ -27,13 +27,13 @@ class DegreeDaysController < ApplicationController
       weather.where('date >= ?', Date.current.beginning_of_year)
     end
 
-    degree_days = []
+    base_temp = !params[:base_temp].nil? ? params[:base_temp].to_f : nil
+    upper_temp = !params[:upper_temp].nil? ? params[:upper_temp].to_f : nil
     total = 0
     degree_days = weather.collect do |w|
-      dd = w.degree_days(params[:method], params[:base_temp],
-                         params[:upper_temp])
+      dd = w.degree_days(params[:method], base_temp, upper_temp)
       total += dd
-      {date: total}
+      {date: w.date, value: total.round(0) }
     end
 
     render json: degree_days
