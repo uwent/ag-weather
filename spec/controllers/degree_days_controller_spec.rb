@@ -26,9 +26,15 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it 'has the correct response structure' do
-        get :index
+        weather = FactoryGirl.create(:weather_datum)
+        params = {method: 'average',
+          start_date: weather.date,
+          lat: weather.latitude,
+          long: weather.longitude,
+          format: :json}
+        get :index, params
 
-        expect(response_hash.keys).to match(['degree_days'])
+        expect(response_hash.first.keys).to match(['date', 'value'])
       end
     end
 
