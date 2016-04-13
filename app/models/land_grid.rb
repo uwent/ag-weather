@@ -11,10 +11,6 @@ class LandGrid
     end
   end
 
-  def self.number_of_points(min, max, step)
-    1 + ((max - min) / step).round(6).floor
-  end
-
   def self.wi_mn_grid
     self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
   end
