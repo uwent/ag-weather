@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Evapotranspiration, type: :model do
-  EPSILON = 0.000001
 
   let(:new_et_point) { FactoryGirl.build(:evapotranspiration) }
 
