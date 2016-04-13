@@ -39,9 +39,9 @@ RSpec.describe WeatherImporter, type: :model do
         allow(WeatherDataImport).to receive(:days_to_load)
           .and_return(unloaded_days)
 
-        expect(WeatherImporter).to receive(:fetch_files)
+        expect(WeatherImporter).to receive(:fetch_day)
           .exactly(unloaded_days.count).times
-        expect(WeatherImporter).to receive(:load_database_for)
+        expect(WeatherImporter).to receive(:import_weather_data)
           .exactly(unloaded_days.count).times
 
         WeatherImporter.fetch
@@ -71,18 +71,18 @@ RSpec.describe WeatherImporter, type: :model do
       it 'should change to the appropriate directories on the remote server' do
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
-        WeatherImporter.fetch_files(today)
+        WeatherImporter.fetch_day(today)
       end
 
       it 'should try to a file for every hour' do
         expect(ftp_client_mock).to receive(:get).exactly(24).times
-        WeatherImporter.fetch_files(today)
+        WeatherImporter.fetch_day(today)
       end
 
       it 'should log an error for file not found' do
         expect(ftp_client_mock).to receive(:get).and_raise(Net::FTPPermError)
         expect(Rails.logger).to receive(:warn)
-        WeatherImporter.fetch_files(today)
+        WeatherImporter.fetch_day(today)
       end
     end
   end
@@ -99,7 +99,7 @@ RSpec.describe WeatherImporter, type: :model do
 
     it "should load a WeatherDay" do
       expect(WeatherDay).to receive(:new).with(today).and_return(weather_day)
-      WeatherImporter.load_database_for(today)
+      WeatherImporter.import_weather_data(today)
     end
   end
 
