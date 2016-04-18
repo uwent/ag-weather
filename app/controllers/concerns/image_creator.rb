@@ -12,8 +12,7 @@ module ImageCreator
     image_filename = generate_image_file(datafile_name, file_base_name,
                                          max_value_for_gnuplot(data_grid.max),
                                          title)
-    #     File.delete(datafile_name)
-
+    File.delete(datafile_name)
     return image_filename
   end
 
@@ -46,7 +45,7 @@ module ImageCreator
     Rails.logger.debug("IMAGEMAGICK CMD: #{image_cmd}")
     %x(#{image_cmd})
 
-    # File.delete(temp_image)
+    File.delete(temp_image)
     return image_name
   end
 
