@@ -28,7 +28,41 @@ RSpec.describe WeatherController, type: :controller do
     end
 
     context 'when the request is invalid' do
-      it 'is no content'
+      before(:each) do
+        @params = {end_date: Date.current - 2.days,
+          start_date: Date.current - 4.days,
+          lat: 42.0,
+          long: 89.0,
+          format: :json}
+      end
+
+      it 'and has no latitude return no content' do
+        @params.delete(:lat)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
+
+      it 'and has no longitude return no content' do
+        @params.delete(:long)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
+
+      it 'and has no start date, return no content' do
+        @params.delete(:start_date)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
+
+      it 'and has no end date, return no content' do
+        @params.delete(:end_date)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
     end
   end
 end

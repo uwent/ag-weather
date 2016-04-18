@@ -21,7 +21,21 @@ RSpec.describe WiMn do
   end
 
   describe '.each_point' do
-    it 'cycles through each point'
+    it 'should yield for each point in the range with step 0.1' do
+      # 9801 = 81 latitude points * 121 longitude points
+      expect { |b| WiMn.each_point(0.1, &b) }.to yield_control.exactly(9801).times
+    end
+
+    it 'should yield for each point in the range without step' do
+      # 9801 = 81 latitude points * 121 longitude points
+      expect { |b| WiMn.each_point(0.1, &b) }.to yield_control.exactly(9801).times
+    end
+
+    it 'should yield for each point in the range with step 1' do
+      # 117 = 9 latitude points * 13 longitudes
+      expect { |b| WiMn.each_point(1, &b) }.to yield_control.exactly(117).times
+    end
+    
   end
 
 end

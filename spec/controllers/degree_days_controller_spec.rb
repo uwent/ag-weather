@@ -39,7 +39,35 @@ RSpec.describe DegreeDaysController, type: :controller do
     end
 
     context 'when the request is not valid' do
-      it 'is no content'
+      before(:each) do
+        @params = {method: 'average',
+          start_date: Date.current - 4.days,
+          lat: 42.0,
+          long: 89.0,
+          format: :json}
+      end
+
+      it 'and has no latitude return no content' do
+        @params.delete(:lat)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
+
+      it 'and has no longitude return no content' do
+        @params.delete(:long)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
+
+
+      it 'and has no method return no content' do
+        @params.delete(:method)
+        get :index, @params
+
+        expect(response_hash).to be_empty
+      end
     end
   end
 end

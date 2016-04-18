@@ -30,10 +30,14 @@ class DegreeDaysController < ApplicationController
     base_temp = !params[:base_temp].nil? ? params[:base_temp].to_f : nil
     upper_temp = !params[:upper_temp].nil? ? params[:upper_temp].to_f : nil
     total = 0
-    degree_days = weather.collect do |w|
-      dd = w.degree_days(params[:method], base_temp, upper_temp)
-      total += dd
-      {date: w.date, value: total.round(0) }
+
+    degree_days = []
+    if ["sine", "average", "modified"].include?(params[:method])
+      degree_days = weather.collect do |w|
+        dd = w.degree_days(params[:method], base_temp, upper_temp)
+        total += dd
+        {date: w.date, value: total.round(0) }
+      end
     end
 
     render json: degree_days
