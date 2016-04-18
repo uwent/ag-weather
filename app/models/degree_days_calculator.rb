@@ -19,7 +19,7 @@ class DegreeDaysCalculator
     elsif method == "modified"
       return modified_degree_days(min, max, base)
     elsif method == "sine"
-      return self.sine_degree_days(min, max, base, upper)
+      return sine_degree_days(min, max, base, upper)
     else
       raise ArgumentError, "method must be average, modified, or sine"
     end

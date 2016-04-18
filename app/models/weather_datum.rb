@@ -13,7 +13,7 @@ class WeatherDatum < ActiveRecord::Base
     grid = LandGrid.wi_mn_grid
 
     WeatherDatum.where('date >= ?', date).each do |weather|
-      if grid[weather.latitude, weather1.longitude].nil?
+      if grid[weather.latitude, weather.longitude].nil?
         grid[weather.latitude, weather.longitude] = [weather]
       else
         grid[weather.latitude, weather.longitude] << weather
@@ -30,7 +30,7 @@ class WeatherDatum < ActiveRecord::Base
     WiMn.each_point do |lat, long|
       next if temp_grid[lat,long].nil?
       dd = temp_grid[lat, long].collect do |weather_day|
-        weather_day.degree_days(methd, base, upper)
+        weather_day.degree_days(method, base, upper)
       end.sum
       degree_day_grid[lat, long] = dd
     end
@@ -40,9 +40,11 @@ class WeatherDatum < ActiveRecord::Base
   def degree_days(method, base, upper)
     base ||= DegreeDaysCalculator::DEFAULT_BASE
     upper ||= DegreeDaysCalculator::DEFAULT_UPPER
-    DegreeDaysCalculator.calculate(method,
+    val = DegreeDaysCalculator.calculate(method,
        DegreeDaysCalculator.to_fahrenheit(min_temperature),
        DegreeDaysCalculator.to_fahrenheit(max_temperature),
-       base, upper)
+                                   base, upper)
+    val
   end
 end
+
