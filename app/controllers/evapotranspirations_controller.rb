@@ -1,7 +1,11 @@
 class EvapotranspirationsController < ApplicationController
 
   def show
-    date = Date.parse(params[:id])
+    date = begin
+             Date.parse(params[:id])
+           rescue ArgumentError
+             Date.yesterday
+           end
 
     unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
       render json: { map: File.join(ImageCreator.url_path, 'no_data.png') }

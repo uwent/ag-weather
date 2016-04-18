@@ -25,7 +25,7 @@ module ImageCreator
       WiMn.each_point(IMAGE_STEP) do |lat, long|
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
-        file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}"
+        file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}" unless data_grid[lat, long].nil?
         last_lat = lat
       end
     end
@@ -56,8 +56,9 @@ module ImageCreator
   end
 
   def self.max_value_for_gnuplot(val)
-
-    if val < 0.1
+    if val.nil?
+      0
+    elsif val < 0.1
       (val + 0.005).round(2)
     elsif val < 1
       (val + 0.05).round(1)
