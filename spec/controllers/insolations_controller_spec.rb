@@ -16,10 +16,32 @@ RSpec.describe InsolationsController, type: :controller do
 
         expect(response_hash.keys).to include('map')
       end
+
+      it 'responds with the corrent map name if data loaded' do
+        filename = '/evapo_20160106.png'
+        allow(ImageCreator).to receive(:create_image).and_return(filename)
+        InsolationDataImport.successful.create(readings_on: '2016-01-06')
+
+        get :show, id: '2016-01-06'
+        expect(response_hash['map']).to eq filename
+      end
+
+      it 'responds with the no data map name if data not loaded' do
+        get :show, id: '2016-01-06'
+        expect(response_hash['map']).to eq '/no_data.png'
+      end
     end
 
     context 'when the request is invalid' do
-      it 'is no content'
+      it 'returns yesterday\'s map' do
+        filename = '/evapo_#{Date.yesterday.to_s(:number)}.png'
+        allow(ImageCreator).to receive(:create_image).and_return(filename)
+        InsolationDataImport.successful.create(readings_on: Date.yesterday)
+
+        get :show, id: ''
+
+        expect(response_hash.keys).to match(['map'])
+      end
     end
   end
 end
