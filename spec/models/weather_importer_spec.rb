@@ -103,6 +103,18 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
+  describe "persist a day to the database"  do
+    let(:weather_day) { instance_double("WeatherDay") }
+    it "should save the weather data" do
+      allow(weather_day).to receive(:temperatures_at).and_return([21])
+      allow(weather_day).to receive(:dew_points_at).and_return([18]) 
+      allow(weather_day).to receive(:date).and_return(Date.yesterday)
+
+      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(LandGrid.wi_mn_grid.count)
+
+    end
+  end
+
   describe '.K_to_C' do
     it "should return the proper value in Celcius" do
       expect(WeatherImporter.K_to_C(283.0)).to be_within(0.001).of(9.85)

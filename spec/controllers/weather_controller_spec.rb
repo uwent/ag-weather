@@ -12,9 +12,18 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it 'has the correct response structure' do
-        get :index
+        weather = FactoryGirl.create(:weather_datum)
+        params = {start_date: weather.date,
+          end_date: weather.date,
+          lat: weather.latitude,
+          long: weather.longitude,
+          format: :json
+        }
+
+        get :index, params
 
         expect(response_hash).to be_an(Array)
+        expect(response_hash.first.keys).to match(%w{date min_temp avg_temp max_temp pressure})
       end
     end
 

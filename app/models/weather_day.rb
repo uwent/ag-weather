@@ -1,5 +1,5 @@
 class WeatherDay 
-  attr_accessor :date
+  attr_accessor :date, :data
 
   def initialize(date)
     @date = date

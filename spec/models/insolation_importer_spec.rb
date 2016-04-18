@@ -27,7 +27,12 @@ RSpec.describe InsolationImporter, type: :model do
       end
 
       it 'adds only good insolation data to the DB' do
-         expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(1)
+        expect{ InsolationImporter.fetch_day(date) }.to change(Insolation, :count).by(1)
+      end
+
+      it 'marks the data import as unsuccessful on caught exception' do
+        expect(HTTParty).to receive(:get).and_raise(StandardError)
+        expect { InsolationImporter.fetch_day(date) }.to change(InsolationDataImport.unsuccessful, :count).by(1)
       end
     end
   end
