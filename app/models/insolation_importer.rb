@@ -9,7 +9,7 @@ class InsolationImporter
   end
 
   def self.fetch_day(date)
-    east_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
+    east_url = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
 
     east_response = HTTParty.get(east_url)
     import_insolation_data(east_response, date)
