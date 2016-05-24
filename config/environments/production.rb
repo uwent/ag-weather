@@ -79,6 +79,6 @@ Rails.application.configure do
 
   # Image generation and service configuration
   config.x.image.temp_directory = 'tmp'
-  config.x.image.file_dir = '/usr/share/nginx/html'
-  config.x.image.url_path = ''
+  config.x.image.file_dir = '/home/deploy/ag-weather/shared/image_dir'
+  config.x.image.url_path = 'image'
 end
