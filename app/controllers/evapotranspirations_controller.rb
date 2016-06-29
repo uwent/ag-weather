@@ -26,7 +26,7 @@ class EvapotranspirationsController < ApplicationController
       .order(:date)
 
     et_readings = ets.collect do |et|
-      { date: et.date.to_s, value: et.potential_et.round(2) }
+      { date: et.date.to_s, value: et.potential_et.round(3) }
     end
 
     render json: et_readings
