@@ -22,9 +22,9 @@ class DegreeDaysController < ApplicationController
       .where(longitude: params[:long])
       .order(date: :asc)
     if params[:start_date]
-      weather.where('date >= ?', params[:start_date])
+      weather = weather.where('date >= ?', params[:start_date])
     else
-      weather.where('date >= ?', Date.current.beginning_of_year)
+      weather = weather.where('date >= ?', Date.current.beginning_of_year)
     end
 
     base_temp = !params[:base_temp].nil? ? params[:base_temp].to_f : nil
