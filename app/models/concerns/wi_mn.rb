@@ -18,9 +18,9 @@ module WiMn
     (E_LONG..W_LONG)
   end
 
-  def self.each_point
-    latitudes.step(STEP).each do |latitude|
-      longitudes.step(STEP).each do |longitude|
+  def self.each_point(step=STEP)
+    latitudes.step(step).each do |latitude|
+      longitudes.step(step).each do |longitude|
         yield(latitude, longitude)
       end
     end

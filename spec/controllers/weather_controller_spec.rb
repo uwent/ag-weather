@@ -1,24 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe DegreeDaysController, type: :controller do
+RSpec.describe WeatherController, type: :controller do
   let(:response_hash) { JSON.parse(response.body) }
 
-  describe '#show' do
-    it 'is okay' do
-      get :show, id: '2016-01-07'
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    it 'has the correct response structure' do
-      get :show, id: '2016-01-07'
-
-      expect(response_hash.first.keys).to match(['type', 'map'])
-    end
-  end
-
   describe '#index' do
-    context 'when the request is valid' do
+    context 'when request is valid' do
       it 'is okay' do
         get :index
 
@@ -27,20 +13,23 @@ RSpec.describe DegreeDaysController, type: :controller do
 
       it 'has the correct response structure' do
         weather = FactoryGirl.create(:weather_datum)
-        params = {method: 'average',
-          start_date: weather.date,
+        params = {start_date: weather.date,
+          end_date: weather.date,
           lat: weather.latitude,
           long: weather.longitude,
-          format: :json}
+          format: :json
+        }
+
         get :index, params
 
-        expect(response_hash.first.keys).to match(['date', 'value'])
+        expect(response_hash).to be_an(Array)
+        expect(response_hash.first.keys).to match(%w{date min_temp avg_temp max_temp pressure})
       end
     end
 
-    context 'when the request is not valid' do
+    context 'when the request is invalid' do
       before(:each) do
-        @params = {method: 'average',
+        @params = {end_date: Date.current - 2.days,
           start_date: Date.current - 4.days,
           lat: 42.0,
           long: 89.0,
@@ -61,9 +50,15 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(response_hash).to be_empty
       end
 
+      it 'and has no start date, return no content' do
+        @params.delete(:start_date)
+        get :index, @params
 
-      it 'and has no method return no content' do
-        @params.delete(:method)
+        expect(response_hash).to be_empty
+      end
+
+      it 'and has no end date, return no content' do
+        @params.delete(:end_date)
         get :index, @params
 
         expect(response_hash).to be_empty

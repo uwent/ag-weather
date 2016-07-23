@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Evapotranspiration, type: :model do
+
   let(:new_et_point) { FactoryGirl.build(:evapotranspiration) }
 
   describe 'already_calculated?' do
@@ -55,55 +56,32 @@ RSpec.describe Evapotranspiration, type: :model do
   end
 
   describe 'calculate_et' do
-    context 'when weather and insolation data imported' do
-      before do
-        FactoryGirl.create(:insolation)
-        FactoryGirl.create(:weather_datum)
-      end
+    let(:insol) { FactoryGirl.create(:insolation) }
+    let(:weather) { FactoryGirl.create(:weather_datum) }
 
-      it 'is true' do
-        expect(new_et_point.calculate_et).to be_truthy
-      end
+    it 'should calculate a value for give insolation and weather' do
+      expect(new_et_point.calculate_et(insol.recording, weather)).to be_within(EPSILON).of(4.8552734) 
+    end
+  end
 
-       it 'is persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).to be_persisted
-      end
-
-      it 'fills in the potential_et field' do
-        new_et_point.calculate_et
-        expect(new_et_point.reload.potential_et).to be_a(BigDecimal)
-      end
+  describe "construct land grid with evapotranspiration for given date" do
+    it 'should constuct a land grid' do
+      expect(Evapotranspiration.land_grid_values_for_date(Date.current)).to be_kind_of(LandGrid)
     end
 
-    context 'when only weather data present' do
-      before do
-        FactoryGirl.create(:weather_datum)
-      end
-
-      it 'is false' do
-        expect(new_et_point.calculate_et).to be_falsey
-      end
-
-      it 'is not persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).not_to be_persisted
-      end
+    it 'should have evapotranspirations stored in the grid' do
+      date = Date.current
+      latitude = WiMn::N_LAT
+      longitude = WiMn::E_LONG
+      FactoryGirl.create(:evapotranspiration, date: date, latitude: latitude,
+                         longitude: longitude, potential_et: 23.4)
+      land_grid = Evapotranspiration.land_grid_values_for_date(date)
+      expect(land_grid[latitude, longitude]).to eq 23.4
     end
 
-    context 'when only insolation data present' do
-      before do
-        FactoryGirl.create(:insolation)
-      end
-
-      it 'is false' do
-        expect(new_et_point.calculate_et).to be_falsey
-      end
-
-      it 'is not persisted' do
-        new_et_point.calculate_et
-        expect(new_et_point).not_to be_persisted
-      end
+    it 'should store nil in grid for points without values' do
+      land_grid = Evapotranspiration.land_grid_values_for_date(Date.current)
+      expect(land_grid[WiMn::N_LAT, WiMn::E_LONG]).to be_nil
     end
   end
 end

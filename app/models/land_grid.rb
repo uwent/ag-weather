@@ -1,8 +1,18 @@
 class LandGrid
+  include Enumerable
+
   EPSILON = 0.000001
 
-  def self.number_of_points(min, max, step)
-    1 + ((max - min) / step).round(6).floor
+  def each(&block)
+    @data.each do |row|
+      row.each do |value|
+        block.call(value)
+      end
+    end
+  end
+
+  def self.wi_mn_grid
+    self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
   end
 
   def initialize(min_lat, max_lat, min_long, max_long, step)

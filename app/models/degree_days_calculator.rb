@@ -1,5 +1,4 @@
 class DegreeDaysCalculator
-  # All temperatures are in Fahrenheit.
   DEFAULT_BASE = 50
   DEFAULT_UPPER = 86
   INVERSE_PI = 1 / Math::PI
@@ -12,11 +11,27 @@ class DegreeDaysCalculator
     (fahrenheit.to_f - 32.0).to_f * 5.0/9.0
   end
 
+  # Min, max in Fahrenheit
+  def self.calculate(method, min, max,
+                     base = DEFAULT_BASE, upper = DEFAULT_UPPER)
+    if method == "average"
+      return average_degree_days(min, max, base)
+    elsif method == "modified"
+      return modified_degree_days(min, max, base)
+    elsif method == "sine"
+      return sine_degree_days(min, max, base, upper)
+    else
+      raise ArgumentError, "method must be average, modified, or sine"
+    end
+  end
+
+  # Min, max in Fahrenheit.
   def self.average_degree_days(min, max, base = DEFAULT_BASE)
     degree_days = ((max + min) / 2.0) - base
     [degree_days, 0.0].max
   end
 
+  # Min, max in Fahrenheit.
   def self.modified_degree_days(min, max, base = DEFAULT_BASE,
                                 upper = DEFAULT_UPPER)
     min = base if base > min
@@ -29,6 +44,7 @@ class DegreeDaysCalculator
   end
 
   # Reference: http://libcatalog.cimmyt.org/download/reprints/97465.pdf
+  # Min, max in Fahrenheit.
   def self.sine_degree_days(min, max, base = DEFAULT_BASE,
                             upper = DEFAULT_UPPER)
 

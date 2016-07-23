@@ -9,7 +9,7 @@ class InsolationImporter
   end
 
   def self.fetch_day(date)
-    east_url = "http://prodserv1.ssec.wisc.edu/insolation/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
+    east_url = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
 
     east_response = HTTParty.get(east_url)
     import_insolation_data(east_response, date)
@@ -32,7 +32,7 @@ class InsolationImporter
       next unless WiMn.inside_wi_mn_box?(lat, long)
 
       insolations << Insolation.new(
-                       recording: value,
+                       recording: value/100.0,
                        latitude: lat,
                        longitude: long,
                        date: date)

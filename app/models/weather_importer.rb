@@ -7,8 +7,8 @@ class WeatherImporter
     days_to_load = WeatherDataImport.days_to_load
 
     days_to_load.each do |day|
-      self.fetch_files(day)
-      self.load_database_for(day)
+      self.fetch_day(day)
+      self.import_weather_data(day)
       FileUtils.rm_r self.local_dir(day)
     end
   end
@@ -34,7 +34,7 @@ class WeatherImporter
     client
   end
 
-  def self.fetch_files(date)
+  def self.fetch_day(date)
     client = connect_to_server
 
     start = central_time(date, 0)
@@ -56,7 +56,7 @@ class WeatherImporter
     end
   end
 
-  def self.load_database_for(date)
+  def self.import_weather_data(date)
     weather_day = WeatherDay.new(date)
     weather_day.load_from(local_dir(date))
     persist_day_to_db(weather_day)

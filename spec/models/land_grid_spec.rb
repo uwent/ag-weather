@@ -57,6 +57,18 @@ RSpec.describe LandGrid  do
     end
   end
 
+  context "enumerable" do
+    let (:land_grid) { LandGrid.new(1, 2, 3, 4, 0.5)}
+
+    it "implements each" do
+      expect(land_grid).to respond_to(:each)
+    end
+
+    it "yields to each value stored in land grid" do
+      expect { |b| land_grid.each(&b) }.to yield_control.exactly(9).times
+    end
+  end
+
   context "[]=" do
     let (:land_grid) { LandGrid.new(5, 10, 15, 20, 0.5)}
 

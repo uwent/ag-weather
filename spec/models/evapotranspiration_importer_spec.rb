@@ -15,11 +15,23 @@ RSpec.describe EvapotranspirationImporter, type: :model do
       it 'adds a data_import record' do
         expect{ action }.to change(DataImport.successful, :count)
       end
+
+      it 'adds a new evapotranspiration record' do
+        Insolation.create(latitude: WiMn::S_LAT, longitude: WiMn::E_LONG,
+                          recording: 1257.0, date: date)
+        WeatherDatum.create(latitude: WiMn::S_LAT, longitude: WiMn::E_LONG,
+                           date: date,
+                           max_temperature: 15.0, min_temperature: 5.0,
+                           avg_temperature: 10.0, vapor_pressure: 0.70
+                           )
+        expect{ action }.to change(Evapotranspiration, :count)
+
+      end
     end
 
     context 'insolation and weather data not imported' do
       it 'will create an unsuccessful data import record' do
-        expect{ action rescue nil }.to change(DataImport.unsuccessful, :count)
+        expect{ action }.to change(DataImport.unsuccessful, :count)
       end
     end
   end

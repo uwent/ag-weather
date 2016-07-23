@@ -18,6 +18,28 @@ class DegreeDaysController < ApplicationController
   end
 
   def index
-    render json: { degree_days: 23.1 }
+    weather = WeatherDatum.where(latitude: params[:lat])
+      .where(longitude: params[:long])
+      .order(date: :asc)
+    if params[:start_date]
+      weather = weather.where('date >= ?', params[:start_date])
+    else
+      weather = weather.where('date >= ?', Date.current.beginning_of_year)
+    end
+
+    base_temp = !params[:base_temp].nil? ? params[:base_temp].to_f : nil
+    upper_temp = !params[:upper_temp].nil? ? params[:upper_temp].to_f : nil
+    total = 0
+
+    degree_days = []
+    if ["sine", "average", "modified"].include?(params[:method])
+      degree_days = weather.collect do |w|
+        dd = w.degree_days(params[:method], base_temp, upper_temp)
+        total += dd
+        {date: w.date, value: total.round(0) }
+      end
+    end
+
+    render json: degree_days
   end
 end

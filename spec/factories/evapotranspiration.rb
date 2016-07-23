@@ -3,5 +3,6 @@ FactoryGirl.define do
     latitude 43.0
     longitude 89.7
     date Date.current
+    potential_et 0.17
   end
 end

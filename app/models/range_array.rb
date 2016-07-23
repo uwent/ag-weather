@@ -1,4 +1,6 @@
 class RangeArray
+  include Enumerable
+
   EPSILON = 0.000001
 
   def initialize(min, max, step)
@@ -8,6 +10,10 @@ class RangeArray
     @range = (min..max)
     @step = step
     @data = Array.new(number_of_points)
+  end
+
+  def each(&block)
+    @data.each(&block)
   end
 
   def number_of_points

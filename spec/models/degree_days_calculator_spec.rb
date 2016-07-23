@@ -55,4 +55,25 @@ RSpec.describe DegreeDaysCalculator, type: :model do
     # base < upper < min < max
     expect(DegreeDaysCalculator.sine_degree_days(90, 95, 40, 80)).to eq 40.0
   end
+
+  context "calculate should delegate to proper method" do
+    it "should delegate to when method is 'average'" do
+      expect(DegreeDaysCalculator).to receive(:average_degree_days)
+      DegreeDaysCalculator.calculate('average', 10, 20)
+    end
+
+    it "should delegate to when method is 'modified'" do
+      expect(DegreeDaysCalculator).to receive(:modified_degree_days)
+      DegreeDaysCalculator.calculate('modified', 10, 20)
+    end
+
+    it "should delegate to when method is 'sine'" do
+      expect(DegreeDaysCalculator).to receive(:sine_degree_days)
+      DegreeDaysCalculator.calculate('sine', 10, 20)
+    end
+
+    it "should raise an error on unknown method" do
+      expect { DegreeDaysCalculator.calculate('foo', 10, 20) }.to raise_error(ArgumentError)
+    end
+  end
 end
