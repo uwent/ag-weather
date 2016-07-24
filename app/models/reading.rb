@@ -2,7 +2,6 @@ class Reading
   attr_accessor :latitude, :longitude, :value
   R = 6371  # Radius of Earth (average)
   
-
   def initialize(lat, long, val)
     @latitude = lat
     @longitude = long
@@ -18,7 +17,7 @@ class Reading
   # Reference: www.movable-type.co.uk/scripts/latlong.html
   #            (The more complex formula are there as well)
   def distance(other_lat, other_long)
-    x = (to_radians(@longitude) - to_radians(other_long)) * Math.cos((to_radians(@attr = latitude) + to_radians(other_lat))/2)
+    x = (to_radians(@longitude) - to_radians(other_long)) * Math.cos((to_radians(@latitude) + to_radians(other_lat))/2)
     y = (to_radians(@latitude) - to_radians(other_lat))
     Math.sqrt(x * x + y * y) * R
   end

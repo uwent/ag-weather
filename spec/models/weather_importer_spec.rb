@@ -93,6 +93,8 @@ RSpec.describe WeatherImporter, type: :model do
       allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(today))
       #allow(weather_day).to receive(:load_database_for).with(today)
       allow(weather_day).to receive(:temperatures_at)
+      allow(weather_day).to receive(:observations_at)
+      allow(weather_day).to receive(:temperatures_at)
       allow(weather_day).to receive(:dew_points_at)
       allow(weather_day).to receive(:date)
     end
@@ -106,8 +108,7 @@ RSpec.describe WeatherImporter, type: :model do
   describe "persist a day to the database"  do
     let(:weather_day) { instance_double("WeatherDay") }
     it "should save the weather data" do
-      allow(weather_day).to receive(:temperatures_at).and_return([21])
-      allow(weather_day).to receive(:dew_points_at).and_return([18]) 
+      allow(weather_day).to receive(:observations_at).and_return([WeatherObservation.new(21, 18)])
       allow(weather_day).to receive(:date).and_return(Date.yesterday)
 
       expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(LandGrid.wi_mn_grid.count)
@@ -115,15 +116,37 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
-  describe '.K_to_C' do
-    it "should return the proper value in Celcius" do
-      expect(WeatherImporter.K_to_C(283.0)).to be_within(0.001).of(9.85)
-    end
-  end
-
   describe '.dew_point_to_vapor_pressure' do
     it "should return the vapor pressure given a dew point (in Kelvin)" do
       expect(WeatherImporter.dew_point_to_vapor_pressure(303)).to be_within(0.001).of(4.313)
+    end
+  end
+
+  describe '.relative_humidity_over_85' do
+    it "counts all if temperature is same as dewpoint (rel. humidity is 100) " do
+      observations = FactoryGirl.build_list :weather_observation, 20
+      expect(WeatherImporter.relative_humidity_over_85(observations)).to eq 20
+    end
+
+    it "only counts the ones where temp is same as dewpoint" do
+      observations = FactoryGirl.build_list :weather_observation, 10
+      observations += FactoryGirl.build_list(:weather_observation, 10,
+                                             dew_point: 273.15)
+      expect(WeatherImporter.relative_humidity_over_85(observations)).to eq 10
+    end
+
+    it "zero for an empty list" do
+      expect(WeatherImporter.relative_humidity_over_85([])).to eq 0
+    end
+
+    it 'counts those on edge of 85.0' do
+      observation = FactoryGirl.build(:weather_observation, dew_point: 287.60953)
+      expect(WeatherImporter.relative_humidity_over_85([observation])).to eq 1
+    end
+
+    it "doesn't count those on edge of 85.0" do
+      observation = FqactoryGirl.build(:weather_observation, dew_point: 287.60952)
+      expect(WeatherImporter.relative_humidity_over_85([observation])).to eq 0
     end
   end
 

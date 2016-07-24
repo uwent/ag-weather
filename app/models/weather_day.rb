@@ -6,10 +6,7 @@ class WeatherDay
     @data = LandGrid.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG,
                          WiMn::STEP)
     WiMn.each_point do |lat, long|
-      @data[lat, long] = {
-        temperatures: [],
-        dew_points: []
-      }
+      @data[lat, long] = []
     end
   end
 
@@ -22,18 +19,23 @@ class WeatherDay
     end
   end
 
+  def observations_at(lat, long)
+    @data[lat, long]
+  end
+
   def temperatures_at(lat, long)
-    @data[lat,long][:temperatures]
+    @data[lat,long].map(&:temperature)
   end
 
   def dew_points_at(lat, long)
-    @data[lat,long][:dew_points]
+    @data[lat,long].map(&:dew_point)
   end
 
   def add_data_from_weather_hour(hour)
     WiMn.each_point do |lat, long|
-      temperatures_at(lat, long) << hour.temperature_at(lat, long)
-      dew_points_at(lat,long) << hour.dew_point_at(lat, long)
+      @data[lat, long] << 
+        WeatherObservation.new(hour.temperature_at(lat, long),
+                               hour.dew_point_at(lat, long))
     end
   end
 end

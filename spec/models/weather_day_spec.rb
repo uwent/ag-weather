@@ -25,16 +25,18 @@ RSpec.describe WeatherDay do
     let(:wh) { WeatherHour.new } 
     
     it 'gets temperature for each point from hour' do
+      allow(wh).to receive(:dew_point_at).and_return(20.0)
       times = (((WiMn::N_LAT - WiMn::S_LAT) / WiMn::STEP) + 1) *
          (((WiMn::W_LONG - WiMn::E_LONG) / WiMn::STEP) + 1)
-       expect(wh).to receive(:temperature_at).exactly(times).times
+       expect(wh).to receive(:temperature_at).exactly(times).times.and_return(20.0)
        weather_day.add_data_from_weather_hour(wh)
      end
 
      it 'gets the dew point for each point from hour' do
+      allow(wh).to receive(:temperature_at).and_return(20.0)
        times = (((WiMn::N_LAT - WiMn::S_LAT) / WiMn::STEP) + 1) *
          (((WiMn::W_LONG - WiMn::E_LONG) / WiMn::STEP) + 1)
-       expect(wh).to receive(:dew_point_at).exactly(times).times
+      expect(wh).to receive(:dew_point_at).exactly(times).times.and_return(20.0)
        weather_day.add_data_from_weather_hour(wh)
      end
    end
@@ -44,10 +46,10 @@ RSpec.describe WeatherDay do
     let(:wh2) { WeatherHour.new }
 
     it "gets all temperatures at a latitude/longitude pair" do
-      wh1.store('2t', WiMn::S_LAT, WiMn::E_LONG, 17.0) # should find
-      wh1.store('2t', WiMn::N_LAT, WiMn::E_LONG, 18.0) # should not find
-      wh2.store('2t', WiMn::S_LAT, WiMn::E_LONG, 19.0) # should find
-      wh2.store('2d', WiMn::S_LAT, WiMn::E_LONG, 20.0) # should not find
+      wh1.store('2t', WiMn::S_LAT, WiMn::E_LONG, 290.15) # should find
+      wh1.store('2t', WiMn::N_LAT, WiMn::E_LONG, 291.15) # should not find
+      wh2.store('2t', WiMn::S_LAT, WiMn::E_LONG, 292.15) # should find
+      wh2.store('2d', WiMn::S_LAT, WiMn::E_LONG, 293.15) # should not find
 
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
@@ -55,10 +57,10 @@ RSpec.describe WeatherDay do
     end
 
     it "gets all dew points at a latitude/longitude pair" do
-      wh1.store('2d', WiMn::S_LAT, WiMn::E_LONG, 1.0) # should find
-      wh1.store('2d', WiMn::N_LAT, WiMn::E_LONG, 3.0) # should not find
-      wh2.store('2t', WiMn::S_LAT, WiMn::E_LONG, 4.0) # should not find
-      wh2.store('2d', WiMn::S_LAT, WiMn::E_LONG, 2.0) # should find
+      wh1.store('2d', WiMn::S_LAT, WiMn::E_LONG, 274.15) # should find
+      wh1.store('2d', WiMn::N_LAT, WiMn::E_LONG, 276.15) # should not find
+      wh2.store('2t', WiMn::S_LAT, WiMn::E_LONG, 277.15) # should not find
+      wh2.store('2d', WiMn::S_LAT, WiMn::E_LONG, 275.15) # should find
 
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)

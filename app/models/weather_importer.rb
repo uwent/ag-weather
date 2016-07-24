@@ -66,23 +66,25 @@ class WeatherImporter
   def self.persist_day_to_db(weather_day)
     weather_data = []
     WiMn.each_point do |lat, long|
-      temperatures = weather_day.temperatures_at(lat, long) || next
-      dew_points = weather_day.dew_points_at(lat, long) || next
+      observations = weather_day.observations_at(lat, long) || next
+      temperatures = observations.map(&:temperature)
+      dew_points = observations.map(&:dew_point)
 
       weather_data << WeatherDatum.new(
                       latitude: lat,
                       longitude: long,
                       date: weather_day.date,
-                      max_temperature: K_to_C(temperatures.max),
-                      min_temperature: K_to_C(temperatures.min),
-                      avg_temperature: K_to_C(weather_average(temperatures)),
-                      vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)))
+                      max_temperature: temperatures.max,
+                      min_temperature: temperatures.min,
+                      avg_temperature: weather_average(temperatures),
+                      vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)),
+                      hours_rh_over_85: relative_humidity_over_85(observations))
     end
     WeatherDatum.import(weather_data, validate: false)
   end
 
-  def self.K_to_C(kelvin)
-    kelvin - 273.15
+  def self.relative_humidity_over_85(observations)
+    observations.map(&:relative_humidity).select { |x| x >= 85.0 }.length
   end
 
   def self.dew_point_to_vapor_pressure(dew_point)
