@@ -145,7 +145,7 @@ RSpec.describe WeatherImporter, type: :model do
     end
 
     it "doesn't count those on edge of 85.0" do
-      observation = FqactoryGirl.build(:weather_observation, dew_point: 287.60952)
+      observation = FactoryGirl.build(:weather_observation, dew_point: 287.60952)
       expect(WeatherImporter.relative_humidity_over_85([observation])).to eq 0
     end
   end
