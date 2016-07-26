@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160724180620) do
+ActiveRecord::Schema.define(version: 20160726204653) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,6 +40,16 @@ ActiveRecord::Schema.define(version: 20160724180620) do
     t.date     "date"
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
+  end
+
+  create_table "pest_forecasts", force: :cascade do |t|
+    t.date     "date"
+    t.decimal  "latitude",          precision: 10, scale: 6
+    t.decimal  "longitude",         precision: 10, scale: 6
+    t.integer  "potato_blight_dsv",                          default: 0
+    t.integer  "carrot_foliar_dsv",                          default: 0
+    t.datetime "created_at",                                             null: false
+    t.datetime "updated_at",                                             null: false
   end
 
   create_table "weather_data", force: :cascade do |t|
