@@ -88,8 +88,8 @@ class WeatherImporter
   end
 
   def self.dew_point_to_vapor_pressure(dew_point)
-    # units in: dew point in K
-    vapor_p_mb = 6.105 * Math.exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / dew_point)))
+    # units in: dew point in Celcius
+    vapor_p_mb = 6.105 * Math.exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / (dew_point + 273.15))))
     vapor_p_mb / 10
   end
 

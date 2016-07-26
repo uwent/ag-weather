@@ -117,8 +117,8 @@ RSpec.describe WeatherImporter, type: :model do
   end
 
   describe '.dew_point_to_vapor_pressure' do
-    it "should return the vapor pressure given a dew point (in Kelvin)" do
-      expect(WeatherImporter.dew_point_to_vapor_pressure(303)).to be_within(0.001).of(4.313)
+    it "should return the vapor pressure given a dew point (in Celcius)" do
+      expect(WeatherImporter.dew_point_to_vapor_pressure(29.85)).to be_within(0.001).of(4.313)
     end
   end
 
