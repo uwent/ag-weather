@@ -32,6 +32,8 @@ class PestForecastImporter
                                   date: date)
       forecast.potato_blight_dsv =
         forecast.compute_potato_blight_dsv(weather[lat, long])
+      forecast.carrot_foliar_dsv =
+        forecast.compute_carrot_foliar_dsv(weather[lat, long])
       forecasts << forecast
     end
     PestForecast.import(forecasts, validate: false)
