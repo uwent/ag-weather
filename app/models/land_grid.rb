@@ -15,6 +15,11 @@ class LandGrid
     self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
   end
 
+  def self.wisconsin_grid
+    self.new(Wisconsin::S_LAT,  Wisconsin::N_LAT,
+             Wisconsin::E_LONG, Wisconsin::W_LONG, Wisconsin::STEP)
+  end
+
   def initialize(min_lat, max_lat, min_long, max_long, step)
     raise TypeError, "minimum latitude must be less than maximum latitude" if (min_lat >= max_lat)
     raise TypeError, "minimum longitude must be less than maximum longitude" if (min_long >= max_long)

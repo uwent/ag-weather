@@ -108,4 +108,11 @@ RSpec.describe LandGrid  do
       expect(land_grid[10.0, 20.0]).to eq 'bar'
     end
   end
+
+  context "wisconsin grid" do
+    it 'should create a grid of Wisconsin' do
+      land_grid = LandGrid.wisconsin_grid
+      expect(land_grid).to_not be_nil
+    end
+  end
 end
