@@ -33,3 +33,7 @@ end
 every :day, at: '6:30am' do
   runner "EvapotranspirationImporter.create_et_data"
 end
+
+every :day, at: '6:31am' do
+  runner "PestForecastImporter.create_forecast_data"
+end
