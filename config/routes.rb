@@ -5,6 +5,17 @@ Rails.application.routes.draw do
   resources :insolations, only: [:show]
   resources :degree_days, only: [:show, :index]
 
-  get '/calculate_et', to: 'evapotranspirations#calculate_et'
+  resources :carrot_forecasts, only: [:index] do
+    collection do
+      get 'info'
+    end
+  end
 
+  resources :potato_forecasts, only: [:index] do
+    collection do
+      get 'info'
+    end
+  end
+
+  get '/calculate_et', to: 'evapotranspirations#calculate_et'
 end

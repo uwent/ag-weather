@@ -42,6 +42,8 @@ ActiveRecord::Schema.define(version: 20160726204653) do
     t.datetime "updated_at",                          null: false
   end
 
+  add_index "insolations", ["date", "latitude", "longitude"], name: "index_insolations_on_date_and_latitude_and_longitude", unique: true, using: :btree
+
   create_table "pest_forecasts", force: :cascade do |t|
     t.date     "date"
     t.decimal  "latitude",          precision: 10, scale: 6
@@ -64,5 +66,8 @@ ActiveRecord::Schema.define(version: 20160726204653) do
     t.datetime "updated_at",                                            null: false
     t.integer  "hours_rh_over_85",                          default: 0
   end
+
+  add_index "weather_data", ["date", "latitude", "longitude"], name: "index_weather_data_on_date_and_latitude_and_longitude", unique: true, using: :btree
+  add_index "weather_data", ["date"], name: "weather_data_date_idx", using: :btree
 
 end
