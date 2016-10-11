@@ -26,11 +26,9 @@ class Evapotranspiration < ActiveRecord::Base
 
   def self.create_and_static_link_image(date=(Date.today - 1.day))
     image_name = create_image(date)
-    full_image_name = File.join(Rails.configuration.x.image.file_dir, 
-                                image_name)
     link_name = File.join(Rails.configuration.x.image.file_dir, 
                           "current_et.png")
-    File.unlink(link_name)
+    File.unlink(link_name) if File.symlink?(link_name)
     File.symlink(image_name, link_name)
   end
 
