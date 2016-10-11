@@ -1,21 +1,13 @@
 class EvapotranspirationsController < ApplicationController
-
   def show
     date = begin
              Date.parse(params[:id])
            rescue ArgumentError
              Date.yesterday
            end
-
-    unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
-      render json: { map: File.join(ImageCreator.url_path, 'no_data.png') }
-    else
-      ets = Evapotranspiration.land_grid_values_for_date(date)
-      title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-      image_name = ImageCreator.create_image(ets, title,
-                                       "evapo_#{date.to_s(:number)}.png")
-      render json: { map: File.join(ImageCreator.url_path, image_name) }
-    end
+    
+    image_name = Evapotranspiration.create_image(date)
+    render json: { map: File.join(ImageCreator.url_path, image_name) }
   end
 
   def index
