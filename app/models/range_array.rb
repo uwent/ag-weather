@@ -13,7 +13,7 @@ class RangeArray
   end
 
   def each(&block)
-    @data.each(&block)
+    @data.compact.each(&block)
   end
 
   def number_of_points
