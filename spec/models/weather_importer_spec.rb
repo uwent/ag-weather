@@ -111,7 +111,7 @@ RSpec.describe WeatherImporter, type: :model do
       allow(weather_day).to receive(:observations_at).and_return([WeatherObservation.new(21, 18)])
       allow(weather_day).to receive(:date).and_return(Date.yesterday)
 
-      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(LandGrid.wi_mn_grid.count)
+      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(9801)
 
     end
   end

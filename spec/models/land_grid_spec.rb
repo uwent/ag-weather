@@ -65,6 +65,11 @@ RSpec.describe LandGrid  do
     end
 
     it "yields to each value stored in land grid" do
+      (1.0..2.0).step(0.5) do |lat|
+        (3.0..4.0).step(0.5) do |long|
+          land_grid[lat,long] = 17
+        end
+      end
       expect { |b| land_grid.each(&b) }.to yield_control.exactly(9).times
     end
   end

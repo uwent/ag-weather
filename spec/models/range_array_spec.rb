@@ -125,6 +125,7 @@ RSpec.describe RangeArray  do
     end
 
     it "yields to each member of range" do
+      (5.0..11.0).step(0.5) { |idx| ra[idx] = 17 }
       expect { |b| ra.each(&b) }.to yield_control.exactly(13).times
     end
   end
