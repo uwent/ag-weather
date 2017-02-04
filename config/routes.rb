@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
 
-  resources :evapotranspirations, only: [:show, :index]
+  resources :evapotranspirations, only: [:show, :index] do
+    collection do
+      get 'all_for_date'
+    end
+  end
   resources :weather, only: [:index]
   resources :insolations, only: [:show]
   resources :degree_days, only: [:show, :index]

@@ -50,6 +50,19 @@ Retrieve ET data for the specified coordinates and dates.
 + Response 200 (application/json; charset=utf-8)
     + Attributes (array[ET Reading])
 
+## Evapotranspirations [/evapotranspirations/all_for_date{?date}]
+
++ Parameters
+
+    + date: `2016-01-01` (string, required) - the date
+
+### List Evapotranspirations [GET]
+
+Retrieve all ET data for the specified date.
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (array[ET Location Reading])
+
 # Group Weather
 
 ## Weather [/weather{?lat,long,start_date,end_date}]
@@ -104,6 +117,12 @@ Retrieve a map of the degree days for the specified method
 ## ET Reading (object)
 
 + date: 2016-01-01 (string, requried)
++ value: 0.01 (number, required)
+
+## ET Location Reading (object)
+
++ lat: 42.8 (number, required)
++ long: 270.3 (number, required)
 + value: 0.01 (number, required)
 
 ## Weather Reading (object)

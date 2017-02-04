@@ -24,6 +24,20 @@ class EvapotranspirationsController < ApplicationController
     render json: et_readings
   end
 
+  def all_for_date
+    date = begin
+             Date.parse(params[:date])
+           rescue ArgumentError
+             Date.yesterday
+           end
+    ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
+
+    et_location_readings = ets.collect do |et|
+      { lat: et.latitude.round(1), long: et.longitude.round(1), value: et.potential_et.round(3) }
+    end
+    render json: et_location_readings
+  end
+
   def calculate_et
     render json: {
       inputs: params,
