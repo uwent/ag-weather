@@ -27,16 +27,16 @@ RSpec.describe WeatherHour do
   context "store" do
     it "should add an element to the temperatures" do
       expect {
-        weather_hour.store(temp_key, WiMn::N_LAT, WiMn::E_LONG, 17)
+        weather_hour.store(temp_key, Wisconsin::N_LAT, Wisconsin::E_LONG, 17)
       }.to change {
-        weather_hour.data[WiMn::N_LAT, WiMn::E_LONG][:temperatures].length
+        weather_hour.data[Wisconsin::N_LAT, Wisconsin::E_LONG][:temperatures].length
       }.by(1)
     end
     it "should add an element to the dew points" do
       expect {
-        weather_hour.store(dew_point_key, WiMn::S_LAT, WiMn::W_LONG, 17)
+        weather_hour.store(dew_point_key, Wisconsin::S_LAT, Wisconsin::W_LONG, 17)
       }.to change {
-        weather_hour.data[WiMn::S_LAT, WiMn::W_LONG][:dew_points].length
+        weather_hour.data[Wisconsin::S_LAT, Wisconsin::W_LONG][:dew_points].length
       }.by(1)
     end
   end
@@ -48,9 +48,9 @@ RSpec.describe WeatherHour do
     end
 
     it 'should read data in range from popen3' do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{WiMn::S_LAT} #{360.0 - WiMn::E_LONG} 17.0 2t"], []])
+      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{Wisconsin::S_LAT} #{360.0 - Wisconsin::E_LONG} 17.0 2t"], []])
       weather_hour.load_from('file.name')
-      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::E_LONG)).to eq 17.0
+      expect(weather_hour.temperature_at(Wisconsin::S_LAT, Wisconsin::E_LONG)).to eq 17.0
     end
   end
 
@@ -72,28 +72,28 @@ RSpec.describe WeatherHour do
 
   context "temperature_at" do
     it "should return no value if no temperature stored at lat, long" do
-      expect(weather_hour.temperature_at(WiMn::N_LAT, WiMn::E_LONG)).to be_nil
+      expect(weather_hour.temperature_at(Wisconsin::N_LAT, Wisconsin::E_LONG)).to be_nil
     end
 
     it "should return temperature at closest lat, long " do
-      weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG, 1)
-      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.05, 2)
-      weather_hour.store(temp_key, WiMn::S_LAT, WiMn::W_LONG + 0.01, 3)
-      weather_hour.store(temp_key, WiMn::S_LAT + 0.05, WiMn::W_LONG + 0.05, 4)
-      expect(weather_hour.temperature_at(WiMn::S_LAT, WiMn::W_LONG)).to eq 3
+      weather_hour.store(temp_key, Wisconsin::S_LAT + 0.05, Wisconsin::W_LONG, 1)
+      weather_hour.store(temp_key, Wisconsin::S_LAT, Wisconsin::W_LONG + 0.05, 2)
+      weather_hour.store(temp_key, Wisconsin::S_LAT, Wisconsin::W_LONG + 0.01, 3)
+      weather_hour.store(temp_key, Wisconsin::S_LAT + 0.05, Wisconsin::W_LONG + 0.05, 4)
+      expect(weather_hour.temperature_at(Wisconsin::S_LAT, Wisconsin::W_LONG)).to eq 3
     end
   end
 
   context "dew_point_at" do
     it "should return no value if no dew point stored at lat, long" do
-      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::E_LONG)).to be_nil
+      expect(weather_hour.dew_point_at(Wisconsin::N_LAT, Wisconsin::E_LONG)).to be_nil
     end
 
     it "should return dew_point at closest lat, long " do
-      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.05, WiMn::W_LONG, 1)
-      weather_hour.store(dew_point_key, WiMn::N_LAT, WiMn::W_LONG - 0.04, 2)
-      weather_hour.store(dew_point_key, WiMn::N_LAT + 0.01, WiMn::W_LONG - 0.01, 3)
-      expect(weather_hour.dew_point_at(WiMn::N_LAT, WiMn::W_LONG)).to eq 3
+      weather_hour.store(dew_point_key, Wisconsin::N_LAT + 0.05, Wisconsin::W_LONG, 1)
+      weather_hour.store(dew_point_key, Wisconsin::N_LAT, Wisconsin::W_LONG - 0.04, 2)
+      weather_hour.store(dew_point_key, Wisconsin::N_LAT + 0.01, Wisconsin::W_LONG - 0.01, 3)
+      expect(weather_hour.dew_point_at(Wisconsin::N_LAT, Wisconsin::W_LONG)).to eq 3
     end
   end
 end

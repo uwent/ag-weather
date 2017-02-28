@@ -9,8 +9,8 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should have weather data stored in the grid' do
       date = Date.current
-      latitude = WiMn::N_LAT
-      longitude = WiMn::E_LONG
+      latitude = Wisconsin::N_LAT
+      longitude = Wisconsin::E_LONG
       FactoryGirl.create(:weather_datum, date: date, latitude: latitude,
                          longitude: longitude)
       land_grid = WeatherDatum.land_grid_for_date(date)
@@ -19,14 +19,14 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should store nil in grid for points without values' do
       land_grid = WeatherDatum.land_grid_for_date(Date.current)
-      expect(land_grid[WiMn::N_LAT, WiMn::E_LONG]).to be_nil
+      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
     end
   end
 
   describe "construct land grid with weather data since a given date" do
     it 'should have arrays of weather data in the grid' do
-      latitude = WiMn::N_LAT
-      longitude = WiMn::E_LONG
+      latitude = Wisconsin::N_LAT
+      longitude = Wisconsin::E_LONG
       1.upto(10) do |i|
         FactoryGirl.create(:weather_datum, date: Date.current - i.days,
                            latitude: latitude, longitude: longitude)
@@ -38,7 +38,7 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should store nil in grid for points without values' do
       land_grid = WeatherDatum.land_grid_since(10.days.ago)
-      expect(land_grid[WiMn::N_LAT, WiMn::E_LONG]).to be_nil
+      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
     end
   end
 
@@ -67,17 +67,17 @@ RSpec.describe WeatherDatum, type: :model do
     end
 
     it 'should call degree days for each point with data' do
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 98)
-      FactoryGirl.create(:weather_datum, latitude: 43, longitude: 98)
+      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93)
+      FactoryGirl.create(:weather_datum, latitude: 43, longitude: 93)
       expect(DegreeDaysCalculator).to receive(:calculate).exactly(2).times
 
       WeatherDatum.calculate_all_degree_days("sine", 10.days.ago)
     end
 
     it 'should call degree days for each point for each day of data' do
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 98,
+      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93,
                          date: Date.yesterday)
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 98,
+      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93,
                          date: 2.days.ago)
       expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
 

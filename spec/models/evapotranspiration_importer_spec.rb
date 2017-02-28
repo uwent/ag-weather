@@ -17,9 +17,11 @@ RSpec.describe EvapotranspirationImporter, type: :model do
       end
 
       it 'adds a new evapotranspiration record' do
-        Insolation.create(latitude: WiMn::S_LAT, longitude: WiMn::E_LONG,
+        Insolation.create(latitude: Wisconsin::S_LAT, 
+                          longitude: Wisconsin::E_LONG,
                           recording: 1257.0, date: date)
-        WeatherDatum.create(latitude: WiMn::S_LAT, longitude: WiMn::E_LONG,
+        WeatherDatum.create(latitude: Wisconsin::S_LAT, 
+                            longitude: Wisconsin::E_LONG,
                            date: date,
                            max_temperature: 15.0, min_temperature: 5.0,
                            avg_temperature: 10.0, vapor_pressure: 0.70
