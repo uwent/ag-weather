@@ -1,7 +1,7 @@
 class Evapotranspiration < ActiveRecord::Base
 
   def self.land_grid_values_for_date(date)
-    et_grid = LandGrid.wi_mn_grid
+    et_grid = LandGrid.wisconsin_grid
 
     Evapotranspiration.where(date: date).each do |et|
       et_grid[et.latitude, et.longitude] = et.potential_et
@@ -14,19 +14,19 @@ class Evapotranspiration < ActiveRecord::Base
     return File.join(ImageCreator.url_path, 'no_data.png') unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
 
     image_name = "evapo_#{date.to_s(:number)}.png"
-    unless File.exists?(File.join(Rails.configuration.x.image.file_dir, 
+    unless File.exists?(File.join(Rails.configuration.x.image.file_dir,
                                   image_name))
       ets = land_grid_values_for_date(date)
       title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
       image_name = ImageCreator.create_image(ets, title, image_name)
     end
-  
+
     return image_name
   end
 
   def self.create_and_static_link_image(date=(Date.today - 1.day))
     image_name = create_image(date)
-    link_name = File.join(Rails.configuration.x.image.file_dir, 
+    link_name = File.join(Rails.configuration.x.image.file_dir,
                           "current_et.png")
     File.unlink(link_name) if File.symlink?(link_name)
     File.symlink(image_name, link_name)

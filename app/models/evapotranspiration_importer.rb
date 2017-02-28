@@ -20,7 +20,7 @@ class EvapotranspirationImporter
     Evapotranspiration.where(date: date).delete_all
 
     ets = []
-    WiMn.each_point do |lat, long|
+    Wisconsin.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
         Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
         next

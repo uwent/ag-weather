@@ -19,7 +19,7 @@ class PestForecastImporter
     PestForecast.where(date: date).delete_all
 
     forecasts = []
-    WiMn.each_point do |lat, long|
+    Wisconsin.each_point do |lat, long|
       next unless Wisconsin.inside?(lat, long)
 
       if weather[lat, long].nil?

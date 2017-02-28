@@ -19,9 +19,9 @@ module ImageCreator
   def self.create_data_file(data_grid)
     data_filename = temp_filename('dat')
 
-    last_lat = WiMn::S_LAT
+    last_lat = Wisconsin::S_LAT
     File.open(data_filename, 'w') do |file|
-      WiMn.each_point(IMAGE_STEP) do |lat, long|
+      Wisconsin.each_point(IMAGE_STEP) do |lat, long|
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
         file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}" unless data_grid[lat, long].nil?

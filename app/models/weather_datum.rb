@@ -1,6 +1,6 @@
 class WeatherDatum < ActiveRecord::Base
   def self.land_grid_for_date(date)
-    weather_grid = LandGrid.wi_mn_grid
+    weather_grid = LandGrid.wisconsin_grid
 
     WeatherDatum.where(date: date).each do |weather|
       weather_grid[weather.latitude, weather.longitude] = weather
@@ -10,7 +10,7 @@ class WeatherDatum < ActiveRecord::Base
   end
 
   def self.land_grid_since(date)
-    grid = LandGrid.wi_mn_grid
+    grid = LandGrid.wisconsin_grid
 
     WeatherDatum.where('date >= ?', date).each do |weather|
       if grid[weather.latitude, weather.longitude].nil?
@@ -26,8 +26,8 @@ class WeatherDatum < ActiveRecord::Base
                                      base = DegreeDaysCalculator::DEFAULT_BASE,
                                      upper = DegreeDaysCalculator::DEFAULT_UPPER)
     temp_grid = land_grid_since(date)
-    degree_day_grid = LandGrid.wi_mn_grid
-    WiMn.each_point do |lat, long|
+    degree_day_grid = LandGrid.wisconsin_grid
+    Wisconsin.each_point do |lat, long|
       next if temp_grid[lat,long].nil?
       dd = temp_grid[lat, long].collect do |weather_day|
         weather_day.degree_days(method, base, upper)
@@ -47,4 +47,3 @@ class WeatherDatum < ActiveRecord::Base
     val
   end
 end
-

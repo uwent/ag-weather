@@ -24,6 +24,7 @@ set style increment userstyles
 unset key
 unset xtics
 set xrange [98:86] 
+set yrange [42:50]
 unset ytics
 unset border
 set tmargin at screen 0.9
