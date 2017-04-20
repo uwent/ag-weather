@@ -1,6 +1,41 @@
 class PestForecast < ActiveRecord::Base
 
-  def compute_potato_blight_dsv(weather)
+  NO_MAX = 150
+
+  def self.new_from_weather(weather)
+    return PestForecast.new(
+      latitude: weather.latitude,
+      longitude: weather.longitude,
+      date: weather.date,
+      potato_blight_dsv: compute_potato_blight_dsv(weather),
+      carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
+      alfalfa_weevil: weather.degree_days('sine', 48, NO_MAX),
+      asparagus_beetle: weather.degree_days('sine', 50, 86),
+      black_cutworm: weather.degree_days('sine', 50.7, 86),
+      brown_marmorated_stink_bug: weather.degree_days('sine', 54, 92),
+      cabbage_looper: weather.degree_days('sine', 50, 90),
+      cabbage_maggot: weather.degree_days('sine', 39.7, 86),
+      colorado_potato_beetle: weather.degree_days('sine', 52, NO_MAX),
+      corn_earworm: weather.degree_days('sine', 55, 92),
+      corn_rootworm: weather.degree_days('sine', 52, NO_MAX),
+      european_corn_borer: weather.degree_days('sine', 50, 86),
+      flea_beetle_mint: weather.degree_days('sine', 41, 103),
+      flea_beetle_crucifer: weather.degree_days('sine', 50, NO_MAX),
+      imported_cabbageworm: weather.degree_days('sine', 50, NO_MAX),
+      japanese_beetle: weather.degree_days('sine', 50, 100),
+      lygus_bug: weather.degree_days('sine', 52, NO_MAX),
+      mint_root_borer: weather.degree_days('sine', 50, NO_MAX),
+      onion_maggot: weather.degree_days('sine', 39, 84),
+      potato_psyllid: weather.degree_days('sine', 40, 86),
+      seedcorn_maggot: weather.degree_days('sine', 50, NO_MAX),
+      squash_vine_borer: weather.degree_days('sine', 50, NO_MAX),
+      stalk_borer: weather.degree_days('sine', 41, 86),
+      variegated_cutworm: weather.degree_days('sine', 41, 88),
+      western_bean_cutworm: weather.degree_days('sine', 50, NO_MAX),
+      western_flower_thrips: weather.degree_days('sine', 45, 104))
+  end
+
+  def self.compute_potato_blight_dsv(weather)
     temp = weather.avg_temperature
     hours = weather.hours_rh_over_85
 
@@ -22,7 +57,7 @@ class PestForecast < ActiveRecord::Base
     return 0
   end
 
-  def compute_carrot_foliar_dsv(weather)
+  def self.compute_carrot_foliar_dsv(weather)
     temp =  weather.avg_temperature
     hours = weather.hours_rh_over_85
 

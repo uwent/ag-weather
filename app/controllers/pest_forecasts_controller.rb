@@ -1,5 +1,6 @@
 class PestForecastsController < ApplicationController
 
+  private
   def start_date
     params[:start_date].blank? ? 7.days.ago.to_date : Date.parse(params[:start_date])
   end

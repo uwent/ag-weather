@@ -11,6 +11,12 @@ class DegreeDaysCalculator
     (fahrenheit.to_f - 32.0).to_f * 5.0/9.0
   end
 
+  # Min, max in Celsius
+  def self.calculate_c(method, min, max,
+                       base = DEFAULT_BASE, upper = DEFAULT_UPPER)
+    calculate(method, to_fahrenheit(min), to_fahrenheit(max), base, upper)
+  end
+
   # Min, max in Fahrenheit
   def self.calculate(method, min, max,
                      base = DEFAULT_BASE, upper = DEFAULT_UPPER)
