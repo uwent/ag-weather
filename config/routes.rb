@@ -7,7 +7,13 @@ Rails.application.routes.draw do
   end
   resources :weather, only: [:index]
   resources :insolations, only: [:show]
-  resources :degree_days, only: [:show, :index]
+
+  resources :degree_days, only: [:show, :index] do
+    collection do
+      get 'totals'
+      get 'pest_info'
+    end
+  end
 
   resources :carrot_forecasts, only: [:index] do
     collection do
