@@ -48,36 +48,33 @@ ActiveRecord::Schema.define(version: 20170413191300) do
     t.decimal  "longitude",                  precision: 10, scale: 6
     t.integer  "potato_blight_dsv",                                   default: 0
     t.integer  "carrot_foliar_dsv",                                   default: 0
-    t.datetime "created_at",                                                        null: false
-    t.datetime "updated_at",                                                        null: false
-    t.float    "alfalfa_weevil",                                      default: 0.0
-    t.float    "asparagus_beetle",                                    default: 0.0
-    t.float    "black_cutworm",                                       default: 0.0
-    t.float    "brown_marmorated_stink_bug",                          default: 0.0
-    t.float    "cabbage_looper",                                      default: 0.0
-    t.float    "cabbage_maggot",                                      default: 0.0
-    t.float    "colorado_potato_beetle",                              default: 0.0
-    t.float    "corn_earworm",                                        default: 0.0
-    t.float    "corn_rootworm",                                       default: 0.0
-    t.float    "european_corn_borer",                                 default: 0.0
-    t.float    "flea_beetle_mint",                                    default: 0.0
-    t.float    "flea_beetle_crucifer",                                default: 0.0
-    t.float    "imported_cabbageworm",                                default: 0.0
-    t.float    "japanese_beetle",                                     default: 0.0
-    t.float    "lygus_bug",                                           default: 0.0
-    t.float    "mint_root_borer",                                     default: 0.0
-    t.float    "onion_maggot",                                        default: 0.0
-    t.float    "potato_psyllid",                                      default: 0.0
-    t.float    "seedcorn_maggot",                                     default: 0.0
-    t.float    "squash_vine_borer",                                   default: 0.0
-    t.float    "stalk_borer",                                         default: 0.0
-    t.float    "variegated_cutworm",                                  default: 0.0
-    t.float    "western_bean_cutworm",                                default: 0.0
-    t.float    "western_flower_thrips",                               default: 0.0
+    t.datetime "created_at",                                                      null: false
+    t.datetime "updated_at",                                                      null: false
+    t.float    "alfalfa_weevil"
+    t.float    "asparagus_beetle"
+    t.float    "black_cutworm"
+    t.float    "brown_marmorated_stink_bug"
+    t.float    "cabbage_looper"
+    t.float    "cabbage_maggot"
+    t.float    "colorado_potato_beetle"
+    t.float    "corn_earworm"
+    t.float    "corn_rootworm"
+    t.float    "european_corn_borer"
+    t.float    "flea_beetle_mint"
+    t.float    "flea_beetle_crucifer"
+    t.float    "imported_cabbageworm"
+    t.float    "japanese_beetle"
+    t.float    "lygus_bug"
+    t.float    "mint_root_borer"
+    t.float    "onion_maggot"
+    t.float    "potato_psyllid"
+    t.float    "seedcorn_maggot"
+    t.float    "squash_vine_borer"
+    t.float    "stalk_borer"
+    t.float    "variegated_cutworm"
+    t.float    "western_bean_cutworm"
+    t.float    "western_flower_thrips"
   end
-
-  add_index "pest_forecasts", ["date", "longitude", "latitude"], name: "index_pest_forecasts_on_date_and_longitude_and_latitude", using: :btree
-  add_index "pest_forecasts", ["date"], name: "index_pest_forecasts_on_date", using: :btree
 
   create_table "weather_data", force: :cascade do |t|
     t.decimal  "max_temperature"
@@ -92,8 +89,6 @@ ActiveRecord::Schema.define(version: 20170413191300) do
     t.integer  "hours_rh_over_85",                          default: 0
   end
 
-  add_index "weather_data", ["date"], name: "weather_data_date", using: :btree
-  add_index "weather_data", ["latitude", "longitude", "date"], name: "weather_data_lat_long_date", using: :btree
-  add_index "weather_data", ["latitude", "longitude"], name: "weather_data_lat_long", using: :btree
+  add_index "weather_data", ["date"], name: "weather_data_date_idx", using: :btree
 
 end
