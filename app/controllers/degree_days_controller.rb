@@ -50,32 +50,6 @@ class DegreeDaysController < ApplicationController
     render json: degree_days
   end
 
-  def totals
-    # inputs: start_date, end_date, pest
-    # return: lat, long, value
-    degree_days = PestForecast.select(:latitude).select(:longitude).
-                  select("sum(#{pest}) as total").
-                  where("date between ? and ?", start_date, end_date).
-                  group(:latitude, :longitude)
-    render json: degree_days.collect do |dd|
-      { lat: dd.latitude, long: dd.longitude, value: dd.total }
-    end
-  end
-
-  def pest_info
-    # inputs: start_date, end_date, pest, latitude, longitude
-    # return: date, value
-    degree_days = PestForecast.select(:date).
-                  select("pest_forecasts.#{pest} as value").
-                  where("date between ? and ?", start_date, end_date).
-                  where(latitude: latitude).
-                  where(longitude: longitude).
-                  order(:date)
-    render json: degree_days.collect do |dd|
-      { date: dd.date, value: dd.value }
-    end
-  end
-
   private
     def start_date
       params[:start_date].nil? ?

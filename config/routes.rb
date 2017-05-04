@@ -8,10 +8,11 @@ Rails.application.routes.draw do
   resources :weather, only: [:index]
   resources :insolations, only: [:show]
 
-  resources :degree_days, only: [:show, :index] do
+  resources :degree_days, only: [:show, :index]
+
+  resources :pest_forecasts, only: [:index] do
     collection do
-      get 'totals'
-      get 'pest_info'
+      get 'info'
     end
   end
 
