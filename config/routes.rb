@@ -12,7 +12,7 @@ Rails.application.routes.draw do
 
   resources :pest_forecasts, only: [:index] do
     collection do
-      get 'info'
+      get 'point_details'
     end
   end
 

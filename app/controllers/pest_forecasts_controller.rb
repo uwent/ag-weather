@@ -14,20 +14,27 @@ class PestForecastsController < ApplicationController
     render json: results
   end
 
-  def info
+  def point_details
     # inputs: start_date, end_date, pest, latitude, longitude
     # return: date, value
-    values = PestForecast.select(:date).
-                  select("pest_forecasts.#{pest} as value").
-                  where("date between ? and ?", start_date, end_date).
-                  where(latitude: lat).
-                  where(longitude: long).
-                  order(:date)
-    results = values.collect do |v|
-      { date: v.date, value: v.value.round(2) }
+    forecasts = PestForecast.for_lat_long_date_range(lat, long, start_date,
+                                                     end_date)
+                .map { |pf| [pf.date, pf.send(pest)] }.to_h
+    forecasts.default = 0
+
+    weather = WeatherDatum.where(latitude: lat, longitude: long).
+              where("date >= ? and date <= ?", start_date, end_date).
+              order(:date).
+              collect do |w|
+      {
+        date: w.date,
+        value: forecasts[w.date].round(1),
+        avg_temperature: w.avg_temperature.round(1),
+        hours_over: w.hours_rh_over_85
+      }
     end
 
-    render json: results
+    render json: weather
   end
 
   private
