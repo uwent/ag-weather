@@ -15,18 +15,5 @@ Rails.application.routes.draw do
       get 'point_details'
     end
   end
-
-  resources :carrot_forecasts, only: [:index] do
-    collection do
-      get 'info'
-    end
-  end
-
-  resources :potato_forecasts, only: [:index] do
-    collection do
-      get 'info'
-    end
-  end
-
   get '/calculate_et', to: 'evapotranspirations#calculate_et'
 end
