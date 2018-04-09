@@ -5,7 +5,7 @@ begin
 
   Dredd::Rack::RakeTask.new do |task|
     task.runner.configure do |dredd|
-      dredd.paths_to_blueprints 'apiary.apib', 'foo'
+      dredd.paths_to_blueprints 'apiary.apib'
       dredd.language 'ruby'
     end
   end
