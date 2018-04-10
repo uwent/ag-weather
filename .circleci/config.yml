@@ -1,0 +1,42 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.2-node-browsers
+        environment:
+          PG_HOST: localhost
+          PG_USER: ag_weather
+          RAILS_ENV: test
+          RACK_ENV: test
+      - image: postgres:9.6
+        environment:
+          POSTGRES_USER: ag_weather
+          POSTGRES_DB: ag_weather_test
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: |
+            sudo apt-get install libgrib-api-tools
+            npm install dredd
+            gem install bundler
+            bundle install
+      - run:
+          name: Set up DB
+          command: |
+            bundle exec rake db:migrate
+          environment:
+            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
+      - run:
+          name: Run Specs
+          command: |
+            bundle exec rspec
+          environment:
+            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
+      - run:
+          name: Run Dredd API test
+          command: |
+            export PATH="$(npm bin):$PATH"
+            RAILS_ENV=test bundle exec rake dredd
+          environment:
+            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test

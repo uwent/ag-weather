@@ -3,7 +3,7 @@ gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '~> 4.1.0'
 gem 'jbuilder', '~> 2.0'
 gem 'jquery-rails'
-gem 'pg'
+gem 'pg', '~> 0.15'
 gem 'rails', '4.2.1'
 gem 'sass-rails', '~> 5.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
@@ -19,7 +19,6 @@ group :development, :test do
   gem 'dredd-rack'
   gem 'rspec-rails'
   gem 'spring'
-  gem 'web-console', '~> 2.0'
   gem 'rspec_junit_formatter', '0.2.2'
   gem 'webmock'
   gem 'simplecov'
@@ -32,4 +31,5 @@ group :development do
   gem 'capistrano-rbenv', '~> 2.0'
   gem 'capistrano-rails',   '~> 1.1', require: false
   gem 'capistrano-bundler', '~> 1.1', require: false
+  gem 'web-console', '~> 2.0'
 end
