@@ -41,3 +41,7 @@ end
 every :day, at: '6:35am' do
   runner "Evapotranspiration.create_and_static_link_image"
 end
+
+every :day, at: '6:36am' do
+  runner "DataImport.send_status_email"
+end
