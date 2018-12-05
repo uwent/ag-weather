@@ -29,4 +29,9 @@ class DataImport < ActiveRecord::Base
   def self.create_unsuccessful_load(date)
     unsuccessful.where(readings_on: date).create!
   end
+
+  def self.send_status_email
+    state = DataImport.where(readings_on: Date.today - 1)
+    StatusMailer.daily_mail(state).deliver
+  end
 end
