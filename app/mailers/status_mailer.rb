@@ -1,5 +1,5 @@
 class StatusMailer < ActionMailer::Base
-  default from: "noreply@cals.wisc.edu"
+  default from: "cals-it-admin@cals.wisc.edu"
 
   def daily_mail(statuses)
     @statuses = statuses
