@@ -24,7 +24,7 @@ class WeatherImporter
   end
 
   def self.remote_file_name(hour)
-    sprintf("urma2p5.t%02dz.2dvaranl_ndfd.grb2", hour)
+    sprintf("urma2p5.t%02dz.2dvaranl_ndfd.grb2_wexp", hour)
   end
 
   def self.connect_to_server
@@ -49,7 +49,9 @@ class WeatherImporter
         begin
           client.get(filename, "#{local_file}_part")
         rescue Net::FTPPermError
-          Rails.logger.warn("Unable to get weather file: #{filename}")
+          Rails.logger.error("Unable to get weather file: #{filename}")
+          WeatherDataImport.create_unsuccessful_load(date)
+          return
         end
         FileUtils.mv("#{local_file}_part", local_file)
       end
