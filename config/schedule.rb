@@ -26,7 +26,7 @@ every :day, at: '5am' do
   runner "InsolationImporter.fetch"
 end
 
-every :day, at: '6am' do # seems the earliest all the data for the day is there
+every :day, at: '5:30am' do # seems the earliest all the data for the day is there
   runner "WeatherImporter.fetch"
 end
 
