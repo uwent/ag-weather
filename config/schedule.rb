@@ -30,18 +30,18 @@ every :day, at: '5:45am' do # seems the earliest all the data for the day is the
   runner "WeatherImporter.fetch"
 end
 
-every :day, at: '6:30am' do
+every :day, at: '6:45am' do
   runner "EvapotranspirationImporter.create_et_data"
 end
 
-every :day, at: '6:31am' do
+every :day, at: '6:46am' do
   runner "PestForecastImporter.create_forecast_data"
 end
 
-every :day, at: '6:35am' do
+every :day, at: '6:50am' do
   runner "Evapotranspiration.create_and_static_link_image"
 end
 
-every :day, at: '6:36am' do
+every :day, at: '7:00am' do
   runner "DataImport.send_status_email"
 end
