@@ -49,7 +49,7 @@ class WeatherImporter
         begin
           client.get(filename, "#{local_file}_part")
         rescue Net::FTPPermError
-          Rails.logger.error("Unable to get weather file: #{filename}")
+          Rails.logger.warn("Unable to get weather file: #{filename}")
 #          WeatherDataImport.create_unsuccessful_load(date)
           return
         end

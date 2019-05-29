@@ -35,6 +35,14 @@ class PestForecast < ActiveRecord::Base
       western_flower_thrips: weather.degree_days('sine', 45, 104))
   end
 
+  def self.potato_p_days(min_temp, max_temp)
+    first = 5 * p_function(min_temp)
+    second = 8 * p_function((2*min_temp/3.0) + (max_temp/3.0))
+    third = 8 * p_function((2*max_temp/3.0) + (min_temp/3.0))
+    fourth = 3 * p_function(max_temp)
+    (first + second + third + fourth)/24.0
+  end
+
   def self.compute_potato_blight_dsv(weather)
     temp = weather.avg_temperature
     hours = weather.hours_rh_over_85
@@ -154,5 +162,17 @@ class PestForecast < ActiveRecord::Base
     end
 
     return grid
+  end
+
+  def self.p_function(temp)
+    if temp < 7.0
+      return 0.0
+    elsif temp > 7.0 && temp <= 21.0
+      return 10 * (1 - ((temp - 21.0)**2/196.0)) # 196 = (21-7)^2
+    elsif temp > 21.0 && temp < 30
+      return 10 * (1 - ((temp - 21.0)**2/81.0)) # 81 = (30-21)^2
+    else
+      return 0.0
+    end
   end
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170413191300) do
+ActiveRecord::Schema.define(version: 20190521171339) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,6 +32,8 @@ ActiveRecord::Schema.define(version: 20170413191300) do
     t.datetime "created_at",                            null: false
     t.datetime "updated_at",                            null: false
   end
+
+  add_index "evapotranspirations", ["latitude", "longitude", "date"], name: "et_lat_long_date", using: :btree
 
   create_table "insolations", force: :cascade do |t|
     t.decimal  "recording"
@@ -76,6 +78,21 @@ ActiveRecord::Schema.define(version: 20170413191300) do
     t.float    "western_flower_thrips"
   end
 
+  create_table "station_hourly_observations", force: :cascade do |t|
+    t.integer "station_id"
+    t.date    "reading_on"
+    t.integer "hour"
+    t.float   "max_temperature"
+    t.float   "min_temperature"
+    t.float   "relative_humidity"
+  end
+
+  create_table "stations", force: :cascade do |t|
+    t.string "name",      null: false
+    t.float  "latitude",  null: false
+    t.float  "longitude", null: false
+  end
+
   create_table "weather_data", force: :cascade do |t|
     t.decimal  "max_temperature"
     t.decimal  "min_temperature"
@@ -88,7 +105,5 @@ ActiveRecord::Schema.define(version: 20170413191300) do
     t.datetime "updated_at",                                            null: false
     t.integer  "hours_rh_over_85",                          default: 0
   end
-
-  add_index "weather_data", ["date"], name: "weather_data_date_idx", using: :btree
 
 end
