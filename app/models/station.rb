@@ -24,11 +24,11 @@ class Station < ActiveRecord::Base
       p_days: PestForecast.potato_p_days(min_temp, max_temp).round(2)
     }
   end
-  
+
   def add_or_update_observation(reading_on, hour, max_temp, min_temp, rh)
     observation = station_hourly_observations.where(reading_on: reading_on,
                                                     hour: hour).first
-    if observation.nil?      
+    if observation.nil?
       station_hourly_observations <<
         StationHourlyObservation.create(reading_on: reading_on,
                                         hour: hour,
@@ -43,6 +43,22 @@ class Station < ActiveRecord::Base
     end
   end
 
+  def add_observation(reading_on, hour, max_temp, min_temp, rh)
+    observation = station_hourly_observations.where(reading_on: reading_on,
+                                                    hour: hour).first
+    return unless observation.nil?
+    station_hourly_observations <<
+      StationHourlyObservation.create(reading_on: reading_on,
+                                      hour: hour,
+                                      max_temperature: max_temp,
+                                      min_temperature: min_temp,
+                                      relative_humidity: rh)
+  end
+
+  def last_reading
+    station_hourly_observations.order(:reading_on).order(:hour).last
+  end
+
   private
   def potato_late_blight_dsv_for hourly_observations
     wet_hours = hourly_observations.select do | observation |
@@ -50,7 +66,7 @@ class Station < ActiveRecord::Base
     end
 
     return 0 if wet_hours.count == 0
-    
+
     wet_avg_temp = wet_hours.map { |ob| (ob.max_temperature + ob.min_temperature)/2.0 }.sum/wet_hours.count
 
     return compute_potato_blight_dsv(wet_hours.count, wet_avg_temp)

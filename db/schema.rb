@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190521171339) do
+ActiveRecord::Schema.define(version: 20190530180713) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -79,12 +79,14 @@ ActiveRecord::Schema.define(version: 20190521171339) do
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|
-    t.integer "station_id"
-    t.date    "reading_on"
-    t.integer "hour"
-    t.float   "max_temperature"
-    t.float   "min_temperature"
-    t.float   "relative_humidity"
+    t.integer  "station_id"
+    t.date     "reading_on"
+    t.integer  "hour"
+    t.float    "max_temperature"
+    t.float    "min_temperature"
+    t.float    "relative_humidity"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "stations", force: :cascade do |t|
