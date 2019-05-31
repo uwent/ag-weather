@@ -59,6 +59,10 @@ class Station < ActiveRecord::Base
     station_hourly_observations.order(:reading_on).order(:hour).last
   end
 
+  def titleized_name
+    name.titleize
+  end
+
   private
   def potato_late_blight_dsv_for hourly_observations
     wet_hours = hourly_observations.select do | observation |
@@ -95,4 +99,6 @@ class Station < ActiveRecord::Base
     end
     return 0
   end
+
+
 end

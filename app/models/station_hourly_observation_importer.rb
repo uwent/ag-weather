@@ -5,8 +5,10 @@ class StationHourlyObservationImporter
     datafiles = File.join(DATA_DIR, "*.dat")
     Dir.glob(datafiles).each do |path|
       Rails.logger.info("Processing #{path}")
-      if self.load_data(path)
-        File.delete(path) if File.exist?(path)
+      process_file = path + ".processing"
+      File.rename(path, process_file)
+      if self.load_data(process_file)
+        File.delete(process_file) if File.exist?(process_file)
       end
     end
   end
