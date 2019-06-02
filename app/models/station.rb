@@ -71,31 +71,26 @@ class Station < ActiveRecord::Base
 
     return 0 if wet_hours.count == 0
 
-    wet_avg_temp = wet_hours.map { |ob| (ob.max_temperature + ob.min_temperature)/2.0 }.sum/wet_hours.count
+    wet_avg_temp = hourly_observations.map { |ob| (ob.max_temperature + ob.min_temperature)/2.0 }.sum/wet_hours.count
 
     return compute_potato_blight_dsv(wet_hours.count, wet_avg_temp)
   end
 
   def compute_potato_blight_dsv(hours, temp)
-    if temp.in? (13.0 ... 18.0)
-      return 1 if hours.in? (7 .. 15)
-      return 2 if hours.in? (16 .. 20)
-      return 3 if hours >= 21
-    elsif temp.in? (18.0 ... 21.0)
-      return 1 if hours.in? (4 .. 8)
-      return 2 if hours.in? (9 .. 15)
-      return 3 if hours.in? (16 .. 22)
-      return 4 if hours >= 23
-    elsif temp.in? (21.0 ... 26.0)
-      return 1 if hours.in? (3 .. 5)
-      return 2 if hours.in? (6 .. 12)
-      return 3 if hours.in? (13 .. 20)
-      return 4 if hours >= 21
-    elsif temp.in? (26.0 ... 30.0)
-      return 1 if hours.in? (4 .. 8)
-      return 2 if hours.in? (9 .. 15)
-      return 3 if hours.in? (16 .. 22)
-      return 4 if hours >= 23
+    if temp.in? (7.22 ... 12.222)
+      return 1 if hours.in? (16 .. 18)
+      return 2 if hours.in? (19 .. 21)
+      return 3 if hours >= 22
+    elsif temp.in? (12.222 ... 15.556)
+      return 1 if hours.in? (13 .. 15)
+      return 2 if hours.in? (16 .. 18)
+      return 3 if hours.in? (19 .. 21)
+      return 4 if hours >= 22
+    elsif temp.in? (15.556 ... 26.667)
+      return 1 if hours.in? (10 .. 12)
+      return 2 if hours.in? (13 .. 15)
+      return 3 if hours.in? (16 .. 18)
+      return 4 if hours.in? (19 .. 21)
     end
     return 0
   end
