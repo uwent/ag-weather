@@ -17,9 +17,9 @@
 # property set. Specify the username and a domain or IP for the server.
 # Don't use `:all`, it's a meta role.
 
-role :app, %w{deploy@ec2-34-217-17-64.us-west-2.compute.amazonaws.com:216}
-role :web, %w{deploy@ec2-34-217-17-64.us-west-2.compute.amazonaws.com:216}
-role :db,  %w{deploy@ec2-34-217-17-64.us-west-2.compute.amazonaws.com:216}
+role :app, %w{deploy@ec2-54-212-209-95.us-west-2.compute.amazonaws.com:216}
+role :web, %w{deploy@ec2-54-212-209-95.us-west-2.compute.amazonaws.com:216}
+role :db,  %w{deploy@ec2-54-212-209-95.us-west-2.compute.amazonaws.com:216}
 
 
 # Configuration
