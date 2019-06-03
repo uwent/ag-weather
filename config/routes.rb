@@ -10,6 +10,8 @@ Rails.application.routes.draw do
 
   resources :degree_days, only: [:show, :index]
 
+  resources :stations, only: [:index]
+  resources :station_observations, only: [:index]
   resources :pest_forecasts, only: [:index] do
     collection do
       get 'point_details'

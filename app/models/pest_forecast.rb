@@ -11,28 +11,36 @@ class PestForecast < ActiveRecord::Base
       carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
       alfalfa_weevil: weather.degree_days('sine', 48, NO_MAX),
       asparagus_beetle: weather.degree_days('sine', 50, 86),
-      black_cutworm: weather.degree_days('sine', 50.7, 86),
+      black_cutworm: weather.degree_days('sine', 50, 86),
       brown_marmorated_stink_bug: weather.degree_days('sine', 54, 92),
       cabbage_looper: weather.degree_days('sine', 50, 90),
-      cabbage_maggot: weather.degree_days('sine', 39.7, 86),
+      cabbage_maggot: weather.degree_days('sine', 42.8, 86),
       colorado_potato_beetle: weather.degree_days('sine', 52, NO_MAX),
       corn_earworm: weather.degree_days('sine', 55, 92),
       corn_rootworm: weather.degree_days('sine', 52, NO_MAX),
       european_corn_borer: weather.degree_days('sine', 50, 86),
-      flea_beetle_mint: weather.degree_days('sine', 41, 103),
+      flea_beetle_mint: weather.degree_days('sine', 41, NO_MAX),
       flea_beetle_crucifer: weather.degree_days('sine', 50, NO_MAX),
       imported_cabbageworm: weather.degree_days('sine', 50, NO_MAX),
-      japanese_beetle: weather.degree_days('sine', 50, 100),
+      japanese_beetle: weather.degree_days('sine', 50, NO_MAX),
       lygus_bug: weather.degree_days('sine', 52, NO_MAX),
       mint_root_borer: weather.degree_days('sine', 50, NO_MAX),
-      onion_maggot: weather.degree_days('sine', 39, 84),
+      onion_maggot: weather.degree_days('sine', 39.2, 86),
       potato_psyllid: weather.degree_days('sine', 40, 86),
-      seedcorn_maggot: weather.degree_days('sine', 50, NO_MAX),
+      seedcorn_maggot: weather.degree_days('sine', 39.2, 86),
       squash_vine_borer: weather.degree_days('sine', 50, NO_MAX),
       stalk_borer: weather.degree_days('sine', 41, 86),
       variegated_cutworm: weather.degree_days('sine', 41, 88),
       western_bean_cutworm: weather.degree_days('sine', 50, NO_MAX),
       western_flower_thrips: weather.degree_days('sine', 45, 104))
+  end
+
+  def self.potato_p_days(min_temp, max_temp)
+    first = 5 * p_function(min_temp)
+    second = 8 * p_function((2*min_temp/3.0) + (max_temp/3.0))
+    third = 8 * p_function((2*max_temp/3.0) + (min_temp/3.0))
+    fourth = 3 * p_function(max_temp)
+    (first + second + third + fourth)/24.0
   end
 
   def self.compute_potato_blight_dsv(weather)
@@ -154,5 +162,17 @@ class PestForecast < ActiveRecord::Base
     end
 
     return grid
+  end
+
+  def self.p_function(temp)
+    if temp < 7.0
+      return 0.0
+    elsif temp > 7.0 && temp <= 21.0
+      return 10 * (1 - ((temp - 21.0)**2/196.0)) # 196 = (21-7)^2
+    elsif temp > 21.0 && temp < 30
+      return 10 * (1 - ((temp - 21.0)**2/81.0)) # 81 = (30-21)^2
+    else
+      return 0.0
+    end
   end
 end
