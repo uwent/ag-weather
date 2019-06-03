@@ -1,6 +1,6 @@
 class StationObservationsController < ApplicationController
   def index
-    station = Station.where(name: params[:name]).first
+    station = find_station(params[:name])
     start_date = params[:start_date].blank? ? Date.today.beginning_of_year :
                    Date.parse(params[:start_date])
     end_date = params[:end_date].blank? ? Date.today : Date.parse(params[:end_date])
@@ -16,5 +16,11 @@ class StationObservationsController < ApplicationController
     end
 
     render json: readings
+  end
+
+  private
+  def find_station(name)
+    name.gsub!(" ", "")
+    Station.where(name: name).first
   end
 end
