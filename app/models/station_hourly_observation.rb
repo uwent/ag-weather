@@ -1,4 +1,4 @@
-class StationHourlyObservation < ActiveRecord::Base
+class StationHourlyObservation < ApplicationRecord
   belongs_to :station
 
   def wet_hour?

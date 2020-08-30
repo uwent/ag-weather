@@ -1,4 +1,5 @@
-class Station < ActiveRecord::Base
+class Station < ApplicationRecord
+
   has_many :station_hourly_observations
 
   def observations_for_day(date)

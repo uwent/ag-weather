@@ -1,36 +1,58 @@
-version: 2
+version: 2.1
+orbs:
+  ruby: circleci/ruby@0.1.2
+
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.2-node-browsers
+      - image: cimg/ruby:2.6.5-node
         environment:
           PG_HOST: localhost
           PG_USER: ag_weather
           RAILS_ENV: test
           RACK_ENV: test
+          BUNDLER_VERSION: 2.1.4
       - image: postgres:9.6
         environment:
           POSTGRES_USER: ag_weather
           POSTGRES_DB: ag_weather_test
+          POSTGRES_PASSWORD: "password"
     steps:
       - checkout
       - run:
-          name: Install Dependencies
+          name: Update Bundler
+          command: gem install bundler:2.1.4
+      - run:
+          name: Install eccodes
           command: |
-            sudo apt-get install libgrib-api-tools
-            npm install dredd
-            gem install bundler
-            bundle install
+                  tar -xzf  eccodes-x.y.z-Source.tar.gz
+                  mkdir build ; cd build
+                  cmake -DCMAKE_INSTALL_PREFIX=/path/to/where/you/install/eccodes ../eccodes-x.y.z-Source
+                  make
+                  ctest
+                  make install
+      - run:
+          name: Install Dredd
+          command: npm install dredd
+      - restore_cache:
+          keys:
+            - ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
+            - ag-weather-bundle-v1-
+      - run:
+          name: Bundle Install
+          command: bundle check --path ./vendor/bundle || bundle install --deployment
+      - save_cache:
+         key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
+         paths:
+           - ./vendor/bundle
       - run:
           name: Set up DB
-          command: |
-            bundle exec rake db:migrate
+          command: bin/rails db:setup
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:
           name: Run Specs
-          command: |
-            bundle exec rspec
+          command: bundle exec rspec
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:

@@ -1,4 +1,4 @@
-class CreateWeatherData < ActiveRecord::Migration
+class CreateWeatherData < ActiveRecord::Migration[6.0]
   def change
     create_table :weather_data do |t|
       t.decimal :max_temperature

@@ -1,4 +1,4 @@
-class WeatherDatum < ActiveRecord::Base
+class WeatherDatum < ApplicationRecord
   def self.land_grid_for_date(date)
     weather_grid = LandGrid.wisconsin_grid
 

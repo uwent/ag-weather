@@ -1,4 +1,4 @@
-class CreateInsolationData < ActiveRecord::Migration
+class CreateInsolationData < ActiveRecord::Migration[6.0]
   def change
     create_table :insolation_data do |t|
       t.decimal :insolation

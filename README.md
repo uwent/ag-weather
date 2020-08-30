@@ -4,7 +4,14 @@
 ## Description
 This project is to support the UW-Extension's Agricultural Weather Service.  Included are the tools to load weather and insolation data from remote sources, calculate and store daily evapotranspiration data, calculate multiple formulas of degreee days, generate and save state-wide maps to display this data, and provide access to all of this information through public endpoints.
 
+Ruby version `2.6.5`
+
+Rails version `6.0.3.2`
+
+ecCodes for [GRIB files](https://en.wikipedia.org/wiki/GRIB)
+
 ## Setup
+* Install [ecCodes](https://github.com/ecmwf/eccodes) with pip or use Homebrew `brew install eccodes`
 * clone the project
 * Install dependencies
 ```
@@ -31,7 +38,6 @@ bundle exec cap production deploy
 ## Daily Process
 
 Early every morning we will run a sequence of steps:
-* Save NOAA grib files locally (`WeatherFetcher.fetch`)
 * Load weather data from grib files into DB (`WeatherImporter.import`)
 * Load insolation data from SSEC server into DB (`InsolationImporter.fetch`)
 * Calculate ET data and save to DB (`EvapotranspirationImporter.create_et_data`)

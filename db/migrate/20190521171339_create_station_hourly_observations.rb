@@ -1,4 +1,4 @@
-class CreateStationHourlyObservations < ActiveRecord::Migration
+class CreateStationHourlyObservations < ActiveRecord::Migration[6.0]
   def change
     create_table :station_hourly_observations do |t|
       t.integer  :station_id

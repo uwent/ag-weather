@@ -1,4 +1,4 @@
-class Evapotranspiration < ActiveRecord::Base
+class Evapotranspiration <  ApplicationRecord
 
   def self.land_grid_values_for_date(date)
     et_grid = LandGrid.wisconsin_grid

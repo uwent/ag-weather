@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-
   resources :evapotranspirations, only: [:show, :index] do
     collection do
       get 'all_for_date'

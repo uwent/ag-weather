@@ -1,4 +1,4 @@
-class DataImport < ActiveRecord::Base
+class DataImport < ApplicationRecord
 
   DAYS_BACK_WINDOW = 3
 
