@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   resources :pest_forecasts, only: [:index] do
     collection do
       get 'point_details'
+      get 'custom'
+      get 'custom_point_details'
     end
   end
   get '/calculate_et', to: 'evapotranspirations#calculate_et'

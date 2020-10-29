@@ -4,14 +4,32 @@ class PestForecastsController < ApplicationController
     # inputs: start_date, end_date, pest
     # return: lat, long, value
     values = PestForecast.select(:latitude).select(:longitude).
-               select("sum(#{pest}) as total").
-               where("date between ? and ?", start_date, end_date).
-               group(:latitude, :longitude).
-               order(:latitude, :longitude)
+      select("sum(#{pest}) as total").
+      where("date between ? and ?", start_date, end_date).
+      group(:latitude, :longitude).
+      order(:latitude, :longitude)
     results = values.collect do |v|
       { lat: v.latitude, long: v.longitude * -1, total: v.total.round(2) }
     end
     render json: results
+  end
+
+  def custom
+    results = []
+    degree_days = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
+
+    max = 0
+    min = degree_days[44.5, 91.0]
+    Wisconsin.each_point do |lat, long|
+      total = degree_days[lat, long].round(2)
+      results << { lat: lat, long: (long * -1).round(1), total: total }
+      if total > max
+        max = total
+      elsif total < min
+        min = total
+      end
+    end
+    render json: { results: results, min: min, max: max }
   end
 
   def point_details
@@ -19,13 +37,13 @@ class PestForecastsController < ApplicationController
     # return: date, value
     forecasts = PestForecast.for_lat_long_date_range(lat, long, start_date,
                                                      end_date)
-                .map { |pf| [pf.date, pf.send(pest)] }.to_h
+      .map { |pf| [pf.date, pf.send(pest)] }.to_h
     forecasts.default = 0
 
     weather = WeatherDatum.where(latitude: lat, longitude: long).
-              where("date >= ? and date <= ?", start_date, end_date).
-              order(:date).
-              collect do |w|
+      where("date >= ? and date <= ?", start_date, end_date).
+      order(:date).
+      collect do |w|
       {
         date: w.date,
         value: forecasts[w.date].round(1),
@@ -35,6 +53,22 @@ class PestForecastsController < ApplicationController
     end
 
     render json: weather
+  end
+
+  def custom_point_details
+    weather = WeatherDatum.where(latitude: lat, longitude: long).
+      where("date >= ? and date <= ?", start_date, end_date).
+      order(:date).
+      collect do |w|
+      {
+        date: w.date,
+        value: w.degree_days('sine', t_min, t_max).round(1),
+        avg_temperature: w.avg_temperature.round(1),
+        hours_over: w.hours_rh_over_85
+      }
+    end
+
+      render json: weather
   end
 
   private
@@ -56,5 +90,17 @@ class PestForecastsController < ApplicationController
 
   def pest
     params[:pest]
+  end
+
+  def t_min
+    if params[:t_min].blank?
+      DegreeDaysCalculator::DEFAULT_BASE
+    else
+      params[:t_min].to_f
+    end
+  end
+
+  def t_max
+    params[:t_max].blank? ? PestForecast::NO_MAX : params[:t_max].to_f
   end
 end
