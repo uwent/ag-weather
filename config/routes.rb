@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     collection do
       get 'point_details'
       get 'custom'
+      get 'custom_point_details'
     end
   end
   get '/calculate_et', to: 'evapotranspirations#calculate_et'

@@ -16,7 +16,7 @@ class PestForecastsController < ApplicationController
 
   def custom
     results = []
-    degree_days = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, params[:tMin], params[:tMax])
+    degree_days = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
 
     max = 0
     min = degree_days[44.5, 91.0]
@@ -55,6 +55,22 @@ class PestForecastsController < ApplicationController
     render json: weather
   end
 
+  def custom_point_details
+    weather = WeatherDatum.where(latitude: lat, longitude: long).
+      where("date >= ? and date <= ?", start_date, end_date).
+      order(:date).
+      collect do |w|
+      {
+        date: w.date,
+        value: w.degree_days('sine', t_min, t_max).round(1),
+        avg_temperature: w.avg_temperature.round(1),
+        hours_over: w.hours_rh_over_85
+      }
+    end
+
+      render json: weather
+  end
+
   private
   def start_date
     params[:start_date].blank? ? 7.days.ago.to_date : Date.parse(params[:start_date])
@@ -74,5 +90,17 @@ class PestForecastsController < ApplicationController
 
   def pest
     params[:pest]
+  end
+
+  def t_min
+    if params[:t_min].blank?
+      DegreeDaysCalculator::DEFAULT_BASE
+    else
+      params[:t_min].to_f
+    end
+  end
+
+  def t_max
+    params[:t_max].blank? ? PestForecast::NO_MAX : params[:t_max].to_f
   end
 end
