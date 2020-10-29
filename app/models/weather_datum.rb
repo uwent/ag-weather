@@ -13,7 +13,7 @@ class WeatherDatum < ApplicationRecord
                                                     start_date,
                                                     end_date,
                                                     base = DegreeDaysCalculator::DEFAULT_BASE,
-                                                    upper = DegreeDaysCalculator::DEFAULT_UPPER)
+                                                    upper = PestForecast::NO_MAX)
 
     grid = land_grid_for_date_range(start_date, end_date)
     Wisconsin.each_point do |lat, long|
