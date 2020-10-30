@@ -17,19 +17,10 @@ class PestForecastsController < ApplicationController
   def custom
     results = []
     grid = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
-
-    max = 0
-    min = grid[Wisconsin::N_LAT, Wisconsin::W_LONG]
-    Wisconsin.each_point do |lat, long|
-      total = grid[lat, long].round(2)
-      results << { lat: lat, long: (long * -1).round(1), total: total }
-      if total > max
-        max = total
-      elsif total < min
-        min = total
-      end
+    grid.keys.each do |coordinate|
+      results << { lat: coordinate.first, long: (coordinate.last * -1).round(1), total: grid[coordinate].round(2) }
     end
-    render json: { results: results, min: min, max: max }
+    render json: { results: results, min: grid.values.min.round, max: grid.values.max.round }
   end
 
   def point_details
