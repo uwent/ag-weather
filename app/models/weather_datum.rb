@@ -15,25 +15,14 @@ class WeatherDatum < ActiveRecord::Base
                                                     base = DegreeDaysCalculator::DEFAULT_BASE,
                                                     upper = PestForecast::NO_MAX)
 
-    grid = land_grid_for_date_range(start_date, end_date)
-    Wisconsin.each_point do |lat, long|
-      next if grid[lat,long].nil?
-      dd = grid[lat, long].collect do |weather_day|
-        weather_day.degree_days(method, base, upper)
-      end.sum
-      grid[lat, long] = dd
-    end
-    grid
-  end
-
-  def self.land_grid_for_date_range(start_date, end_date)
+    results = []
     grid = LandGrid.wisconsin_grid
-
-    WeatherDatum.where("date between ? and ?", start_date, end_date).each do |weather|
+    weatherDatum = WeatherDatum.where(date: start_date..end_date)
+    weatherDatum.each do |weather|
       if grid[weather.latitude, weather.longitude].nil?
-        grid[weather.latitude, weather.longitude] = [weather]
+        grid[weather.latitude, weather.longitude] = weather.degree_days(method, base, upper)
       else
-        grid[weather.latitude, weather.longitude] << weather
+        grid[weather.latitude, weather.longitude] += weather.degree_days(method, base, upper)
       end
     end
     grid
