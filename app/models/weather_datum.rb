@@ -15,17 +15,16 @@ class WeatherDatum < ActiveRecord::Base
                                                     base = DegreeDaysCalculator::DEFAULT_BASE,
                                                     upper = PestForecast::NO_MAX)
 
-    results = []
-    grid = LandGrid.wisconsin_grid
-    weatherDatum = WeatherDatum.where(date: start_date..end_date)
-    weatherDatum.each do |weather|
-      if grid[weather.latitude, weather.longitude].nil?
-        grid[weather.latitude, weather.longitude] = weather.degree_days(method, base, upper)
+
+    WeatherDatum.where(date: start_date..end_date).where(latitude: Wisconsin.latitudes, longitude: Wisconsin.longitudes).each_with_object(Hash.new(0)) do |weather_datum, hash|
+      coordinate = [weather_datum.latitude.to_f, weather_datum.longitude.to_f]
+      if hash[coordinate].nil?
+        hash[coordinate] = weather_datum.degree_days(method, base, upper)
       else
-        grid[weather.latitude, weather.longitude] += weather.degree_days(method, base, upper)
+        hash[coordinate] += weather_datum.degree_days(method, base, upper)
       end
+      hash
     end
-    grid
   end
 
   def self.land_grid_since(date)
