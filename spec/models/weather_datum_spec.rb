@@ -2,29 +2,11 @@ require "rails_helper"
 
 RSpec.describe WeatherDatum, type: :model do
 
-  describe "#land_grid_for_date_range" do
-    it 'creates a land grid in date range' do
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
-      1.upto(10) { |i| FactoryGirl.create(
-        :weather_datum,
-        date: Date.current - i.days,
-        latitude: latitude,
-        longitude: longitude
-      )}
-      land_grid = WeatherDatum.land_grid_for_date_range(Date.current - 12.days, Date.current)
-      expect(land_grid[latitude, longitude]).to be_kind_of(Array)
-      expect(land_grid[latitude, longitude].length).to eq 10
-
-      land_grid = WeatherDatum.land_grid_for_date_range(Date.current - 60.days, Date.current - 40.days)
-      expect(land_grid[latitude, longitude]).to eq nil
-    end
-  end
-
   describe "#calculate_all_degree_days_for_date_range" do
     it 'calculates a degree day value for date range' do
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
+      key = [latitude, longitude]
       1.upto(10) { |i| FactoryGirl.create(
         :weather_datum,
         date: Date.current - i.days,
@@ -37,7 +19,7 @@ RSpec.describe WeatherDatum, type: :model do
         Date.current - 12.days,
         Date.current)
 
-      expect(grid[latitude, longitude].round(1)).to eq 17.4
+      expect(grid[key].round(1)).to eq 17.4
     end
   end
 

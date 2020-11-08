@@ -3,24 +3,26 @@ class PestForecastsController < ApplicationController
   def index
     # inputs: start_date, end_date, pest
     # return: lat, long, value
-    values = PestForecast.select(:latitude).select(:longitude).
-      select("sum(#{pest}) as total").
-      where("date between ? and ?", start_date, end_date).
-      group(:latitude, :longitude).
-      order(:latitude, :longitude)
-    results = values.collect do |v|
-      { lat: v.latitude, long: v.longitude * -1, total: v.total.round(2) }
-    end
-    render json: results
+    render json: get_pest_forecast_data
   end
 
   def custom
     results = []
-    grid = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
-    grid.keys.each do |coordinate|
-      results << { lat: coordinate.first, long: (coordinate.last * -1).round(1), total: grid[coordinate].round(2) }
+    min = 0
+    max = 0
+    if pest.present?
+      results = get_pest_forecast_data
+      min = results.map{|result| result[:total] }.min
+      max = results.map{|result| result[:total] }.max
+    else
+      grid = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
+      grid.keys.each do |coordinate|
+        results << { lat: coordinate.first, long: (coordinate.last * -1).round(1), total: grid[coordinate].round(2) }
+      end
+      min = grid.values.min&.round
+      max = grid.values.max&.round
     end
-    render json: { results: results, min: grid.values.min.round, max: grid.values.max.round }
+    render json: { results: results, min: min, max: max }
   end
 
   def point_details
@@ -59,10 +61,20 @@ class PestForecastsController < ApplicationController
       }
     end
 
-      render json: weather
+    render json: weather
   end
 
   private
+
+  def get_pest_forecast_data
+    PestForecast.select(:latitude).select(:longitude).
+      select("sum(#{pest}) as total").
+      where("date between ? and ?", start_date, end_date).
+      group(:latitude, :longitude).
+      order(:latitude, :longitude).
+      collect {|v| {lat: v.latitude, long: v.longitude * -1, total: v.total.round(2) }}
+  end
+
   def start_date
     params[:start_date].blank? ? 7.days.ago.to_date : Date.parse(params[:start_date])
   end

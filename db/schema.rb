@@ -10,17 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_25_152012) do
+ActiveRecord::Schema.define(version: 20201104180603) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "data_imports", id: :serial, force: :cascade do |t|
-    t.string "type"
-    t.date "readings_on", null: false
-    t.string "status", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table "ar_internal_metadata", primary_key: "key", force: :cascade do |t|
+    t.string   "value"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "data_imports", force: :cascade do |t|
+    t.string   "type"
+    t.date     "readings_on", null: false
+    t.string   "status",      null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "evapotranspirations", id: :serial, force: :cascade do |t|
@@ -32,13 +38,13 @@ ActiveRecord::Schema.define(version: 2020_08_25_152012) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "insolations", id: :serial, force: :cascade do |t|
-    t.decimal "recording"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
-    t.date "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table "insolations", force: :cascade do |t|
+    t.decimal  "recording"
+    t.decimal  "latitude",   precision: 10, scale: 6
+    t.decimal  "longitude",  precision: 10, scale: 6
+    t.date     "date"
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
   end
 
   create_table "pest_forecasts", id: :serial, force: :cascade do |t|
@@ -92,17 +98,20 @@ ActiveRecord::Schema.define(version: 2020_08_25_152012) do
     t.float "longitude", null: false
   end
 
-  create_table "weather_data", id: :serial, force: :cascade do |t|
-    t.decimal "max_temperature"
-    t.decimal "min_temperature"
-    t.decimal "avg_temperature"
-    t.decimal "vapor_pressure"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
-    t.date "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "hours_rh_over_85", default: 0
+  create_table "weather_data", force: :cascade do |t|
+    t.decimal  "max_temperature"
+    t.decimal  "min_temperature"
+    t.decimal  "avg_temperature"
+    t.decimal  "vapor_pressure"
+    t.decimal  "latitude",            precision: 10, scale: 6
+    t.decimal  "longitude",           precision: 10, scale: 6
+    t.date     "date"
+    t.datetime "created_at",                                               null: false
+    t.datetime "updated_at",                                               null: false
+    t.integer  "hours_rh_over_85",                             default: 0
+    t.float    "avg_temp_rh_over_85"
+    t.float    "avg_temp_rh_over_90"
+    t.integer  "hours_rh_over_90"
   end
 
 end
