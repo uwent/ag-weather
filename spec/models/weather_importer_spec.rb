@@ -125,28 +125,28 @@ RSpec.describe WeatherImporter, type: :model do
   describe '.relative_humidity_over_85' do
     it "counts all if temperature is same as dewpoint (rel. humidity is 100) " do
       observations = FactoryGirl.build_list :weather_observation, 20
-      expect(WeatherImporter.relative_humidity_over_85(observations)).to eq 20
+      expect(WeatherImporter.relative_humidity_over(observations, 85.0)).to eq 20
     end
 
     it "only counts the ones where temp is same as dewpoint" do
       observations = FactoryGirl.build_list :weather_observation, 10
       observations += FactoryGirl.build_list(:weather_observation, 10,
                                              dew_point: 273.15)
-      expect(WeatherImporter.relative_humidity_over_85(observations)).to eq 10
+      expect(WeatherImporter.relative_humidity_over(observations, 85.0)).to eq 10
     end
 
     it "zero for an empty list" do
-      expect(WeatherImporter.relative_humidity_over_85([])).to eq 0
+      expect(WeatherImporter.relative_humidity_over([], 85.0)).to eq 0
     end
 
     it 'counts those on edge of 85.0' do
       observation = FactoryGirl.build(:weather_observation, dew_point: 287.60953)
-      expect(WeatherImporter.relative_humidity_over_85([observation])).to eq 1
+      expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq 1
     end
 
     it "doesn't count those on edge of 85.0" do
       observation = FactoryGirl.build(:weather_observation, dew_point: 287.60952)
-      expect(WeatherImporter.relative_humidity_over_85([observation])).to eq 0
+      expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq 0
     end
   end
 

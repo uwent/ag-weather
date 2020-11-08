@@ -80,13 +80,24 @@ class WeatherImporter
                       min_temperature: temperatures.min,
                       avg_temperature: weather_average(temperatures),
                       vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)),
-                      hours_rh_over_85: relative_humidity_over_85(observations))
+                      hours_rh_over_85: relative_humidity_over(observations, 85.0),
+                      avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
+                      hours_rh_over_90: relative_humidity_over(observations, 90.0),
+                      avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
+      )
     end
     WeatherDatum.import(weather_data, validate: false)
   end
 
-  def self.relative_humidity_over_85(observations)
+  def self.relative_humidity_over(observations, degree_temp)
     observations.map(&:relative_humidity).select { |x| x >= 85.0 }.length
+  end
+
+  def self.avg_temp_rh_over(observations, degree_temp)
+    over_rh_observations = observations.select { |observation| observation.relative_humidity >= degree_temp }
+    if over_rh_observations.size >= 1
+      (over_rh_observations.map(&:temperature).sum / over_rh_observations.size).round(2)
+    end
   end
 
   def self.dew_point_to_vapor_pressure(dew_point)
