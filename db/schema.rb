@@ -11,10 +11,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190530180713) do
+ActiveRecord::Schema.define(version: 20201104180603) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "ar_internal_metadata", primary_key: "key", force: :cascade do |t|
+    t.string   "value"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
 
   create_table "data_imports", force: :cascade do |t|
     t.string   "type"
@@ -32,8 +38,6 @@ ActiveRecord::Schema.define(version: 20190530180713) do
     t.datetime "created_at",                            null: false
     t.datetime "updated_at",                            null: false
   end
-
-  add_index "evapotranspirations", ["latitude", "longitude", "date"], name: "et_lat_long_date", using: :btree
 
   create_table "insolations", force: :cascade do |t|
     t.decimal  "recording"
@@ -100,12 +104,15 @@ ActiveRecord::Schema.define(version: 20190530180713) do
     t.decimal  "min_temperature"
     t.decimal  "avg_temperature"
     t.decimal  "vapor_pressure"
-    t.decimal  "latitude",         precision: 10, scale: 6
-    t.decimal  "longitude",        precision: 10, scale: 6
+    t.decimal  "latitude",            precision: 10, scale: 6
+    t.decimal  "longitude",           precision: 10, scale: 6
     t.date     "date"
-    t.datetime "created_at",                                            null: false
-    t.datetime "updated_at",                                            null: false
-    t.integer  "hours_rh_over_85",                          default: 0
+    t.datetime "created_at",                                               null: false
+    t.datetime "updated_at",                                               null: false
+    t.integer  "hours_rh_over_85",                             default: 0
+    t.float    "avg_temp_rh_over_85"
+    t.float    "avg_temp_rh_over_90"
+    t.integer  "hours_rh_over_90"
   end
 
 end
