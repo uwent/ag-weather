@@ -16,12 +16,6 @@ ActiveRecord::Schema.define(version: 20201104180603) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "ar_internal_metadata", primary_key: "key", force: :cascade do |t|
-    t.string   "value"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
   create_table "data_imports", force: :cascade do |t|
     t.string   "type"
     t.date     "readings_on", null: false

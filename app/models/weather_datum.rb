@@ -62,6 +62,7 @@ class WeatherDatum < ActiveRecord::Base
        DegreeDaysCalculator.to_fahrenheit(min_temperature),
        DegreeDaysCalculator.to_fahrenheit(max_temperature),
                                    base, upper)
+
     val
   end
 end
