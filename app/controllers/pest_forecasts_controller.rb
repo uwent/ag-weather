@@ -35,34 +35,44 @@ class PestForecastsController < ApplicationController
 
     weather = WeatherDatum.where(latitude: lat, longitude: long).
       where("date >= ? and date <= ?", start_date, end_date).
-      order(:date).
-      collect do |w|
+      order(:date)
+
+    weather_data = weather.collect do |w|
       {
         date: w.date,
         value: forecasts[w.date].round(1),
+        cumulative_value: build_cumulative_dsv(weather, w.date, forecasts),
+        min_temp: w.min_temperature.round(1),
+        max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
+        avg_temp_over_85: w.avg_temp_rh_over_85,
         hours_over: w.hours_rh_over_85
       }
     end
 
-    render json: weather
+    render json: weather_data
   end
 
   def custom_point_details
     weather = WeatherDatum.where(latitude: lat, longitude: long).
       where("date >= ? and date <= ?", start_date, end_date).
-      order(:date).
-      collect do |w|
+      order(:date)
+
+    weather_data = weather.collect do |w|
       {
         date: w.date,
         value: w.degree_days('sine', t_min, t_max).round(1),
+        cumulative_value: build_cumulative_dd(weather, w.date, t_min, t_max).round(1),
+        min_temp: w.min_temperature.round(1),
+        max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
-        hours_over: w.hours_rh_over_85
+        t_min: t_min,
+        t_max: t_max
       }
     end
-
-    render json: weather
+    render json: weather_data
   end
+
 
   private
 
@@ -105,5 +115,23 @@ class PestForecastsController < ApplicationController
 
   def t_max
     params[:t_max].blank? ? PestForecast::NO_MAX : params[:t_max].to_f
+  end
+
+  def build_cumulative_dsv(weatherList, date, forecasts)
+    dsv = []
+    weatherList.select { |d| date >= d.date }
+                .each do |w|
+                  dsv << forecasts[date].round(1)
+                end
+    dsv.sum
+  end
+
+  def build_cumulative_dd(weatherList, date, t_min, t_max)
+    degree_days = []
+    weatherList.select { |d| date >= d.date }
+                .each do |w|
+                  degree_days << w.degree_days('sine', t_min, t_max).round(1)
+                end
+    degree_days.sum
   end
 end
