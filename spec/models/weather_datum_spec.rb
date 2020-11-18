@@ -7,7 +7,7 @@ RSpec.describe WeatherDatum, type: :model do
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
       key = [latitude, longitude]
-      1.upto(10) { |i| FactoryGirl.create(
+      1.upto(10) { |i| FactoryBot.create(
         :weather_datum,
         date: Date.current - i.days,
         latitude: latitude,
