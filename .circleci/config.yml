@@ -29,13 +29,13 @@ jobs:
           keys:
             - ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
             - ag-weather-bundle-v1-
-      # - run:
-      #     name: Bundle Install
-      #     command: bundle check --path ./vendor/bundle || bundle install --deployment
-      # - save_cache:
-      #    key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
-      #    paths:
-      #      - ./vendor/bundle
+      - run:
+          name: Bundle Install
+          command: bundle config set path './vendor/bundle' || bundle install
+      - save_cache:
+         key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
+         paths:
+           - ./vendor/bundle
       - run:
           name: Set up DB
           command: bin/rails db:setup
