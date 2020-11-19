@@ -31,7 +31,7 @@ jobs:
             - ag-weather-bundle-v1-
       - run:
           name: Bundle Install
-          command: bundle config set path './vendor/bundle' || bundle install
+          command: bundle check --path ./vendor/bundle || bundle install
       - save_cache:
          key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
          paths:

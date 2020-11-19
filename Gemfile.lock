@@ -347,4 +347,3 @@ DEPENDENCIES
   web-console (= 4.0.4)
   webmock (~> 3.8)
   whenever (~> 1.0)
-
