@@ -28,6 +28,16 @@ jobs:
       - run:
           name: Install Dredd
           command: npm install dredd
+      - run:
+          name: Install Eccodes
+            command: |
+                  tar -xzf  eccodes-x.y.z-Source.tar.gz
+                  mkdir build
+                  cd build
+                  cmake -DCMAKE_INSTALL_PREFIX=/usr/bin/eccodes ../eccodes-x.y.z-Source
+                  make
+                  ctest
+                  make install
       - restore_cache:
           keys:
             - ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
@@ -44,9 +54,6 @@ jobs:
           command: bin/rails db:setup
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
-      - run:
-          name: Install eccodes
-          command: brew install eccodes
       - run:
           name: Run Specs
           command: bundle exec rspec
