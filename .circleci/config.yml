@@ -23,10 +23,6 @@ jobs:
           name: Update Bundler
           command: gem install bundler:2.1.4
       - run:
-          name: Install eccodes
-          command: brew install eccodes
-
-      - run:
           name: Install Dredd
           command: npm install dredd
       - restore_cache:
