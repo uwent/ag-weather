@@ -23,6 +23,9 @@ jobs:
           name: Update Bundler
           command: gem install bundler:2.1.4
       - run:
+          name: Which bundler?
+          command: bundle -v
+      - run:
           name: Install Dredd
           command: npm install dredd
       - restore_cache:
