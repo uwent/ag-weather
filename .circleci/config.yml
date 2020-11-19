@@ -45,6 +45,9 @@ jobs:
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:
+          name: Install eccodes
+          command: brew install eccodes
+      - run:
           name: Run Specs
           command: bundle exec rspec
           environment:
