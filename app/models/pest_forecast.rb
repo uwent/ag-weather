@@ -1,9 +1,9 @@
-class PestForecast < ActiveRecord::Base
+class PestForecast < ApplicationRecord
 
   NO_MAX = 150
 
   def self.new_from_weather(weather)
-    return PestForecast.new(
+    PestForecast.new(
       latitude: weather.latitude,
       longitude: weather.longitude,
       date: weather.date,
@@ -67,7 +67,7 @@ class PestForecast < ActiveRecord::Base
       return 3 if hours.in? (16 .. 18)
       return 4 if hours.in? (19 .. 21)
     end
-    return 0
+    0
   end
 
   def self.compute_carrot_foliar_dsv(weather)
@@ -99,7 +99,7 @@ class PestForecast < ActiveRecord::Base
       return 3 if hours.in? (16 .. 22)
       return 4 if hours >= 23
     end
-    return 0
+    0
   end
 
   def self.potato_blight_severity(seven_day, season)
@@ -171,7 +171,7 @@ class PestForecast < ActiveRecord::Base
       grid[dsv.latitude, dsv.longitude] = dsv.total
     end
 
-    return grid
+    grid
   end
 
   def self.p_function(temp)

@@ -7,7 +7,7 @@ RSpec.describe WeatherDatum, type: :model do
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
       key = [latitude, longitude]
-      1.upto(10) { |i| FactoryGirl.create(
+      1.upto(10) { |i| FactoryBot.create(
         :weather_datum,
         date: Date.current - i.days,
         latitude: latitude,
@@ -32,7 +32,7 @@ RSpec.describe WeatherDatum, type: :model do
       date = Date.current
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
-      FactoryGirl.create(:weather_datum, date: date, latitude: latitude,
+      FactoryBot.create(:weather_datum, date: date, latitude: latitude,
                          longitude: longitude)
       land_grid = WeatherDatum.land_grid_for_date(date)
       expect(land_grid[latitude, longitude]).to be_kind_of(WeatherDatum)
@@ -49,7 +49,7 @@ RSpec.describe WeatherDatum, type: :model do
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
       1.upto(10) do |i|
-        FactoryGirl.create(:weather_datum, date: Date.current - i.days,
+        FactoryBot.create(:weather_datum, date: Date.current - i.days,
                            latitude: latitude, longitude: longitude)
       end
       land_grid = WeatherDatum.land_grid_since(Date.current - 12.days)
@@ -65,7 +65,7 @@ RSpec.describe WeatherDatum, type: :model do
 
   describe "degree days" do
     it 'should get degree days with its min and max temps in Fahrenheit' do
-      weather = FactoryGirl.create(:weather_datum, min_temperature: 8.0,
+      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0,
                                    max_temperature: 20.0)
       expect(DegreeDaysCalculator).to receive(:calculate)
         .with("sine",
@@ -75,7 +75,7 @@ RSpec.describe WeatherDatum, type: :model do
       weather.degree_days("sine", 50, 86)
     end
     it 'should get degree days with its min and max temps in Fahrenheit' do
-      weather = FactoryGirl.create(:weather_datum, min_temperature: 8.0,
+      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0,
                                    max_temperature: 20.0)
       expect(weather.degree_days("sine", 50, 86)).to eq 7.834757752132984
     end
@@ -88,17 +88,17 @@ RSpec.describe WeatherDatum, type: :model do
     end
 
     it 'should call degree days for each point with data' do
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93)
-      FactoryGirl.create(:weather_datum, latitude: 43, longitude: 93)
+      FactoryBot.create(:weather_datum, latitude: 42, longitude: 93)
+      FactoryBot.create(:weather_datum, latitude: 43, longitude: 93)
       expect(DegreeDaysCalculator).to receive(:calculate).exactly(2).times
 
       WeatherDatum.calculate_all_degree_days("sine", 10.days.ago)
     end
 
     it 'should call degree days for each point for each day of data' do
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93,
+      FactoryBot.create(:weather_datum, latitude: 42, longitude: 93,
                          date: Date.yesterday)
-      FactoryGirl.create(:weather_datum, latitude: 42, longitude: 93,
+      FactoryBot.create(:weather_datum, latitude: 42, longitude: 93,
                          date: 2.days.ago)
       expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
 

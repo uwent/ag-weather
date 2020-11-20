@@ -6,13 +6,13 @@ RSpec.describe InsolationsController, type: :controller do
   describe '#show' do
     context 'when the request is valid' do
       it 'is okay' do
-        get :show, id: '2016-01-06'
+        get :show, params: { id: '2016-01-06' }
 
         expect(response).to have_http_status(:ok)
       end
 
       it 'has the correct response structure' do
-        get :show, id: '2016-01-06'
+        get :show, params: { id: '2016-01-06' }
 
         expect(response_hash.keys).to include('map')
       end
@@ -22,12 +22,12 @@ RSpec.describe InsolationsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         InsolationDataImport.successful.create(readings_on: '2016-01-06')
 
-        get :show, id: '2016-01-06'
+        get :show, params: { id: '2016-01-06' }
         expect(response_hash['map']).to eq filename
       end
 
       it 'responds with the no data map name if data not loaded' do
-        get :show, id: '2016-01-06'
+        get :show, params: { id: '2016-01-06' }
         expect(response_hash['map']).to eq '/no_data.png'
       end
     end
@@ -38,7 +38,7 @@ RSpec.describe InsolationsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         InsolationDataImport.successful.create(readings_on: Date.yesterday)
 
-        get :show, id: ''
+        get :show, params: { id: '' }
 
         expect(response_hash.keys).to match(['map'])
       end

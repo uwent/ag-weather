@@ -1,4 +1,4 @@
-class AddDegreeDayModelsToPestForecast < ActiveRecord::Migration
+class AddDegreeDayModelsToPestForecast < ActiveRecord::Migration[6.0]
   def change
     add_column :pest_forecasts, :alfalfa_weevil, :float
     add_column :pest_forecasts, :asparagus_beetle, :float

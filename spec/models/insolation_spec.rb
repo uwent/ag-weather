@@ -11,7 +11,7 @@ RSpec.describe Insolation, type: :model do
       date = Date.current
       latitude = Wisconsin::N_LAT
       longitude = Wisconsin::E_LONG
-      FactoryGirl.create(:insolation, date: date, latitude: latitude,
+      FactoryBot.create(:insolation, date: date, latitude: latitude,
                          longitude: longitude, recording: 17.0)
       land_grid = Insolation.land_grid_values_for_date(date)
       expect(land_grid[latitude, longitude]).to eq 17.0
