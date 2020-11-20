@@ -32,16 +32,14 @@ class PestForecastsController < ApplicationController
                                                      end_date)
       .map { |pf| [pf.date, pf.send(pest)] }.to_h
     forecasts.default = 0
-
     weather = WeatherDatum.where(latitude: lat, longitude: long).
       where("date >= ? and date <= ?", start_date, end_date).
-      order(:date)
-
-    weather_data = weather.collect do |w|
+      order(:date).
+      collect do |w|
       {
         date: w.date,
         value: forecasts[w.date].round(1),
-        cumulative_value: build_cumulative_dsv(weather, w.date, forecasts),
+        cumulative_value: forecasts.select { |k, v| w.date >= k }.values.sum.round(1),
         min_temp: w.min_temperature.round(1),
         max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
@@ -49,8 +47,7 @@ class PestForecastsController < ApplicationController
         hours_over: w.hours_rh_over_85
       }
     end
-
-    render json: weather_data
+    render json: weather
   end
 
   def custom_point_details
@@ -115,15 +112,6 @@ class PestForecastsController < ApplicationController
 
   def t_max
     params[:t_max].blank? ? PestForecast::NO_MAX : params[:t_max].to_f
-  end
-
-  def build_cumulative_dsv(weatherList, date, forecasts)
-    dsv = []
-    weatherList.select { |d| date >= d.date }
-                .each do |w|
-                  dsv << forecasts[date].round(1)
-                end
-    dsv.sum
   end
 
   def build_cumulative_dd(weatherList, date, t_min, t_max)
