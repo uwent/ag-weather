@@ -186,8 +186,6 @@ GEM
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    pry-rails (0.3.9)
-      pry (>= 0.10.4)
     public_suffix (4.0.6)
     rack (2.2.3)
     rack-test (1.1.0)
@@ -333,7 +331,6 @@ DEPENDENCIES
   letter_opener (~> 1.7)
   letter_opener_web (~> 1.4)
   pg (~> 0.15)
-  pry-rails
   rails (= 6.0.3.2)
   railties (= 6.0.3.2)
   rspec-rails (~> 4.0)

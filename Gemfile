@@ -18,7 +18,6 @@ gem 'json', '~> 2.3.0'
 
 group :development, :test do
   gem 'byebug', '~> 11.1'
-  gem 'pry-rails'
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 4.0'
   gem 'spring', '~> 2.1'
