@@ -1,4 +1,4 @@
-class CreatePestForecasts < ActiveRecord::Migration
+class CreatePestForecasts < ActiveRecord::Migration[6.0]
   def change
     create_table :pest_forecasts do |t|
       t.date    :date

@@ -12,15 +12,16 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it 'has the correct response structure' do
-        weather = FactoryGirl.create(:weather_datum)
-        params = {start_date: weather.date,
+        weather = FactoryBot.create(:weather_datum)
+        params = {
+          start_date: weather.date,
           end_date: weather.date,
           lat: weather.latitude,
           long: weather.longitude,
           format: :json
         }
 
-        get :index, params
+        get :index, params: params
 
         expect(response_hash).to be_an(Array)
         expect(response_hash.first.keys).to match(%w{date min_temp avg_temp max_temp pressure})
@@ -28,38 +29,38 @@ RSpec.describe WeatherController, type: :controller do
     end
 
     context 'when the request is invalid' do
-      before(:each) do
-        @params = {end_date: Date.current - 2.days,
-          start_date: Date.current - 4.days,
-          lat: 42.0,
-          long: 89.0,
-          format: :json}
-      end
+      let!(:params) {{
+        end_date: Date.current - 2.days,
+        start_date: Date.current - 4.days,
+        lat: 42.0,
+        long: 89.0,
+        format: :json
+      }}
 
       it 'and has no latitude return no content' do
-        @params.delete(:lat)
-        get :index, @params
+        params.delete(:lat)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end
 
       it 'and has no longitude return no content' do
-        @params.delete(:long)
-        get :index, @params
+        params.delete(:long)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end
 
       it 'and has no start date, return no content' do
-        @params.delete(:start_date)
-        get :index, @params
+        params.delete(:start_date)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end
 
       it 'and has no end date, return no content' do
-        @params.delete(:end_date)
-        get :index, @params
+        params.delete(:end_date)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end

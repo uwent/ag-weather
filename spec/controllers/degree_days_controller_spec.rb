@@ -5,13 +5,13 @@ RSpec.describe DegreeDaysController, type: :controller do
 
   describe '#show' do
     it 'is okay' do
-      get :show, id: '2016-01-07'
+      get :show, params: { id: '2016-01-07' }
 
       expect(response).to have_http_status(:ok)
     end
 
     it 'has the correct response structure' do
-      get :show, id: '2016-01-07'
+      get :show, params: { id: '2016-01-07' }
 
       expect(response_hash.first.keys).to match(['type', 'map'])
     end
@@ -26,45 +26,47 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it 'has the correct response structure' do
-        weather = FactoryGirl.create(:weather_datum)
-        params = {method: 'average',
+        weather = FactoryBot.create(:weather_datum)
+        params = {
+          method: 'average',
           start_date: weather.date,
           lat: weather.latitude,
           long: weather.longitude,
-          format: :json}
-        get :index, params
+          format: :json
+        }
+        get :index, params: params
 
         expect(response_hash.first.keys).to match(['date', 'value'])
       end
     end
 
     context 'when the request is not valid' do
-      before(:each) do
-        @params = {method: 'average',
+      let!(:params) {{
+          method: 'average',
           start_date: Date.current - 4.days,
           lat: 42.0,
           long: 89.0,
-          format: :json}
-      end
+          format: :json
+      }}
 
       it 'and has no latitude return no content' do
-        @params.delete(:lat)
-        get :index, @params
+        params.delete(:lat)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end
 
       it 'and has no longitude return no content' do
-        @params.delete(:long)
-        get :index, @params
+        params.delete(:long)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end
 
 
       it 'and has no method return no content' do
-        @params.delete(:method)
-        get :index, @params
+        params.delete(:method)
+        get :index, params: params
 
         expect(response_hash).to be_empty
       end

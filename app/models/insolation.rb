@@ -1,4 +1,4 @@
-class Insolation < ActiveRecord::Base
+class Insolation < ApplicationRecord
 
   def self.land_grid_values_for_date(date)
     value_grid = LandGrid.wisconsin_grid

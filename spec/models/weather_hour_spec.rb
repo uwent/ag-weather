@@ -6,7 +6,7 @@ RSpec.describe WeatherHour do
   let (:weather_hour) { WeatherHour.new }
 
   it 'has the grib tools available' do
-    expect(system('grib_info > /dev/null')).to be(true)
+    expect(system('codes_info > /dev/null')).to be(true)
   end
 
   context "initialization" do
