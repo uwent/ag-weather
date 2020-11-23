@@ -187,6 +187,8 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
     public_suffix (4.0.6)
+    puma (5.0.4)
+      nio4r (~> 2.0)
     rack (2.2.3)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -331,6 +333,7 @@ DEPENDENCIES
   letter_opener (~> 1.7)
   letter_opener_web (~> 1.4)
   pg (~> 0.15)
+  puma
   rails (= 6.0.3.2)
   railties (= 6.0.3.2)
   rspec-rails (~> 4.0)

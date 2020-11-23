@@ -11,37 +11,47 @@ Rails version `6.0.3.2`
 ecCodes for [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 
 ## Setup
-* Install [ecCodes](https://github.com/ecmwf/eccodes) with pip or use Homebrew `brew install eccodes`
-* clone the project
-* Install dependencies
+1. Install [ecCodes](https://github.com/ecmwf/eccodes) with pip or use Homebrew `brew install eccodes`
+2. clone the project
+3. Install dependencies
 ```
 bundle install
 ```
-* Create database and schema
+4. Create database and schema
 ```
 bundle exec rake db:create db:migrate
 ```
-* Import data (This will take a looooong time; probably several hours)
+5. Import data. Default settings limit data fetch to a maximum of three days. **DAYS_BACK_WINDOW** constant set in models/data_import.rb. Importing 3 days will take ~ 20-30 minutes.
   * open the rails console `bundle exec rails c`
-  * follow the steps in parantheses in the Daily Process section
+  * follow the steps in parentheses in the Daily Process section
 
-* Start server
+6. Start server
 ```
 bundle exec rails s
 ```
 
 ## Deployment
+Work with db admin to authorize your ssh key for the deploy user, then run the following commands from the master branch:
+
+Staging:
 ```
-bundle exec cap production deploy
+cap staging deploy
+```
+Production:
+```
+cap production deploy
 ```
 
 ## Daily Process
 
-Early every morning we will run a sequence of steps:
-* Load weather data from grib files into DB (`WeatherImporter.import`)
+Early every morning, the following jobs are run for staging and production. For local data, run commands manually in the rails console. Default settings will fetch max previous 3 days of data:
+* Load weather data from grib files into DB (`WeatherImporter.fetch`)
 * Load insolation data from SSEC server into DB (`InsolationImporter.fetch`)
 * Calculate ET data and save to DB (`EvapotranspirationImporter.create_et_data`)
-* Generate map images for insolation, ET, and different degree day formulas (???)
+* Calculate Pest data and save to DB (`PestForecastImporter.create_forecast_data`)
+* Create static Evapotranspiration image(`Evapotranspiration.create_and_static_link_image`)
+* Import Station Observation File (`StationHourlyObservationImporter.check_for_file_and_load`)
+
 
 ## Endpoints
 

@@ -23,7 +23,7 @@
 
 role :app, %w{deploy@dev.agweather.cals.wisc.edu:216}
 role :web, %w{deploy@dev.agweather.cals.wisc.edu:216}
-role :db, %w{deploy@dev.agweather.cals.wisc.edu:216}
+role :db,  %w{deploy@dev.agweather.cals.wisc.edu:216}
 
 
 # Configuration
