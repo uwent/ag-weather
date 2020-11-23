@@ -21,9 +21,9 @@
 # role :web, %w{deploy@ec2-54-212-209-95.us-west-2.compute.amazonaws.com:216}
 # role :db,  %w{deploy@ec2-54-212-209-95.us-west-2.compute.amazonaws.com:216}
 
-role :app, %w{deploy@dev.agweather.cals.wisc.edu:216}
-role :web, %w{deploy@dev.agweather.cals.wisc.edu:216}
-role :db,  %w{deploy@dev.agweather.cals.wisc.edu:216}
+role :app, %w{deploy@agweather.cals.wisc.edu:216}
+role :web, %w{deploy@agweather.cals.wisc.edu:216}
+role :db,  %w{deploy@agweather.cals.wisc.edu:216}
 
 # Configuration
 # =============
