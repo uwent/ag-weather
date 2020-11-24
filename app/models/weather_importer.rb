@@ -89,12 +89,12 @@ class WeatherImporter
     WeatherDatum.import(weather_data, validate: false)
   end
 
-  def self.relative_humidity_over(observations, degree_temp)
-    observations.map(&:relative_humidity).select { |x| x >= 85.0 }.length
+  def self.relative_humidity_over(observations, rh_cutoff)
+    observations.map(&:relative_humidity).select { |x| x >= rh_cutoff }.length
   end
 
-  def self.avg_temp_rh_over(observations, degree_temp)
-    over_rh_observations = observations.select { |observation| observation.relative_humidity >= degree_temp }
+  def self.avg_temp_rh_over(observations, rh_cutoff)
+    over_rh_observations = observations.select { |observation| observation.relative_humidity >= rh_cutoff }
     if over_rh_observations.size >= 1
       (over_rh_observations.map(&:temperature).sum / over_rh_observations.size).round(2)
     end

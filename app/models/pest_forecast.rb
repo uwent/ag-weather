@@ -45,12 +45,12 @@ class PestForecast < ApplicationRecord
 
   def self.compute_potato_blight_dsv(weather)
     temp = 0
-    if !weather.avg_temp_rh_over_85.nil?
-      temp = weather.avg_temp_rh_over_85
+    if !weather.avg_temp_rh_over_90.nil?
+      temp = weather.avg_temp_rh_over_90
     else
       temp = weather.avg_temperature
     end
-    hours = weather.hours_rh_over_85
+    hours = weather.hours_rh_over_90
 
     if temp.in? (7.22 ... 12.222)
       return 1 if hours.in? (16 .. 18)
@@ -72,12 +72,12 @@ class PestForecast < ApplicationRecord
 
   def self.compute_carrot_foliar_dsv(weather)
     temp = 0
-    if !weather.avg_temp_rh_over_85.nil?
-      temp = weather.avg_temp_rh_over_85
+    if !weather.avg_temp_rh_over_90.nil?
+      temp = weather.avg_temp_rh_over_90
     else
       temp = weather.avg_temperature
     end
-    hours = weather.hours_rh_over_85
+    hours = weather.hours_rh_over_90
 
     if temp.in? (13 ... 18)
       return 1 if hours.in? (7 .. 15)

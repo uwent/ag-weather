@@ -43,8 +43,8 @@ class PestForecastsController < ApplicationController
         min_temp: w.min_temperature.round(1),
         max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
-        avg_temp_over_85: w.avg_temp_rh_over_85,
-        hours_over: w.hours_rh_over_85
+        avg_temp_hi_rh: w.avg_temp_rh_over_90,
+        hours_hi_rh: w.hours_rh_over_90
       }
     end
     render json: weather
