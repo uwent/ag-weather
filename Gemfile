@@ -27,6 +27,7 @@ group :development, :test do
   gem 'simplecov', '~> 0.19'
   gem 'factory_bot_rails', '~> 6.1'
   gem 'guard-rspec', '~> 4.7', require: false
+  gem 'pry-rails'
 end
 
 group :development do
