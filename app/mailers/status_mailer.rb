@@ -3,6 +3,6 @@ class StatusMailer < ActionMailer::Base
 
   def daily_mail(statuses)
     @statuses = statuses
-    mail to: 'jcpanuska@wisc.edu, aballman@gmail.com, gevens@wisc.edu', subject: "AG Weather Status"
+    mail to: 'jcpanuska@wisc.edu, gevens@wisc.edu', subject: "AG Weather Status"
   end
 end

@@ -2,8 +2,14 @@ class PestForecastsController < ApplicationController
 
   def index
     # inputs: start_date, end_date, pest
-    # return: lat, long, value
-    render json: get_pest_forecast_data
+    freezing_data = check_hard_freeze
+    pest_data = get_pest_forecast_data
+    pest_forecast_data = pest_data.map do |gp|
+      gp[:freeze] = freezing_data[gp[:grid_key]] ? true : false
+      gp
+    end
+    render json: pest_forecast_data
+
   end
 
   def custom
@@ -46,7 +52,7 @@ class PestForecastsController < ApplicationController
         avg_temp_hi_rh: w.avg_temp_rh_over_90,
         hours_hi_rh: w.hours_rh_over_90
       }
-    end
+      end
     render json: weather
   end
 
@@ -79,7 +85,28 @@ class PestForecastsController < ApplicationController
       where("date between ? and ?", start_date, end_date).
       group(:latitude, :longitude).
       order(:latitude, :longitude).
-      collect {|v| {lat: v.latitude, long: v.longitude * -1, total: v.total.round(2) }}
+      collect {|v| {lat: v.latitude, long: v.longitude * -1, total: v.total.round(2), after_november_first: after_november_first, freeze: false, grid_key: "#{v.latitude}:#{v.longitude}"}}
+  end
+
+  def after_november_first
+    date_threshold = end_date.year.to_s + "-11-01"
+    end_date >= date_threshold.to_date
+  end
+
+  def check_hard_freeze
+    date_threshold = end_date.year.to_s + "-11-01"
+
+    return {} if !after_november_first
+    weather = WeatherDatum.select('latitude, longitude').distinct.
+      where("date >= ? and date <= ?", date_threshold, end_date).
+      where("min_temperature < ?", -2.22).
+      order(:latitude, :longitude).
+      collect do |w|
+      {
+        "#{w.latitude}:#{w.longitude}" => true
+      }
+    end.inject({}, :merge)
+    weather
   end
 
   def start_date
