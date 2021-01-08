@@ -32,7 +32,7 @@ class PestForecast < ApplicationRecord
       stalk_borer: weather.degree_days('sine', 41, 86),
       variegated_cutworm: weather.degree_days('sine', 41, 88),
       western_bean_cutworm: weather.degree_days('sine', 50, NO_MAX),
-      western_flower_thrips: weather.degree_days('sine', 45, 104))
+      western_flower_thrips: weather.degree_days('sine', 45, NO_MAX))
   end
 
   def self.potato_p_days(min_temp, max_temp)
