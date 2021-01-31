@@ -14,7 +14,7 @@ gem 'httparty', '~> 0.18'
 gem 'agwx_biophys', '0.0.4'
 gem 'activerecord-import', '~> 1.0'
 gem 'whenever', '~> 1.0'
-gem 'json', '~> 2.3.0'
+gem 'json', '~> 2.5.1'
 
 platform :mswin, :mingw, :x64_mingw do
   gem 'tzinfo-data', '~> 1.2020'
