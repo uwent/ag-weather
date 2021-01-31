@@ -27,7 +27,7 @@ group :development, :test do
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 4.0'
   gem 'spring', '~> 2.1'
-  gem 'rspec_junit_formatter', '0.2.2'
+  gem 'rspec_junit_formatter', '0.4.1'
   gem 'webmock', '~> 3.8'
   gem 'simplecov', '~> 0.19'
   gem 'factory_bot_rails', '~> 6.1'
