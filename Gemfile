@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '5.0.0'
-gem 'jbuilder', '~> 2.0'
+gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '~> 4.4'
 gem 'pg', '~> 1.2'
 gem 'rails', '6.0.3.2'
@@ -14,7 +14,7 @@ gem 'httparty', '~> 0.18'
 gem 'agwx_biophys', '0.0.4'
 gem 'activerecord-import', '~> 1.0'
 gem 'whenever', '~> 1.0'
-gem 'json', '~> 2.3.0'
+gem 'json', '~> 2.5.1'
 
 platform :mswin, :mingw, :x64_mingw do
   gem 'tzinfo-data', '~> 1.2020'
@@ -27,7 +27,7 @@ group :development, :test do
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 4.0'
   gem 'spring', '~> 2.1'
-  gem 'rspec_junit_formatter', '0.2.2'
+  gem 'rspec_junit_formatter', '0.4.1'
   gem 'webmock', '~> 3.8'
   gem 'simplecov', '~> 0.19'
   gem 'factory_bot_rails', '~> 6.1'
