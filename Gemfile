@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '5.0.0'
-gem 'jbuilder', '~> 2.0'
+gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '~> 4.4'
 gem 'pg', '~> 1.2'
 gem 'rails', '6.0.3.2'
