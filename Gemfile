@@ -40,7 +40,7 @@ group :development do
   gem 'capistrano-rbenv', '~> 2.0'
   gem 'capistrano-rails', '~> 1.1', require: false
   gem 'capistrano-bundler', '~> 1.1', require: false
-  gem 'web-console', '4.0.4'
+  gem 'web-console', '4.1.0'
   gem 'letter_opener', '~> 1.7'
   gem 'letter_opener_web', '~> 1.4'
 end
