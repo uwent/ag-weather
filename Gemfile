@@ -1,13 +1,15 @@
 source 'https://rubygems.org'
+
+gem 'rails', '6.1.1'
+gem 'railties', '6.1.1'
+gem 'activesupport', '6.1.1'
 gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '5.0.0'
 gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '~> 4.4'
 gem 'pg', '~> 1.2'
-gem 'rails', '6.0.3.2'
-gem 'railties', '6.0.3.2'
 gem 'sass-rails', '~> 5.0'
-gem 'sdoc', '1.1.0'
+gem 'sdoc', '2.0.3'
 gem 'turbolinks', '~> 5.2'
 gem 'uglifier', '>= 1.3.0'
 gem 'httparty', '~> 0.18'
@@ -36,7 +38,7 @@ group :development, :test do
 end
 
 group :development do
-  gem "capistrano", "3.15.0"
+  gem 'capistrano', '3.15.0'
   gem 'capistrano-rbenv', '~> 2.0'
   gem 'capistrano-rails', '~> 1.1', require: false
   gem 'capistrano-bundler', '~> 1.1', require: false
