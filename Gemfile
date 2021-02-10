@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'rails', '6.0.3.4'
-gem 'railties', '6.0.3.4'
-gem 'activesupport', '6.0.3.4'
+gem 'rails', '6.1.2'
+gem 'railties', '6.1.2'
+gem 'activesupport', '6.1.2'
 gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '5.0.0'
 gem 'jbuilder', '~> 2.11'
