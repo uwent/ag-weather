@@ -6,7 +6,7 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 Ruby version `2.6.5`
 
-Rails version `6.0.3.4`
+Rails version `6.1.2`
 
 ecCodes for [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 
