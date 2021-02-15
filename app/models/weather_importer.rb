@@ -47,6 +47,7 @@ class WeatherImporter
       local_file = "#{local_dir(date)}/#{date}.#{filename}"
       unless File.exist?(local_file)
         begin
+          Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
           client.get(filename, "#{local_file}_part")
         rescue Net::FTPPermError
           Rails.logger.warn("Unable to get weather file: #{filename}")
