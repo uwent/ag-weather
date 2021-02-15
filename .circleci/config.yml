@@ -5,13 +5,13 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.6.5-node
+      - image: circleci/ruby:2.6.6-node
         environment:
           PG_HOST: localhost
           PG_USER: ag_weather
           RAILS_ENV: test
           RACK_ENV: test
-          BUNDLER_VERSION: 2.1.4
+          BUNDLER_VERSION: 2.2.10
       - image: postgres:9.6
         environment:
           POSTGRES_USER: ag_weather
@@ -21,7 +21,7 @@ jobs:
       - checkout
       - run:
           name: Update Bundler
-          command: gem install bundler:2.1.4
+          command: gem install bundler:2.2.10
       - run:
           name: Which bundler?
           command: bundle -v
