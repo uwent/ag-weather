@@ -1,5 +1,3 @@
-# config valid only for current version of Capistrano
-lock '3.11'
 
 branch = ENV['BRANCH'] || 'master'
 
@@ -39,8 +37,9 @@ set :linked_dirs, %w{log tmp/pids tmp/cache tmp/sockets}
 # set :keep_releases, 5
 
 # rbenv
+set :deploy_user, 'deploy'
 set :rbenv_type, :user
-set :rbenv_ruby, '2.6.6'
+set :rbenv_ruby, '2.7.2'
 
 namespace :deploy do
 
