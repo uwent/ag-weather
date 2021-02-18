@@ -4,9 +4,11 @@
 ## Description
 This project is to support the UW-Extension's Agricultural Weather Service.  Included are the tools to load weather and insolation data from remote sources, calculate and store daily evapotranspiration data, calculate multiple formulas of degreee days, generate and save state-wide maps to display this data, and provide access to all of this information through public endpoints.
 
+## Dependencies
+
 Ruby version `2.7.2`
 
-Rails version `6.1.2.1`
+Bundler version `2.2.10`
 
 ecCodes for [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 
