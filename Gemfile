@@ -11,7 +11,7 @@ gem 'pg', '~> 1.2'
 gem 'sass-rails', '~> 5.0'
 gem 'sdoc', '2.0.3'
 gem 'turbolinks', '~> 5.2'
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier', '~> 4.2.0'
 gem 'httparty', '~> 0.18'
 gem 'agwx_biophys', '0.0.4'
 gem 'activerecord-import', '~> 1.0'
@@ -19,8 +19,8 @@ gem 'whenever', '~> 1.0'
 gem 'json', '~> 2.5.1'
 
 platform :mswin, :mingw, :x64_mingw do
-  gem 'tzinfo-data', '~> 1.2020'
-  gem 'wdm', '>=0.1.0'
+  gem 'tzinfo-data', '~> 1'
+  gem 'wdm', '0.1.1'
 end
 
 group :development, :test do
