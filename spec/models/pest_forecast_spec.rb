@@ -70,7 +70,17 @@ RSpec.describe PestForecast, type: :model do
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_carrot_foliar_dsv(weatherSpy)
     end
+  end
 
+  describe "calculating potato p days" do
+    it 'uses min_temperature and max_temperature' do
+      weatherSpy = spy('weather')
+      allow(weatherSpy).to receive(:min_temperature).and_return(50)
+      allow(weatherSpy).to receive(:max_temperature).and_return(75)
+      expect(weatherSpy).to receive(:min_temperature)
+      expect(weatherSpy).to receive(:max_temperature)
+      PestForecast.compute_potato_p_days(weatherSpy)
+    end
   end
 
 end
