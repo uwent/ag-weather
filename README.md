@@ -10,7 +10,9 @@ Ruby version `2.7.2`
 
 Bundler version `2.2.10`
 
-ecCodes for [GRIB files](https://en.wikipedia.org/wiki/GRIB)
+`eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
+
+`gnuplot` and `imagemagicks` for Insolation and Evapotranspiration map creation
 
 ## Setup
 1. Install [ecCodes](https://github.com/ecmwf/eccodes) with pip or use Homebrew `brew install eccodes`
@@ -35,11 +37,11 @@ bundle exec rails s
 ## Deployment
 Work with db admin to authorize your ssh key for the deploy user, then run the following commands from the master branch:
 
-Staging:
+### Staging:
 ```
 cap staging deploy
 ```
-Production:
+### Production:
 ```
 cap production deploy
 ```
@@ -51,8 +53,8 @@ Early every morning, the following jobs are run for staging and production. For 
 * Load insolation data from SSEC server into DB (`InsolationImporter.fetch`)
 * Calculate ET data and save to DB (`EvapotranspirationImporter.create_et_data`)
 * Calculate Pest data and save to DB (`PestForecastImporter.create_forecast_data`)
-* Create static Evapotranspiration image(`Evapotranspiration.create_and_static_link_image`)
-* Import Station Observation File (`StationHourlyObservationImporter.check_for_file_and_load`)
+* Create static Evapotranspiration image (`Evapotranspiration.create_and_static_link_image`)
+* <strike>Import Station Observation File (`StationHourlyObservationImporter.check_for_file_and_load`)</strike> (not currently implemented)
 
 
 ## Endpoints
