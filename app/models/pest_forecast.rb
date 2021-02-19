@@ -8,6 +8,7 @@ class PestForecast < ApplicationRecord
       longitude: weather.longitude,
       date: weather.date,
       potato_blight_dsv: compute_potato_blight_dsv(weather),
+      potato_p_days: compute_potato_p_days(weather),
       carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
       alfalfa_weevil: weather.degree_days('sine', 48, NO_MAX),
       asparagus_beetle: weather.degree_days('sine', 50, 86),
@@ -36,21 +37,37 @@ class PestForecast < ApplicationRecord
   end
 
   def self.potato_p_days(min_temp, max_temp)
-    first = 5 * p_function(min_temp)
-    second = 8 * p_function((2*min_temp/3.0) + (max_temp/3.0))
-    third = 8 * p_function((2*max_temp/3.0) + (min_temp/3.0))
-    fourth = 3 * p_function(max_temp)
-    (first + second + third + fourth)/24.0
+    a = 5 * p_function(min_temp)
+    b = 8 * p_function((2 * min_temp / 3.0) + (max_temp / 3.0))
+    c = 8 * p_function((2 * max_temp / 3.0) + (min_temp / 3.0))
+    d = 3 * p_function(max_temp)
+
+    return (a + b + c + d) / 24.0
+  end
+
+  def self.compute_potato_p_days(weather)
+    min_temp = weather.min_temperature
+    max_temp = weather.max_temperature
+
+    a = 5 * p_function(min_temp)
+    b = 8 * p_function((2 * min_temp / 3.0) + (max_temp / 3.0))
+    c = 8 * p_function((2 * max_temp / 3.0) + (min_temp / 3.0))
+    d = 3 * p_function(min_temp)
+
+    return (a + b + c + d) / 24.0
   end
 
   def self.compute_potato_blight_dsv(weather)
-    temp = 0
-    if !weather.avg_temp_rh_over_90.nil?
-      temp = weather.avg_temp_rh_over_90
+    if !weather.hours_rh_over_90.nil?
+      temp = weather.avg_temp_rh_over_90.nil? ? 0 : weather.avg_temp_rh_over_90
+      hours = weather.hours_rh_over_90
+    elsif !weather.hours_rh_over_85.nil?
+      temp = weather.avg_temp_rh_over_85.nil? ? 0 : weather.avg_temp_rh_over_85
+      hours = weather.hours_rh_over_85
     else
       temp = weather.avg_temperature
+      hours = 0
     end
-    hours = weather.hours_rh_over_90
 
     if temp.in? (7.22 ... 12.222)
       return 1 if hours.in? (16 .. 18)
@@ -67,17 +84,20 @@ class PestForecast < ApplicationRecord
       return 3 if hours.in? (16 .. 18)
       return 4 if hours.in? (19 .. 21)
     end
-    0
+    return 0
   end
 
   def self.compute_carrot_foliar_dsv(weather)
-    temp = 0
-    if !weather.avg_temp_rh_over_90.nil?
-      temp = weather.avg_temp_rh_over_90
+    if !weather.hours_rh_over_90.nil?
+      temp = weather.avg_temp_rh_over_90.nil? ? 0 : weather.avg_temp_rh_over_90
+      hours = weather.hours_rh_over_90
+    elsif !weather.hours_rh_over_85.nil?
+      temp = weather.avg_temp_rh_over_85.nil? ? 0 : weather.avg_temp_rh_over_85
+      hours = weather.hours_rh_over_85
     else
       temp = weather.avg_temperature
+      hours = 0
     end
-    hours = weather.hours_rh_over_90
 
     if temp.in? (13 ... 18)
       return 1 if hours.in? (7 .. 15)
@@ -99,60 +119,7 @@ class PestForecast < ApplicationRecord
       return 3 if hours.in? (16 .. 22)
       return 4 if hours >= 23
     end
-    0
-  end
-
-  def self.potato_blight_severity(seven_day, season)
-    if seven_day <= 3 && season < 30
-      return 0
-    elsif seven_day > 21
-      return 4
-    elsif seven_day >= 3 || season >= 30
-      return 2
-    end
-  end
-
-  def self.carrot_foliar_severity(total)
-    if total >= 20
-      return 4
-    elsif total >= 15
-      return 3
-    elsif total >= 10
-      return 2
-    elsif total >= 5
-      return 1
-    else
-      return 0
-    end
-  end
-
-  def self.carrot_foliar_severity_for(start_date, end_date)
-    dsvs = select("latitude, longitude, sum(carrot_foliar_dsv) as total")
-      .where('date >= ? and date <= ?', start_date, end_date)
-      .group(:latitude, :longitude)
-
-    return dsvs.collect do |dsv|
-      { lat: dsv.latitude, long: dsv.longitude * -1,
-        severity: carrot_foliar_severity(dsv.total)
-      }
-    end
-  end
-
-  def self.potato_blight_severity_for(end_date)
-    season_land_grid = land_grid_of_potato_sum_for_dates(end_date.beginning_of_year,
-                                                         end_date)
-    week_land_grid = land_grid_of_potato_sum_for_dates(end_date - 7.days,
-                                                       end_date)
-
-    dsvs = []
-    Wisconsin.each_point do |lat, long|
-      dsvs <<  { lat: lat.round(1), long: long.round(1) * -1,
-                severity: potato_blight_severity(week_land_grid[lat, long],
-                                                 season_land_grid[lat, long])
-      }
-    end
-
-    return dsvs
+    return 0
   end
 
   def self.for_lat_long_date_range(lat, long, start_date, end_date)
@@ -162,25 +129,89 @@ class PestForecast < ApplicationRecord
       .order(date: :desc)
   end
 
-  private
-  def self.land_grid_of_potato_sum_for_dates(start_date, end_date)
-    grid = LandGrid.wisconsin_grid
-    select("latitude, longitude, sum(potato_blight_dsv) as total")
-      .where('date >= ? and date <= ?', start_date, end_date)
-      .group(:latitude, :longitude).each do |dsv|
-      grid[dsv.latitude, dsv.longitude] = dsv.total
-    end
+  # def self.potato_blight_severity(selected_dsv, season_dsv)
+  #   return 4 if selected_dsv >= 22 || season_dsv >= 45
+  #   return 3 if selected_dsv >= 18 || season_dsv >= 35
+  #   return 2 if selected_dsv >= 4 || season_dsv >= 25
+  #   return 1 if selected_dsv > 0 || season_dsv >= 15
+  #   return 0
 
-    grid
-  end
+  #   # if selected_dsv <= 3 && season_dsv < 30
+  #   #   return 0
+  #   # elsif seven_day > 21
+  #   #   return 4
+  #   # elsif seven_day >= 3 || season >= 30
+  #   #   return 2
+  #   # end
+  # end
+
+  # def self.carrot_foliar_severity(total, after_november_first, freezing)
+  #   return 4 if total >= 20
+  #   return 3 if total >= 15
+  #   return 2 if total >= 10
+  #   return 1 if total >= 5
+  #   return 0
+
+  #   # if total >= 20
+  #   #   return 4
+  #   # elsif total >= 15
+  #   #   return 3
+  #   # elsif total >= 10
+  #   #   return 2
+  #   # elsif total >= 5
+  #   #   return 1
+  #   # else
+  #   #   return 0
+  #   # end
+  # end
+
+  # def self.carrot_foliar_severity_for(start_date, end_date)
+  #   dsvs = select("latitude, longitude, sum(carrot_foliar_dsv) as total, after_november_first, freezing")
+  #     .where('date >= ? and date <= ?', start_date, end_date)
+  #     .group(:latitude, :longitude)
+
+  #   return dsvs.collect do |dsv|
+  #     {
+  #       lat: dsv.latitude, long: dsv.longitude * -1,
+  #       severity: carrot_foliar_severity(dsv.total, dsv.after_november_first, dsv.freezing),
+  #     }
+  #   end
+  # end
+
+  # def self.potato_blight_severity_for(start_date, end_date)
+  #   season_grid = potato_dsv_grid(end_date.beginning_of_year, end_date)
+  #   selected_grid = potato_dsv_grid(start_date, end_date)
+
+  #   dsvs = []
+  #   Wisconsin.each_point do |lat, long|
+  #     dsvs <<  {
+  #       lat: lat.round(1), long: long.round(1) * -1,
+  #       severity: potato_blight_severity(selected_grid[lat, long], season_grid[lat, long]),
+  #     }
+  #   end
+
+  #   return dsvs
+  # end
+
+  private
+  # def self.potato_dsv_grid(start_date, end_date)
+  #   grid = LandGrid.wisconsin_grid
+  #   select("latitude, longitude, sum(potato_blight_dsv) as total")
+  #     .where('date >= ? and date <= ?', start_date, end_date)
+  #     .group(:latitude, :longitude).each do |dsv|
+  #     grid[dsv.latitude, dsv.longitude] = dsv.total
+  #   end
+
+  #   grid
+  # end
 
   def self.p_function(temp)
     if temp < 7.0
       return 0.0
     elsif temp > 7.0 && temp <= 21.0
-      return 10 * (1 - ((temp - 21.0)**2/196.0)) # 196 = (21-7)^2
+      return 10 * (1 - ((temp - 21.0)**2 / 196.0)) # 196 = (21-7)^2
     elsif temp > 21.0 && temp < 30
-      return 10 * (1 - ((temp - 21.0)**2/81.0)) # 81 = (30-21)^2
+      return 10 * (1 - ((temp - 21.0)**2 / 81.0)) # 81 = (30-21)^2
     else
       return 0.0
     end

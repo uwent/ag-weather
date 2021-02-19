@@ -34,8 +34,7 @@ class PestForecastsController < ApplicationController
   def point_details
     # inputs: start_date, end_date, pest, latitude, longitude
     # return: date, value
-    forecasts = PestForecast.for_lat_long_date_range(lat, long, start_date,
-                                                     end_date)
+    forecasts = PestForecast.for_lat_long_date_range(lat, long, start_date, end_date)
       .map { |pf| [pf.date, pf.send(pest)] }.to_h
     forecasts.default = 0
     weather = WeatherDatum.where(latitude: lat, longitude: long).
@@ -49,8 +48,9 @@ class PestForecastsController < ApplicationController
         min_temp: w.min_temperature.round(1),
         max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
-        avg_temp_hi_rh: w.avg_temp_rh_over_90,
-        hours_hi_rh: w.hours_rh_over_90
+        avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temp_rh_over_85 : w.avg_temp_rh_over_90,
+        hours_hi_rh: w.hours_rh_over_90.nil? ? w.hours_rh_over_85 : w.hours_rh_over_90,
+        rh_threshold: w.hours_rh_over_90.nil? ? 85 : 90,
       }
       end
     render json: weather

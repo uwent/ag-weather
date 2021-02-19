@@ -3,12 +3,13 @@ require "rails_helper"
 RSpec.describe WeatherDay do
 
   let (:weather_day) { WeatherDay.new(Date.current) }
-  let (:times) { ((((Wisconsin::N_LAT - Wisconsin::S_LAT) /
-                   Wisconsin::STEP) + 1) *
-             (((Wisconsin::W_LONG - Wisconsin::E_LONG) / Wisconsin::STEP) + 1)).round(0)}
+  let (:times) {
+    ((((Wisconsin::N_LAT - Wisconsin::S_LAT) / Wisconsin::STEP) + 1) *
+    (((Wisconsin::W_LONG - Wisconsin::E_LONG) / Wisconsin::STEP) + 1))
+    .round(0)
+  }
 
   context "initialization" do
-
     it "can be created" do
       expect(weather_day).not_to be_nil
     end
@@ -17,9 +18,7 @@ RSpec.describe WeatherDay do
   context "load from files" do
     it "should load weather hour for each file in passed directory", skip: true do
       allow(Dir).to receive(:[]).and_return(["foo/a.grb2", "foo/b.grb2"])
-
       expect(weather_day).to receive(:add_data_from_weather_hour).twice
-
       weather_day.load_from('foo')
     end
   end
