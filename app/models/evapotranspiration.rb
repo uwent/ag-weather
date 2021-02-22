@@ -14,8 +14,7 @@ class Evapotranspiration <  ApplicationRecord
     return File.join(ImageCreator.url_path, 'no_data.png') unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
 
     image_name = "evapo_#{date.to_s(:number)}.png"
-    unless File.exists?(File.join(Rails.configuration.x.image.file_dir,
-                                  image_name))
+    unless File.exists?(File.join(Rails.configuration.x.image.file_dir, image_name))
       ets = land_grid_values_for_date(date)
       title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
       image_name = ImageCreator.create_image(ets, title, image_name)
@@ -26,8 +25,8 @@ class Evapotranspiration <  ApplicationRecord
 
   def self.create_and_static_link_image(date=(Date.today - 1.day))
     image_name = create_image(date)
-    link_name = File.join(Rails.configuration.x.image.file_dir,
-                          "current_et.png")
+    link_name = File.join(Rails.configuration.x.image.file_dir, "current_et.png")
+    File.delete(link_name) if File.exists?(link_name)
     File.unlink(link_name) if File.symlink?(link_name)
     File.symlink(image_name, link_name)
   end
