@@ -3,20 +3,24 @@ source 'https://rubygems.org'
 gem 'rails', '6.1.3'
 gem 'railties', '6.1.3'
 gem 'activesupport', '6.1.3'
-gem 'therubyracer', platforms: :ruby
 gem 'coffee-rails', '5.0.0'
+gem 'sass-rails', '~> 5.0'
+gem 'activerecord-import', '~> 1.0'
+gem 'pg', '~> 1.2'
 gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '~> 4.4'
-gem 'pg', '~> 1.2'
-gem 'sass-rails', '~> 5.0'
-gem 'sdoc', '2.0.3'
 gem 'turbolinks', '~> 5.2'
 gem 'uglifier', '~> 4.2'
 gem 'httparty', '~> 0.18'
 gem 'agwx_biophys', '0.0.4'
-gem 'activerecord-import', '~> 1.0'
 gem 'whenever', '~> 1.0'
 gem 'json', '~> 2.5.1'
+gem 'sdoc', '2.0.3'
+
+platform :ruby do
+  gem 'libv8', '3.16.14.19'
+  gem 'therubyracer', '0.12.3'
+end
 
 platform :mswin, :mingw, :x64_mingw do
   gem 'tzinfo-data', '~> 1'
@@ -24,7 +28,7 @@ platform :mswin, :mingw, :x64_mingw do
 end
 
 group :development, :test do
-  gem 'puma'
+  gem 'puma', '~> 5.2'
   gem 'byebug', '~> 11.1'
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 4.0'
@@ -34,7 +38,7 @@ group :development, :test do
   gem 'simplecov', '~> 0.21'
   gem 'factory_bot_rails', '~> 6.1'
   gem 'guard-rspec', '~> 4.7', require: false
-  gem 'pry-rails'
+  gem 'pry-rails', '~> 0.3'
 end
 
 group :development do
