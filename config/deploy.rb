@@ -1,8 +1,7 @@
-
 branch = ENV['BRANCH'] || 'master'
 
 set :application, 'ag-weather'
-set :repo_url, 'git@github.com:adorableio/ag-weather.git'
+set :repo_url, 'git@github.com:uwent/ag-weather.git'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
