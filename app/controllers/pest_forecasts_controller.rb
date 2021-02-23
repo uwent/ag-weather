@@ -48,7 +48,7 @@ class PestForecastsController < ApplicationController
         min_temp: w.min_temperature.round(1),
         max_temp: w.max_temperature.round(1),
         avg_temperature: w.avg_temperature.round(1),
-        avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temp_rh_over_85 : w.avg_temp_rh_over_90,
+        avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temperature : w.avg_temp_rh_over_90,
         hours_hi_rh: w.hours_rh_over_90.nil? ? w.hours_rh_over_85 : w.hours_rh_over_90,
         rh_threshold: w.hours_rh_over_90.nil? ? 85 : 90,
       }
@@ -144,9 +144,9 @@ class PestForecastsController < ApplicationController
   def build_cumulative_dd(weatherList, date, t_min, t_max)
     degree_days = []
     weatherList.select { |d| date >= d.date }
-                .each do |w|
-                  degree_days << w.degree_days('sine', t_min, t_max).round(1)
-                end
+      .each do |w|
+        degree_days << w.degree_days('sine', t_min, t_max).round(1)
+      end
     degree_days.sum
   end
 end
