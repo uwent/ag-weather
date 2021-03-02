@@ -158,7 +158,6 @@ GEM
       letter_opener (~> 1.0)
       railties (>= 3.2)
     libv8 (3.16.14.19)
-    libv8 (3.16.14.19-x86_64-linux)
     listen (3.4.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -318,7 +317,7 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
-    webmock (3.11.2)
+    webmock (3.12.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -373,7 +372,7 @@ DEPENDENCIES
   uglifier (~> 4.2)
   wdm (= 0.1.1)
   web-console (= 4.1.0)
-  webmock (~> 3.8)
+  webmock (~> 3.12)
   whenever (~> 1.0)
 
 BUNDLED WITH
