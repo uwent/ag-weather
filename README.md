@@ -8,7 +8,7 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 Ruby version `2.7.2`
 
-Bundler version `2.2.10`
+Rails version `6.1.3`
 
 `eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 
