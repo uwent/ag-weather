@@ -15,7 +15,7 @@ gem 'httparty', '~> 0.18'
 gem 'agwx_biophys', '0.0.4'
 gem 'whenever', '~> 1.0'
 gem 'json', '~> 2.5.1'
-gem 'sdoc', '2.0.3'
+gem 'sdoc', '2.0.4'
 
 platform :ruby do
   gem 'libv8', '3.16.14.19'
