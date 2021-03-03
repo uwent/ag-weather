@@ -1,6 +1,6 @@
 class DataImport < ApplicationRecord
 
-  DAYS_BACK_WINDOW = 3
+  DAYS_BACK_WINDOW = 5
 
   def self.earliest_date
     Date.current - DAYS_BACK_WINDOW

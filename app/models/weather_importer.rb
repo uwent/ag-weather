@@ -2,6 +2,7 @@ require 'net/ftp'
 class WeatherImporter
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
+  MAX_TRIES = 3
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load
@@ -45,16 +46,22 @@ class WeatherImporter
       client.chdir(remote_dir(time.to_date))
       filename = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{filename}"
+      try = 1
       unless File.exist?(local_file)
         begin
           Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
           client.get(filename, "#{local_file}_part")
-        rescue Net::FTPPermError
-          Rails.logger.warn("Unable to get weather file: #{filename}")
-#          WeatherDataImport.create_unsuccessful_load(date)
-          return
+        rescue => e
+          Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
+          if try < MAX_TRIES
+            try += 1
+            retry
+          else
+            WeatherDataImport.create_unsuccessful_load(date)
+            return
+          end
+          FileUtils.mv("#{local_file}_part", local_file)
         end
-        FileUtils.mv("#{local_file}_part", local_file)
       end
     end
   end
@@ -74,17 +81,17 @@ class WeatherImporter
       dew_points = observations.map(&:dew_point)
 
       weather_data << WeatherDatum.new(
-                      latitude: lat,
-                      longitude: long,
-                      date: weather_day.date,
-                      max_temperature: temperatures.max,
-                      min_temperature: temperatures.min,
-                      avg_temperature: weather_average(temperatures),
-                      vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)),
-                      hours_rh_over_85: relative_humidity_over(observations, 85.0),
-                      avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
-                      hours_rh_over_90: relative_humidity_over(observations, 90.0),
-                      avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
+        latitude: lat,
+        longitude: long,
+        date: weather_day.date,
+        max_temperature: temperatures.max,
+        min_temperature: temperatures.min,
+        avg_temperature: weather_average(temperatures),
+        vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)),
+        hours_rh_over_85: relative_humidity_over(observations, 85.0),
+        avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
+        hours_rh_over_90: relative_humidity_over(observations, 90.0),
+        avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
       )
     end
     WeatherDatum.import(weather_data, validate: false)
