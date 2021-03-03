@@ -20,14 +20,15 @@ RSpec.describe DataImport, type: :model do
     end
 
     context 'one successful load' do
+      dates_to_load = DataImport.days_to_load
+      reading_on = Date.current - DataImport::DAYS_BACK_WINDOW.days
+
       let!(:succesful_load) { DataImport.create!(
         status: 'successful',
-        readings_on: Date.current - DataImport::DAYS_BACK_WINDOW.days)}
+        readings_on: reading_on)}
 
       it 'returns all other days' do
-        dates_to_load = [Date.yesterday, Date.current - 2.days]
-
-        expect(DataImport.days_to_load).to match_array(dates_to_load)
+        expect(DataImport.days_to_load).to match_array(dates_to_load - [reading_on])
       end
     end
 
