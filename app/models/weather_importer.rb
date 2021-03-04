@@ -51,16 +51,17 @@ class WeatherImporter
         begin
           Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
           client.get(filename, "#{local_file}_part")
+          FileUtils.mv("#{local_file}_part", local_file)
         rescue => e
           Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
           if try < MAX_TRIES
             try += 1
+            Rails.logger.info("Retrying, attempt #{try} of #{MAX_TRIES}")
             retry
           else
             WeatherDataImport.create_unsuccessful_load(date)
             return
           end
-          FileUtils.mv("#{local_file}_part", local_file)
         end
       end
     end
