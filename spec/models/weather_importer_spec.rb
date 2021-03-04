@@ -41,8 +41,10 @@ RSpec.describe WeatherImporter, type: :model do
 
         expect(WeatherImporter).to receive(:fetch_day)
           .exactly(unloaded_days.count).times
-        expect(WeatherImporter).to receive(:import_weather_data)
-          .exactly(unloaded_days.count).times
+
+        ## import_weather_data is now called by fetch_day rather than fetch after all files fetched
+        # expect(WeatherImporter).to receive(:import_weather_data)
+        #   .exactly(unloaded_days.count).times
 
         WeatherImporter.fetch
       end
