@@ -55,6 +55,7 @@ class WeatherImporter
             try += 1
             retry
           else
+            File.delete("#{local_file}_part")
             WeatherDataImport.create_unsuccessful_load(date)
             return
           end
