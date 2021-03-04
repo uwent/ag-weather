@@ -26,6 +26,6 @@ every :day, at: '7:00am' do
   runner "DataImport.send_status_email"
 end
 
-every "*/5 * * * *" do
-  runner "StationHourlyObservationImporter.check_for_file_and_load"
-end
+# every "*/5 * * * *" do
+#   runner "StationHourlyObservationImporter.check_for_file_and_load"
+# end

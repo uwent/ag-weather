@@ -9,8 +9,6 @@ class WeatherImporter
 
     days_to_load.each do |day|
       self.fetch_day(day)
-      self.import_weather_data(day)
-      FileUtils.rm_r self.local_dir(day)
     end
   end
 
@@ -49,22 +47,23 @@ class WeatherImporter
       try = 1
       unless File.exist?(local_file)
         begin
-          Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
+          Rails.logger.info("WeatherImporter :: Fetching #{local_file} attempt #{try} of #{MAX_TRIES}")
           client.get(filename, "#{local_file}_part")
-          FileUtils.mv("#{local_file}_part", local_file)
         rescue => e
           Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
           if try < MAX_TRIES
             try += 1
-            Rails.logger.info("Retrying, attempt #{try} of #{MAX_TRIES}")
             retry
           else
             WeatherDataImport.create_unsuccessful_load(date)
             return
           end
         end
+        FileUtils.mv("#{local_file}_part", local_file)
       end
     end
+
+    self.import_weather_data(date)
   end
 
   def self.import_weather_data(date)
@@ -72,6 +71,7 @@ class WeatherImporter
     weather_day.load_from(local_dir(date))
     persist_day_to_db(weather_day)
     WeatherDataImport.create_successful_load(date)
+    FileUtils.rm_r self.local_dir(date)
   end
 
   def self.persist_day_to_db(weather_day)
