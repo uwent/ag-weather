@@ -32,10 +32,10 @@ class InsolationImporter
       next unless Wisconsin.inside?(lat, long)
 
       insolations << Insolation.new(
-                       recording: value/100.0,
-                       latitude: lat,
-                       longitude: long,
-                       date: date)
+        recording: value/100.0,
+        latitude: lat,
+        longitude: long,
+        date: date)
     end
     Insolation.import(insolations, validate: false)
   end

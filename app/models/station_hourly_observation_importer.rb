@@ -37,10 +37,8 @@ class StationHourlyObservationImporter
       reading_on = Date.parse(row[2])
       next if reading_on > Date.today # there is a weird record in the data for 12/31 for Hancock
       hour = row[3].to_i
-      if reading_on > last_date ||
-         (reading_on == last_date && hour > last_hour)
-        station.add_observation(Date.parse(row[2]), row[3].to_i,
-                                row[8], row[9], row[11])
+      if reading_on > last_date || (reading_on == last_date && hour > last_hour)
+        station.add_observation(Date.parse(row[2]), row[3].to_i, row[8], row[9], row[11])
       end
     end
 

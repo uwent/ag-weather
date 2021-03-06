@@ -27,15 +27,19 @@ class Station < ApplicationRecord
   end
 
   def add_or_update_observation(reading_on, hour, max_temp, min_temp, rh)
-    observation = station_hourly_observations.where(reading_on: reading_on,
-                                                    hour: hour).first
+    observation = station_hourly_observations.where(
+      reading_on: reading_on,
+      hour: hour
+    ).first
     if observation.nil?
       station_hourly_observations <<
-        StationHourlyObservation.create(reading_on: reading_on,
-                                        hour: hour,
-                                        max_temperature: max_temp,
-                                        min_temperature: min_temp,
-                                        relative_humidity: rh)
+        StationHourlyObservation.create(
+          reading_on: reading_on,
+          hour: hour,
+          max_temperature: max_temp,
+          min_temperature: min_temp,
+          relative_humidity: rh
+        )
     else
       observation.max_temperature = max_temp
       observation.min_temperature = min_temp
@@ -45,15 +49,19 @@ class Station < ApplicationRecord
   end
 
   def add_observation(reading_on, hour, max_temp, min_temp, rh)
-    observation = station_hourly_observations.where(reading_on: reading_on,
-                                                    hour: hour).first
+    observation = station_hourly_observations.where(
+      reading_on: reading_on,
+      hour: hour
+    ).first
     return unless observation.nil?
     station_hourly_observations <<
-      StationHourlyObservation.create(reading_on: reading_on,
-                                      hour: hour,
-                                      max_temperature: max_temp,
-                                      min_temperature: min_temp,
-                                      relative_humidity: rh)
+      StationHourlyObservation.create(
+        reading_on: reading_on,
+        hour: hour,
+        max_temperature: max_temp,
+        min_temperature: min_temp,
+        relative_humidity: rh
+      )
   end
 
   def last_reading
@@ -95,6 +103,5 @@ class Station < ApplicationRecord
     end
     return 0
   end
-
 
 end

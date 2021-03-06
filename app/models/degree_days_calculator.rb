@@ -12,8 +12,7 @@ class DegreeDaysCalculator
   end
 
   # Min, max in Celsius
-  def self.calculate_c(method, min, max,
-                       base = DEFAULT_BASE, upper = DEFAULT_UPPER)
+  def self.calculate_c(method, min, max, base = DEFAULT_BASE, upper = DEFAULT_UPPER)
     calculate(method, to_fahrenheit(min), to_fahrenheit(max), base, upper)
   end
 
@@ -38,8 +37,7 @@ class DegreeDaysCalculator
   end
 
   # Min, max in Fahrenheit.
-  def self.modified_degree_days(min, max, base = DEFAULT_BASE,
-                                upper = DEFAULT_UPPER)
+  def self.modified_degree_days(min, max, base = DEFAULT_BASE, upper = DEFAULT_UPPER)
     min = base if base > min
     max = base if base > max
 
@@ -51,8 +49,7 @@ class DegreeDaysCalculator
 
   # Reference: http://libcatalog.cimmyt.org/download/reprints/97465.pdf
   # Min, max in Fahrenheit.
-  def self.sine_degree_days(min, max, base = DEFAULT_BASE,
-                            upper = DEFAULT_UPPER)
+  def self.sine_degree_days(min, max, base = DEFAULT_BASE, upper = DEFAULT_UPPER)
 
     average = (min + max) / 2.0
     return upper - base if (min >= upper) # both min and max greater than upper

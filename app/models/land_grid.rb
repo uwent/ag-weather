@@ -16,8 +16,7 @@ class LandGrid
   end
 
   def self.wisconsin_grid
-    self.new(Wisconsin::S_LAT,  Wisconsin::N_LAT,
-             Wisconsin::E_LONG, Wisconsin::W_LONG, Wisconsin::STEP)
+    self.new(Wisconsin::S_LAT,  Wisconsin::N_LAT, Wisconsin::E_LONG, Wisconsin::W_LONG, Wisconsin::STEP)
   end
 
   def initialize(min_lat, max_lat, min_long, max_long, step)

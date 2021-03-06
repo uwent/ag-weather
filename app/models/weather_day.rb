@@ -3,8 +3,13 @@ class WeatherDay
 
   def initialize(date)
     @date = date
-    @data = LandGrid.new(Wisconsin::S_LAT, Wisconsin::N_LAT, Wisconsin::E_LONG,
-                         Wisconsin::W_LONG, Wisconsin::STEP)
+    @data = LandGrid.new(
+      Wisconsin::S_LAT,
+      Wisconsin::N_LAT,
+      Wisconsin::E_LONG,
+      Wisconsin::W_LONG,
+      Wisconsin::STEP
+    )
     Wisconsin.each_point do |lat, long|
       @data[lat, long] = []
     end
@@ -34,8 +39,9 @@ class WeatherDay
   def add_data_from_weather_hour(hour)
     Wisconsin.each_point do |lat, long|
       @data[lat, long] <<
-        WeatherObservation.new(hour.temperature_at(lat, long),
-                               hour.dew_point_at(lat, long))
+        WeatherObservation.new(
+          hour.temperature_at(lat, long),
+          hour.dew_point_at(lat, long))
     end
   end
 end

@@ -17,8 +17,8 @@ class EvapotranspirationCalculator
   end
 
   def self.sunrise_angle(day_of_year, lat)
-    Math.acos(-1 * Math.tan(declin(day_of_year)) * 
-              Math.tan(degrees_to_rads(lat)))
+    Math.acos(-1 * Math.tan(declin(day_of_year)) *
+    Math.tan(degrees_to_rads(lat)))
   end
 
   def self.sunrise_hour(day_of_year, lat)
@@ -36,13 +36,13 @@ class EvapotranspirationCalculator
   
   # Only used by clr_ratio.
   def self.to_eir(day_of_year, lat)
-      (0.0864 / Math::PI) * av_eir(day_of_year) * 
-      (sunrise_angle(day_of_year, lat) *
-       Math.sin(declin(day_of_year)) *
-       Math.sin(degrees_to_rads(lat)) +
-       Math.cos(declin(day_of_year)) *
-       Math.cos(degrees_to_rads(lat)) *
-       Math.sin(sunrise_angle(day_of_year, lat)))
+    (0.0864 / Math::PI) * av_eir(day_of_year) * 
+    (sunrise_angle(day_of_year, lat) *
+    Math.sin(declin(day_of_year)) *
+    Math.sin(degrees_to_rads(lat)) +
+    Math.cos(declin(day_of_year)) *
+    Math.cos(degrees_to_rads(lat)) *
+    Math.sin(sunrise_angle(day_of_year, lat)))
   end
   
   # Only used by clr_ratio.
@@ -91,10 +91,10 @@ class EvapotranspirationCalculator
 
   # This is the net thermal infrared flux term (Ln) of the total net 
   # radiation consisting of the two directional terms upwelling and downwelling.
-  def self.lwnet(avg_v_press, avg_temp, d_to_sol, 
-                 day_of_year, lat)
-    angstrom(avg_v_press, avg_temp) * lwu(avg_temp)  * 
-      clr_ratio(d_to_sol, day_of_year, lat)
+  def self.lwnet(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
+    angstrom(avg_v_press, avg_temp) *
+    lwu(avg_temp) *
+    clr_ratio(d_to_sol, day_of_year, lat)
   end
 
   # temperatures are in Celsius

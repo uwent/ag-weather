@@ -3,8 +3,13 @@ class WeatherHour
   attr_reader :data
 
   def initialize()
-    @data = LandGrid.new(Wisconsin::S_LAT, Wisconsin::N_LAT, Wisconsin::E_LONG,
-                         Wisconsin::W_LONG, Wisconsin::STEP)
+    @data = LandGrid.new(
+      Wisconsin::S_LAT,
+      Wisconsin::N_LAT,
+      Wisconsin::E_LONG,
+      Wisconsin::W_LONG,
+      Wisconsin::STEP
+    )
     Wisconsin.each_point do |lat, long|
       @data[lat, long] = {
         temperatures: [],

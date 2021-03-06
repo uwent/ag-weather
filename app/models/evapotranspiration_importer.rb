@@ -26,9 +26,10 @@ class EvapotranspirationImporter
         next
       end
 
-      et = Evapotranspiration.new(latitude: lat,
-                                  longitude: long,
-                                  date: date)
+      et = Evapotranspiration.new(
+        latitude: lat,
+        longitude: long,
+        date: date)
       et.potential_et = et.calculate_et(insols[lat, long], weather[lat, long])
       ets << et
     end
