@@ -23,7 +23,7 @@ job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :en
 # end
 
 every :day, at: '6:00am' do
-  runner "RunTasks"
+  runner "RunTasks.all"
 end
 
 every :day, at: '7:00am' do
