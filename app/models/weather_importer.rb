@@ -2,7 +2,6 @@ require 'net/ftp'
 class WeatherImporter
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
-  MAX_TRIES = 3
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load
@@ -29,36 +28,29 @@ class WeatherImporter
   def self.connect_to_server
     client = Net::FTP.new('ftp.ncep.noaa.gov')
     client.login
-    client.passive = true
+    # client.debug_mode = true
     client
   end
 
   def self.fetch_day(date)
     client = connect_to_server
+    client.chdir(remote_dir(date))
 
     start = central_time(date, 0)
     last = central_time(date, 23)
 
     (start.to_i..last.to_i).step(1.hour) do |time_in_sec|
       time = Time.at(time_in_sec).utc
-      client.chdir(remote_dir(time.to_date))
-      filename = remote_file_name(time.hour)
-      local_file = "#{local_dir(date)}/#{date}.#{filename}"
-      try = 1
+      remote_file = remote_file_name(time.hour)
+      local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
       unless File.exist?(local_file)
         begin
-          Rails.logger.info("WeatherImporter :: Fetching #{local_file} attempt #{try} of #{MAX_TRIES}")
-          client.get(filename, "#{local_file}_part")
+          Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
+          client.get(remote_file, "#{local_file}_part")
         rescue => e
           Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
-          if try < MAX_TRIES
-            try += 1
-            retry
-          else
-            File.delete("#{local_file}_part")
-            WeatherDataImport.create_unsuccessful_load(date)
-            return
-          end
+          WeatherDataImport.create_unsuccessful_load(date)
+          return
         end
         FileUtils.mv("#{local_file}_part", local_file)
       end
