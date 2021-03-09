@@ -14,24 +14,13 @@ RSpec.describe PestForecast, type: :model do
       PestForecast.compute_potato_blight_dsv(weatherSpy)
     end
 
-    it 'uses avg_temp_rh_over_85 when hours_rh_over_90 not present (for old rh method)' do
+    it 'uses avg_temperature when hours_rh_over_90 not present (for old rh method)' do
       weatherSpy = spy('weather')
       allow(weatherSpy).to receive(:avg_temperature).and_return(75)
       allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:hours_rh_over_85).and_return(12)
       allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(85)
-      expect(weatherSpy).to receive(:avg_temp_rh_over_85)
-      PestForecast.compute_potato_blight_dsv(weatherSpy)
-    end
-
-    it 'uses avg_temperature when neither rh threshold is present' do
-      weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:avg_temperature).and_return(75)
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
-      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(nil)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(nil)
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_potato_blight_dsv(weatherSpy)
     end
@@ -49,24 +38,13 @@ RSpec.describe PestForecast, type: :model do
       PestForecast.compute_carrot_foliar_dsv(weatherSpy)
     end
 
-    it 'uses avg_temp_rh_over_85 when hours_rh_over_90 not present (for old rh method)' do
+    it 'uses avg_temperature when hours_rh_over_90 not present (for old rh method)' do
       weatherSpy = spy('weather')
       allow(weatherSpy).to receive(:avg_temperature).and_return(75)
       allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:hours_rh_over_85).and_return(12)
       allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(85)
-      expect(weatherSpy).to receive(:avg_temp_rh_over_85)
-      PestForecast.compute_carrot_foliar_dsv(weatherSpy)
-    end
-
-    it 'uses avg_temperature when neither rh threshold is present' do
-      weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:avg_temperature).and_return(75)
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
-      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(nil)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(nil)
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_carrot_foliar_dsv(weatherSpy)
     end

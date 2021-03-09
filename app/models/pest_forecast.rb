@@ -62,11 +62,10 @@ class PestForecast < ApplicationRecord
       temp = weather.avg_temp_rh_over_90.nil? ? 0 : weather.avg_temp_rh_over_90
       hours = weather.hours_rh_over_90
     elsif !weather.hours_rh_over_85.nil?
-      temp = weather.avg_temp_rh_over_85.nil? ? 0 : weather.avg_temp_rh_over_85
+      temp = weather.avg_temperature
       hours = weather.hours_rh_over_85
     else
-      temp = weather.avg_temperature
-      hours = 0
+      return 0
     end
 
     if temp.in? (7.22 ... 12.222)
@@ -84,6 +83,7 @@ class PestForecast < ApplicationRecord
       return 3 if hours.in? (16 .. 18)
       return 4 if hours.in? (19 .. 21)
     end
+
     return 0
   end
 
@@ -92,11 +92,10 @@ class PestForecast < ApplicationRecord
       temp = weather.avg_temp_rh_over_90.nil? ? 0 : weather.avg_temp_rh_over_90
       hours = weather.hours_rh_over_90
     elsif !weather.hours_rh_over_85.nil?
-      temp = weather.avg_temp_rh_over_85.nil? ? 0 : weather.avg_temp_rh_over_85
+      temp = weather.avg_temperature
       hours = weather.hours_rh_over_85
     else
-      temp = weather.avg_temperature
-      hours = 0
+      return 0
     end
 
     if temp.in? (13 ... 18)
@@ -119,6 +118,7 @@ class PestForecast < ApplicationRecord
       return 3 if hours.in? (16 .. 22)
       return 4 if hours >= 23
     end
+
     return 0
   end
 
