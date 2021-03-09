@@ -41,17 +41,17 @@ class PestForecastsController < ApplicationController
       where("date >= ? and date <= ?", start_date, end_date).
       order(:date).
       collect do |w|
-      {
-        date: w.date,
-        value: forecasts[w.date].round(1),
-        cumulative_value: forecasts.select { |k, v| w.date >= k }.values.sum.round(1),
-        min_temp: w.min_temperature.round(1),
-        max_temp: w.max_temperature.round(1),
-        avg_temperature: w.avg_temperature.round(1),
-        avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temperature : w.avg_temp_rh_over_90,
-        hours_hi_rh: w.hours_rh_over_90.nil? ? w.hours_rh_over_85 : w.hours_rh_over_90,
-        rh_threshold: w.hours_rh_over_90.nil? ? 85 : 90,
-      }
+        {
+          date: w.date,
+          value: forecasts[w.date].round(1),
+          cumulative_value: forecasts.select { |k, v| w.date >= k }.values.sum.round(1),
+          min_temp: w.min_temperature.round(1),
+          max_temp: w.max_temperature.round(1),
+          avg_temperature: w.avg_temperature.round(1),
+          avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temperature : w.avg_temp_rh_over_90,
+          hours_hi_rh: w.hours_rh_over_90.nil? ? w.hours_rh_over_85 : w.hours_rh_over_90,
+          rh_threshold: w.hours_rh_over_90.nil? ? 85 : 90,
+        }
       end
     render json: weather
   end
@@ -85,7 +85,16 @@ class PestForecastsController < ApplicationController
       where("date between ? and ?", start_date, end_date).
       group(:latitude, :longitude).
       order(:latitude, :longitude).
-      collect {|v| {lat: v.latitude, long: v.longitude * -1, total: v.total.round(2), after_november_first: after_november_first, freeze: false, grid_key: "#{v.latitude}:#{v.longitude}"}}
+      collect {
+        |v| {
+          lat: v.latitude,
+          long: v.longitude * -1,
+          total: v.total.round(2),
+          after_november_first: after_november_first,
+          freeze: false,
+          grid_key: "#{v.latitude}:#{v.longitude}"
+        }
+      }
   end
 
   def after_november_first
@@ -102,9 +111,9 @@ class PestForecastsController < ApplicationController
       where("min_temperature < ?", -2.22).
       order(:latitude, :longitude).
       collect do |w|
-      {
-        "#{w.latitude}:#{w.longitude}" => true
-      }
+        {
+          "#{w.latitude}:#{w.longitude}" => true
+        }
     end.inject({}, :merge)
     weather
   end
