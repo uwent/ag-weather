@@ -4,7 +4,6 @@ gem 'rails', '6.1.3'
 gem 'railties', '6.1.3'
 gem 'activesupport', '6.1.3'
 gem 'pg', '~> 1.2'
-gem 'therubyracer', '0.12.3', platform: :ruby
 gem 'coffee-rails', '5.0.0'
 gem 'sassc-rails', '~> 2.1'
 gem 'jquery-rails', '~> 4.4'
