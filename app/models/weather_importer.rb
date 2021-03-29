@@ -33,19 +33,24 @@ class WeatherImporter
   end
 
   def self.fetch_day(date)
+    Rails.logger.info("WeatherImporter :: Fetching grib files for #{date}")
+
     client = connect_to_server
-    client.chdir(remote_dir(date))
 
     start = central_time(date, 0)
     last = central_time(date, 23)
 
-    (start.to_i..last.to_i).step(1.hour) do |time_in_sec|
-      time = Time.at(time_in_sec).utc
+    (start.to_i..last.to_i).step(1.hour) do |time_in_central|
+
+      time = Time.at(time_in_central).utc
+      remote_dir = remote_dir(time.to_date)
       remote_file = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
+
       unless File.exist?(local_file)
         begin
-          Rails.logger.info("WeatherImporter :: Fetching #{local_file}")
+          Rails.logger.info("#{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
+          client.chdir(remote_dir)
           client.get(remote_file, "#{local_file}_part")
         rescue => e
           Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")

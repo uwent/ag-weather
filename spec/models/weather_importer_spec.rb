@@ -73,9 +73,8 @@ RSpec.describe WeatherImporter, type: :model do
       end
 
       it 'should change to the appropriate directories on the remote server' do
-        # expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
-        # expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
-        expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(1).times
+        expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
+        expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
         WeatherImporter.fetch_day(today)
       end
 
