@@ -47,7 +47,7 @@ class PestForecastsController < ApplicationController
           cumulative_value: forecasts.select { |k, v| w.date >= k }.values.sum.round(1),
           min_temp: w.min_temperature.round(1),
           max_temp: w.max_temperature.round(1),
-          avg_temperature: w.avg_temperature.round(1),
+          avg_temp: w.avg_temperature.round(1),
           avg_temp_hi_rh: w.hours_rh_over_90.nil? ? w.avg_temperature : w.avg_temp_rh_over_90,
           hours_hi_rh: w.hours_rh_over_90.nil? ? w.hours_rh_over_85 : w.hours_rh_over_90,
           rh_threshold: w.hours_rh_over_90.nil? ? 85 : 90,
@@ -68,7 +68,7 @@ class PestForecastsController < ApplicationController
         cumulative_value: build_cumulative_dd(weather, w.date, t_min, t_max).round(1),
         min_temp: w.min_temperature.round(1),
         max_temp: w.max_temperature.round(1),
-        avg_temperature: w.avg_temperature.round(1),
+        avg_temp: w.avg_temperature.round(1),
         t_min: t_min,
         t_max: t_max
       }

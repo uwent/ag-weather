@@ -48,6 +48,8 @@ class RunTasks
 
       PestForecast.where(date: date).delete_all
       PestForecast.import(forecasts, validate: false)
+      PestForecastDataImport.where(readings_on: date).delete_all
+      PestForecastDataImport.create_successful_load(date)
     else
       puts date.strftime + " - no weather data"
     end
