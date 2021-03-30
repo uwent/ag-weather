@@ -21,14 +21,16 @@ class RunTasks
   end
 
   def self.redo_forecasts(year)
+    ActiveRecord::Base.logger.level = 1
     (Date.new(year, 1, 1)..[Date.new(year, 12, 31), Date.today].min).each do |date|
       redo_forecast(date)
     end
+    ActiveRecord::Base.logger.level = 0
   end
 
   def self.redo_forecast(date)
     if WeatherDatum.where(date: date).exists?
-      puts date.strftime + " - ready"
+      puts date.strftime + " - recalculating..."
 
       weather = WeatherDatum.land_grid_for_date(date)
       forecasts = []
@@ -47,7 +49,7 @@ class RunTasks
       PestForecast.where(date: date).delete_all
       PestForecast.import(forecasts, validate: false)
     else
-      puts date.strftime + " - no data"
+      puts date.strftime + " - no weather data"
     end
   end
 end
