@@ -47,9 +47,11 @@ class WeatherImporter
       remote_file = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
 
-      unless File.exist?(local_file)
+      if File.exist?(local_file)
+        Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists")
+      else
         begin
-          Rails.logger.info("#{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
+          Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
           client.chdir(remote_dir)
           client.get(remote_file, "#{local_file}_part")
         rescue => e
@@ -67,18 +69,20 @@ class WeatherImporter
   def self.import_weather_data(date)
     weather_day = WeatherDay.new(date)
     weather_day.load_from(local_dir(date))
+    WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
+    WeatherDataImport.where(readings_on: date).delete_all
     WeatherDataImport.create_successful_load(date)
     FileUtils.rm_r self.local_dir(date)
   end
 
   def self.persist_day_to_db(weather_day)
     weather_data = []
+
     Wisconsin.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)
-
       weather_data << WeatherDatum.new(
         latitude: lat,
         longitude: long,
@@ -93,6 +97,7 @@ class WeatherImporter
         avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
       )
     end
+
     WeatherDatum.import(weather_data, validate: false)
   end
 

@@ -15,10 +15,8 @@ class PestForecastImporter
     end
 
     weather = WeatherDatum.land_grid_for_date(date)
-
-    PestForecast.where(date: date).delete_all
-
     forecasts = []
+    
     Wisconsin.each_point do |lat, long|
       next unless Wisconsin.inside?(lat, long)
 
@@ -30,7 +28,9 @@ class PestForecastImporter
       forecasts << PestForecast.new_from_weather(weather[lat, long])
     end
 
+    PestForecast.where(date: date).delete_all
     PestForecast.import(forecasts, validate: false)
+    PestForecastDataImport.where(readings_on: date).delete_all
     PestForecastDataImport.create_successful_load(date)
   end
 
