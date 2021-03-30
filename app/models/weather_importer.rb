@@ -1,5 +1,6 @@
 require 'net/ftp'
 class WeatherImporter
+  REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
 
@@ -26,27 +27,25 @@ class WeatherImporter
   end
 
   def self.connect_to_server
-    client = Net::FTP.new('ftp.ncep.noaa.gov')
+    client = Net::FTP.new(REMOTE_SERVER)
     client.login
     # client.debug_mode = true
     client
   end
 
   def self.fetch_day(date)
-    Rails.logger.info("WeatherImporter :: Fetching grib files for #{date}")
-
+    Rails.logger.info("WeatherImporter :: Connecting to #{REMOTE_SERVER}...")
     client = connect_to_server
 
     start = central_time(date, 0)
     last = central_time(date, 23)
 
+    Rails.logger.info("WeatherImporter :: Fetching grib files for #{date}...")
     (start.to_i..last.to_i).step(1.hour) do |time_in_central|
-
       time = Time.at(time_in_central).utc
       remote_dir = remote_dir(time.to_date)
       remote_file = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
-
       if File.exist?(local_file)
         Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists")
       else
@@ -62,7 +61,6 @@ class WeatherImporter
         FileUtils.mv("#{local_file}_part", local_file)
       end
     end
-
     self.import_weather_data(date)
   end
 

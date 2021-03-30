@@ -16,9 +16,6 @@ class EvapotranspirationImporter
     weather = WeatherDatum.land_grid_for_date(date)
     insols = Insolation.land_grid_values_for_date(date)
 
-    # remove old data and reload
-    Evapotranspiration.where(date: date).delete_all
-
     ets = []
     Wisconsin.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
@@ -34,7 +31,9 @@ class EvapotranspirationImporter
       ets << et
     end
 
+    Evapotranspiration.where(date: date).delete_all
     Evapotranspiration.import(ets, validate: false)
+    EvapotranspirationDataImport.where(readings_on: date).delete_all
     EvapotranspirationDataImport.create_successful_load(date)
   end
 

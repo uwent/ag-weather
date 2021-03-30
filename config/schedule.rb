@@ -22,7 +22,7 @@ job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :en
 #   runner "Evapotranspiration.create_and_static_link_image"
 # end
 
-every :day, at: ['6:00am', '6:15am', '6:30am', '6:45am'] do
+every :day, at: ['6:00am', '6:15am', '6:30am'] do
   runner "RunTasks.all"
 end
 
