@@ -55,12 +55,17 @@ class PestForecast < ApplicationRecord
     return (a + b + c + d) / 24.0
   end
 
+  # temp in celcius
   def self.compute_potato_blight_dsv(weather)
-    hours = weather.hours_rh_over_90
-    return 0 if hours == 0
-
-    # temps in celcius
-    temp = weather.avg_temp_rh_over_90.nil? ? weather.avg_temperature : weather.avg_temp_rh_over_90
+    if !weather.hours_rh_over_90.nil?
+      hours = weather.hours_rh_over_90
+      temp = weather.avg_temp_rh_over_90
+    elsif !weather.hours_rh_over_85.nil?
+      hours = weather.hours_rh_over_85
+      temp = weather.avg_temperature
+    else
+      return 0
+    end
 
     if temp.in? (7.22 ... 12.22)
       return 1 if hours.in? (16 .. 18)
@@ -81,12 +86,17 @@ class PestForecast < ApplicationRecord
     return 0
   end
 
+  # temp in celcius
   def self.compute_carrot_foliar_dsv(weather)
-    hours = weather.hours_rh_over_90
-    return 0 if hours == 0
-
-    # temps in celcius
-    temp = weather.avg_temp_rh_over_90.nil? ? weather.avg_temperature : weather.avg_temp_rh_over_90
+    if !weather.hours_rh_over_90.nil?
+      hours = weather.hours_rh_over_90
+      temp = weather.avg_temp_rh_over_90
+    elsif !weather.hours_rh_over_85.nil?
+      hours = weather.hours_rh_over_85
+      temp = weather.avg_temperature
+    else
+      return 0
+    end
 
     if temp.in? (13 ... 18)
       return 1 if hours.in? (7 .. 15)
@@ -114,9 +124,16 @@ class PestForecast < ApplicationRecord
 
   # Cercospora Leaf Spot Daily Infection Values
   def self.compute_cercospora_div(weather)
-    hours = weather.hours_rh_over_90
-    return 0 if hours == 0
-    temp_c = weather.avg_temp_rh_over_90.nil? ? weather.avg_temperature: weather.avg_temp_rh_over_90
+    if !weather.hours_rh_over_90.nil?
+      hours = weather.hours_rh_over_90
+      temp_c = weather.avg_temp_rh_over_90
+    elsif !weather.hours_rh_over_85.nil?
+      hours = weather.hours_rh_over_85
+      temp_c = weather.avg_temperature
+    else
+      return 0
+    end
+
     temp = (temp_c * 9/5) + 32.0
 
     return 0 if temp < 60

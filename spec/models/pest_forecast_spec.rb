@@ -3,21 +3,28 @@ require "rails_helper"
 RSpec.describe PestForecast, type: :model do
 
   describe "calculating late blight dsv" do
-    it 'uses avg_temp_rh_over_90 and hours_rh_over_90 present' do
+    it 'uses avg_temp_rh_over_90 and hours_rh_over_90 if present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
+      allow(weatherSpy).to receive(:avg_temperature).and_return(25)
       allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(25)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(25)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
+      
       expect(weatherSpy).to receive(:hours_rh_over_90)
       expect(weatherSpy).to receive(:avg_temp_rh_over_90)
       PestForecast.compute_potato_blight_dsv(weatherSpy)
     end
 
-    it 'falls back on avg_temperature when avg_temp_rh_over_90 not present' do
+    it 'falls back on avg_temperature when hours_rh_over_90 not present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:avg_temperature).and_return(25)
-      expect(weatherSpy).to receive(:hours_rh_over_90)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
+      
+      expect(weatherSpy).to receive(:hours_rh_over_85)
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_potato_blight_dsv(weatherSpy)
     end
@@ -30,21 +37,26 @@ RSpec.describe PestForecast, type: :model do
   end
 
   describe "calculating carrot foliar dsv" do
-    it 'uses avg_temp_rh_over_90 when hours_rh_over_90 present' do
+    it 'uses avg_temp_rh_over_90 and hours_rh_over_90 if present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
+      allow(weatherSpy).to receive(:avg_temperature).and_return(25)
       allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(25)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(25)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
       expect(weatherSpy).to receive(:hours_rh_over_90)
       expect(weatherSpy).to receive(:avg_temp_rh_over_90)
       PestForecast.compute_carrot_foliar_dsv(weatherSpy)
     end
 
-    it 'falls back on avg_temperature when avg_temp_rh_over_90 not present' do
+    it 'falls back on avg_temperature when hours_rh_over_90 not present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:avg_temperature).and_return(25)
-      expect(weatherSpy).to receive(:hours_rh_over_90)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
+      expect(weatherSpy).to receive(:hours_rh_over_85)
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_carrot_foliar_dsv(weatherSpy)
     end
@@ -74,21 +86,26 @@ RSpec.describe PestForecast, type: :model do
   end
 
   describe "calculating cercospora divs" do
-    it 'uses hours_rh_over_90 and avg_temp_rh_over_90' do
+    it 'uses avg_temp_rh_over_90 and hours_rh_over_90 if present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(12)
+      allow(weatherSpy).to receive(:avg_temperature).and_return(25)
       allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(25)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(25)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(10)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
       expect(weatherSpy).to receive(:hours_rh_over_90)
       expect(weatherSpy).to receive(:avg_temp_rh_over_90)
       PestForecast.compute_cercospora_div(weatherSpy)
     end
 
-    it 'falls back on avg_temperature when avg_temp_rh_over_90 not present' do
+    it 'falls back on avg_temperature when hours_rh_over_90 not present' do
       weatherSpy = spy('weather')
-      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(12)
-      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
       allow(weatherSpy).to receive(:avg_temperature).and_return(25)
-      expect(weatherSpy).to receive(:hours_rh_over_90)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:avg_temp_rh_over_85).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_90).and_return(nil)
+      allow(weatherSpy).to receive(:hours_rh_over_85).and_return(10)
+      expect(weatherSpy).to receive(:hours_rh_over_85)
       expect(weatherSpy).to receive(:avg_temperature)
       PestForecast.compute_cercospora_div(weatherSpy)
     end
