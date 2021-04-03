@@ -28,6 +28,14 @@ class RunTasks
     ActiveRecord::Base.logger.level = 0
   end
 
+  def self.redo_forecasts_for_range(start_date, end_date)
+    ActiveRecord::Base.logger.level = 1
+    (Date.parse(start_date)..Date.parse(end_date)).each do |date|
+      redo_forecast(date)
+    end
+    ActiveRecord::Base.logger.level = 0
+  end
+
   def self.redo_forecast(date)
     if WeatherDatum.where(date: date).exists?
       puts date.strftime + " - recalculating..."

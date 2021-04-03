@@ -44,29 +44,34 @@ class PestForecast < ApplicationRecord
       western_flower_thrips: weather.degree_days('sine', 45, NO_MAX))
   end
 
+  def self.calculate_p_day(min, max)
+    def self.p(temp)
+      return 0 if temp < 7
+      return 10 * (1 - ((temp - 21)**2 / 196)) if temp.between?(7, 21) # 196 = (21-7)^2
+      return 10 * (1 - ((temp - 21)**2 / 81)) if temp.between?(21, 30) # 81 = (30-21)^2
+      return 0
+    end
+    a = 5 * p(min)
+    b = 8 * p((2 * min / 3) + (max / 3))
+    c = 8 * p((2 * max / 3) + (min / 3))
+    d = 3 * p(min)
+    return (a + b + c + d) / 24.0
+  end
+
   # temps in celcius
   def self.compute_potato_p_days(weather)
-    min = weather.min_temperature
-    max = weather.max_temperature
-    a = 5 * p_function(min)
-    b = 8 * p_function((2 * min / 3) + (max / 3))
-    c = 8 * p_function((2 * max / 3) + (min / 3))
-    d = 3 * p_function(min)
-    return (a + b + c + d) / 24.0
+    min = weather.min_temperature || 0
+    max = weather.max_temperature || 0
+    return calculate_p_day(min, max)
   end
 
   # temp in celcius
   def self.compute_potato_blight_dsv(weather)
-    if !weather.hours_rh_over_90.nil?
-      hours = weather.hours_rh_over_90
-      temp = weather.avg_temp_rh_over_90
-    elsif !weather.hours_rh_over_85.nil?
-      hours = weather.hours_rh_over_85
-      temp = weather.avg_temperature
-    else
-      return 0
-    end
+    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    return 0 if hours.nil? || hours == 0
+    temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
+    # temp in celcius
     if temp.in? (7.22 ... 12.22)
       return 1 if hours.in? (16 .. 18)
       return 2 if hours.in? (19 .. 21)
@@ -86,18 +91,12 @@ class PestForecast < ApplicationRecord
     return 0
   end
 
-  # temp in celcius
   def self.compute_carrot_foliar_dsv(weather)
-    if !weather.hours_rh_over_90.nil?
-      hours = weather.hours_rh_over_90
-      temp = weather.avg_temp_rh_over_90
-    elsif !weather.hours_rh_over_85.nil?
-      hours = weather.hours_rh_over_85
-      temp = weather.avg_temperature
-    else
-      return 0
-    end
+    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    return 0 if hours.nil? || hours == 0
+    temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
+    # temp in celcius
     if temp.in? (13 ... 18)
       return 1 if hours.in? (7 .. 15)
       return 2 if hours.in? (16 .. 20)
@@ -122,20 +121,13 @@ class PestForecast < ApplicationRecord
     return 0
   end
 
-  # Cercospora Leaf Spot Daily Infection Values
   def self.compute_cercospora_div(weather)
-    if !weather.hours_rh_over_90.nil?
-      hours = weather.hours_rh_over_90
-      temp_c = weather.avg_temp_rh_over_90
-    elsif !weather.hours_rh_over_85.nil?
-      hours = weather.hours_rh_over_85
-      temp_c = weather.avg_temperature
-    else
-      return 0
-    end
-
+    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    return 0 if hours.nil? || hours == 0
+    temp_c = weather.avg_temp_rh_over_90 || weather.avg_temperature
     temp = (temp_c * 9/5) + 32.0
 
+    # temp in fahrenheit
     return 0 if temp < 60
     if temp < 61
       return 0 if hours <= 21
@@ -251,19 +243,6 @@ class PestForecast < ApplicationRecord
       return 5 if hours <= 8
       return 6 if hours <= 9
       return 7
-    end
-  end
-
-  private
-  def self.p_function(temp)
-    if temp < 7
-      return 0
-    elsif temp > 7 && temp <= 21
-      return 10 * (1 - ((temp - 21)**2 / 196)) # 196 = (21-7)^2
-    elsif temp > 21 && temp < 30
-      return 10 * (1 - ((temp - 21)**2 / 81)) # 81 = (30-21)^2
-    else
-      return 0
     end
   end
 end
