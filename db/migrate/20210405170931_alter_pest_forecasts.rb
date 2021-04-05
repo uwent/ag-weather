@@ -15,16 +15,16 @@ class AlterPestForecasts < ActiveRecord::Migration[6.1]
       t.rename :colorado_potato_beetle, :dd_52_none
       t.rename :brown_marmorated_stink_bug, :dd_54_92
       t.rename :corn_earworm, :dd_55_92
-      t.remove :black_cutworm, :float
-      t.remove :corn_rootworm, :float
-      t.remove :european_corn_borer, :float
-      t.remove :imported_cabbageworm, :float
-      t.remove :japanese_beetle, :float
-      t.remove :lygus_bug, :float
-      t.remove :mint_root_borer, :float
-      t.remove :seedcorn_maggot, :float
-      t.remove :squash_vine_borer, :float
-      t.remove :western_bean_cutworm, :float
     end
+    remove_column :pest_forecasts, :black_cutworm, :float
+    remove_column :pest_forecasts, :corn_rootworm, :float
+    remove_column :pest_forecasts, :european_corn_borer, :float
+    remove_column :pest_forecasts, :imported_cabbageworm, :float
+    remove_column :pest_forecasts, :japanese_beetle, :float
+    remove_column :pest_forecasts, :lygus_bug, :float
+    remove_column :pest_forecasts, :mint_root_borer, :float
+    remove_column :pest_forecasts, :seedcorn_maggot, :float
+    remove_column :pest_forecasts, :squash_vine_borer, :float
+    remove_column :pest_forecasts, :western_bean_cutworm, :float
   end
 end
