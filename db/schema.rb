@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_02_173055) do
+ActiveRecord::Schema.define(version: 2021_04_05_170931) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -49,30 +49,20 @@ ActiveRecord::Schema.define(version: 2021_04_02_173055) do
     t.integer "carrot_foliar_dsv", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.float "alfalfa_weevil"
-    t.float "asparagus_beetle"
-    t.float "black_cutworm"
-    t.float "brown_marmorated_stink_bug"
-    t.float "cabbage_looper"
-    t.float "cabbage_maggot"
-    t.float "colorado_potato_beetle"
-    t.float "corn_earworm"
-    t.float "corn_rootworm"
-    t.float "european_corn_borer"
-    t.float "flea_beetle_mint"
-    t.float "flea_beetle_crucifer"
-    t.float "imported_cabbageworm"
-    t.float "japanese_beetle"
-    t.float "lygus_bug"
-    t.float "mint_root_borer"
-    t.float "onion_maggot"
-    t.float "potato_psyllid"
-    t.float "seedcorn_maggot"
-    t.float "squash_vine_borer"
-    t.float "stalk_borer"
-    t.float "variegated_cutworm"
-    t.float "western_bean_cutworm"
-    t.float "western_flower_thrips"
+    t.float "dd_48_none"
+    t.float "dd_50_86"
+    t.float "dd_54_92"
+    t.float "dd_50_90"
+    t.float "dd_50_none"
+    t.float "dd_42p8_86"
+    t.float "dd_52_none"
+    t.float "dd_55_92"
+    t.float "dd_41_none"
+    t.float "dd_39p2_86"
+    t.float "dd_40_86"
+    t.float "dd_41_86"
+    t.float "dd_41_88"
+    t.float "dd_45_none"
     t.float "potato_p_days"
     t.integer "cercospora_div", default: 0
   end
