@@ -30,8 +30,37 @@ class DataImport < ApplicationRecord
     unsuccessful.where(readings_on: date).create!
   end
 
+  def self.check_statuses
+    ActiveRecord::Base.logger.level = 1
+    Rails.logger.info("Data load statuses for last #{DAYS_BACK_WINDOW} days:")
+
+    (earliest_date() .. Date.today).each do |day|
+      statuses = DataImport.where(readings_on: day)
+      if statuses.empty?
+        Rails.logger.info("  #{day}: Data load not attempted.")
+      elsif statuses.unsuccessful.count > 0
+        Rails.logger.info("  #{day}: FAIL")
+        statuses.each do |status|
+          if status.status == "unsuccessful"
+            Rails.logger.info("    #{status.type} ==> FAIL")
+          else
+            Rails.logger.info("    #{status.type} ==> OK")
+          end
+        end
+      else
+        Rails.logger.info("  #{day}: OK")
+      end
+    end
+    ActiveRecord::Base.logger.level = 0
+  end
+
   def self.send_status_email
-    state = DataImport.where(readings_on: Date.today - 1)
-    StatusMailer.daily_mail(state).deliver
+    statuses = DataImport.where(readings_on: Date.today - 1)
+    if statuses.unsuccessful.count > 0
+      Rails.logger.info("DataImport :: At least one data load failed, sending status email.")
+      StatusMailer.daily_mail(statuses).deliver
+    else
+      Rails.logger.info("DataImport :: All data loads successful, skipping status email.")
+    end
   end
 end
