@@ -1,7 +1,7 @@
 module ImageCreator
   IMAGE_STEP = 0.2
   # GNUPLOT = "/usr/local/bin/gnuplot"
-  GNUPLOT = "gnuplot-qt"
+  GNUPLOT = "gnuplot"
   # IMAGEMAGICK_COMP = "/usr/bin/composite"
   IMAGEMAGICK_COMP = "composite"
 
