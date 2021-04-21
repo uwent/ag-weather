@@ -1,7 +1,9 @@
 module ImageCreator
   IMAGE_STEP = 0.2
-  GNUPLOT = "/usr/local/bin/gnuplot"
-  IMAGEMAGICK_COMP = "/usr/bin/composite"
+  # GNUPLOT = "/usr/local/bin/gnuplot"
+  GNUPLOT = "gnuplot-qt"
+  # IMAGEMAGICK_COMP = "/usr/bin/composite"
+  IMAGEMAGICK_COMP = "composite"
 
   def self.url_path
     Rails.configuration.x.image.url_path
@@ -9,9 +11,11 @@ module ImageCreator
 
   def self.create_image(data_grid, title, file_base_name)
     datafile_name = create_data_file(data_grid)
-    image_filename = generate_image_file(datafile_name, file_base_name,
-                                         max_value_for_gnuplot(data_grid.max),
-                                         title)
+    image_filename = generate_image_file(
+      datafile_name,
+      file_base_name,
+      max_value_for_gnuplot(data_grid.max),
+      title)
     File.delete(datafile_name)
     return image_filename
   end
@@ -34,8 +38,9 @@ module ImageCreator
 
   def self.generate_image_file(datafile_name, image_name, max_value, title)
     temp_image = temp_filename('png')
-    image_fullpath = File.join(Rails.configuration.x.image.file_dir,
-                               image_name)
+    image_fullpath = File.join(
+      Rails.configuration.x.image.file_dir,
+      image_name)
 
     gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'\" -e \"max_v=#{max_value}\" -e \"outfile='#{temp_image}'\" -e \"infile='#{datafile_name}'\" lib/color_contour.gp)"
     Rails.logger.debug("GNUPLOT CMD: #{gnuplot_cmd}")
@@ -50,8 +55,9 @@ module ImageCreator
   end
 
   def self.temp_filename(suffix)
-    File.join(Rails.configuration.x.image.temp_directory,
-              "#{random_string(8)}_#{DateTime.current.to_s(:number)}.#{suffix}")
+    File.join(
+      Rails.configuration.x.image.temp_directory,
+      "#{random_string(8)}_#{DateTime.current.to_s(:number)}.#{suffix}")
   end
 
   def self.max_value_for_gnuplot(val)
