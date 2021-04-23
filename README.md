@@ -6,9 +6,9 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 ## Dependencies
 
-Ruby version `2.7.2`
+Ruby version `2.7.x`
 
-Rails version `6.1.3`
+Rails version `6.1.x`
 
 `eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 

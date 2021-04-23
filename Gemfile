@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'rails', '6.1.3'
-gem 'railties', '6.1.3'
-gem 'activesupport', '6.1.3'
+gem 'rails', '~> 6.1'
+gem 'railties', '~> 6.1'
+gem 'activesupport', '~> 6.1'
 gem 'pg', '~> 1.2'
 gem 'coffee-rails', '5.0.0'
 gem 'sassc-rails', '~> 2.1'
