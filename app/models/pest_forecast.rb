@@ -19,43 +19,20 @@ class PestForecast < ApplicationRecord
       potato_p_days: compute_potato_p_days(weather),
       carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
       cercospora_div: compute_cercospora_div(weather),
-      dd_39p2_86: weather.degree_days('sine', 39.2, 86),
-      dd_41_86: weather.degree_days('sine', 41, 86),
-      dd_41_88: weather.degree_days('sine', 41, 88),
-      dd_41_none: weather.degree_days('sine', 41, NO_MAX),
-      dd_42p8_86: weather.degree_days('sine', 42.8, 86),
-      dd_45_none: weather.degree_days('sine', 45, NO_MAX),
-      dd_48_none: weather.degree_days('sine', 48, NO_MAX),
-      dd_50_86: weather.degree_days('sine', 50, 86),
-      dd_50_90: weather.degree_days('sine', 50, 90),
-      dd_50_none: weather.degree_days('sine', 50, NO_MAX),
-      dd_52_none: weather.degree_days('sine', 52, NO_MAX),
-      dd_54_92: weather.degree_days('sine', 54, 92),
-      dd_55_92: weather.degree_days('sine', 55, 92),
-      # alfalfa_weevil: weather.degree_days('sine', 48, NO_MAX),
-      # asparagus_beetle: weather.degree_days('sine', 50, 86),
-      # black_cutworm: weather.degree_days('sine', 50, 86),
-      # brown_marmorated_stink_bug: weather.degree_days('sine', 54, 92),
-      # cabbage_looper: weather.degree_days('sine', 50, 90),
-      # cabbage_maggot: weather.degree_days('sine', 42.8, 86),
-      # colorado_potato_beetle: weather.degree_days('sine', 52, NO_MAX),
-      # corn_earworm: weather.degree_days('sine', 55, 92),
-      # corn_rootworm: weather.degree_days('sine', 52, NO_MAX),
-      # european_corn_borer: weather.degree_days('sine', 50, 86),
-      # flea_beetle_mint: weather.degree_days('sine', 41, NO_MAX),
-      # flea_beetle_crucifer: weather.degree_days('sine', 50, NO_MAX),
-      # imported_cabbageworm: weather.degree_days('sine', 50, NO_MAX),
-      # japanese_beetle: weather.degree_days('sine', 50, NO_MAX),
-      # lygus_bug: weather.degree_days('sine', 52, NO_MAX),
-      # mint_root_borer: weather.degree_days('sine', 50, NO_MAX),
-      # onion_maggot: weather.degree_days('sine', 39.2, 86),
-      # potato_psyllid: weather.degree_days('sine', 40, 86),
-      # seedcorn_maggot: weather.degree_days('sine', 39.2, 86),
-      # squash_vine_borer: weather.degree_days('sine', 50, NO_MAX),
-      # stalk_borer: weather.degree_days('sine', 41, 86),
-      # variegated_cutworm: weather.degree_days('sine', 41, 88),
-      # western_bean_cutworm: weather.degree_days('sine', 50, NO_MAX),
-      # western_flower_thrips: weather.degree_days('sine', 45, NO_MAX)
+      dd_39p2_86: weather.degree_days('sine', 39.2, 86),    # 4 / 30 C
+      dd_41_86: weather.degree_days('sine', 41, 86),        # 5 / 30 C
+      dd_41_88: weather.degree_days('sine', 41, 88),        # 5 / 31 C
+      dd_41_none: weather.degree_days('sine', 41, NO_MAX),  # 5 / none C
+      dd_42p8_86: weather.degree_days('sine', 42.8, 86),    # 6 / 30 C
+      dd_45_none: weather.degree_days('sine', 45, NO_MAX),  # 7 / none C
+      dd_48_none: weather.degree_days('sine', 48, NO_MAX),  # 9 / none C
+      dd_50_86: weather.degree_days('sine', 50, 86),        # 10 / 30 C
+      dd_50_88: weather.degree_days('sine', 50, 88),        # 10 / 31.1 C
+      dd_50_90: weather.degree_days('sine', 50, 90),        # 10 / 32.2 C
+      dd_50_none: weather.degree_days('sine', 50, NO_MAX),  # 10 / none C
+      dd_52_none: weather.degree_days('sine', 52, NO_MAX),  # 11.1 / none C
+      dd_54_92: weather.degree_days('sine', 54, 92),        # 12.2 / 33.3 C
+      dd_55_92: weather.degree_days('sine', 55, 92)         # 12.8 / 33.3 C
     )
   end
 
