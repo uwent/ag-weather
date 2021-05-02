@@ -4,6 +4,7 @@
 /log/*
 !/log/.keep
 /tmp
+/public/tmp
 
 /coverage
 .DS_Store

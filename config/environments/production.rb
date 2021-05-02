@@ -3,6 +3,11 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Image generation and service configuration
+  config.x.image.temp_directory = "tmp"
+  config.x.image.file_dir = "/home/deploy/ag-weather/shared/image_dir"
+  config.x.image.url_path = "/image"
+
   # Code is not reloaded between requests.
   config.cache_classes = true
 
@@ -106,11 +111,6 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-
-  # Image generation and service configuration
-  config.x.image.temp_directory = "tmp"
-  config.x.image.file_dir = "/home/deploy/ag-weather/shared/image_dir"
-  config.x.image.url_path = "/image"
 
   # Inserts middleware to perform automatic connection switching.
   # The `database_selector` hash is used to pass options to the DatabaseSelector

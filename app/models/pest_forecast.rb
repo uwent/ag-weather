@@ -24,7 +24,8 @@ class PestForecast < ApplicationRecord
       dd_41_88: weather.degree_days('sine', 41, 88),        # 5 / 31 C
       dd_41_none: weather.degree_days('sine', 41, NO_MAX),  # 5 / none C
       dd_42p8_86: weather.degree_days('sine', 42.8, 86),    # 6 / 30 C
-      dd_45_none: weather.degree_days('sine', 45, NO_MAX),  # 7 / none C
+      dd_45_none: weather.degree_days('sine', 45, NO_MAX),  # 7.2 / none C
+      dd_45_86: weather.degree_days('sine', 45, 86),        # 7.2 / 30 C
       dd_48_none: weather.degree_days('sine', 48, NO_MAX),  # 9 / none C
       dd_50_86: weather.degree_days('sine', 50, 86),        # 10 / 30 C
       dd_50_88: weather.degree_days('sine', 50, 88),        # 10 / 31.1 C
