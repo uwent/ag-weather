@@ -18,5 +18,10 @@ module AgWeather
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Image generation and service configuration
+    config.x.image.temp_directory = "tmp"
+    config.x.image.file_dir = "public"
+    config.x.image.url_path = ""
   end
 end
