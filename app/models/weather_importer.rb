@@ -3,6 +3,7 @@ class WeatherImporter
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
+  MAX_TRIES = 3
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load
@@ -28,6 +29,7 @@ class WeatherImporter
 
   def self.connect_to_server
     client = Net::FTP.new(REMOTE_SERVER)
+    # client.read_timeout = 10
     client.login
     # client.debug_mode = true
     client
@@ -50,11 +52,17 @@ class WeatherImporter
         Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists")
       else
         begin
-          Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
+          retries ||= 0
+          if retries == 0
+            Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
+          else
+            Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file} (#{retries + 1} of #{MAX_TRIES})")
+          end
           client.chdir(remote_dir)
           client.get(remote_file, "#{local_file}_part")
         rescue => e
           Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
+          retry if (retries += 1) < MAX_TRIES
           WeatherDataImport.create_unsuccessful_load(date)
           return
         end
