@@ -7,18 +7,21 @@ class EvapotranspirationsController < ApplicationController
            end
     
     image_name = Evapotranspiration.create_image(date)
-    render json: { map: File.join(ImageCreator.url_path, image_name) }
+    render json: {
+      map: File.join(ImageCreator.url_path, image_name)
+    }
   end
 
   def index
-    ets = Evapotranspiration.where(latitude: params[:lat],
-                                   longitude: params[:long])
-      .where("date >= ? and date <= ?", params[:start_date],
-             params[:end_date])
+    ets = Evapotranspiration.where(latitude: params[:lat], longitude: params[:long])
+      .where("date >= ? and date <= ?", params[:start_date], params[:end_date])
       .order(:date)
 
     et_readings = ets.collect do |et|
-      { date: et.date.to_s, value: et.potential_et.round(3) }
+      {
+        date: et.date.to_s,
+        value: et.potential_et.round(3)
+      }
     end
 
     render json: et_readings
@@ -33,7 +36,11 @@ class EvapotranspirationsController < ApplicationController
     ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
 
     et_location_readings = ets.collect do |et|
-      { lat: et.latitude.round(1), long: et.longitude.round(1), value: et.potential_et.round(3) }
+      {
+        lat: et.latitude.round(1),
+        long: et.longitude.round(1),
+        value: et.potential_et.round(3)
+      }
     end
     render json: et_location_readings
   end

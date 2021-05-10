@@ -154,7 +154,7 @@ class PestForecastsController < ApplicationController
     degree_days = []
     weatherList.select { |d| date >= d.date }
       .each do |w|
-        degree_days << w.degree_days('sine', t_min, t_max).round(1)
+        degree_days << w.degree_days('sine', t_min, t_max)
       end
     degree_days.sum
   end

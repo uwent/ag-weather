@@ -8,13 +8,13 @@ class WeatherHour
       Wisconsin::N_LAT,
       Wisconsin::E_LONG,
       Wisconsin::W_LONG,
-      Wisconsin::STEP
-    )
+      Wisconsin::STEP)
+      
     Wisconsin.each_point do |lat, long|
       @data[lat, long] = {
         temperatures: [],
         dew_points: []
-    }
+      }
     end
   end
 
