@@ -26,7 +26,7 @@ group :development, :test do
   gem 'rspec_junit_formatter', '~> 0.4'
   gem 'webmock', '~> 3.12'
   gem 'simplecov', '~> 0.21'
-  gem 'factory_bot_rails', '~> 6.1'
+  gem 'factory_bot_rails', '~> 6.2'
   gem 'guard-rspec', '~> 4.7', require: false
   gem 'pry-rails', '~> 0.3'
 end
