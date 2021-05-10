@@ -2,6 +2,10 @@ set :output, "/tmp/whenever.log"
 set :env_path,    '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ':task' :output }
 
+every :day, at: ['6:00am', '7:00am', '8:00am'] do
+  runner "RunTasks.all"
+end
+
 # every :day, at: '5am' do
 #   runner "InsolationImporter.fetch"
 # end
@@ -22,13 +26,9 @@ job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :en
 #   runner "Evapotranspiration.create_and_static_link_image"
 # end
 
-every :day, at: ['6:00am', '6:15am', '6:30am'] do
-  runner "RunTasks.all"
-end
-
-every :day, at: '7:00am' do
-  runner "DataImport.send_status_email"
-end
+# every :day, at: '7:00am' do
+#   runner "DataImport.send_status_email"
+# end
 
 # every "*/5 * * * *" do
 #   runner "StationHourlyObservationImporter.check_for_file_and_load"

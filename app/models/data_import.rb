@@ -30,37 +30,49 @@ class DataImport < ApplicationRecord
     unsuccessful.where(readings_on: date).create!
   end
 
-  def self.check_statuses
-    ActiveRecord::Base.logger.level = 1
-    Rails.logger.info("Data load statuses for last #{DAYS_BACK_WINDOW} days:")
+  # run from console
+  def self.check_statuses(start_date = earliest_date(), end_date = Date.today)
+    message = []
+    message << "Data load statuses for #{start_date} thru #{end_date}:"
 
-    (earliest_date() .. Date.today).each do |day|
-      statuses = DataImport.where(readings_on: day)
+    (start_date .. end_date).each do |date|
+      statuses = DataImport.where(readings_on: date)
       if statuses.empty?
-        Rails.logger.info("  #{day}: Data load not attempted.")
+        message << "  #{date}: Data load not attempted."
       elsif statuses.unsuccessful.count > 0
-        Rails.logger.info("  #{day}: FAIL")
+        message << "  #{date}: FAIL"
         statuses.each do |status|
           if status.status == "unsuccessful"
-            Rails.logger.info("    #{status.type} ==> FAIL")
+            message << "    #{status.type} ==> FAIL"
           else
-            Rails.logger.info("    #{status.type} ==> OK")
+            message << "    #{status.type} ==> OK"
           end
         end
       else
-        Rails.logger.info("  #{day}: OK")
+        message << "  #{date}: OK"
       end
     end
-    ActiveRecord::Base.logger.level = 0
+
+    message.each { |m| Rails.logger.info m }
   end
 
+  # sends status email if data loads have failed recently
   def self.send_status_email
-    statuses = DataImport.where(readings_on: Date.today - 1)
-    if statuses.unsuccessful.count > 0
-      Rails.logger.info("DataImport :: At least one data load failed, sending status email.")
+    statuses = []
+    send = false
+    dates = earliest_date() .. Date.today - 1
+
+    dates.each do |date| 
+      status = DataImport.where(readings_on: date)
+      send = true if status.empty? || status.unsuccessful.count > 0
+      statuses << { date: date, status: status }
+    end
+
+    if send
+      Rails.logger.info("DataImport :: Abnormal data load detected, sending status email.")
       StatusMailer.daily_mail(statuses).deliver
     else
-      Rails.logger.info("DataImport :: All data loads successful, skipping status email.")
+      Rails.logger.info("DataImport :: All data loads successful.")
     end
   end
 end
