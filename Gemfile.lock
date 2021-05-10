@@ -111,7 +111,7 @@ GEM
       rainbow (~> 2.0)
       rake (>= 10.4, < 13)
     erubi (1.10.0)
-    execjs (2.7.0)
+    execjs (2.8.0)
     factory_bot (6.2.0)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.2.0)
@@ -233,7 +233,7 @@ GEM
     rainbow (2.2.2)
       rake
     rake (12.3.3)
-    rb-fsevent (0.10.4)
+    rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     rdoc (6.3.1)

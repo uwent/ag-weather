@@ -33,6 +33,7 @@ class DataImport < ApplicationRecord
   # run from console
   def self.check_statuses(start_date = earliest_date(), end_date = Date.today)
     message = []
+    count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
     (start_date .. end_date).each do |date|
@@ -43,6 +44,7 @@ class DataImport < ApplicationRecord
         message << "  #{date}: FAIL"
         statuses.each do |status|
           if status.status == "unsuccessful"
+            count += 1
             message << "    #{status.type} ==> FAIL"
           else
             message << "    #{status.type} ==> OK"
@@ -54,6 +56,7 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
+    return count
   end
 
   # sends status email if data loads have failed recently
