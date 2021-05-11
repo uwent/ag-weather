@@ -16,9 +16,6 @@ class RunTasks
 
     # generate ET image
     Evapotranspiration.create_and_static_link_image
-
-    DataImport.check_statuses
-    DataImport.send_status_email
   end
 
   ## Command-line tools ##
