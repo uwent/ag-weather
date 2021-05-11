@@ -14,6 +14,7 @@ class InsolationImporter
     east_response = HTTParty.get(east_url)
     import_insolation_data(east_response, date)
 
+    InsolationDataImport.where(readings_on: date).delete_all
     InsolationDataImport.create_successful_load(date)
   rescue
     InsolationDataImport.create_unsuccessful_load(date)
@@ -37,6 +38,7 @@ class InsolationImporter
         longitude: long,
         date: date)
     end
+    Insolation.where(date: date).delete_all
     Insolation.import(insolations, validate: false)
   end
 
