@@ -51,13 +51,9 @@ class WeatherImporter
       if File.exist?(local_file)
         Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists")
       else
+        retries = 0
         begin
-          retries ||= 0
-          if retries == 0
-            Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
-          else
-            Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file} (#{retries + 1} of #{MAX_TRIES})")
-          end
+          Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
           client.chdir(remote_dir)
           client.get(remote_file, "#{local_file}_part")
         rescue => e
