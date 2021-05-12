@@ -1,9 +1,5 @@
-Data load status for <%= (Date.today - 1).strftime("%m/%d/%Y") %>
+Data load problem for <%= (Date.today - 1).strftime("%m/%d/%Y") %>
 =============================================================
-<% @statuses.reverse.each do |day| %>
-Readings on: <%= day[:date] %>
-  <% day[:status].each do |status| %>
-    <%= status.type %> --- <%= status.status %> --- <%= status.updated_at %>
-  <% end %>
-
+<% @statuses.each do |status| %>
+<%= status %>
 <% end %>

@@ -39,6 +39,7 @@ class DataImport < ApplicationRecord
     (start_date .. end_date).each do |date|
       statuses = DataImport.where(readings_on: date)
       if statuses.empty?
+        count += 1
         message << "  #{date}: Data load not attempted."
       elsif statuses.unsuccessful.count > 0
         message << "  #{date}: FAIL"
@@ -56,26 +57,17 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
-    return count
+    return { count: count, message: message }
   end
 
   # sends status email if data loads have failed recently
   def self.send_status_email
-    statuses = []
-    send = false
-    dates = earliest_date() .. Date.today - 1
-
-    dates.each do |date| 
-      status = DataImport.where(readings_on: date)
-      send = true if status.empty? || status.unsuccessful.count > 0
-      statuses << { date: date, status: status }
-    end
-
-    if send
+    statuses = self.check_statuses(earliest_date(), Date.today - 1)
+    if statuses[:count] > 0
       Rails.logger.info("DataImport :: Abnormal data load detected, sending status email.")
-      StatusMailer.daily_mail(statuses).deliver
+      StatusMailer.daily_mail(statuses[:message]).deliver
     else
-      Rails.logger.info("DataImport :: All data loads successful.")
+      Rails.logger.info("DataImport :: All data loads successful, skipping status email.")
     end
   end
 end

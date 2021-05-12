@@ -3,9 +3,7 @@ set :env_path,    '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ':task' :output }
 
 every :day, at: ['6:00am'] do
-  runner "RunTasks.all"
-  runner "DataImport.check_statuses"
-  runner "DataImport.send_status_email"
+  runner "RunTasks.scheduled"
 end
 
 # every :day, at: '5am' do

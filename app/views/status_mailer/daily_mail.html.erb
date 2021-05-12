@@ -4,32 +4,11 @@
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
   </head>
   <body>
-    <h2>Data load status for <%= (Date.today - 1).strftime("%Y-%m-%d") %></h2>
-    <table>
-      <tr>
-        <th align="left">Readings</th>
-        <th align="left">Data</th>
-        <th align="left">Updated</th>
-        <th align="left">Status</th>
-      </tr>
-      <% @statuses.reverse.each do |day| %> 
-        <% if day[:status].empty? %>
-          <tr>
-            <td><%= day[:date] %></td>
-            <td colspan="3">Data load not attempted!</td>
-          </tr>
-        <% else %>
-          <% day[:status].each do |status| %>
-            <tr>
-              <td><%= day[:date] %></td>
-              <td><%= status.type %></td>
-              <td><%= status.updated_at %></td>
-              <td><%= status.status %></td>
-            </tr>
-          <% end %>
-        <% end %>
-        <tr><td style="height: 1em;"></td></tr>
-      <% end %>
-    </table>
+    <p><b>AgWeather data load problem:</b></p>
+    <pre>
+    <% @statuses.each do |status| %>
+    <%= status %>
+    <% end %>
+    </pre>
   </body>
 </html>

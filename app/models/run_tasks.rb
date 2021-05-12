@@ -18,6 +18,11 @@ class RunTasks
     Evapotranspiration.create_and_static_link_image
   end
 
+  def self.scheduled
+    self.all
+    DataImport.send_status_email
+  end
+
   ## Command-line tools ##
   # reports if WeatherDatum exists for each day in year
   def self.check_weather(year)
