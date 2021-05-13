@@ -16,11 +16,8 @@ class RunTasks
 
     # generate ET image
     Evapotranspiration.create_and_static_link_image
-  end
 
-  def self.scheduled
-    self.all
-    DataImport.send_status_email
+    DataImport.check_statuses
   end
 
   ## Command-line tools ##

@@ -3,7 +3,7 @@ set :env_path,    '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, %q{ cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ':task' :output }
 
 every :day, at: ['6:00am'] do
-  runner "RunTasks.scheduled"
+  runner "RunTasks.all"
 end
 
 # every :day, at: '5am' do
@@ -26,9 +26,9 @@ end
 #   runner "Evapotranspiration.create_and_static_link_image"
 # end
 
-# every :day, at: '7:00am' do
-#   runner "DataImport.send_status_email"
-# end
+every :day, at: '7:00am' do
+  runner "DataImport.send_status_email"
+end
 
 # every "*/5 * * * *" do
 #   runner "StationHourlyObservationImporter.check_for_file_and_load"
