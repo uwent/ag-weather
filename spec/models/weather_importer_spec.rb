@@ -26,7 +26,6 @@ RSpec.describe WeatherImporter, type: :model do
   describe "get weather data" do
     let(:ftp_client_mock) { instance_double("Net::FTP") }
     before do
-      allow(ftp_client_mock).to receive(:read_timeout)
       allow(ftp_client_mock).to receive(:login)
       allow(ftp_client_mock).to receive(:get)
       allow(ftp_client_mock).to receive(:chdir)
