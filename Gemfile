@@ -24,7 +24,7 @@ group :development, :test do
   gem 'rspec-rails', '~> 5.0'
   gem 'spring', '~> 2.1'
   gem 'rspec_junit_formatter', '~> 0.4'
-  gem 'webmock', '~> 3.12'
+  gem 'webmock', '~> 3.13'
   gem 'simplecov', '~> 0.21'
   gem 'factory_bot_rails', '~> 6.2'
   gem 'guard-rspec', '~> 4.7', require: false
