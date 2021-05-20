@@ -18,16 +18,16 @@ RSpec.describe PestForecast, type: :model do
   describe "calculating late blight dsv" do
     it 'computes a late blight dsv from good weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 14, avg_temp_rh_over_90: 25)
-      expect(PestForecast.compute_potato_blight_dsv(weather)).to eq 2
+      expect(PestForecast.compute_late_blight_dsv(weather)).to eq 2
       weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 0, avg_temp_rh_over_90: nil)
-      expect(PestForecast.compute_potato_blight_dsv(weather)).to eq 0
+      expect(PestForecast.compute_late_blight_dsv(weather)).to eq 0
     end
 
     it 'computes a late blight dsv from old weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 14, avg_temperature: 25)
-      expect(PestForecast.compute_potato_blight_dsv(weather)).to eq 2
+      expect(PestForecast.compute_late_blight_dsv(weather)).to eq 2
       weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 0, avg_temperature: 25)
-      expect(PestForecast.compute_potato_blight_dsv(weather)).to eq 0
+      expect(PestForecast.compute_late_blight_dsv(weather)).to eq 0
     end
 
     it 'defaults to 0 with bad data' do
@@ -38,7 +38,7 @@ RSpec.describe PestForecast, type: :model do
         avg_temp_rh_over_85: nil,
         avg_temperature: nil
       )
-      expect(PestForecast.compute_potato_blight_dsv(weather)).to eq 0
+      expect(PestForecast.compute_late_blight_dsv(weather)).to eq 0
     end
   end
 

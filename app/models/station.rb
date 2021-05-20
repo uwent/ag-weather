@@ -82,10 +82,10 @@ class Station < ApplicationRecord
 
     wet_avg_temp = hourly_observations.map { |ob| (ob.max_temperature + ob.min_temperature)/2.0 }.sum/wet_hours.count
 
-    return compute_potato_blight_dsv(wet_hours.count, wet_avg_temp)
+    return compute_late_blight_dsv(wet_hours.count, wet_avg_temp)
   end
 
-  def compute_potato_blight_dsv(hours, temp)
+  def compute_late_blight_dsv(hours, temp)
     if temp.in? (7.22 ... 12.222)
       return 1 if hours.in? (16 .. 18)
       return 2 if hours.in? (19 .. 21)
