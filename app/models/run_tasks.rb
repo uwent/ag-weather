@@ -1,12 +1,11 @@
 class RunTasks
 
-  # daily tasks to be run from scheduler
   def self.all
-    # fetch weather data from NOAA server
-    WeatherImporter.fetch
-
     # fetch insolation data from SSEC server
     InsolationImporter.fetch
+
+    # fetch weather data from NOAA server
+    WeatherImporter.fetch
 
     # generate ETs from WeatherDatum and Insolation databases
     EvapotranspirationImporter.create_et_data
@@ -20,10 +19,23 @@ class RunTasks
     DataImport.check_statuses
   end
 
+  def self.daily
+    begin
+      RunTasks.all
+      DataImport.send_status_email
+    rescue => e
+      status = DataImport.check_statuses
+      status[:message] << "ERROR: #{e.message}"
+      StatusMailer.daily_mail(status[:message]).deliver
+    end
+  end
+
   ## Command-line tools ##
   # reports if WeatherDatum exists for each day in year
   def self.check_weather(year)
-    dates = Date.new(year, 01, 01)..[Date.new(year, 12, 31), Date.today].min
+    start_date = Date.new(year, 1, 1)
+    end_date = [Date.new(year, 12, 31), Date.today].min
+    dates = start_date..end_date
     dates.each do |date|
       if WeatherDatum.where(date: date).exists?
         puts date.strftime + " - ready"
@@ -36,18 +48,16 @@ class RunTasks
   # re-generates pest forecasts for year from WeatherDatum
   # can be run if new models are added
   def self.redo_forecasts(year)
-    dates = Date.new(year, 1, 1)..[Date.new(year, 12, 31), Date.today].min
-    dates.each do |date|
-      redo_forecast(date)
-    end
+    start_date = Date.new(year, 1, 1)
+    end_date = [Date.new(year, 12, 31), Date.today].min
+    dates = start_date..end_date
+    dates.each { |date| redo_forecast(date) }
   end
 
   # re-generates pest forecasts for specific date range
   def self.redo_forecasts_for_range(start_date, end_date)
     dates = Date.parse(start_date)..Date.parse(end_date)
-    dates.each do |date|
-      redo_forecast(date)
-    end
+    dates.each { |date| redo_forecast(date) }
   end
 
   # re-generates pest forecast for date
@@ -71,8 +81,7 @@ class RunTasks
 
       PestForecast.where(date: date).delete_all
       PestForecast.import(forecasts, validate: false)
-      PestForecastDataImport.where(readings_on: date).delete_all
-      PestForecastDataImport.create_successful_load(date)
+      PestForecastDataImport.succeed(date)
     else
       puts date.strftime + " - no data"
     end

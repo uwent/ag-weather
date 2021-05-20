@@ -1,23 +1,27 @@
 class InsolationImporter
 
+  URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
+
+  def self.formatted_date(date)
+    "#{date.year}#{date.yday.to_s.rjust(3, '0')}"
+  end
+
   def self.fetch
     days_to_load = InsolationDataImport.days_to_load
-
-    days_to_load.each do |day|
-      InsolationImporter.fetch_day(day)
-    end
+    days_to_load.each { |day| InsolationImporter.fetch_day(day) }
   end
 
   def self.fetch_day(date)
-    east_url = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST.#{formatted_date(date)}"
-
-    east_response = HTTParty.get(east_url)
-    import_insolation_data(east_response, date)
-
-    InsolationDataImport.where(readings_on: date).delete_all
-    InsolationDataImport.create_successful_load(date)
-  rescue
-    InsolationDataImport.create_unsuccessful_load(date)
+    begin
+      InsolationDataImport.start(date)
+      east_url = "#{URL_BASE}.#{formatted_date(date)}"
+      east_response = HTTParty.get(east_url)
+      import_insolation_data(east_response, date)
+      InsolationDataImport.succeed(date)
+    rescue => e
+      Rails.logger.warn "InsolationImporter :: ERROR: #{e.message}"
+      InsolationDataImport.fail(date)
+    end
   end
 
   def self.import_insolation_data(http_response, date)
@@ -42,7 +46,4 @@ class InsolationImporter
     Insolation.import(insolations, validate: false)
   end
 
-  def self.formatted_date(date)
-    "#{date.year}#{date.yday.to_s.rjust(3, '0')}"
-  end
 end

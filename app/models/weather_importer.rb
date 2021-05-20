@@ -1,5 +1,7 @@
 require 'net/ftp'
+
 class WeatherImporter
+
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
@@ -7,10 +9,7 @@ class WeatherImporter
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load
-
-    days_to_load.each do |day|
-      self.fetch_day(day)
-    end
+    days_to_load.each { |day| self.fetch_day(day) }
   end
 
   def self.remote_dir(date)
@@ -36,35 +35,42 @@ class WeatherImporter
   end
 
   def self.fetch_day(date)
-    Rails.logger.info("WeatherImporter :: Connecting to #{REMOTE_SERVER}...")
+    WeatherDataImport.start(date)
+
+    Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
+
     client = connect_to_server
+
+    Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
 
     start = central_time(date, 0)
     last = central_time(date, 23)
 
-    Rails.logger.info("WeatherImporter :: Fetching grib files for #{date}...")
     (start.to_i..last.to_i).step(1.hour) do |time_in_central|
+
       time = Time.at(time_in_central).utc
       remote_dir = remote_dir(time.to_date)
       remote_file = remote_file_name(time.hour)
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
+
       if File.exist?(local_file)
-        Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists")
+        Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists"
       else
         retries = 0
         begin
-          Rails.logger.info("Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}")
+          Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}"
           client.chdir(remote_dir)
           client.get(remote_file, "#{local_file}_part")
         rescue => e
-          Rails.logger.warn("Unable to retrieve remote weather file. Reason: #{e.message}")
+          Rails.logger.warn "Unable to retrieve remote weather file. Reason: #{e.message}"
           retry if (retries += 1) < MAX_TRIES
-          WeatherDataImport.create_unsuccessful_load(date)
+          WeatherDataImport.fail(date)
           return
         end
         FileUtils.mv("#{local_file}_part", local_file)
       end
     end
+
     self.import_weather_data(date)
   end
 
@@ -73,8 +79,7 @@ class WeatherImporter
     weather_day.load_from(local_dir(date))
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
-    WeatherDataImport.where(readings_on: date).delete_all
-    WeatherDataImport.create_successful_load(date)
+    WeatherDataImport.succeed(date)
     FileUtils.rm_r self.local_dir(date)
   end
 
@@ -130,4 +135,5 @@ class WeatherImporter
       Time.zone.local(date.year, date.month, date.day, hour)
     end
   end
+
 end

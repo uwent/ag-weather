@@ -1,15 +1,22 @@
 class EvapotranspirationImporter
+
   def self.create_et_data
     days_to_load = EvapotranspirationDataImport.days_to_load
-
     days_to_load.each do |day|
       calculate_et_for_date(day)
     end
   end
 
+  def self.data_sources_loaded?(date)
+    WeatherDataImport.successful.find_by(readings_on: date) &&
+      InsolationDataImport.successful.find_by(readings_on: date)
+  end
+
   def self.calculate_et_for_date(date)
+    EvapotranspirationDataImport.start(date)
+
     unless data_sources_loaded?(date)
-      EvapotranspirationDataImport.create_unsuccessful_load(date)
+      EvapotranspirationDataImport.fail(date)
       return
     end
 
@@ -33,12 +40,7 @@ class EvapotranspirationImporter
 
     Evapotranspiration.where(date: date).delete_all
     Evapotranspiration.import(ets, validate: false)
-    EvapotranspirationDataImport.where(readings_on: date).delete_all
-    EvapotranspirationDataImport.create_successful_load(date)
+    EvapotranspirationDataImport.succeed(date)
   end
 
-  def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by(readings_on: date) &&
-      InsolationDataImport.successful.find_by(readings_on: date)
-  end
 end

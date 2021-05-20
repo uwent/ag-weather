@@ -9,13 +9,13 @@ class PestForecast < ApplicationRecord
       .order(date: :desc)
   end
 
-  # degree days in farenheit
+  # degree days in F
   def self.new_from_weather(weather)
     PestForecast.new(
       date: weather.date,
       latitude: weather.latitude,
       longitude: weather.longitude,
-      potato_blight_dsv: compute_potato_blight_dsv(weather),
+      potato_blight_dsv: compute_late_blight_dsv(weather),
       potato_p_days: compute_potato_p_days(weather),
       carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
       cercospora_div: compute_cercospora_div(weather),
@@ -38,17 +38,19 @@ class PestForecast < ApplicationRecord
   end
 
   def self.calculate_p_day(min, max)
-    def self.p(temp)
-      return 0 if temp < 7
-      return 10 * (1 - ((temp - 21)**2 / 196)) if temp.between?(7, 21) # 196 = (21-7)^2
-      return 10 * (1 - ((temp - 21)**2 / 81)) if temp.between?(21, 30) # 81 = (30-21)^2
-      return 0
-    end
-    a = 5 * p(min)
-    b = 8 * p((2 * min / 3) + (max / 3))
-    c = 8 * p((2 * max / 3) + (min / 3))
-    d = 3 * p(min)
+    a = 5 * p_val(min)
+    b = 8 * p_val((2 * min / 3) + (max / 3))
+    c = 8 * p_val((2 * max / 3) + (min / 3))
+    d = 3 * p_val(min)
     return (a + b + c + d) / 24.0
+  end
+
+  def self.p_val(temp)
+    # temp in C
+    return 0 if temp < 7
+    return 10 * (1 - ((temp - 21)**2 / 196)) if temp.between?(7, 21) # 196 = (21-7)^2
+    return 10 * (1 - ((temp - 21)**2 / 81)) if temp.between?(21, 30) # 81 = (30-21)^2
+    return 0
   end
 
   # temps in celcius
@@ -59,28 +61,34 @@ class PestForecast < ApplicationRecord
   end
 
   # temp in celcius
-  def self.compute_potato_blight_dsv(weather)
+  def self.compute_late_blight_dsv(weather)
     hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
     return 0 if hours.nil? || hours == 0
     temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
-    # temp in celcius
-    if temp.in? (7.22 ... 12.22)
-      return 1 if hours.in? (16 .. 18)
-      return 2 if hours.in? (19 .. 21)
-      return 3 if hours >= 22
-    elsif temp.in? (12.22 ... 15.55)
-      return 1 if hours.in? (13 .. 15)
-      return 2 if hours.in? (16 .. 18)
-      return 3 if hours.in? (19 .. 21)
-      return 4 if hours >= 22
-    elsif temp.in? (15.55 ... 26.66)
-      return 1 if hours.in? (10 .. 12)
-      return 2 if hours.in? (13 .. 15)
-      return 3 if hours.in? (16 .. 18)
-      return 4 if hours.in? (19 .. 21)
-    end
+    return late_blight_logic(temp, hours)
+  end
 
+  def self.late_blight_logic(temp, hours)
+    # temp in C
+    if temp.in? 7.22...12.22
+      return 0 if hours < 16
+      return 1 if hours.in? 16..18
+      return 2 if hours.in? 19..21
+      return 3 if hours > 21
+    elsif temp.in? 12.22...15.55
+      return 0 if hours < 13
+      return 1 if hours.in? 13..15
+      return 2 if hours.in? 16..18
+      return 3 if hours.in? 19..21
+      return 4 if hours > 21
+    elsif temp > 15.55
+      return 0 if hours < 10
+      return 1 if hours.in? 10..12
+      return 2 if hours.in? 13..15
+      return 3 if hours.in? 16..18
+      return 4 if hours > 18
+    end
     return 0
   end
 
@@ -89,28 +97,35 @@ class PestForecast < ApplicationRecord
     return 0 if hours.nil? || hours == 0
     temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
-    # temp in celcius
-    if temp.in? (13 ... 18)
-      return 1 if hours.in? (7 .. 15)
-      return 2 if hours.in? (16 .. 20)
-      return 3 if hours > 20
-    elsif temp.in? (18 ... 21)
-      return 1 if hours.in? (4 .. 8)
-      return 2 if hours.in? (9 .. 15)
-      return 3 if hours.in? (16 .. 22)
-      return 4 if hours > 22
-    elsif temp.in? (21 ... 26)
-      return 1 if hours.in? (3 .. 5)
-      return 2 if hours.in? (6 .. 12)
-      return 3 if hours.in? (13 .. 20)
-      return 4 if hours > 20
-    elsif temp.in? (26 ... 30)
-      return 1 if hours.in? (4 .. 8)
-      return 2 if hours.in? (9 .. 15)
-      return 3 if hours.in? (16 .. 22)
-      return 4 if hours >= 23
-    end
+    return carrot_foliar_logic(temp, hours)
+  end
 
+  def self.carrot_foliar_logic(temp, hours)
+    # temp in C
+    if temp.in? 13...18
+      return 0 if hours < 7
+      return 1 if hours.in? 7..15
+      return 2 if hours.in? 16..20
+      return 3 if hours > 20
+    elsif temp.in? 18...21
+      return 0 if hours < 4
+      return 1 if hours.in? 4..8
+      return 2 if hours.in? 9..15
+      return 3 if hours.in? 16..22
+      return 4 if hours > 22
+    elsif temp.in? 21...26
+      return 0 if hours < 3
+      return 1 if hours.in? 3..5
+      return 2 if hours.in? 6..12
+      return 3 if hours.in? 13..20
+      return 4 if hours > 20
+    elsif temp > 26
+      return 0 if hours < 4
+      return 1 if hours.in? 4..8
+      return 2 if hours.in? 9..15
+      return 3 if hours.in? 16..22
+      return 4 if hours > 22
+    end
     return 0
   end
 
@@ -120,7 +135,11 @@ class PestForecast < ApplicationRecord
     temp_c = weather.avg_temp_rh_over_90 || weather.avg_temperature
     temp = (temp_c * 9/5) + 32.0
 
-    # temp in fahrenheit
+    return cercospora_logic(temp, hours)    
+  end
+
+  def self.cercospora_logic(temp, hours)
+    # temp in F
     return 0 if temp < 60
     if temp < 61
       return 0 if hours <= 21
@@ -238,4 +257,5 @@ class PestForecast < ApplicationRecord
       return 7
     end
   end
+
 end

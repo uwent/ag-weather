@@ -14,42 +14,66 @@ class DataImport < ApplicationRecord
     end
   end
 
+  def self.on(date)
+    where(readings_on: date)
+  end
+
+  def self.started
+    where(status: "started")
+  end
+
   def self.successful
-    where(status: 'successful')
+    where(status: "successful")
   end
 
   def self.unsuccessful
-    where(status: 'unsuccessful')
+    where(status: "unsuccessful")
   end
 
-  def self.create_successful_load(date)
-    successful.where(readings_on: date).create!
+  def self.start(date)
+    status = on(date)
+    status.exists? ? status.update(status: "started", updated_at: Time.now) : started.on(date).create!
   end
 
-  def self.create_unsuccessful_load(date)
-    unsuccessful.where(readings_on: date).create!
+  def self.succeed(date)
+    status = on(date)
+    status.exists? ? status.update(status: "successful", updated_at: Time.now) : successful.on(date).create!
+  end
+
+  def self.fail(date)
+    status = on(date)
+    status.exists? ? status.update(status: "unsuccessful", updated_at: Time.now) : unsuccessful.on(date).create!
   end
 
   # run from console
-  def self.check_statuses(start_date = earliest_date(), end_date = Date.today)
+  def self.check_statuses(start_date = earliest_date(), end_date = Date.yesterday)
     message = []
     count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
     (start_date .. end_date).each do |date|
-      statuses = DataImport.where(readings_on: date)
+      statuses = DataImport.on(date)
       if statuses.empty?
         count += 1
         message << "  #{date}: Data load not attempted."
-      elsif statuses.unsuccessful.count > 0
+      elsif statuses.unsuccessful.count > 0 || statuses.started.count > 0
         message << "  #{date}: FAIL"
         statuses.each do |status|
-          if status.status == "unsuccessful"
+          Rails.logger.info status.type + " ==> " + status.status
+          case status.status
+          when "unsuccessful"
             count += 1
             message << "    #{status.type} ==> FAIL"
-          else
+          when "started"
+            count += 1
+            message << "    #{status.type} ==> STARTED"
+          when "successful"
             message << "    #{status.type} ==> OK"
+          else
+            count += 1
+            message << "    #{status.type} ==> UNKNOWN"
           end
+          Rails.logger.info message
         end
       else
         message << "  #{date}: OK"
@@ -62,10 +86,10 @@ class DataImport < ApplicationRecord
 
   # sends status email if data loads have failed recently
   def self.send_status_email
-    statuses = self.check_statuses(earliest_date(), Date.today - 1)
-    if statuses[:count] > 0
+    status = status || self.check_statuses
+    if status[:count] > 0
       Rails.logger.info("DataImport :: Abnormal data load detected, sending status email.")
-      StatusMailer.daily_mail(statuses[:message]).deliver
+      StatusMailer.daily_mail(status[:message]).deliver
     else
       Rails.logger.info("DataImport :: All data loads successful, skipping status email.")
     end
