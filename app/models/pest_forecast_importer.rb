@@ -9,8 +9,8 @@ class PestForecastImporter
   end
 
   def self.calculate_forecast_for_date(date)
-    unless  data_sources_loaded?(date)
-      PestForecastDataImport.create_unsuccessful_load(date)
+    unless data_sources_loaded?(date)
+      PestForecastDataImport.fail(date)
       return
     end
 
@@ -30,8 +30,7 @@ class PestForecastImporter
 
     PestForecast.where(date: date).delete_all
     PestForecast.import(forecasts, validate: false)
-    PestForecastDataImport.where(readings_on: date).delete_all
-    PestForecastDataImport.create_successful_load(date)
+    PestForecastDataImport.succeed(date)
   end
 
   def self.data_sources_loaded?(date)

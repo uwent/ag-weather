@@ -23,37 +23,73 @@ RSpec.describe DataImport, type: :model do
       dates_to_load = DataImport.days_to_load
       reading_on = Date.current - DataImport::DAYS_BACK_WINDOW.days
 
-      let!(:succesful_load) { DataImport.create!(
-        status: 'successful',
-        readings_on: reading_on)}
+      let!(:succesful_load) {
+        DataImport.create!(
+          status: 'successful',
+          readings_on: reading_on
+        )
+      }
 
       it 'returns all other days' do
         expect(DataImport.days_to_load).to match_array(dates_to_load - [reading_on])
       end
     end
 
-    describe '.create_succesful_load' do
+    describe '.on' do
+      it 'returns DataImport records on date' do
+        record = DataImport.start(Date.current)
+        expect(DataImport.on(Date.current)).to eq(DataImport.where(readings_on: Date.current))
+      end
+    end
+
+    describe '.start' do
       it 'creates a new DataImport record' do
-        expect{DataImport.create_successful_load(Date.current) }.to change(DataImport, :count).by 1
+        expect {DataImport.start(Date.current)}.to change(DataImport, :count).by 1
+      end
+
+      it 'or updates existing record' do
+        record = DataImport.start(Date.current)
+        expect {DataImport.start(Date.current)}.to change(DataImport, :count).by 0
+      end
+
+      it 'creates a record with status started' do
+        newRecord = DataImport.start(Date.current)
+        expect(newRecord.status).to eq('started')
+      end
+    end
+
+    describe '.succeed' do
+      it 'creates a new DataImport record' do
+        expect {DataImport.succeed(Date.current)}.to change(DataImport, :count).by 1
+      end
+
+      it 'or updates existing record' do
+        record = DataImport.start(Date.current)
+        expect {DataImport.succeed(Date.current)}.to change(DataImport, :count).by 0
       end
 
       it 'creates a record with status successful' do
-        newRecord = DataImport.create_successful_load(Date.current)
-
-        expect(newRecord.status).to eq 'successful'
+        record = DataImport.succeed(Date.current)
+        expect(record.status).to eq('successful')
       end
     end
 
-    describe '.create_unsuccessful_load' do
+    describe '.fail' do
       it 'creates a new DataImport record' do
-        expect{DataImport.create_unsuccessful_load(Date.current) }.to change(DataImport, :count).by 1
+        expect {DataImport.fail(Date.current)}.to change(DataImport, :count).by 1
+      end
+
+      it 'or updates an existing record' do
+        record = DataImport.fail(Date.current)
+        expect {DataImport.fail(Date.current)}.to change(DataImport, :count).by 0
       end
 
       it 'creates a reco1rd with status unsuccessful' do
-        newRecord = DataImport.create_unsuccessful_load(Date.current)
-
-        expect(newRecord.status).to eq 'unsuccessful'
+        record = DataImport.fail(Date.current)
+        expect(record.status).to eq('unsuccessful')
       end
     end
+
   end
+
 end

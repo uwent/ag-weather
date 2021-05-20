@@ -1,6 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe EvapotranspirationImporter, type: :model do
+
   let(:date) { Date.current }
 
   describe 'calculate_et_for_date' do
@@ -8,8 +9,8 @@ RSpec.describe EvapotranspirationImporter, type: :model do
 
     context 'insolation and weather data have successfully been imported' do
       before do
-        WeatherDataImport.create_successful_load(date)
-        InsolationDataImport.create_successful_load(date)
+        WeatherDataImport.succeed(date)
+        InsolationDataImport.succeed(date)
       end
 
       it 'adds a data_import record' do
@@ -17,17 +18,22 @@ RSpec.describe EvapotranspirationImporter, type: :model do
       end
 
       it 'adds a new evapotranspiration record' do
-        Insolation.create(latitude: Wisconsin::S_LAT, 
-                          longitude: Wisconsin::E_LONG,
-                          recording: 1257.0, date: date)
-        WeatherDatum.create(latitude: Wisconsin::S_LAT, 
-                            longitude: Wisconsin::E_LONG,
-                           date: date,
-                           max_temperature: 15.0, min_temperature: 5.0,
-                           avg_temperature: 10.0, vapor_pressure: 0.70
-                           )
+        Insolation.create(
+          latitude: Wisconsin::S_LAT,
+          longitude: Wisconsin::E_LONG,
+          recording: 1257.0,
+          date: date
+        )
+        WeatherDatum.create(
+          latitude: Wisconsin::S_LAT,
+          longitude: Wisconsin::E_LONG,
+          date: date,
+          max_temperature: 15.0,
+          min_temperature: 5.0,
+          avg_temperature: 10.0,
+          vapor_pressure: 0.70
+        )
         expect{ action }.to change(Evapotranspiration, :count)
-
       end
     end
 
