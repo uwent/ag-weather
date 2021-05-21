@@ -35,40 +35,45 @@ class WeatherImporter
   end
 
   def self.fetch_day(date)
+    retries = 0
     WeatherDataImport.start(date)
 
-    Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
+    begin
+      Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
+      client = connect_to_server
 
-    client = connect_to_server
+      Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
+      start = central_time(date, 0)
+      last = central_time(date, 23)
+      
+      (start.to_i..last.to_i).step(1.hour) do |time_in_central|
+        time = Time.at(time_in_central).utc
+        remote_dir = remote_dir(time.to_date)
+        remote_file = remote_file_name(time.hour)
+        local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
 
-    Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
-
-    start = central_time(date, 0)
-    last = central_time(date, 23)
-
-    (start.to_i..last.to_i).step(1.hour) do |time_in_central|
-
-      time = Time.at(time_in_central).utc
-      remote_dir = remote_dir(time.to_date)
-      remote_file = remote_file_name(time.hour)
-      local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
-
-      if File.exist?(local_file)
-        Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists"
-      else
-        retries = 0
-        begin
+        if File.exist?(local_file)
+          Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists"
+        else
           Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}"
           client.chdir(remote_dir)
-          client.get(remote_file, "#{local_file}_part")
-        rescue => e
-          Rails.logger.warn "Unable to retrieve remote weather file. Reason: #{e.message}"
-          retry if (retries += 1) < MAX_TRIES
-          WeatherDataImport.fail(date)
-          return
+          Timeout.timeout(60) do
+            client.get(remote_file, "#{local_file}_part")
+          end
+          FileUtils.mv("#{local_file}_part", local_file)
         end
-        FileUtils.mv("#{local_file}_part", local_file)
       end
+
+    rescue => e
+      Rails.logger.warn "WeatherImporter :: Unable to retrieve remote weather file. Reason: #{e.message}"
+      client.close
+      if (retries += 1) < MAX_TRIES
+        Rails.logger.info "WeatherImporter :: Retrying connection in 10 seconds (attempt #{retries} of #{MAX_TRIES})"
+        sleep(10)
+        retry
+      end
+      WeatherDataImport.fail(date, "Unable to retrieve weather data: #{e.message}")
+      return "Unable to retrieve weather data for #{date}."
     end
 
     self.import_weather_data(date)

@@ -30,19 +30,31 @@ class DataImport < ApplicationRecord
     where(status: "unsuccessful")
   end
 
-  def self.start(date)
+  def self.start(date, message = nil)
     status = on(date)
-    status.exists? ? status.update(status: "started", updated_at: Time.now) : started.on(date).create!
+    if status.exists?
+      status.update(status: "started", message: message, updated_at: Time.now)
+    else
+      started.on(date).create!
+    end
   end
 
-  def self.succeed(date)
+  def self.succeed(date, message = nil)
     status = on(date)
-    status.exists? ? status.update(status: "successful", updated_at: Time.now) : successful.on(date).create!
+    if status.exists?
+      status.update(status: "successful", message: message, updated_at: Time.now)
+    else
+      successful.on(date).create!
+    end
   end
 
-  def self.fail(date)
+  def self.fail(date, message = nil)
     status = on(date)
-    status.exists? ? status.update(status: "unsuccessful", updated_at: Time.now) : unsuccessful.on(date).create!
+    if status.exists?
+      status.update(status: "unsuccessful", message: message, updated_at: Time.now)
+    else
+      unsuccessful.on(date).create!
+    end
   end
 
   # run from console
@@ -62,7 +74,7 @@ class DataImport < ApplicationRecord
           case status.status
           when "unsuccessful"
             count += 1
-            message << "    #{status.type} ==> FAIL"
+            message << "    #{status.type} ==> FAIL: #{status.message}"
           when "started"
             count += 1
             message << "    #{status.type} ==> STARTED"

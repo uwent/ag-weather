@@ -19,8 +19,8 @@ class InsolationImporter
       import_insolation_data(east_response, date)
       InsolationDataImport.succeed(date)
     rescue => e
-      Rails.logger.warn "InsolationImporter :: ERROR: #{e.message}"
-      InsolationDataImport.fail(date)
+      Rails.logger.warn "InsolationImporter :: Fetch day failed: #{e.message}"
+      InsolationDataImport.fail(date, e.message)
     end
   end
 

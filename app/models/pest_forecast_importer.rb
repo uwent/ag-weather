@@ -21,7 +21,7 @@ class PestForecastImporter
       next unless Wisconsin.inside?(lat, long)
 
       if weather[lat, long].nil?
-        Rails.logger.error("Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")
+        Rails.logger.error("PestForecastImporter :: Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")
         next
       end
 

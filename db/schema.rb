@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_02_150301) do
+ActiveRecord::Schema.define(version: 2021_05_21_211829) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -49,6 +49,7 @@ ActiveRecord::Schema.define(version: 2021_05_02_150301) do
     t.string "status", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "message"
   end
 
   create_table "evapotranspirations", force: :cascade do |t|
@@ -93,8 +94,8 @@ ActiveRecord::Schema.define(version: 2021_05_02_150301) do
     t.float "potato_p_days"
     t.integer "cercospora_div", default: 0
     t.float "dd_50_none"
-    t.float "dd_50_88"
-    t.float "dd_45_86"
+    t.float "dd_50_88", default: 0.0
+    t.float "dd_45_86", default: 0.0
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|

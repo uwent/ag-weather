@@ -30,6 +30,7 @@ RSpec.describe WeatherImporter, type: :model do
       allow(ftp_client_mock).to receive(:get)
       allow(ftp_client_mock).to receive(:chdir)
       allow(Net::FTP).to receive(:new).with(WeatherImporter::REMOTE_SERVER).and_return(ftp_client_mock)
+      allow(ftp_client_mock).to receive(:close)
     end
 
     describe '.fetch' do
@@ -41,10 +42,6 @@ RSpec.describe WeatherImporter, type: :model do
         expect(WeatherImporter).to receive(:fetch_day)
           .exactly(unloaded_days.count).times
 
-        ## import_weather_data is now called by fetch_day rather than fetch after all files fetched
-        # expect(WeatherImporter).to receive(:import_weather_data)
-        #   .exactly(unloaded_days.count).times
-
         WeatherImporter.fetch
       end
     end
@@ -54,12 +51,6 @@ RSpec.describe WeatherImporter, type: :model do
         expect(Net::FTP).to receive(:new).with(WeatherImporter::REMOTE_SERVER).and_return(ftp_client_mock)
         WeatherImporter.connect_to_server
       end
-
-      # # connection is passive by default
-      # it "should set the connection to passive" do
-      #   expect(ftp_client_mock).to receive(:passive=).with(true)
-      #   WeatherImporter.connect_to_server
-      # end
 
       it "should return the ftp client" do
         expect(WeatherImporter.connect_to_server).to be ftp_client_mock
@@ -71,14 +62,14 @@ RSpec.describe WeatherImporter, type: :model do
         allow(FileUtils).to receive(:mv)
       end
 
-      # changes due to server storing files in UTC time and we are in CST
+      # folder changes due to NOAA server storing files in UTC time and we are in CST
       it 'should change to the appropriate directories on the remote server' do
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
         WeatherImporter.fetch_day(today)
       end
 
-      it 'should try to a file for every hour' do
+      it 'should try to get a file for every hour' do
         expect(ftp_client_mock).to receive(:get).exactly(24).times
         WeatherImporter.fetch_day(today)
       end
@@ -86,6 +77,21 @@ RSpec.describe WeatherImporter, type: :model do
       it 'should log an error for file not found' do
         expect(ftp_client_mock).to receive(:get).and_raise(Net::FTPPermError)
         expect(Rails.logger).to receive(:warn)
+        WeatherImporter.fetch_day(today)
+      end
+
+      it 'should timeout' do
+        expect(ftp_client_mock).to receive(:get).and_raise(Timeout::Error)
+        expect(Rails.logger).to receive(:warn)
+        WeatherImporter.fetch_day(today)
+      end
+
+      it 'should retry three times' do
+        expect(ftp_client_mock).to receive(:get).ordered.and_raise(Net::FTPPermError)
+        expect(ftp_client_mock).to receive(:get).ordered.and_raise(Timeout::Error)
+        expect(ftp_client_mock).to receive(:get).ordered.and_raise(SocketError)
+        expect(Rails.logger).to receive(:warn).exactly(3).times
+        expect(DataImport).to receive(:fail).exactly(1).times
         WeatherImporter.fetch_day(today)
       end
     end
