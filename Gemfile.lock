@@ -272,7 +272,7 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    sdoc (2.1.0)
+    sdoc (2.2.0)
       rdoc (>= 5.0)
     shellany (0.0.1)
     simplecov (0.21.2)
@@ -351,7 +351,7 @@ DEPENDENCIES
   rspec-rails (~> 5.0)
   rspec_junit_formatter (~> 0.4)
   sassc-rails (~> 2.1.0)
-  sdoc (~> 2.1.0)
+  sdoc (~> 2.2.0)
   simplecov (~> 0.21)
   spring (~> 2.1)
   turbolinks (~> 5.2.0)
