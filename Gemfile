@@ -15,7 +15,7 @@ gem 'httparty', '~> 0.18.0'
 gem 'json', '~> 2.5.1'
 gem 'whenever', '~> 1.0.0'
 gem 'agwx_biophys', '0.0.4'
-gem 'sdoc', '~> 2.1.0', group: :doc
+gem 'sdoc', '~> 2.2.0', group: :doc
 
 group :development, :test do
   gem 'puma', '~> 5.3'
