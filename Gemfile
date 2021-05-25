@@ -24,15 +24,11 @@ group :development, :test do
   gem 'rspec-rails', '~> 5.0'
   gem 'rspec_junit_formatter', '~> 0.4'
   gem 'webmock', '~> 3.13'
-  gem 'simplecov', '~> 0.21'
   gem 'factory_bot_rails', '~> 6.2'
-  gem 'guard-rspec', '~> 4.7', require: false
   gem 'pry-rails', '~> 0.3'
 end
 
 group :development do
-  gem 'spring', '~> 2.1'
-  gem 'spring-commands-rspec', '~> 1.0'
   gem 'capistrano', '~> 3.16'
   gem 'capistrano-rbenv', '~> 2.2'
   gem 'capistrano-rails', '~> 1.6', require: false
@@ -40,4 +36,8 @@ group :development do
   gem 'web-console', '~> 4.1'
   gem 'letter_opener', '~> 1.7'
   gem 'letter_opener_web', '~> 1.4'
+  gem 'guard-rspec', '~> 4.7', require: false
+  gem 'spring', '~> 2.1'
+  gem 'spring-commands-rspec', '~> 1.0'
+  gem 'simplecov', '~> 0.21'
 end
