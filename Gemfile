@@ -22,7 +22,6 @@ group :development, :test do
   gem 'byebug', '~> 11.1'
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 5.0'
-  gem 'spring', '~> 2.1'
   gem 'rspec_junit_formatter', '~> 0.4'
   gem 'webmock', '~> 3.13'
   gem 'simplecov', '~> 0.21'
@@ -32,6 +31,8 @@ group :development, :test do
 end
 
 group :development do
+  gem 'spring', '~> 2.1'
+  gem 'spring-commands-rspec', '~> 1.0'
   gem 'capistrano', '~> 3.16'
   gem 'capistrano-rbenv', '~> 2.2'
   gem 'capistrano-rails', '~> 1.6', require: false
