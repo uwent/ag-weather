@@ -5,7 +5,7 @@ class WeatherImporter
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
-  MAX_TRIES = 3
+  MAX_TRIES = 10
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load

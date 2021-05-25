@@ -16,8 +16,8 @@ class EvapotranspirationImporter
     EvapotranspirationDataImport.start(date)
 
     unless data_sources_loaded?(date)
-      Rails.logger.warn "EvapotranspirationImporter :: Data sources not loaded"
-      EvapotranspirationDataImport.fail(date, "Data sources not loaded")
+      Rails.logger.warn "EvapotranspirationImporter :: FAIL: Data sources not loaded."
+      EvapotranspirationDataImport.fail(date, "Data sources not loaded.")
       return
     end
 

@@ -80,18 +80,13 @@ RSpec.describe WeatherImporter, type: :model do
         WeatherImporter.fetch_day(today)
       end
 
-      it 'should timeout' do
-        expect(ftp_client_mock).to receive(:get).and_raise(Timeout::Error)
-        expect(Rails.logger).to receive(:warn)
-        WeatherImporter.fetch_day(today)
-      end
-
-      it 'should retry three times' do
+      it 'should retry at least three times' do
         expect(ftp_client_mock).to receive(:get).ordered.and_raise(Net::FTPPermError)
         expect(ftp_client_mock).to receive(:get).ordered.and_raise(Timeout::Error)
         expect(ftp_client_mock).to receive(:get).ordered.and_raise(SocketError)
+        expect(ftp_client_mock).to receive(:close).exactly(3).times
+        expect(ftp_client_mock).to receive(:login).exactly(4).times
         expect(Rails.logger).to receive(:warn).exactly(3).times
-        expect(DataImport).to receive(:fail).exactly(1).times
         WeatherImporter.fetch_day(today)
       end
     end

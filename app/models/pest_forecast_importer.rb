@@ -10,7 +10,8 @@ class PestForecastImporter
 
   def self.calculate_forecast_for_date(date)
     unless data_sources_loaded?(date)
-      PestForecastDataImport.fail(date)
+      Rails.logger.warn "PestForecastImporter :: FAIL: Data sources not loaded."
+      PestForecastDataImport.fail(date, "Data sources not loaded.")
       return
     end
 
