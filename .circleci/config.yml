@@ -11,8 +11,7 @@ jobs:
           PG_USER: ag_weather
           RAILS_ENV: test
           RACK_ENV: test
-          BUNDLER_VERSION: 2.2.10
-      - image: postgres:9.6
+      - image: circleci/postgres:12.2
         environment:
           POSTGRES_USER: ag_weather
           POSTGRES_DB: ag_weather_test
@@ -21,10 +20,10 @@ jobs:
       - checkout
       - run:
           name: Update Bundler
-          command: gem install bundler:2.2.10
+          command: gem install bundler
       - run:
-          name: Which bundler?
-          command: bundle -v
+          name: Configure Bundler
+          command: bundle config set --local path './vendor/bundle'
       - run:
           name: Install Dredd
           command: npm install dredd
@@ -34,7 +33,7 @@ jobs:
             - ag-weather-bundle-v1-
       - run:
           name: Bundle Install
-          command: bundle check --path ./vendor/bundle || bundle install
+          command: bundle check || bundle install
       - save_cache:
          key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
          paths:
