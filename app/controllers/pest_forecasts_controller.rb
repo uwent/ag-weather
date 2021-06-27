@@ -82,6 +82,7 @@ class PestForecastsController < ApplicationController
   def get_pest_forecast_data
     PestForecast.select(:latitude).select(:longitude).
       select("sum(#{pest}) as total").
+      select("count(#{pest}) as count").
       where("date between ? and ?", start_date, end_date).
       group(:latitude, :longitude).
       order(:latitude, :longitude).
@@ -90,6 +91,8 @@ class PestForecastsController < ApplicationController
           lat: v.latitude,
           long: v.longitude * -1,
           total: v.total.round(2),
+          days: v.count,
+          avg: (v.total / v.count).round(2),
           after_november_first: after_november_first,
           freeze: false,
           grid_key: "#{v.latitude}:#{v.longitude}"
