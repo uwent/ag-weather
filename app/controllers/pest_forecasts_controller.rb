@@ -92,7 +92,7 @@ class PestForecastsController < ApplicationController
           long: v.longitude * -1,
           total: v.total.round(2),
           days: v.count,
-          avg: (v.total / v.count).round(2),
+          avg: (v.total.to_f / v.count).round(2),
           after_november_first: after_november_first,
           freeze: false,
           grid_key: "#{v.latitude}:#{v.longitude}"
