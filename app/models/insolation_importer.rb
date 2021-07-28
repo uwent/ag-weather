@@ -34,7 +34,8 @@ class InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next unless Wisconsin.inside?(lat, long)
+      # next unless Wisconsin.inside?(lat, long)
+      next unless WiMn.inside?(lat, long)
 
       insolations << Insolation.new(
         recording: value/100.0,

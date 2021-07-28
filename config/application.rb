@@ -18,6 +18,8 @@ module AgWeather
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    
+    config.autoload_paths += Dir[Rails.root.join('app', 'models', '**/')]
 
     # Image generation and service configuration
     config.x.image.temp_directory = "tmp"
