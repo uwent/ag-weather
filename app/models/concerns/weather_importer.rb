@@ -91,7 +91,7 @@ module WeatherImporter
   def self.persist_day_to_db(weather_day)
     weather_data = []
 
-    Wisconsin.each_point do |lat, long|
+    WiMn.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)

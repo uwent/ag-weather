@@ -66,10 +66,10 @@ class DegreeDaysController < ApplicationController
     end
 
     def latitude
-      params[:latitude].nil? ? Wisconsin::S_LAT : params[:latitude]
+      params[:latitude].nil? ? WiMn::S_LAT : params[:latitude]
     end
 
     def longitude
-      params[:longitude].nil? ? Wisconsin::E_LAT : params[:longitude]
+      params[:longitude].nil? ? WiMn::E_LAT : params[:longitude]
     end
 end

@@ -1,7 +1,7 @@
 class Evapotranspiration < ApplicationRecord
 
   def self.land_grid_values_for_date(date)
-    et_grid = LandGrid.wisconsin_grid
+    et_grid = LandGrid.wi_mn_grid
 
     Evapotranspiration.where(date: date).each do |et|
       et_grid[et.latitude, et.longitude] = et.potential_et
@@ -55,5 +55,5 @@ class Evapotranspiration < ApplicationRecord
   def already_calculated?
     Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
   end
-  
+
 end

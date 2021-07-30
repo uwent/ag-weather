@@ -1,6 +1,7 @@
 class WeatherDatum < ApplicationRecord
+
   def self.land_grid_for_date(date)
-    weather_grid = LandGrid.wisconsin_grid
+    weather_grid = LandGrid.wi_mn_grid
 
     WeatherDatum.where(date: date).each do |weather|
       weather_grid[weather.latitude, weather.longitude] = weather
@@ -14,7 +15,9 @@ class WeatherDatum < ApplicationRecord
     base = DegreeDaysCalculator::DEFAULT_BASE,
     upper = PestForecast::NO_MAX
   )
-    WeatherDatum.where(date: start_date..end_date).where(latitude: Wisconsin.latitudes, longitude: Wisconsin.longitudes).each_with_object(Hash.new(0)) do |weather_datum, hash|
+    WeatherDatum.where(date: start_date..end_date)
+    .where(latitude: WiMn.latitudes, longitude: WiMn.longitudes)
+    .each_with_object(Hash.new(0)) do |weather_datum, hash|
       coordinate = [weather_datum.latitude.to_f, weather_datum.longitude.to_f]
       if hash[coordinate].nil?
         hash[coordinate] = weather_datum.degree_days(method, base, upper)
@@ -26,7 +29,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.land_grid_since(date)
-    grid = LandGrid.wisconsin_grid
+    grid = LandGrid.wi_mn_grid
 
     WeatherDatum.where('date >= ?', date).each do |weather|
       if grid[weather.latitude, weather.longitude].nil?
@@ -44,8 +47,8 @@ class WeatherDatum < ApplicationRecord
     upper = DegreeDaysCalculator::DEFAULT_UPPER
   )
     temp_grid = land_grid_since(date)
-    degree_day_grid = LandGrid.wisconsin_grid
-    Wisconsin.each_point do |lat, long|
+    degree_day_grid = LandGrid.wi_mn_grid
+    WiMn.each_point do |lat, long|
       next if temp_grid[lat,long].nil?
       dd = temp_grid[lat, long].collect do |weather_day|
         weather_day.degree_days(method, base, upper)
