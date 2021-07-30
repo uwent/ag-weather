@@ -1,6 +1,6 @@
 require 'net/ftp'
 
-class WeatherImporter
+module WeatherImporter
 
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"

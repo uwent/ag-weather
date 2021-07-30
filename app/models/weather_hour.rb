@@ -1,4 +1,5 @@
 require 'open3'
+
 class WeatherHour
   attr_reader :data
 

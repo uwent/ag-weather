@@ -1,4 +1,4 @@
-class EvapotranspirationImporter
+module EvapotranspirationImporter
 
   def self.create_et_data
     days_to_load = EvapotranspirationDataImport.days_to_load

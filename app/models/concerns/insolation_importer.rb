@@ -1,4 +1,4 @@
-class InsolationImporter
+module InsolationImporter
 
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
 

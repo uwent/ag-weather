@@ -1,4 +1,4 @@
-class RunTasks
+module RunTasks
 
   def self.all
     # fetch insolation data from SSEC server

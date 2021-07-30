@@ -1,4 +1,4 @@
-class DegreeDaysCalculator
+module DegreeDaysCalculator
   DEFAULT_BASE = 50
   DEFAULT_UPPER = 86
   INVERSE_PI = 1 / Math::PI

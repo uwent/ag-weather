@@ -22,4 +22,5 @@ class Insolation < ApplicationRecord
 
     return image_name
   end
+  
 end

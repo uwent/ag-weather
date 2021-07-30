@@ -1,4 +1,4 @@
-class PestForecastImporter
+module PestForecastImporter
 
   def self.create_forecast_data
     days_to_load = PestForecastDataImport.days_to_load

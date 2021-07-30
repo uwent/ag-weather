@@ -1,4 +1,4 @@
-class StationHourlyObservationImporter
+module StationHourlyObservationImporter
   DATA_DIR = ENV['STATION_OBSERVATION_DIR'] || '/tmp/station_obs'
 
   def self.check_for_file_and_load

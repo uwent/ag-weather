@@ -1,4 +1,4 @@
-class Evapotranspiration <  ApplicationRecord
+class Evapotranspiration < ApplicationRecord
 
   def self.land_grid_values_for_date(date)
     et_grid = LandGrid.wisconsin_grid
@@ -55,4 +55,5 @@ class Evapotranspiration <  ApplicationRecord
   def already_calculated?
     Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
   end
+  
 end
