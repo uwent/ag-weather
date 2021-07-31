@@ -15,11 +15,10 @@ module PestForecastImporter
       return
     end
 
-    grid = LandGrid.new
-    weather = WeatherDatum.land_grid_for_date(grid, date)
+    weather = WeatherDatum.land_grid_for_date(date)
     forecasts = []
     
-    grid.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       # next unless grid.inside?(lat, long)
 
       if weather[lat, long].nil?

@@ -2,7 +2,7 @@ reset
 set cbrange [0:max_v]
 set pm3d explicit at b
 set pm3d interpolate 16,16
-set palette maxcolors 10
+set palette maxcolors 64
 
 set palette defined ( 0 '#a100c7', 1 '#6e00dc', 2 '#1f3dfa', 3 '#00c7c7', 4 '#00d18c', 5 '#a1e633', 6 '#e6dc33', 7 '#f08229', 8 '#f00000', 9 '#dc0063')
 set view map 
@@ -44,7 +44,3 @@ splot '' u 2:1:3 with lines dt 2 nosurface
 
 # labels???
 # splot '' u 2:1:3 with labels nosurface
-
-
-
-

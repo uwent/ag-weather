@@ -42,7 +42,8 @@ module ImageCreator
       Rails.configuration.x.image.file_dir,
       image_name)
 
-    gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'\" -e \"max_v=#{max_value}\" -e \"outfile='#{temp_image}'\" -e \"infile='#{datafile_name}'\" lib/color_contour.gp)"
+    # gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'\" -e \"max_v=#{max_value}\" -e \"outfile='#{temp_image}'\" -e \"infile='#{datafile_name}'\" lib/color_contour.gp)"
+    gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'; max_v=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp)"
     Rails.logger.debug("GNUPLOT CMD: #{gnuplot_cmd}")
     %x(#{gnuplot_cmd})
 

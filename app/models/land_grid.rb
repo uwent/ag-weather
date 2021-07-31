@@ -1,37 +1,41 @@
 class LandGrid
+  include Enumerable
 
-  def extents
-    {
-      min_lat: 38,
-      max_lat: 50,
-      min_long: 82,
-      max_long: 98,
-      step: 0.1
-    }
+  EPSILON = 0.000001
+
+  def self.weather_grid
+    self.new(
+      WeatherExtent.latitudes.min,
+      WeatherExtent.latitudes.max,
+      WeatherExtent.longitudes.min,
+      WeatherExtent.longitudes.max,
+      WeatherExtent.step
+    )
   end
 
-  # def extents
-  #   {
-  #     min_lat: 44,
-  #     max_lat: 45,
-  #     min_long: 85,
-  #     max_long: 86,
-  #     step: 0.1
-  #   }
-  # end
+  def self.wi_mn_grid
+    self.new(
+      WiMn.latitudes.min,
+      WiMn.latitudes.max,
+      WiMn.longitudes.min,
+      WiMn.longitudes.max,
+      WiMn.step
+    )
+  end
 
-  def initialize(e = extents)
-    @min_latitude = e[:min_lat]
-    @max_latitude = e[:max_lat]
-    @min_longitude = e[:min_long]
-    @max_longitude = e[:max_long]
-    @step = e[:step]
+  def initialize(min_lat, max_lat, min_long, max_long, step)
+    raise TypeError, "minimum latitude must be less than maximum latitude" if (min_lat >= max_lat)
+    raise TypeError, "minimum longitude must be less than maximum longitude" if (min_long >= max_long)
+    raise TypeError, "step must be greater than 0" if (step <= 0)
+    raise TypeError, "step must be less than latitude difference and longitude difference" if (step > max_lat - min_lat || step > max_long - min_long)
+
+    @min_latitude = min_lat
+    @max_latitude = max_lat
+    @min_longitude = min_long
+    @max_longitude = max_long
+    @step = step
     @data = create_grid
   end
-
-  # def self.seed
-  #   @data = create_grid
-  # end
 
   def each(&block)
     @data.each do |row|

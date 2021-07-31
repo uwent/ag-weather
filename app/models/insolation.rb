@@ -4,26 +4,12 @@ class Insolation < ApplicationRecord
   #   @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
   # end
 
-  def self.land_grid_values_for_date(grid, date)
-    # value_grid = LandGrid.weather_grid
-
-    Insolation.where(date: date).each do |insol|
-      lat = insol.latitude
-      lon = insol.longitude
-      next unless grid.inside?(lat, lon)
-      grid[lat, lon] = insol.insolation
-    end
-
-    grid
-  end
-
   def self.create_image(date)
     if InsolationDataImport.successful.where(readings_on: date).exists?
       begin
         image_name = "insolation_#{date.to_s(:number)}.png"
         File.delete(image_name) if File.exists?(image_name)
-        grid = WiMnGrid.new
-        insolations = land_grid_values_for_date(grid, date)
+        insolations = land_grid_values_for_date(WiMnGrid.new, date)
         title = "Daily Insol (MJ day-1 m-2) for #{date.strftime('%-d %B %Y')}"
         ImageCreator.create_image(insolations, title, image_name)
       rescue => e
@@ -32,6 +18,20 @@ class Insolation < ApplicationRecord
     else
       Rails.logger.warn "Insolation :: Failed to create image for " + date.to_s + ": Data source missing"
     end
+  end
+
+  def self.land_grid_values_for_date(grid, date)
+    insols = grid
+
+    Insolation.where(date: date).each do |insol|
+      lat = insol.latitude
+      lon = insol.longitude
+      next unless grid.inside?(lat, lon)
+      insols[lat, lon] = insol.insolation
+      # puts grid[lat, lon]
+    end
+
+    insols
   end
 
 end

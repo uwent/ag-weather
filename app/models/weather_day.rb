@@ -1,11 +1,10 @@
 class WeatherDay
   attr_accessor :date, :data
 
-  def initialize(grid, date)
-    @grid = grid
-    @data = grid
+  def initialize(date)
+    @data = LandGrid.weather_grid
     @date = date
-    @grid.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       @data[lat, long] = []
     end
   end
@@ -32,7 +31,7 @@ class WeatherDay
   end
 
   def add_data_from_weather_hour(hour)
-    @grid.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       wo = WeatherObservation.new(
         hour.temperature_at(lat, long),
         hour.dew_point_at(lat, long)
