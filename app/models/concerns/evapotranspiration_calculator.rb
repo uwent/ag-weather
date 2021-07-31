@@ -1,4 +1,4 @@
-class EvapotranspirationCalculator
+module EvapotranspirationCalculator
   # This is an implementation of evapotranspiration based on the formula in 
   # the paper:  http://wisp.cals.wisc.edu/diakEtal1998.pdf.
   SOLAR_CONSTANT      = 1367.0

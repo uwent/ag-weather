@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_31_230904) do
+ActiveRecord::Schema.define(version: 2021_07_31_233526) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -93,7 +93,6 @@ ActiveRecord::Schema.define(version: 2021_07_31_230904) do
     t.float "dd_55_92"
     t.float "dd_41_none"
     t.float "dd_39p2_86"
-    t.float "dd_40_86"
     t.float "dd_41_86"
     t.float "dd_41_88"
     t.float "dd_45_none"
