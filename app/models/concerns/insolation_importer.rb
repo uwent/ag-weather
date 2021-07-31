@@ -38,7 +38,7 @@ module InsolationImporter
       next unless WiMn.inside?(lat, long)
 
       insolations << Insolation.new(
-        recording: value/100.0,
+        insolation: value/100.0,
         latitude: lat,
         longitude: long,
         date: date)
