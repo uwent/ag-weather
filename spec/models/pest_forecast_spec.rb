@@ -19,14 +19,14 @@ RSpec.describe PestForecast, type: :model do
     it 'computes a late blight dsv from good weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 14, avg_temp_rh_over_90: 25)
       expect(PestForecast.compute_late_blight_dsv(weather)).to eq 2
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 0, avg_temp_rh_over_90: nil)
+      weather.update(hours_rh_over_90: 0, avg_temp_rh_over_90: nil)
       expect(PestForecast.compute_late_blight_dsv(weather)).to eq 0
     end
 
     it 'computes a late blight dsv from old weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 14, avg_temperature: 25)
       expect(PestForecast.compute_late_blight_dsv(weather)).to eq 2
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 0, avg_temperature: 25)
+      weather.update(hours_rh_over_85: 0, avg_temperature: 25)
       expect(PestForecast.compute_late_blight_dsv(weather)).to eq 0
     end
 
@@ -46,14 +46,14 @@ RSpec.describe PestForecast, type: :model do
     it 'computes a carrot dsv from good weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 10, avg_temp_rh_over_90: 20)
       expect(PestForecast.compute_carrot_foliar_dsv(weather)).to eq 2
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 0)
+      weather.update(hours_rh_over_90: 0)
       expect(PestForecast.compute_carrot_foliar_dsv(weather)).to eq 0
     end
 
     it 'computes a carrot dsv from old weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 10, avg_temperature: 20)
       expect(PestForecast.compute_carrot_foliar_dsv(weather)).to eq 2
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 0)
+      weather.update(hours_rh_over_85: 0)
       expect(PestForecast.compute_carrot_foliar_dsv(weather)).to eq 0
     end
 
@@ -73,22 +73,22 @@ RSpec.describe PestForecast, type: :model do
     it 'computes a DIV from good weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 12, avg_temp_rh_over_90: 15)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 0
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 12, avg_temp_rh_over_90: 20)
+      weather.update(hours_rh_over_90: 12, avg_temp_rh_over_90: 20)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 3
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 12, avg_temp_rh_over_90: 35)
+      weather.update(hours_rh_over_90: 12, avg_temp_rh_over_90: 35)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 7
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_90: 0)
+      weather.update(hours_rh_over_90: 0)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 0
     end
 
     it 'computes a DIV from old weather data' do
       weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 12, avg_temperature: 15)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 0
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 12, avg_temperature: 20)
+      weather.update(hours_rh_over_85: 12, avg_temperature: 20)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 3
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 12, avg_temperature: 35)
+      weather.update(hours_rh_over_85: 12, avg_temperature: 35)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 7
-      weather = FactoryBot.create(:weather_datum, hours_rh_over_85: 0)
+      weather.update(hours_rh_over_85: 0)
       expect(PestForecast.compute_cercospora_div(weather)).to eq 0
     end
 

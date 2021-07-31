@@ -1,5 +1,9 @@
 class Insolation < ApplicationRecord
 
+  def insolation
+    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
+  end
+
   def self.land_grid_values_for_date(date)
     value_grid = LandGrid.weather_grid
 

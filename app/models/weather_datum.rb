@@ -1,5 +1,9 @@
 class WeatherDatum < ApplicationRecord
 
+  def weather
+    @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+  end
+
   def self.land_grid_for_date(date)
     grid = LandGrid.weather_grid
 

@@ -2,7 +2,7 @@ class WeatherExtent < LandExtent
 
   # Upper midwest area. Degrees west longitude.
   N_LAT = 50
-  S_LAT = 40
+  S_LAT = 38
   W_LONG = 98
   E_LONG = 82
 

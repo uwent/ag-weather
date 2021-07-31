@@ -1,5 +1,16 @@
 module RunTasks
 
+  def self.daily
+    begin
+      RunTasks.all
+      DataImport.send_status_email
+    rescue => e
+      status = DataImport.check_statuses
+      status[:message] << "ERROR: #{e.message}"
+      StatusMailer.daily_mail(status[:message]).deliver
+    end
+  end
+
   def self.all
     # fetch insolation data from SSEC server
     InsolationImporter.fetch
@@ -16,15 +27,11 @@ module RunTasks
     DataImport.check_statuses
   end
 
-  def self.daily
-    begin
-      RunTasks.all
-      DataImport.send_status_email
-    rescue => e
-      status = DataImport.check_statuses
-      status[:message] << "ERROR: #{e.message}"
-      StatusMailer.daily_mail(status[:message]).deliver
-    end
+  def self.all_for_date(date)
+    InsolationImporter.fetch_day(date)
+    WeatherImporter.fetch(date)
+    EvapotranspirationImporter.calculate_et_for_date(date)
+    PestForecastImporter.calculate_forecast_for_date(date)
   end
 
   ## Command-line tools ##

@@ -71,17 +71,21 @@ RSpec.describe Evapotranspiration, type: :model do
 
     it 'should have evapotranspirations stored in the grid' do
       date = Date.current
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
-      FactoryBot.create(:evapotranspiration, date: date, latitude: latitude,
-                         longitude: longitude, potential_et: 23.4)
+      latitude = WeatherExtent::N_LAT
+      longitude = WeatherExtent::E_LONG
+      FactoryBot.create(
+        :evapotranspiration,
+        date: date,
+        latitude: latitude,
+        longitude: longitude,
+        potential_et: 23.4)
       land_grid = Evapotranspiration.land_grid_values_for_date(date)
       expect(land_grid[latitude, longitude]).to eq 23.4
     end
 
     it 'should store nil in grid for points without values' do
       land_grid = Evapotranspiration.land_grid_values_for_date(Date.current)
-      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
+      expect(land_grid[WeatherExtent::N_LAT, WeatherExtent::E_LONG]).to be_nil
     end
   end
 end
