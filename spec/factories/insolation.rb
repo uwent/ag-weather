@@ -3,6 +3,6 @@ FactoryBot.define do
     latitude { 43.0 }
     longitude { 89.7 }
     date { Date.current }
-    recording { 561 }
+    insolation { 561 }
   end
 end
