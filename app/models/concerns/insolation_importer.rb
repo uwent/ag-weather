@@ -7,9 +7,9 @@ module InsolationImporter
   end
 
   def self.fetch
-    InsolationDataImport.days_to_load.each do |day|
-      InsolationImporter.fetch_day(day)
-    end
+    days = InsolationDataImport.days_to_load
+    days.each { |day| InsolationImporter.fetch_day(day) }
+
   end
 
   def self.fetch_day(date)
@@ -29,6 +29,7 @@ module InsolationImporter
 
   def self.import_insolation_data(http_response, date)
 
+    extent = LandGrid.new
     insolations = []
 
     http_response.body.each_line do |line|
@@ -39,7 +40,7 @@ module InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next unless WeatherExtent.inside?(lat, long)
+      next unless extent.inside?(lat, long)
 
       insolations << Insolation.new(
         insolation: value/100.0,

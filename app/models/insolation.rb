@@ -8,7 +8,10 @@ class Insolation < ApplicationRecord
     # value_grid = LandGrid.weather_grid
 
     Insolation.where(date: date).each do |insol|
-      grid[insol.latitude, insol.longitude] = insol.insolation
+      lat = insol.latitude
+      lon = insol.longitude
+      next unless grid.inside?(lat, lon)
+      grid[lat, lon] = insol.insolation
     end
 
     grid
@@ -19,7 +22,8 @@ class Insolation < ApplicationRecord
       begin
         image_name = "insolation_#{date.to_s(:number)}.png"
         File.delete(image_name) if File.exists?(image_name)
-        insolations = land_grid_values_for_date(WiMn.new, date)
+        grid = WiMnGrid.new
+        insolations = land_grid_values_for_date(grid, date)
         title = "Daily Insol (MJ day-1 m-2) for #{date.strftime('%-d %B %Y')}"
         ImageCreator.create_image(insolations, title, image_name)
       rescue => e

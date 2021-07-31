@@ -1,5 +1,5 @@
 module ImageCreator
-  IMAGE_STEP = 0.2
+  IMAGE_STEP = 0.1
   # GNUPLOT = "/usr/local/bin/gnuplot"
   GNUPLOT = "gnuplot"
   # IMAGEMAGICK_COMP = "/usr/bin/composite"
@@ -23,9 +23,9 @@ module ImageCreator
   def self.create_data_file(data_grid)
     data_filename = temp_filename('dat')
 
-    last_lat = WiMn::S_LAT
+    last_lat = data_grid.latitudes.min
     File.open(data_filename, 'w') do |file|
-      WiMn.each_point(IMAGE_STEP) do |lat, long|
+      data_grid.each_point do |lat, long|
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
         file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}" unless data_grid[lat, long].nil?
