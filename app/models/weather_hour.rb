@@ -4,9 +4,9 @@ class WeatherHour
   attr_reader :data
 
   def initialize()
-    @data = LandGrid.wi_mn_grid
+    @data = LandGrid.weather_grid
       
-    WiMn.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       @data[lat, long] = {
         temperatures: [],
         dew_points: []
@@ -30,8 +30,9 @@ class WeatherHour
     _, stdout, _ = Open3.popen3(cmd)
     stdout.each do |line|
       (lat, long, data, type) = line.split
-      store(type, lat.to_f, 360.0 - long.to_f, data.to_f) if
-        WiMn.inside?(lat.to_f, 360.0 - long.to_f)
+      if WeatherExtent.inside?(lat.to_f, 360.0 - long.to_f)
+        store(type, lat.to_f, 360.0 - long.to_f, data.to_f)
+      end
     end
   end
 

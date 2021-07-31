@@ -85,13 +85,13 @@ module WeatherImporter
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
     WeatherDataImport.succeed(date)
-    FileUtils.rm_r self.local_dir(date)
+    FileUtils.rm_r self.local_dir(date) unless Rails.env.development?
   end
 
   def self.persist_day_to_db(weather_day)
     weather_data = []
 
-    WiMn.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)
@@ -127,7 +127,7 @@ module WeatherImporter
   def self.dew_point_to_vapor_pressure(dew_point)
     # units in: dew point in Celcius
     vapor_p_mb = 6.105 * Math.exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / (dew_point + 273.15))))
-    vapor_p_mb / 10
+    vapor_p_mb / 10.0
   end
 
   def self.weather_average(array)

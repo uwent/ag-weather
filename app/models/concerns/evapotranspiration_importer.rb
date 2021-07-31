@@ -25,7 +25,7 @@ module EvapotranspirationImporter
     insols = Insolation.land_grid_values_for_date(date)
 
     ets = []
-    WiMn.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
         Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
         next

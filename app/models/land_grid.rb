@@ -11,16 +11,14 @@ class LandGrid
     end
   end
 
-  def self.wisconsin_grid
-    self.new(Wisconsin::S_LAT,  Wisconsin::N_LAT, Wisconsin::E_LONG, Wisconsin::W_LONG, Wisconsin::STEP)
-  end
-
-  def self.wi_mn_grid
-    self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
-  end
-
-  def self.midwest_grid
-    self.new(Midwest::S_LAT, Midwest::N_LAT, Midwest::E_LONG, Midwest::W_LONG, Midwest::STEP)
+  def self.weather_grid
+    self.new(
+      WeatherExtent::S_LAT,
+      WeatherExtent::N_LAT,
+      WeatherExtent::E_LONG,
+      WeatherExtent::W_LONG,
+      WeatherExtent::STEP
+    )
   end
 
   def initialize(min_lat, max_lat, min_long, max_long, step)
@@ -38,7 +36,7 @@ class LandGrid
   end
 
   def closest_point(lat, long)
-    lat  = @data.closest_point(lat)
+    lat = @data.closest_point(lat)
     return lat, @data[lat].closest_point(long)
   end
 

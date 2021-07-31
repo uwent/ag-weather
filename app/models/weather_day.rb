@@ -3,8 +3,8 @@ class WeatherDay
 
   def initialize(date)
     @date = date
-    @data = LandGrid.wi_mn_grid
-    WiMn.each_point do |lat, long|
+    @data = LandGrid.weather_grid
+    WeatherExtent.each_point do |lat, long|
       @data[lat, long] = []
     end
   end
@@ -31,7 +31,7 @@ class WeatherDay
   end
 
   def add_data_from_weather_hour(hour)
-    WiMn.each_point do |lat, long|
+    WeatherExtent.each_point do |lat, long|
       @data[lat, long] <<
         WeatherObservation.new(
           hour.temperature_at(lat, long),

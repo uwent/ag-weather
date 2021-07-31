@@ -18,8 +18,8 @@ module PestForecastImporter
     weather = WeatherDatum.land_grid_for_date(date)
     forecasts = []
     
-    WiMn.each_point do |lat, long|
-      next unless WiMn.inside?(lat, long)
+    WeatherExtent.each_point do |lat, long|
+      next unless WeatherExtent.inside?(lat, long)
 
       if weather[lat, long].nil?
         Rails.logger.error("PestForecastImporter :: Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")

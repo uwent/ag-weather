@@ -3,8 +3,7 @@ class PestForecast < ApplicationRecord
   NO_MAX = 150
 
   def self.for_lat_long_date_range(lat, long, start_date, end_date)
-    where(latitude: lat)
-      .where(longitude: long)
+    where(latitude: lat, longitude: long)
       .where("date >= ? and date <= ?", start_date, end_date)
       .order(date: :desc)
   end

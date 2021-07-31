@@ -68,13 +68,9 @@ module RunTasks
       weather = WeatherDatum.land_grid_for_date(date)
       forecasts = []
 
-      WiMn.each_point do |lat, long|
-        next unless WiMn.inside?(lat, long)
-
-        if weather[lat, long].nil?
-          Rails.logger.error("Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")
-          next
-        end
+      WeatherExtent.each_point do |lat, long|
+        next unless WeatherExtent.inside?(lat, long)
+        next if weather[lat, long].nil?
 
         forecasts << PestForecast.new_from_weather(weather[lat, long])
       end
@@ -86,4 +82,5 @@ module RunTasks
       puts date.strftime + " - no data"
     end
   end
+  
 end

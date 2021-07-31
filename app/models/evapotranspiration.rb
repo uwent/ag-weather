@@ -1,7 +1,7 @@
 class Evapotranspiration < ApplicationRecord
 
   def self.land_grid_values_for_date(date)
-    et_grid = LandGrid.wi_mn_grid
+    et_grid = LandGrid.weather_grid
 
     Evapotranspiration.where(date: date).each do |et|
       et_grid[et.latitude, et.longitude] = et.potential_et

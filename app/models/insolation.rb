@@ -1,7 +1,7 @@
 class Insolation < ApplicationRecord
 
   def self.land_grid_values_for_date(date)
-    value_grid = LandGrid.wi_mn_grid
+    value_grid = LandGrid.weather_grid
 
     Insolation.where(date: date).each do |insol|
       value_grid[insol.latitude, insol.longitude] = insol.insolation

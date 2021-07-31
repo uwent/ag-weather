@@ -51,9 +51,7 @@ class DegreeDaysController < ApplicationController
 
   private
     def start_date
-      params[:start_date].nil? ?
-        Date.current.beginning_of_year :
-        params[:start_date]
+      params[:start_date].nil? ? Date.current.beginning_of_year : params[:start_date]
     end
 
     def end_date
@@ -65,10 +63,10 @@ class DegreeDaysController < ApplicationController
     end
 
     def latitude
-      params[:latitude].nil? ? WiMn::S_LAT : params[:latitude]
+      params[:latitude].nil? ? 43.1 : params[:latitude]
     end
 
     def longitude
-      params[:longitude].nil? ? WiMn::E_LAT : params[:longitude]
+      params[:longitude].nil? ? -89.4 : params[:longitude]
     end
 end
