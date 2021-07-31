@@ -4,63 +4,63 @@ RSpec.describe Evapotranspiration, type: :model do
 
   let(:new_et_point) { FactoryBot.build(:evapotranspiration) }
 
-  describe 'already_calculated?' do
-    context 'ET point for same lat, long, and date exists' do
-      before do
-        FactoryBot.create(:evapotranspiration)
-      end
+  # describe 'already_calculated?' do
+  #   context 'ET point for same lat, long, and date exists' do
+  #     before do
+  #       FactoryBot.create(:evapotranspiration)
+  #     end
 
-      it 'is true' do
-        expect(new_et_point).to be_already_calculated
-      end
-    end
+  #     it 'is true' do
+  #       expect(new_et_point).to be_already_calculated
+  #     end
+  #   end
 
-    context 'No other ET points exist' do
-      it 'is false' do
-        expect(new_et_point).not_to be_already_calculated
-      end
-    end
-  end
+  #   context 'No other ET points exist' do
+  #     it 'is false' do
+  #       expect(new_et_point).not_to be_already_calculated
+  #     end
+  #   end
+  # end
 
-  describe 'has_required_data?' do
-    context 'weather and and insolation data imported' do
-      before do
-        FactoryBot.create(:weather_datum)
-        FactoryBot.create(:insolation)
-      end
+  # describe 'has_required_data?' do
+  #   context 'weather and and insolation data imported' do
+  #     before do
+  #       FactoryBot.create(:weather_datum)
+  #       FactoryBot.create(:insolation)
+  #     end
 
-      it 'is true' do
-        expect(new_et_point).to have_required_data
-      end
-    end
+  #     it 'is true' do
+  #       expect(new_et_point).to have_required_data
+  #     end
+  #   end
 
-    context 'only weather data has been imported' do
-      before do
-        FactoryBot.create(:weather_datum)
-      end
+  #   context 'only weather data has been imported' do
+  #     before do
+  #       FactoryBot.create(:weather_datum)
+  #     end
 
-      it 'is false' do
-        expect(new_et_point).not_to have_required_data
-      end
-    end
+  #     it 'is false' do
+  #       expect(new_et_point).not_to have_required_data
+  #     end
+  #   end
 
-    context 'only insolation data has been imported' do
-      before do
-        FactoryBot.create(:insolation)
-      end
+  #   context 'only insolation data has been imported' do
+  #     before do
+  #       FactoryBot.create(:insolation)
+  #     end
 
-      it 'is false' do
-        expect(new_et_point).not_to have_required_data
-      end
-    end
-  end
+  #     it 'is false' do
+  #       expect(new_et_point).not_to have_required_data
+  #     end
+  #   end
+  # end
 
   describe 'calculate_et' do
     let(:insol) { FactoryBot.create(:insolation) }
     let(:weather) { FactoryBot.create(:weather_datum) }
 
     it 'should calculate a value for give insolation and weather' do
-      expect(new_et_point.calculate_et(insol.recording, weather)).to be_within(EPSILON).of(4.8552734) 
+      expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.8552734) 
     end
   end
 
