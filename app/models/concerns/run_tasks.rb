@@ -69,11 +69,12 @@ module RunTasks
     if WeatherDatum.where(date: date).exists?
       puts date.strftime + " - ready - recalculating..."
 
-      weather = WeatherDatum.land_grid_for_date(date)
+      grid = LandGrid.new
+      weather = WeatherDatum.land_grid_for_date(grid, date)
       forecasts = []
 
-      WeatherExtent.each_point do |lat, long|
-        next unless WeatherExtent.inside?(lat, long)
+      grid.each_point do |lat, long|
+        # next unless WeatherExtent.inside?(lat, long)
         next if weather[lat, long].nil?
 
         forecasts << PestForecast.new_from_weather(weather[lat, long])

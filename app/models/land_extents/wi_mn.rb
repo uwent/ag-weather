@@ -1,10 +1,23 @@
-class WiMn < LandExtent
+class WiMn
 
-  N_LAT = 50
-  S_LAT = 42
-  W_LONG = 98
-  E_LONG = 86
+  # Wisconsin and Minnesota for evapo/insol maps
 
-  STEP = 0.1
+  # def self.latitudes
+  #   42..50
+  # end
+
+  # def self.longitudes
+  #   86..98
+  # end
+
+  def extents
+    {
+      min_lat: 38,
+      max_lat: 50,
+      min_long: 82,
+      max_long: 98,
+      step: 0.1
+    }
+  end
 
 end

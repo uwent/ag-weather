@@ -1,13 +1,13 @@
 class Evapotranspiration < ApplicationRecord
 
-  def self.land_grid_values_for_date(date)
-    et_grid = LandGrid.weather_grid
+  def self.land_grid_values_for_date(grid, date)
+    # et_grid = LandGrid.weather_grid
 
     Evapotranspiration.where(date: date).each do |et|
-      et_grid[et.latitude, et.longitude] = et.potential_et
+      grid[et.latitude, et.longitude] = et.potential_et
     end
 
-    et_grid
+    grid
   end
 
   def calculate_et(insolation, weather_data)
@@ -40,7 +40,7 @@ class Evapotranspiration < ApplicationRecord
       begin
         image_name = "evapo_#{date.to_s(:number)}.png"
         File.delete(image_name) if File.exists?(image_name)
-        ets = land_grid_values_for_date(date)
+        ets = land_grid_values_for_date(WiMn.new, date)
         title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
         ImageCreator.create_image(ets, title, image_name)
       rescue => e

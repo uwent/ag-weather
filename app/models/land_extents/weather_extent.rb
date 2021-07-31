@@ -1,11 +1,13 @@
 class WeatherExtent < LandExtent
 
-  # Upper midwest area. Degrees west longitude.
-  N_LAT = 50
-  S_LAT = 38
-  W_LONG = 98
-  E_LONG = 82
+  # Upper midwest area.
 
-  STEP = 0.1
+  def self.latitudes
+    38..50
+  end
+
+  def self.longitudes
+    82..98
+  end
 
 end

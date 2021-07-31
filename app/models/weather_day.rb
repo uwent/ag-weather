@@ -1,10 +1,10 @@
 class WeatherDay
   attr_accessor :date, :data
 
-  def initialize(date)
+  def initialize(date, grid)
     @date = date
-    @data = LandGrid.weather_grid
-    WeatherExtent.each_point do |lat, long|
+    @data = grid
+    @data.each_point do |lat, long|
       @data[lat, long] = []
     end
   end
@@ -12,7 +12,7 @@ class WeatherDay
   def load_from(dirname)
     Dir["#{dirname}/*.grb2_wexp"].each do |filename|
       Rails.logger.info("WeatherDay :: Loading #{filename}")
-      wh = WeatherHour.new()
+      wh = WeatherHour.new(@data)
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
     end
@@ -23,19 +23,20 @@ class WeatherDay
   end
 
   def temperatures_at(lat, long)
-    @data[lat,long].map(&:temperature)
+    @data[lat, long].map(&:temperature)
   end
 
   def dew_points_at(lat, long)
-    @data[lat,long].map(&:dew_point)
+    @data[lat, long].map(&:dew_point)
   end
 
   def add_data_from_weather_hour(hour)
-    WeatherExtent.each_point do |lat, long|
+    @data.each_point do |lat, long|
       @data[lat, long] <<
         WeatherObservation.new(
           hour.temperature_at(lat, long),
-          hour.dew_point_at(lat, long))
+          hour.dew_point_at(lat, long)
+        )
     end
   end
 end

@@ -1,5 +1,5 @@
 class RangeArray
-  include Enumerable
+  # include Enumerable
 
   EPSILON = 0.000001
 

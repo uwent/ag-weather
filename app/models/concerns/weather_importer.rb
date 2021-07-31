@@ -80,7 +80,8 @@ module WeatherImporter
   end
 
   def self.import_weather_data(date)
-    weather_day = WeatherDay.new(date)
+    grid = LandGrid.new
+    weather_day = WeatherDay.new(grid, date)
     weather_day.load_from(local_dir(date))
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)

@@ -114,9 +114,9 @@ RSpec.describe LandGrid  do
     end
   end
 
-  context "wisconsin grid" do
-    it 'should create a grid of Wisconsin' do
-      land_grid = LandGrid.wisconsin_grid
+  context "weather grid" do
+    it 'should create a grid of weather data extents' do
+      land_grid = LandGrid.weather_grid
       expect(land_grid).to_not be_nil
     end
   end

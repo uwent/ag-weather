@@ -1,10 +1,13 @@
 class Wisconsin < LandExtent
 
-  N_LAT = 47.1
-  S_LAT = 42
-  W_LONG = 93.1
-  E_LONG = 86.8
+  # Just Wisconsin
 
-  STEP = 0.1
+  def self.latitudes
+    42..47.1
+  end
+
+  def self.longitudes
+    86.8..93.1
+  end
 
 end
