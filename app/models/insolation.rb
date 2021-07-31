@@ -4,7 +4,7 @@ class Insolation < ApplicationRecord
     value_grid = LandGrid.wisconsin_grid
 
     Insolation.where(date: date).each do |insol|
-      value_grid[insol.latitude, insol.longitude] = insol.recording
+      value_grid[insol.latitude, insol.longitude] = insol.insolation
     end
 
     value_grid

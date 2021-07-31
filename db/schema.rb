@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_21_211829) do
+ActiveRecord::Schema.define(version: 2021_07_31_230904) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -53,29 +53,35 @@ ActiveRecord::Schema.define(version: 2021_05_21_211829) do
   end
 
   create_table "evapotranspirations", force: :cascade do |t|
-    t.decimal "potential_et"
+    t.float "potential_et"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["date"], name: "index_evapotranspirations_on_date"
+    t.index ["latitude", "longitude", "date"], name: "index_evapotranspirations_on_latitude_and_longitude_and_date", unique: true
+    t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude"
   end
 
   create_table "insolations", force: :cascade do |t|
-    t.decimal "recording"
+    t.float "insolation"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["date"], name: "index_insolations_on_date"
+    t.index ["latitude", "longitude", "date"], name: "index_insolations_on_latitude_and_longitude_and_date", unique: true
+    t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude"
   end
 
   create_table "pest_forecasts", force: :cascade do |t|
     t.date "date"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
-    t.integer "potato_blight_dsv", default: 0
-    t.integer "carrot_foliar_dsv", default: 0
+    t.integer "potato_blight_dsv"
+    t.integer "carrot_foliar_dsv"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.float "dd_48_none"
@@ -92,10 +98,13 @@ ActiveRecord::Schema.define(version: 2021_05_21_211829) do
     t.float "dd_41_88"
     t.float "dd_45_none"
     t.float "potato_p_days"
-    t.integer "cercospora_div", default: 0
+    t.integer "cercospora_div"
     t.float "dd_50_none"
-    t.float "dd_50_88", default: 0.0
-    t.float "dd_45_86", default: 0.0
+    t.float "dd_50_88"
+    t.float "dd_45_86"
+    t.index ["date"], name: "index_pest_forecasts_on_date"
+    t.index ["latitude", "longitude", "date"], name: "index_pest_forecasts_on_latitude_and_longitude_and_date", unique: true
+    t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|
@@ -111,24 +120,27 @@ ActiveRecord::Schema.define(version: 2021_05_21_211829) do
 
   create_table "stations", force: :cascade do |t|
     t.string "name", null: false
-    t.float "latitude", null: false
-    t.float "longitude", null: false
+    t.decimal "latitude", precision: 10, scale: 6, null: false
+    t.decimal "longitude", precision: 10, scale: 6, null: false
   end
 
   create_table "weather_data", force: :cascade do |t|
-    t.decimal "max_temperature"
-    t.decimal "min_temperature"
-    t.decimal "avg_temperature"
-    t.decimal "vapor_pressure"
+    t.float "max_temperature"
+    t.float "min_temperature"
+    t.float "avg_temperature"
+    t.float "vapor_pressure"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "hours_rh_over_85", default: 0
+    t.integer "hours_rh_over_85"
     t.float "avg_temp_rh_over_85"
     t.float "avg_temp_rh_over_90"
     t.integer "hours_rh_over_90"
+    t.index ["date"], name: "index_weather_data_on_date"
+    t.index ["latitude", "longitude", "date"], name: "index_weather_data_on_latitude_and_longitude_and_date", unique: true
+    t.index ["latitude", "longitude"], name: "index_weather_data_on_latitude_and_longitude"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
