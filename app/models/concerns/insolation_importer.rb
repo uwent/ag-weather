@@ -7,11 +7,13 @@ module InsolationImporter
   end
 
   def self.fetch
-    days_to_load = InsolationDataImport.days_to_load
-    days_to_load.each { |day| InsolationImporter.fetch_day(day) }
+    InsolationDataImport.days_to_load.each do |day|
+      InsolationImporter.fetch_day(day)
+    end
   end
 
   def self.fetch_day(date)
+
     begin
       InsolationDataImport.start(date)
       east_url = "#{URL_BASE}.#{formatted_date(date)}"
@@ -22,10 +24,13 @@ module InsolationImporter
       Rails.logger.warn "InsolationImporter :: Fetch day failed: #{e.message}"
       InsolationDataImport.fail(date, e.message)
     end
+
   end
 
   def self.import_insolation_data(http_response, date)
+
     insolations = []
+
     http_response.body.each_line do |line|
       row = line.split
 
@@ -34,7 +39,6 @@ module InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      # next unless Wisconsin.inside?(lat, long)
       next unless WeatherExtent.inside?(lat, long)
 
       insolations << Insolation.new(
@@ -43,8 +47,11 @@ module InsolationImporter
         longitude: long,
         date: date)
     end
+
     Insolation.where(date: date).delete_all
     Insolation.import(insolations, validate: false)
+    Insolation.create_image(date)
+
   end
 
 end

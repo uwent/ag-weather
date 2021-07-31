@@ -1,8 +1,7 @@
 module EvapotranspirationImporter
 
   def self.create_et_data
-    days_to_load = EvapotranspirationDataImport.days_to_load
-    days_to_load.each do |day|
+    EvapotranspirationDataImport.days_to_load.each do |day|
       calculate_et_for_date(day)
     end
   end
@@ -13,8 +12,8 @@ module EvapotranspirationImporter
   end
 
   def self.calculate_et_for_date(date)
-    EvapotranspirationDataImport.start(date)
 
+    EvapotranspirationDataImport.start(date)
     unless data_sources_loaded?(date)
       Rails.logger.warn "EvapotranspirationImporter :: FAIL: Data sources not loaded."
       EvapotranspirationDataImport.fail(date, "Data sources not loaded.")
@@ -23,14 +22,13 @@ module EvapotranspirationImporter
 
     weather = WeatherDatum.land_grid_for_date(date)
     insols = Insolation.land_grid_values_for_date(date)
-
     ets = []
+
     WeatherExtent.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
         Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
         next
       end
-
       et = Evapotranspiration.new(
         latitude: lat,
         longitude: long,
@@ -41,7 +39,9 @@ module EvapotranspirationImporter
 
     Evapotranspiration.where(date: date).delete_all
     Evapotranspiration.import(ets, validate: false)
+    Evapotranspiration.create_image(date)
     EvapotranspirationDataImport.succeed(date)
+
   end
 
 end

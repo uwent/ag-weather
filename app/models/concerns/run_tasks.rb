@@ -13,9 +13,6 @@ module RunTasks
     # generate pest forecasts for VDIFN from WeatherDatum
     PestForecastImporter.create_forecast_data
 
-    # generate ET image
-    Evapotranspiration.create_and_static_link_image
-
     DataImport.check_statuses
   end
 
@@ -82,5 +79,5 @@ module RunTasks
       puts date.strftime + " - no data"
     end
   end
-  
+
 end

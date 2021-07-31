@@ -10,27 +10,6 @@ class Evapotranspiration < ApplicationRecord
     et_grid
   end
 
-  def self.create_image(date)
-    return File.join(ImageCreator.url_path, 'no_data.png') unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
-
-    image_name = "evapo_#{date.to_s(:number)}.png"
-    unless File.exists?(File.join(Rails.configuration.x.image.file_dir, image_name))
-      ets = land_grid_values_for_date(date)
-      title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-      image_name = ImageCreator.create_image(ets, title, image_name)
-    end
-
-    return image_name
-  end
-
-  def self.create_and_static_link_image(date=(Date.today - 1.day))
-    image_name = create_image(date)
-    link_name = File.join(Rails.configuration.x.image.file_dir, "current_et.png")
-    File.delete(link_name) if File.exists?(link_name)
-    File.unlink(link_name) if File.symlink?(link_name)
-    File.symlink(image_name, link_name)
-  end
-
   def calculate_et(insolation, weather_data)
     EvapotranspirationCalculator.et(
       (weather_data.max_temperature + weather_data.min_temperature) / 2.0,
@@ -40,20 +19,36 @@ class Evapotranspiration < ApplicationRecord
       latitude)
   end
 
-  def has_required_data?
-    weather && insolation
-  end
+  # def has_required_data?
+  #   weather && insolation
+  # end
 
-  def weather
-    @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
-  end
+  # def weather
+  #   @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+  # end
 
-  def insolation
-    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
-  end
+  # def insolation
+  #   @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
+  # end
 
-  def already_calculated?
-    Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
+  # def already_calculated?
+  #   Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
+  # end 
+
+  def self.create_image(date)
+    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
+      begin
+        image_name = "evapo_#{date.to_s(:number)}.png"
+        File.delete(image_name) if File.exists?(image_name)
+        ets = land_grid_values_for_date(date)
+        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+        ImageCreator.create_image(ets, title, image_name)
+      rescue => e
+        Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": #{e.message}"
+      end
+    else
+      Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": Data sources missing"
+    end
   end
 
 end
