@@ -1,0 +1,2 @@
+class WeatherExtent < LandExtent
+end

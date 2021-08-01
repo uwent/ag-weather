@@ -4,8 +4,8 @@ RSpec.describe WeatherDatum, type: :model do
 
   describe "#calculate_all_degree_days_for_date_range" do
     it 'calculates a degree day value for date range' do
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
+      latitude = Wisconsin.min_lat
+      longitude = Wisconsin.min_long
       key = [latitude, longitude]
       1.upto(10) { |i| FactoryBot.create(
         :weather_datum,
@@ -15,9 +15,20 @@ RSpec.describe WeatherDatum, type: :model do
       )}
 
       grid = WeatherDatum.calculate_all_degree_days_for_date_range(
-        'sine',
+        Wisconsin.latitudes,
+        Wisconsin.longitudes,
         Date.current - 12.days,
-        Date.current)
+        Date.current,
+        'sine'
+      )
+
+
+      puts latitude
+      puts longitude
+      puts grid
+
+
+
 
       expect(grid[key].round(1)).to eq 17.4
     end
@@ -30,8 +41,8 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should have weather data stored in the grid' do
       date = Date.current
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
+      latitude = Wisconsin.max_lat
+      longitude = Wisconsin.min_long
       FactoryBot.create(
         :weather_datum,
         date: date,
@@ -44,15 +55,15 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should store nil in grid for points without values' do
       land_grid = WeatherDatum.land_grid_for_date(Date.current)
-      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
+      expect(land_grid[Wisconsin.max_lat, Wisconsin.max_long]).to be_nil
     end
   end
 
   describe "construct land grid with weather data since a given date" do
 
     it 'should have arrays of weather data in the grid' do
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
+      latitude = Wisconsin.max_lat
+      longitude = Wisconsin.min_long
       1.upto(10) do |i|
         FactoryBot.create(
           :weather_datum,
@@ -68,7 +79,7 @@ RSpec.describe WeatherDatum, type: :model do
 
     it 'should store nil in grid for points without values' do
       land_grid = WeatherDatum.land_grid_since(10.days.ago)
-      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
+      expect(land_grid[Wisconsin.max_lat, Wisconsin.min_long]).to be_nil
     end
   end
 

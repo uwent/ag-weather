@@ -21,7 +21,7 @@ class PestForecastsController < ApplicationController
       min = results.map{|result| result[:total] }.min
       max = results.map{|result| result[:total] }.max
     else
-      grid = WeatherDatum.calculate_all_degree_days_for_date_range('sine', start_date, end_date, t_min, t_max)
+      grid = WeatherDatum.calculate_all_degree_days_for_date_range(LandGrid.new, start_date, end_date, 'sine', t_min, t_max)
       grid.keys.each do |coordinate|
         results << { lat: coordinate.first, long: (coordinate.last * -1).round(1), total: grid[coordinate].round(2) }
       end

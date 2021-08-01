@@ -20,7 +20,8 @@ module AgWeather
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.autoload_paths << Rails.root.join("app/models/data_imports")
-    
+    config.autoload_paths << Rails.root.join("app/models/land_extents")
+
     # Image generation and service configuration
     config.x.image.temp_directory = "tmp"
     config.x.image.file_dir = "public"

@@ -10,11 +10,18 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.calculate_all_degree_days_for_date_range(
-    method, start_date, end_date,
+    lat_range = Wisconsin.latitudes,
+    long_range = Wisconsin.longitudes,
+    start_date = Date.current.beginning_of_year,
+    end_date = Date.current,
+    method = 'sine',
     base = DegreeDaysCalculator::DEFAULT_BASE,
     upper = PestForecast::NO_MAX
   )
-    WeatherDatum.where(date: start_date..end_date).where(latitude: Wisconsin.latitudes, longitude: Wisconsin.longitudes).each_with_object(Hash.new(0)) do |weather_datum, hash|
+
+    WeatherDatum.where(date: start_date..end_date)
+    .where(latitude: lat_range, longitude: long_range)
+    .each_with_object(Hash.new(0)) do |weather_datum, hash|
       coordinate = [weather_datum.latitude.to_f, weather_datum.longitude.to_f]
       if hash[coordinate].nil?
         hash[coordinate] = weather_datum.degree_days(method, base, upper)

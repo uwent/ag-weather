@@ -3,14 +3,9 @@ class WeatherHour
   attr_reader :data
 
   def initialize()
-    @data = LandGrid.new(
-      Wisconsin::S_LAT,
-      Wisconsin::N_LAT,
-      Wisconsin::E_LONG,
-      Wisconsin::W_LONG,
-      Wisconsin::STEP)
+    @data = LandGrid.new
       
-    Wisconsin.each_point do |lat, long|
+    LandExtent.each_point do |lat, long|
       @data[lat, long] = {
         temperatures: [],
         dew_points: []
@@ -35,7 +30,7 @@ class WeatherHour
     stdout.each do |line|
       (lat, long, data, type) = line.split
       store(type, lat.to_f, 360.0 - long.to_f, data.to_f) if
-        Wisconsin.inside?(lat.to_f, 360.0 - long.to_f)
+        LandExtent.inside?(lat.to_f, 360.0 - long.to_f)
     end
   end
 

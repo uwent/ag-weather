@@ -34,7 +34,7 @@ class InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next unless Wisconsin.inside?(lat, long)
+      next unless LandExtent.inside?(lat, long)
 
       insolations << Insolation.new(
         insolation: value/100.0,
@@ -44,6 +44,7 @@ class InsolationImporter
     end
     Insolation.where(date: date).delete_all
     Insolation.import(insolations, validate: false)
+    Insolation.create_image(date)
   end
 
 end

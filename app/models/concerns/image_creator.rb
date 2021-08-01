@@ -1,9 +1,6 @@
 module ImageCreator
-  IMAGE_STEP = 0.2
-  # GNUPLOT = "/usr/local/bin/gnuplot"
-  GNUPLOT = "gnuplot"
-  # IMAGEMAGICK_COMP = "/usr/bin/composite"
-  IMAGEMAGICK_COMP = "composite"
+
+  IMAGE_STEP = 0.1
 
   def self.url_path
     Rails.configuration.x.image.url_path
@@ -23,9 +20,9 @@ module ImageCreator
   def self.create_data_file(data_grid)
     data_filename = temp_filename('dat')
 
-    last_lat = Wisconsin::S_LAT
+    last_lat = data_grid.latitudes.min
     File.open(data_filename, 'w') do |file|
-      Wisconsin.each_point(IMAGE_STEP) do |lat, long|
+      data_grid.each_point do |lat, long|
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
         file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}" unless data_grid[lat, long].nil?
@@ -42,11 +39,13 @@ module ImageCreator
       Rails.configuration.x.image.file_dir,
       image_name)
 
-    gnuplot_cmd = "(#{GNUPLOT} -e \"plottitle='#{title}'\" -e \"max_v=#{max_value}\" -e \"outfile='#{temp_image}'\" -e \"infile='#{datafile_name}'\" lib/color_contour.gp)"
+    # Gnuplot
+    gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; max_v=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
     Rails.logger.debug("GNUPLOT CMD: #{gnuplot_cmd}")
     %x(#{gnuplot_cmd})
 
-    image_cmd = "#{IMAGEMAGICK_COMP} -colors 64 wi_mn_trans.png #{temp_image} #{image_fullpath}"
+    # Image Magick
+    image_cmd = "composite -colors 64 wi_mn_trans.png #{temp_image} #{image_fullpath}"
     Rails.logger.debug("IMAGEMAGICK CMD: #{image_cmd}")
     %x(#{image_cmd})
 
