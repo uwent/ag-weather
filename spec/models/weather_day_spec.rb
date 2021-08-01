@@ -3,13 +3,12 @@ require "rails_helper"
 RSpec.describe WeatherDay do
 
   let (:weather_day) { WeatherDay.new(Date.current) }
-  let (:times) {
-    ((((Wisconsin.max_lat - Wisconsin.min_lat) / Wisconsin.step) + 1) *
-    (((Wisconsin.max_long - Wisconsin.min_long) / Wisconsin.step) + 1))
-    .round(0)
-  }
-
-  puts Wisconsin.num_points
+  # let (:times) {
+  #   ((((Wisconsin.max_lat - Wisconsin.min_lat) / Wisconsin.step) + 1) *
+  #   (((Wisconsin.max_long - Wisconsin.min_long) / Wisconsin.step) + 1))
+  #   .round(0)
+  # }
+  let (:times) { Wisconsin.num_points }
 
   context "initialization" do
     it "can be created" do

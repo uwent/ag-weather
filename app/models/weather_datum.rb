@@ -1,6 +1,6 @@
 class WeatherDatum < ApplicationRecord
   def self.land_grid_for_date(date)
-    weather_grid = LandGrid.wisconsin_grid
+    weather_grid = LandGrid.new
 
     WeatherDatum.where(date: date).each do |weather|
       weather_grid[weather.latitude, weather.longitude] = weather
@@ -10,8 +10,8 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.calculate_all_degree_days_for_date_range(
-    lat_range = Wisconsin.latitudes,
-    long_range = Wisconsin.longitudes,
+    lat_range = LandExtent.latitudes,
+    long_range = LandExtent.longitudes,
     start_date = Date.current.beginning_of_year,
     end_date = Date.current,
     method = 'sine',
@@ -33,7 +33,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.land_grid_since(date)
-    grid = LandGrid.wisconsin_grid
+    grid = LandGrid.new
 
     WeatherDatum.where('date >= ?', date).each do |weather|
       if grid[weather.latitude, weather.longitude].nil?
@@ -51,7 +51,7 @@ class WeatherDatum < ApplicationRecord
     upper = DegreeDaysCalculator::DEFAULT_UPPER
   )
     temp_grid = land_grid_since(date)
-    degree_day_grid = LandGrid.wisconsin_grid
+    degree_day_grid = LandGrid.new
     Wisconsin.each_point do |lat, long|
       next if temp_grid[lat,long].nil?
       dd = temp_grid[lat, long].collect do |weather_day|

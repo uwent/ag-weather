@@ -22,6 +22,7 @@ class InsolationImporter
       Rails.logger.warn "InsolationImporter :: Fetch day failed: #{e.message}"
       InsolationDataImport.fail(date, e.message)
     end
+    Insolation.create_image(date)
   end
 
   def self.import_insolation_data(http_response, date)
@@ -44,7 +45,6 @@ class InsolationImporter
     end
     Insolation.where(date: date).delete_all
     Insolation.import(insolations, validate: false)
-    Insolation.create_image(date)
   end
 
 end

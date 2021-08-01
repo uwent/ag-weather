@@ -3,11 +3,25 @@ class Insolation < ApplicationRecord
   def self.land_grid_values_for_date(grid, date)
     # value_grid = LandGrid.wisconsin_grid
 
+    # Insolation.where(date: date).each do |insol|
+    #   grid[insol.latitude, insol.longitude] = insol.insolation
+    # end
+
+    # grid
+
+
+    insols = grid
+
     Insolation.where(date: date).each do |insol|
-      grid[insol.latitude, insol.longitude] = insol.insolation
+      lat = insol.latitude
+      lon = insol.longitude
+      next unless grid.inside?(lat, lon)
+      insols[lat, lon] = insol.insolation
+      # puts grid[lat, lon]
     end
 
-    grid
+    insols
+
   end
 
   def self.create_image(date)
@@ -30,9 +44,11 @@ class Insolation < ApplicationRecord
         ImageCreator.create_image(insolations, title, image_name)
       rescue => e
         Rails.logger.warn "Insolation :: Failed to create image for " + date.to_s + ": #{e.message}"
+        return "no_data.png"
       end
     else
       Rails.logger.warn "Insolation :: Failed to create image for " + date.to_s + ": Data source missing"
+      return "no_data.png"
     end
   end
 end

@@ -22,14 +22,6 @@ RSpec.describe WeatherDatum, type: :model do
         'sine'
       )
 
-
-      puts latitude
-      puts longitude
-      puts grid
-
-
-
-
       expect(grid[key].round(1)).to eq 17.4
     end
   end

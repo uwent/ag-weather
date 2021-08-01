@@ -17,7 +17,7 @@ RSpec.describe InsolationsController, type: :controller do
         expect(response_hash.keys).to include('map')
       end
 
-      it 'responds with the corrent map name if data loaded' do
+      it 'responds with the correct map name if data loaded' do
         filename = '/evapo_20160106.png'
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         InsolationDataImport.successful.create(readings_on: '2016-01-06')
