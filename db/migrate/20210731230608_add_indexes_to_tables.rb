@@ -10,9 +10,9 @@ class AddIndexesToTables < ActiveRecord::Migration[6.1]
     add_index :pest_forecasts, :date
     add_index :weather_data, :date
 
-    add_index :evapotranspirations, [:latitude, :longitude, :date], unique: true
-    add_index :insolations, [:latitude, :longitude, :date], unique: true
-    add_index :pest_forecasts, [:latitude, :longitude, :date], unique: true
-    add_index :weather_data, [:latitude, :longitude, :date], unique: true
+    add_index :evapotranspirations, [:date, :latitude, :longitude], unique: true
+    add_index :insolations, [:date, :latitude, :longitude], unique: true
+    add_index :pest_forecasts, [:date, :latitude, :longitude], unique: true
+    add_index :weather_data, [:date, :latitude, :longitude], unique: true
   end
 end
