@@ -2,21 +2,19 @@ require 'rails_helper'
 
 RSpec.describe Wisconsin do
 
-  describe '.inside_wi_mn_box?' do
-    it 'is true for Kenosha, WI' do
-      expect(WiMn.inside_wi_mn_box?(42.5, 87.8)).to be true
+  describe 'defines the correct extent' do
+    it 'has a valid extent' do
+      expect(Wisconsin.min_lat < Wisconsin.max_lat).to be true
+      expect(Wisconsin.min_long < Wisconsin.max_long).to be true
     end
 
-    it 'is true for International Falls, MN' do
-      expect(WiMn.inside_wi_mn_box?(48.6, 93.4)).to be true
+    it 'will create at least one grid point' do
+      expect(Wisconsin.num_points > 0).to be true
     end
 
-    it 'is false for Winnipeg, CANADA' do
-      expect(WiMn.inside_wi_mn_box?(50.1, 97.2)).to be false
-    end
-
-    it 'is false for Detroit, MI' do
-      expect(WiMn.inside_wi_mn_box?(42.3, 83.1)).to be false
+    it 'is smaller than the maximum extent' do
+      expect(LandExtent.latitudes === Wisconsin.latitudes).to be true
+      expect(LandExtent.longitudes === Wisconsin.longitudes).to be true
     end
   end
 

@@ -1,4 +1,4 @@
-class RunTasks
+module RunTasks
 
   def self.all
     # fetch insolation data from SSEC server
@@ -13,9 +13,6 @@ class RunTasks
     # generate pest forecasts for VDIFN from WeatherDatum
     PestForecastImporter.create_forecast_data
 
-    # generate ET image
-    Evapotranspiration.create_and_static_link_image
-
     DataImport.check_statuses
   end
 
@@ -28,6 +25,13 @@ class RunTasks
       status[:message] << "ERROR: #{e.message}"
       StatusMailer.daily_mail(status[:message]).deliver
     end
+  end
+
+  def self.all_for_date(date)
+    InsolationImporter.fetch_day(date)
+    WeatherImporter.fetch_day(date)
+    EvapotranspirationImporter.calculate_et_for_date(date)
+    PestForecastImporter.calculate_forecast_for_date(date)
   end
 
   ## Command-line tools ##
@@ -68,8 +72,8 @@ class RunTasks
       weather = WeatherDatum.land_grid_for_date(date)
       forecasts = []
 
-      Wisconsin.each_point do |lat, long|
-        next unless Wisconsin.inside?(lat, long)
+      LandExtent.each_point do |lat, long|
+        next unless LandExtent.inside?(lat, long)
 
         if weather[lat, long].nil?
           Rails.logger.error("Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")

@@ -22,10 +22,10 @@ class EvapotranspirationImporter
     end
 
     weather = WeatherDatum.land_grid_for_date(date)
-    insols = Insolation.land_grid_values_for_date(date)
+    insols = Insolation.land_grid_values_for_date(LandGrid.new, date)
 
     ets = []
-    Wisconsin.each_point do |lat, long|
+    LandExtent.each_point do |lat, long|
       if weather[lat, long].nil? || insols[lat, long].nil?
         Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
         next
@@ -42,6 +42,7 @@ class EvapotranspirationImporter
     Evapotranspiration.where(date: date).delete_all
     Evapotranspiration.import(ets, validate: false)
     EvapotranspirationDataImport.succeed(date)
+    Evapotranspiration.create_image(date)
   end
 
 end

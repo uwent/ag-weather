@@ -22,6 +22,7 @@ class InsolationImporter
       Rails.logger.warn "InsolationImporter :: Fetch day failed: #{e.message}"
       InsolationDataImport.fail(date, e.message)
     end
+    Insolation.create_image(date)
   end
 
   def self.import_insolation_data(http_response, date)
@@ -34,10 +35,10 @@ class InsolationImporter
       long = row[2].to_f
 
       next if value == -99999
-      next unless Wisconsin.inside?(lat, long)
+      next unless LandExtent.inside?(lat, long)
 
       insolations << Insolation.new(
-        recording: value/100.0,
+        insolation: value/100.0,
         latitude: lat,
         longitude: long,
         date: date)

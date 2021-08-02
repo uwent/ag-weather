@@ -12,14 +12,20 @@ class LandGrid
   end
 
   def self.wi_mn_grid
-    self.new(WiMn::S_LAT, WiMn::N_LAT, WiMn::E_LONG, WiMn::W_LONG, WiMn::STEP)
+    self.new(WiMn.min_lat, WiMn.max_lat, WiMn.min_long, WiMn.max_long, WiMn.step)
   end
 
   def self.wisconsin_grid
-    self.new(Wisconsin::S_LAT,  Wisconsin::N_LAT, Wisconsin::E_LONG, Wisconsin::W_LONG, Wisconsin::STEP)
+    self.new(Wisconsin.min_lat,  Wisconsin.max_lat, Wisconsin.min_long, Wisconsin.max_long, Wisconsin.step)
   end
 
-  def initialize(min_lat, max_lat, min_long, max_long, step)
+  def initialize(
+    min_lat = LandExtent.min_lat,
+    max_lat = LandExtent.max_lat,
+    min_long = LandExtent.min_long,
+    max_long = LandExtent.max_long,
+    step = LandExtent.step)
+    
     raise TypeError, "minimum latitude must be less than maximum latitude" if (min_lat >= max_lat)
     raise TypeError, "minimum longitude must be less than maximum longitude" if (min_long >= max_long)
     raise TypeError, "step must be greater than 0" if (step <= 0)
@@ -31,6 +37,26 @@ class LandGrid
     @max_longitude = max_long
     @step = step
     @data = create_grid
+  end
+
+  def latitudes
+    (@min_latitude..@max_latitude)
+  end
+
+  def longitudes
+    (@min_longitude..@max_longitude)
+  end
+
+  def inside?(lat, long)
+    (latitudes === lat) && (longitudes === long)
+  end
+
+  def each_point
+    latitudes.step(@step).each do |lat|
+      longitudes.step(@step).each do |long|
+        yield(lat, long)
+      end
+    end
   end
 
   def closest_point(lat, long)

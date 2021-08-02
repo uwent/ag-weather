@@ -85,13 +85,13 @@ class WeatherImporter
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
     WeatherDataImport.succeed(date)
-    FileUtils.rm_r self.local_dir(date)
+    FileUtils.rm_r self.local_dir(date) unless Rails.env.development?
   end
 
   def self.persist_day_to_db(weather_day)
     weather_data = []
 
-    Wisconsin.each_point do |lat, long|
+    LandExtent.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)

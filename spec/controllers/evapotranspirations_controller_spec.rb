@@ -8,8 +8,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     let(:longitude) { 98.0 }
     before(:each) do
       1.upto(5) do |i|
-        FactoryBot.create(:evapotranspiration, latitude: latitude,
-                           longitude: longitude, date: Date.current - i.days)
+        FactoryBot.create(
+          :evapotranspiration,
+          latitude: latitude,
+          longitude: longitude,
+          date: Date.current - i.days
+        )
       end
     end
 

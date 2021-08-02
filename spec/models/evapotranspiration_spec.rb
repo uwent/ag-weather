@@ -60,28 +60,35 @@ RSpec.describe Evapotranspiration, type: :model do
     let(:weather) { FactoryBot.create(:weather_datum) }
 
     it 'should calculate a value for give insolation and weather' do
-      expect(new_et_point.calculate_et(insol.recording, weather)).to be_within(EPSILON).of(4.8552734) 
+      expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.8552734) 
     end
   end
 
   describe "construct land grid with evapotranspiration for given date" do
     it 'should constuct a land grid' do
-      expect(Evapotranspiration.land_grid_values_for_date(Date.current)).to be_kind_of(LandGrid)
+      expect(Evapotranspiration.land_grid_values_for_date(LandGrid.new, Date.current)).to be_kind_of(LandGrid)
     end
 
     it 'should have evapotranspirations stored in the grid' do
       date = Date.current
-      latitude = Wisconsin::N_LAT
-      longitude = Wisconsin::E_LONG
-      FactoryBot.create(:evapotranspiration, date: date, latitude: latitude,
-                         longitude: longitude, potential_et: 23.4)
-      land_grid = Evapotranspiration.land_grid_values_for_date(date)
+      latitude = LandExtent.max_lat
+      longitude = LandExtent.min_long
+
+      FactoryBot.create(
+        :evapotranspiration,
+        date: date,
+        latitude: latitude,
+        longitude: longitude,
+        potential_et: 23.4
+      )
+
+      land_grid = Evapotranspiration.land_grid_values_for_date(LandGrid.new, date)
       expect(land_grid[latitude, longitude]).to eq 23.4
     end
 
     it 'should store nil in grid for points without values' do
-      land_grid = Evapotranspiration.land_grid_values_for_date(Date.current)
-      expect(land_grid[Wisconsin::N_LAT, Wisconsin::E_LONG]).to be_nil
+      land_grid = Evapotranspiration.land_grid_values_for_date(LandGrid.new, Date.current)
+      expect(land_grid[LandExtent.max_lat, LandExtent.min_long]).to be_nil
     end
   end
 end

@@ -25,8 +25,7 @@ class DegreeDaysController < ApplicationController
   #    upper_temp
   #    method
   def index
-    weather = WeatherDatum.where(latitude: params[:lat])
-      .where(longitude: params[:long])
+    weather = WeatherDatum.where(latitude: params[:lat], longitude: params[:long])
       .order(date: :asc)
     if params[:start_date]
       weather = weather.where('date >= ?', params[:start_date])
@@ -66,10 +65,10 @@ class DegreeDaysController < ApplicationController
     end
 
     def latitude
-      params[:latitude].nil? ? Wisconsin::S_LAT : params[:latitude]
+      params[:latitude].nil? ? Wisconsin.min_lat : params[:latitude]
     end
 
     def longitude
-      params[:longitude].nil? ? Wisconsin::E_LAT : params[:longitude]
+      params[:longitude].nil? ? Wisconsin.min_long : params[:longitude]
     end
 end

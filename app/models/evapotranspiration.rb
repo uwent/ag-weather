@@ -1,34 +1,32 @@
 class Evapotranspiration <  ApplicationRecord
 
-  def self.land_grid_values_for_date(date)
-    et_grid = LandGrid.wisconsin_grid
-
+  def self.land_grid_values_for_date(grid, date)
+    ets = grid
     Evapotranspiration.where(date: date).each do |et|
-      et_grid[et.latitude, et.longitude] = et.potential_et
+      lat = et.latitude
+      long = et.longitude
+      next unless grid.inside?(lat, long)
+      ets[lat, long] = et.potential_et
     end
-
-    et_grid
+    ets
   end
 
   def self.create_image(date)
-    return File.join(ImageCreator.url_path, 'no_data.png') unless EvapotranspirationDataImport.successful.where(readings_on: date).exists?
-
-    image_name = "evapo_#{date.to_s(:number)}.png"
-    unless File.exists?(File.join(Rails.configuration.x.image.file_dir, image_name))
-      ets = land_grid_values_for_date(date)
-      title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-      image_name = ImageCreator.create_image(ets, title, image_name)
+    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
+      begin
+        image_name = "evapo_#{date.to_s(:number)}.png"
+        File.delete(image_name) if File.exists?(image_name)
+        ets = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
+        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+        ImageCreator.create_image(ets, title, image_name)
+      rescue => e
+        Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": #{e.message}"
+        return "no_data.png"
+      end
+    else
+      Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": Data source missing"
+      return "no_data.png"
     end
-
-    return image_name
-  end
-
-  def self.create_and_static_link_image(date=(Date.today - 1.day))
-    image_name = create_image(date)
-    link_name = File.join(Rails.configuration.x.image.file_dir, "current_et.png")
-    File.delete(link_name) if File.exists?(link_name)
-    File.unlink(link_name) if File.symlink?(link_name)
-    File.symlink(image_name, link_name)
   end
 
   def calculate_et(insolation, weather_data)

@@ -110,13 +110,13 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
-  describe "persist a day to the database"  do
+  describe "persist a day to the database" do
     let(:weather_day) { instance_double("WeatherDay") }
 
     it "should save the weather data" do
       allow(weather_day).to receive(:observations_at).and_return([WeatherObservation.new(21, 18)])
       allow(weather_day).to receive(:date).and_return(Date.yesterday)
-      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(3328)
+      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(LandExtent.num_points)
     end
   end
 
