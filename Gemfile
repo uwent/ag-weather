@@ -18,7 +18,7 @@ gem 'agwx_biophys', '0.0.4'
 gem 'sdoc', '~> 2.2.0', group: :doc
 
 group :development, :test do
-  gem 'puma', '~> 5.3'
+  gem 'puma', '~> 5.4'
   gem 'byebug', '~> 11.1'
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 5.0'
