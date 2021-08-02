@@ -1,19 +1,21 @@
 module EvapotranspirationCalculator
+
   # This is an implementation of evapotranspiration based on the formula in 
   # the paper:  http://wisp.cals.wisc.edu/diakEtal1998.pdf.
-  SOLAR_CONSTANT      = 1367.0
+
+  SOLAR_CONSTANT = 1367.0
   WATTS_TO_MJ_PER_DAY = 0.0864
   STEFAN_WATTS = 0.0000000567
-  STEFAN_MJ_PER_DAY = (WATTS_TO_MJ_PER_DAY * STEFAN_WATTS)
-  SFCEMISS  = 0.96
-  ALBEDO    = 0.25
+  STEFAN_MJ_PER_DAY = WATTS_TO_MJ_PER_DAY * STEFAN_WATTS
+  SFCEMISS = 0.96
+  ALBEDO = 0.25
 
   def self.degrees_to_rads(degrees)
     degrees * Math::PI / 180.0
   end
 
   def self.declin(day_of_year)
-    0.41 *  Math::cos(2 * Math::PI * (day_of_year - 172.0) / 365.0)
+    0.41 * Math::cos(2 * Math::PI * (day_of_year - 172.0) / 365.0)
   end
 
   def self.sunrise_angle(day_of_year, lat)
@@ -36,13 +38,15 @@ module EvapotranspirationCalculator
   
   # Only used by clr_ratio.
   def self.to_eir(day_of_year, lat)
-    (0.0864 / Math::PI) * av_eir(day_of_year) * 
-    (sunrise_angle(day_of_year, lat) *
-    Math.sin(declin(day_of_year)) *
-    Math.sin(degrees_to_rads(lat)) +
-    Math.cos(declin(day_of_year)) *
-    Math.cos(degrees_to_rads(lat)) *
-    Math.sin(sunrise_angle(day_of_year, lat)))
+    (0.0864 / Math::PI) *
+      av_eir(day_of_year) * (
+        sunrise_angle(day_of_year, lat) *
+        Math.sin(declin(day_of_year)) *
+        Math.sin(degrees_to_rads(lat)) +
+        Math.cos(declin(day_of_year)) *
+        Math.cos(degrees_to_rads(lat)) *
+        Math.sin(sunrise_angle(day_of_year, lat))
+      )
   end
   
   # Only used by clr_ratio.
@@ -70,7 +74,7 @@ module EvapotranspirationCalculator
   # Idso (1981)  
   def self.sky_emiss(avg_v_press, avg_temp)
     if (avg_v_press > 0.5)
-      0.7 + (5.95e-4) * avg_v_press * Math.exp(1500/(273 + avg_temp))
+      0.7 + (5.95e-4) * avg_v_press * Math.exp(1500 / (273 + avg_temp))
     else
       (1 - 0.261 * Math.exp(-0.000777 * avg_temp * avg_temp))
     end
@@ -112,4 +116,3 @@ module EvapotranspirationCalculator
     ret1 / 62.3
   end
 end
-

@@ -1,2 +1,0 @@
-class WeatherExtent < LandExtent
-end
