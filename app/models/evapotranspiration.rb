@@ -11,14 +11,19 @@ class Evapotranspiration <  ApplicationRecord
     ets
   end
 
+  def self.image_name(date)
+    "evapo_#{date.to_s(:number)}.png"
+  end
+
   def self.create_image(date)
     if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
       begin
-        image_name = "evapo_#{date.to_s(:number)}.png"
-        File.delete(image_name) if File.exists?(image_name)
+        # image_name = image_name(date)
+        # image_filename = File.join(ImageCreator.file_path, image_name)
+        # File.delete(image_filename) if File.exists?(image_filename)
         ets = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
         title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-        ImageCreator.create_image(ets, title, image_name)
+        ImageCreator.create_image(ets, title, image_name(date))
       rescue => e
         Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": #{e.message}"
         return "no_data.png"

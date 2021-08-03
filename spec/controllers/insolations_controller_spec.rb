@@ -18,7 +18,7 @@ RSpec.describe InsolationsController, type: :controller do
       end
 
       it 'responds with the correct map name if data loaded' do
-        filename = '/evapo_20160106.png'
+        filename = '/insolation_20160106.png'
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         InsolationDataImport.successful.create(readings_on: '2016-01-06')
 
@@ -34,7 +34,7 @@ RSpec.describe InsolationsController, type: :controller do
 
     context 'when the request is invalid' do
       it 'returns yesterday\'s map' do
-        filename = '/evapo_#{Date.yesterday.to_s(:number)}.png'
+        filename = '/insolation_#{Date.yesterday.to_s(:number)}.png'
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         InsolationDataImport.successful.create(readings_on: Date.yesterday)
 

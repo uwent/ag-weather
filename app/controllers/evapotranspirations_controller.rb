@@ -1,15 +1,22 @@
 class EvapotranspirationsController < ApplicationController
   def show
-    date = begin
-             Date.parse(params[:id])
-           rescue ArgumentError
-             Date.yesterday
-           end
-    
-    image_name = Evapotranspiration.create_image(date)
-    render json: {
-      map: File.join(ImageCreator.url_path, image_name)
-    }
+    begin
+      date = Date.parse(params[:id])
+    rescue ArgumentError
+      date = Date.yesterday
+    end
+
+    image_name = Evapotranspiration.image_name(date)
+    image_filename = File.join(ImageCreator.file_path, image_name)
+    image_url = File.join(ImageCreator.url_path, image_name)
+
+    if File.exists?(image_filename)
+      render json: { map: image_url }
+    else
+      image_name = Evapotranspiration.create_image(date)
+      image_url = File.join(ImageCreator.url_path, image_name)
+      render json: { map: image_url }
+    end
   end
 
   def index
@@ -28,11 +35,11 @@ class EvapotranspirationsController < ApplicationController
   end
 
   def all_for_date
-    date = begin
-             Date.parse(params[:date])
-           rescue ArgumentError
-             Date.yesterday
-           end
+    begin
+      date = Date.parse(params[:date])
+    rescue ArgumentError
+      date = Date.yesterday
+    end
     ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
 
     et_location_readings = ets.collect do |et|

@@ -6,6 +6,10 @@ module ImageCreator
     Rails.configuration.x.image.url_path
   end
 
+  def self.file_path
+    Rails.configuration.x.image.file_dir
+  end
+
   def self.create_image(data_grid, title, file_base_name)
     datafile_name = create_data_file(data_grid)
     image_filename = generate_image_file(
@@ -35,9 +39,7 @@ module ImageCreator
 
   def self.generate_image_file(datafile_name, image_name, max_value, title)
     temp_image = temp_filename('png')
-    image_fullpath = File.join(
-      Rails.configuration.x.image.file_dir,
-      image_name)
+    image_fullpath = File.join(self.file_path, image_name)
 
     # Gnuplot
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; max_v=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
@@ -56,7 +58,7 @@ module ImageCreator
   def self.temp_filename(suffix)
     File.join(
       Rails.configuration.x.image.temp_directory,
-      "#{random_string(8)}_#{DateTime.current.to_s(:number)}.#{suffix}")
+      "#{DateTime.current.to_s(:number)}_#{random_string(8)}.#{suffix}")
   end
 
   def self.max_value_for_gnuplot(val)

@@ -11,14 +11,19 @@ class Insolation < ApplicationRecord
     insols
   end
 
+  def self.image_name(date)
+    "insolation_#{date.to_s(:number)}.png"
+  end
+
   def self.create_image(date)
     if InsolationDataImport.successful.where(readings_on: date).exists?
       begin
-        image_name = "insolation_#{date.to_s(:number)}.png"
-        File.delete(image_name) if File.exists?(image_name)
+        # image_name = image_name(date)
+        # image_filename = File.join(ImageCreator.file_path, image_name)
+        # File.delete(image_filename) if File.exists?(image_filename)
         insolations = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
         title = "Daily Insol (MJ day-1 m-2) for #{date.strftime('%-d %B %Y')}"
-        ImageCreator.create_image(insolations, title, image_name)
+        ImageCreator.create_image(insolations, title, image_name(date))
       rescue => e
         Rails.logger.warn "Insolation :: Failed to create image for " + date.to_s + ": #{e.message}"
         return "no_data.png"
