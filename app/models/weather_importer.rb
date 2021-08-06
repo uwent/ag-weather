@@ -85,7 +85,7 @@ class WeatherImporter
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
     WeatherDataImport.succeed(date)
-    FileUtils.rm_r self.local_dir(date) unless Rails.env.development?
+    FileUtils.rm_r self.local_dir(date) # unless Rails.env.development?
   end
 
   def self.persist_day_to_db(weather_day)

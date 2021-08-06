@@ -8,9 +8,7 @@ RSpec.describe DataImport, type: :model do
     end
 
     it 'only lists days that are within the defined range' do
-      earliest_date = Date.current - DataImport::DAYS_BACK_WINDOW
-
-      expect(DataImport.days_to_load.min).to be >= earliest_date
+      expect(DataImport.days_to_load.min).to be >= DataImport.earliest_date
     end
 
     context 'no successful loads' do
@@ -21,7 +19,7 @@ RSpec.describe DataImport, type: :model do
 
     context 'one successful load' do
       dates_to_load = DataImport.days_to_load
-      reading_on = Date.current - DataImport::DAYS_BACK_WINDOW.days
+      reading_on = DataImport.earliest_date
 
       let!(:succesful_load) {
         DataImport.create!(

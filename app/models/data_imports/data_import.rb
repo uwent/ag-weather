@@ -2,14 +2,18 @@ class DataImport < ApplicationRecord
 
   DAYS_BACK_WINDOW = 5
 
+  def self.latest_date
+    (Time.now - 24.hours).to_date
+  end
+
   def self.earliest_date
-    Date.current - DAYS_BACK_WINDOW
+    (Time.now - DAYS_BACK_WINDOW.days).to_date
   end
 
   def self.days_to_load
     successful_dates = successful.pluck(:readings_on)
 
-    earliest_date.upto(Date.yesterday).reject do |date|
+    earliest_date.upto(latest_date).reject do |date|
       successful_dates.include?(date)
     end
   end
@@ -57,7 +61,7 @@ class DataImport < ApplicationRecord
     end
   end
 
-  # run from console
+  # run this from console
   def self.check_statuses(start_date = earliest_date(), end_date = Date.yesterday)
     message = []
     count = 0
