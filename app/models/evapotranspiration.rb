@@ -1,5 +1,26 @@
 class Evapotranspiration <  ApplicationRecord
 
+  def self.create_image(date)
+    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
+      begin
+        Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
+        ets = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
+        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+        ImageCreator.create_image(ets, title, image_name(date))
+      rescue => e
+        Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
+        return "no_data.png"
+      end
+    else
+      Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: ET data missing"
+      return "no_data.png"
+    end
+  end
+
+  def self.image_name(date)
+    "evapo_#{date.to_s(:number)}.png"
+  end
+
   def self.land_grid_values_for_date(grid, date)
     ets = grid
     Evapotranspiration.where(date: date).each do |et|
@@ -9,29 +30,6 @@ class Evapotranspiration <  ApplicationRecord
       ets[lat, long] = et.potential_et
     end
     ets
-  end
-
-  def self.image_name(date)
-    "evapo_#{date.to_s(:number)}.png"
-  end
-
-  def self.create_image(date)
-    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
-      begin
-        # image_name = image_name(date)
-        # image_filename = File.join(ImageCreator.file_path, image_name)
-        # File.delete(image_filename) if File.exists?(image_filename)
-        ets = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
-        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-        ImageCreator.create_image(ets, title, image_name(date))
-      rescue => e
-        Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": #{e.message}"
-        return "no_data.png"
-      end
-    else
-      Rails.logger.warn "Evapotranspiration :: Failed to create image for " + date.to_s + ": Data source missing"
-      return "no_data.png"
-    end
   end
 
   def calculate_et(insolation, weather_data)

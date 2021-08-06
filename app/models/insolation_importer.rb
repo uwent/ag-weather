@@ -15,6 +15,7 @@ class InsolationImporter
     begin
       InsolationDataImport.start(date)
       east_url = "#{URL_BASE}.#{formatted_date(date)}"
+      Rails.logger.info "InsolationImporter :: Fetching #{east_url}"
       east_response = HTTParty.get(east_url)
       import_insolation_data(east_response, date)
       InsolationDataImport.succeed(date)
@@ -25,23 +26,24 @@ class InsolationImporter
     Insolation.create_image(date)
   end
 
-  def self.import_insolation_data(http_response, date)
+  def self.import_insolation_data(response, date)
+    if response.lines[0..5].to_s.include?("404")
+      raise StandardError.new "404 Not Found"
+    end
     insolations = []
-    http_response.body.each_line do |line|
+    response.body.each_line do |line|
       row = line.split
-
       value = row[0].to_i
       lat = row[1].to_f
       long = row[2].to_f
-
-      next if value == -99999
+      next if value < 0
       next unless LandExtent.inside?(lat, long)
-
       insolations << Insolation.new(
-        insolation: value/100.0,
+        insolation: value / 100.0,
         latitude: lat,
         longitude: long,
-        date: date)
+        date: date
+      )
     end
     Insolation.where(date: date).delete_all
     Insolation.import(insolations, validate: false)
