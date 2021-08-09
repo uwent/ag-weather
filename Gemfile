@@ -23,7 +23,7 @@ group :development, :test do
   gem 'dredd-rack', '~> 1.0'
   gem 'rspec-rails', '~> 5.0'
   gem 'rspec_junit_formatter', '~> 0.4'
-  gem 'webmock', '~> 3.13'
+  gem 'webmock', '~> 3.14'
   gem 'factory_bot_rails', '~> 6.2'
   gem 'pry-rails', '~> 0.3'
 end
