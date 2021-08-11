@@ -1,5 +1,6 @@
-Data load problem for <%= (Date.today - 1).strftime("%m/%d/%Y") %>
+AgWeather <%= Rails.env %> status
 =============================================================
+Messages for <%= (Date.today - 1).strftime("%m/%d/%Y") %>:
 <% @statuses.each do |status| %>
-<%= status %>
+  <%= status %>
 <% end %>

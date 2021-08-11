@@ -1,8 +1,10 @@
 class StatusMailer < ActionMailer::Base
-  default from: "cals-it-admin@cals.wisc.edu"
+  default from: "agweather@cals.wisc.edu"
 
   def daily_mail(statuses)
     @statuses = statuses
-    mail to: 'bbradford@wisc.edu', subject: "AG Weather Status"
+    User.admin.each do |user|
+      mail to: user.email, subject: "AgWeather #{Rails.env} status"
+    end
   end
 end

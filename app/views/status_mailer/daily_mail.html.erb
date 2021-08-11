@@ -4,7 +4,8 @@
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
   </head>
   <body>
-    <p><b>AgWeather data load problem:</b></p>
+    <h2>AgWeather <%= Rails.env %> status</h2>
+    <p><b>Data load messages:</b></p>
     <pre>
     <% @statuses.each do |status| %>
     <%= status %>
