@@ -1,7 +1,13 @@
+# PostgreSQL. Versions 8.2 and up are supported.
+
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: 5
+  host: <%= ENV.fetch('DB_HOST') { 'localhost' } %>
+  username: <%= ENV.fetch('DB_USER') { 'postgres' } %>
+  password: <%= ENV.fetch('DB_PWD') { 'password' } %>
+  port: <% ENV.fetch('DB_PORT') { 5432 } %>
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS') { 5 } %>
 
 development:
   <<: *default
@@ -10,7 +16,13 @@ development:
 test:
   <<: *default
   database: ag_weather_test
-  url: <%= ENV['DATABASE_URL'] %>
+  # url: <%= ENV['DATABASE_URL'] %>
+
+staging:
+  <<: *default
+  database: ag_weather_staging
+  username: ag_weather
+  password: <%= ENV['AG_WEATHER_DATABASE_PASSWORD'] %>
 
 production:
   <<: *default

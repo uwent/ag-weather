@@ -1,4 +1,4 @@
-branch = ENV['BRANCH'] || 'master'
+branch = ENV['BRANCH'] || 'main'
 
 set :application, 'ag-weather'
 set :repo_url, 'git@agweather.github.com:uwent/ag-weather.git'

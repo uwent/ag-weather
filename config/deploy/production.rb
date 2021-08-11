@@ -21,6 +21,8 @@ role :app, %w{deploy@agweather.cals.wisc.edu:216}
 role :web, %w{deploy@agweather.cals.wisc.edu:216}
 role :db,  %w{deploy@agweather.cals.wisc.edu:216}
 
+set :rails_env, 'production'
+
 # Configuration
 # =============
 # You can set any configuration variable like in config/deploy.rb
@@ -28,8 +30,6 @@ role :db,  %w{deploy@agweather.cals.wisc.edu:216}
 # For available Capistrano configuration variables see the documentation page.
 # http://capistranorb.com/documentation/getting-started/configuration/
 # Feel free to add new variables to customise your setup.
-
-
 
 # Custom SSH Options
 # ==================
