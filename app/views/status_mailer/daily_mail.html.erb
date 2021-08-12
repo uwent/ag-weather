@@ -4,12 +4,11 @@
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
   </head>
   <body>
-    <h2>AgWeather <%= Rails.env %> status</h2>
-    <p><b>Data load messages:</b></p>
+    <h3>AgWeather status (<%= Rails.env %>)</h3>
     <pre>
-    <% @statuses.each do |status| %>
-    <%= status %>
-    <% end %>
+<% @statuses.each do |status| %>
+<%= status %>
+<% end %>
     </pre>
   </body>
 </html>

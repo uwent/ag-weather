@@ -14,8 +14,12 @@ class EvapotranspirationsController < ApplicationController
       render json: { map: image_url }
     else
       image_name = Evapotranspiration.create_image(date)
-      image_url = File.join(ImageCreator.url_path, image_name)
-      render json: { map: image_url }
+      if image_name == "no_data.png"
+        render json: { map: "/no_data.png" }
+      else
+        image_url = File.join(ImageCreator.url_path, image_name)
+        render json: { map: image_url }
+      end
     end
   end
 
