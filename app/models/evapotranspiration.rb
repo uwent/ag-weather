@@ -4,7 +4,7 @@ class Evapotranspiration <  ApplicationRecord
     if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
       begin
         Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
-        ets = land_grid_values_for_date(LandGrid.wi_mn_grid, date)
+        ets = land_grid_values_for_date(LandGrid.new, date)
         title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
         ImageCreator.create_image(ets, title, image_name(date))
       rescue => e
