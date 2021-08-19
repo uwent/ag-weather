@@ -6,7 +6,11 @@ Rails.application.routes.draw do
     end
   end
   resources :weather, only: [:index]
-  resources :insolations, only: [:show]
+  resources :insolations, only: [:show, :index] do
+    collection do
+      get 'all_for_date'
+    end
+  end
   resources :degree_days, only: [:show, :index]
   resources :stations, only: [:index]
   resources :station_observations, only: [:index]
