@@ -7,7 +7,7 @@ class DataImport < ApplicationRecord
   end
 
   def self.earliest_date
-    latest_date - DAYS_BACK_WINDOW.days
+    latest_date - DAYS_BACK_WINDOW
   end
 
   def self.days_to_load
