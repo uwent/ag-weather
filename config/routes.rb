@@ -1,19 +1,20 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  
+  resources :degree_days, only: [:show, :index]
   resources :evapotranspirations, only: [:show, :index] do
     collection do
+      get 'info'
       get 'all_for_date'
+      get 'calculate_et'
     end
   end
-  resources :weather, only: [:index]
   resources :insolations, only: [:show, :index] do
     collection do
+      get 'info'
       get 'all_for_date'
     end
   end
-  resources :degree_days, only: [:show, :index]
-  resources :stations, only: [:index]
-  resources :station_observations, only: [:index]
   resources :pest_forecasts, only: [:index] do
     collection do
       get 'point_details'
@@ -21,5 +22,9 @@ Rails.application.routes.draw do
       get 'custom_point_details'
     end
   end
-  get '/calculate_et', to: 'evapotranspirations#calculate_et'
+  resources :station_observations, only: [:index]
+  resources :stations, only: [:index]
+  resources :weather, only: [:index]
+
+  root to: 'application#index'
 end
