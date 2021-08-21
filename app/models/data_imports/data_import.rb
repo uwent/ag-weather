@@ -3,7 +3,7 @@ class DataImport < ApplicationRecord
   DAYS_BACK_WINDOW = 5
 
   def self.latest_date
-    (Time.now - 1.day).to_date
+    Date.yesterday
   end
 
   def self.earliest_date
