@@ -8,7 +8,7 @@ RSpec.describe InsolationsController, type: :controller do
     let(:long) { 98.0 }
     before(:each) do
       1.upto(5) do |i|
-        date = Date.current - i.days
+        date = Date.yesterday - i.days
         FactoryBot.create(
           :insolation,
           latitude: lat,
@@ -23,8 +23,8 @@ RSpec.describe InsolationsController, type: :controller do
       let(:params) {{
         lat: lat,
         long: long,
-        start_date: Date.current - 4.days,
-        end_date: Date.current - 1.days,
+        start_date: Date.yesterday - 4.days,
+        end_date: Date.yesterday - 1.days
       }}
 
       it "is okay" do
@@ -82,6 +82,7 @@ RSpec.describe InsolationsController, type: :controller do
     let(:date) { Date.yesterday }
     let(:filename) { "/insolation_#{date.to_s(:number)}.png" }
     before(:each) do
+      FactoryBot.create(:insolation, date: date)
       FactoryBot.create(:insolation_data_import, readings_on: date)
     end
 
@@ -99,12 +100,12 @@ RSpec.describe InsolationsController, type: :controller do
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         get :show, params: { id: date }
-        expect(json["map"]).to eq filename
+        expect(json["map"]).to eq(filename)
       end
 
       it "has the correct response of no map for date not loaded" do
         get :show, params: { id: date }
-        expect(json["map"]).to eq "/no_data.png"
+        expect(json["map"]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
@@ -117,29 +118,21 @@ RSpec.describe InsolationsController, type: :controller do
     context "when the request is invalid" do
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: "" }
+        get :show, params: { id: "foo" }
         expect(json["map"]).to eq(filename)
       end
     end
   end
 
   describe "#all_for_date" do
-    let(:date) { Date.parse("2020-06-01") }
-    let(:lat) { 50.0 }
-    let(:long) { 50.0 }
+    let(:date) { Date.current - 1.month }
+    let(:date2) { Date.current }
+    let(:empty_date) { Date.current - 1.year }
     before(:each) do
-      0.upto(5) do |i|
-        0.upto(5) do |j|
-          FactoryBot.create(
-            :insolation,
-            latitude: lat + i,
-            longitude: long + j,
-            date: date,
-            insolation: rand(100)
-          )
-        end
-      end
+      FactoryBot.create(:insolation, date: date)
       FactoryBot.create(:insolation_data_import, readings_on: date)
+      FactoryBot.create(:insolation, date: date2)
+      FactoryBot.create(:insolation_data_import, readings_on: date2)
     end
 
     context "when the request is valid" do
@@ -164,31 +157,29 @@ RSpec.describe InsolationsController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get :all_for_date, params: { date: date + 1.week }
-        expect(json["date"]).to eq((date + 1.week).to_s)
+        get :all_for_date, params: { date: empty_date }
+        expect(json["date"]).to eq((empty_date).to_s)
         expect(json["data"]).to be_empty
       end
     end
 
     context "when params are empty" do
       it "defaults to most recent data" do
-        FactoryBot.create(:insolation_data_import, readings_on: date + 1.day)
         get :all_for_date
-        expect(json["date"]).to eq((date + 1.day).to_s)
-        expect(json["status"]).to eq("no data")
-        expect(json["data"]).to be_empty
+        expect(json["date"]).to eq((date2).to_s)
       end
     end
   end
 
   describe "#info" do
-    let(:dates) { [Date.today.to_s, Date.yesterday.to_s] }
+    let(:dates) { [(Date.yesterday - 1.month).to_s, Date.yesterday.to_s] }
     let(:lats) { [50.0, 55.0] }
     let(:longs) { [50.0, 55.0] }
     let(:insols) { [1, 100] }
     before(:each) do
       0.upto(1) do |i|
-        FactoryBot.create(:insolation,
+        FactoryBot.create(
+          :insolation,
           latitude: lats[i],
           longitude: longs[i],
           date: dates[i],

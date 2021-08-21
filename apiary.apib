@@ -7,14 +7,13 @@ FORMAT: 1A
 ## Insolation [/insolations/{date}]
 
 + Parameters
-
     + date: `2016-01-07` (string, required) - the desired date
 
 ### View insolation [GET]
 
-Retrieve insolation maps for a given date
+Retrieve insolation map for a given date
 
-+ Response 200 (application/json; charset=utf-8)
++ Response 200 (application/json)
     + Attributes
         + map: path/to/map1.img (string, required)
 
@@ -37,7 +36,6 @@ Retrieve the ET map for Wisconsin for a given date
 ## Evapotranspirations [/evapotranspirations{?lat,long,start_date,end_date}]
 
 + Parameters
-
     + lat: 42.8 (number, required) - the latitude
     + long: 270.423 (number, required) - the longitude
     + start_date: `2016-01-01` (string, required) - the start date
@@ -61,6 +59,7 @@ Retrieve ET data for the specified coordinates and dates.
 Retrieve all ET data for the specified date.
 
 + Response 200 (application/json; charset=utf-8)
+
     + Attributes (array[ET Location Reading])
 
 # Group Weather

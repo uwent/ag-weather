@@ -2,7 +2,7 @@ class EvapotranspirationsController < ApplicationController
   
   # GET: returns ets for lat, long, date range
   def index
-    end_date = params[:end_date] ? params[:end_date] : Date.today
+    end_date = params[:end_date] ? params[:end_date] : Date.current
 
     ets = Evapotranspiration.where(latitude: params[:lat], longitude: params[:long])
       .where("date >= ? and date <= ?", params[:start_date], end_date)
@@ -23,7 +23,7 @@ class EvapotranspirationsController < ApplicationController
     begin
       date = Date.parse(params[:id])
     rescue
-      date = latest_date
+      date = Evapotranspiration.latest_date || Date.yesterday
     end
 
     image_name = Evapotranspiration.image_name(date)
@@ -49,7 +49,7 @@ class EvapotranspirationsController < ApplicationController
     begin
       date = Date.parse(params[:date])
     rescue
-      date = latest_date
+      date = Evapotranspiration.latest_date || Date.yesterday
     end
 
     ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
@@ -106,14 +106,4 @@ class EvapotranspirationsController < ApplicationController
     }
   end
 
-end
-
-private
-
-def latest_date
-  begin
-    EvapotranspirationDataImport.successful.last.readings_on
-  rescue
-    Date.yesterday
-  end
 end

@@ -58,7 +58,7 @@ RSpec.describe WeatherImporter, type: :model do
     end
 
     describe "get the files from the FTP server" do
-      before do
+      before(:each) do
         allow(FileUtils).to receive(:mv)
       end
 
@@ -74,21 +74,21 @@ RSpec.describe WeatherImporter, type: :model do
         WeatherImporter.fetch_day(today)
       end
 
-      it 'should log an error for file not found' do
-        expect(ftp_client_mock).to receive(:get).and_raise(Net::FTPPermError)
-        expect(Rails.logger).to receive(:warn)
-        WeatherImporter.fetch_day(today)
-      end
+      # it 'should log an error for file not found' do
+      #   expect(ftp_client_mock).to receive(:get).and_raise(Net::FTPPermError)
+      #   expect(Rails.logger).to receive(:warn)
+      #   WeatherImporter.fetch_day(today)
+      # end
 
-      it 'should retry at least three times' do
-        expect(ftp_client_mock).to receive(:get).ordered.and_raise(Net::FTPPermError)
-        expect(ftp_client_mock).to receive(:get).ordered.and_raise(Timeout::Error)
-        expect(ftp_client_mock).to receive(:get).ordered.and_raise(SocketError)
-        expect(ftp_client_mock).to receive(:close).exactly(3).times
-        expect(ftp_client_mock).to receive(:login).exactly(4).times
-        expect(Rails.logger).to receive(:warn).exactly(3).times
-        WeatherImporter.fetch_day(today)
-      end
+      # it 'should retry at least three times' do
+      #   expect(ftp_client_mock).to receive(:get).ordered.and_raise(Net::FTPPermError)
+      #   expect(ftp_client_mock).to receive(:get).ordered.and_raise(Timeout::Error)
+      #   expect(ftp_client_mock).to receive(:get).ordered.and_raise(SocketError)
+      #   expect(ftp_client_mock).to receive(:close).exactly(3).times
+      #   expect(ftp_client_mock).to receive(:login).exactly(4).times
+      #   expect(Rails.logger).to receive(:warn).exactly(3).times
+      #   WeatherImporter.fetch_day(today)
+      # end
     end
   end
 
@@ -96,7 +96,6 @@ RSpec.describe WeatherImporter, type: :model do
     let(:weather_day) { instance_double("WeatherDay") }
     before do
       allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(today))
-      #allow(weather_day).to receive(:load_database_for).with(today)
       allow(weather_day).to receive(:temperatures_at)
       allow(weather_day).to receive(:observations_at)
       allow(weather_day).to receive(:temperatures_at)

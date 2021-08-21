@@ -2,7 +2,7 @@ class InsolationsController < ApplicationController
 
   # GET: returns insols for lat, long, date range
   def index
-    end_date = params[:end_date] ? params[:end_date] : Date.today
+    end_date = params[:end_date] ? params[:end_date] : Date.current
 
     insols = Insolation.where(latitude: params[:lat], longitude: params[:long])
       .where("date >= ? and date <= ?", params[:start_date], end_date)
@@ -23,7 +23,7 @@ class InsolationsController < ApplicationController
     begin
       date = Date.parse(params[:id])
     rescue
-      date = latest_date
+      date = Insolation.latest_date || Date.yesterday
     end
 
     image_name = Insolation.image_name(date)
@@ -49,7 +49,7 @@ class InsolationsController < ApplicationController
     begin
       date = Date.parse(params[:date])
     rescue
-      date = latest_date
+      date = Insolation.latest_date || Date.yesterday
     end
 
     insols = Insolation.where("date = ?", date).order(:latitude, :longitude)
@@ -94,15 +94,5 @@ class InsolationsController < ApplicationController
       long_range: [i.minimum(:longitude), i.maximum(:longitude)],
       value_range: [i.minimum(:insolation), i.maximum(:insolation)]
     }
-  end
-end
-
-private
-
-def latest_date
-  begin
-    InsolationDataImport.successful.last.readings_on
-  rescue
-    Date.yesterday
   end
 end
