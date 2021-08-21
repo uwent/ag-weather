@@ -8,6 +8,10 @@ require "active_support/core_ext/integer/time"
   Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Image generation and service configuration
+  config.x.image.temp_directory = "test"
+  config.x.image.file_dir = "test"
+
   config.cache_classes = true
 
   # Do not eager load code on boot. This avoids loading your whole application
