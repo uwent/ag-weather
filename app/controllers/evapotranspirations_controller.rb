@@ -111,5 +111,9 @@ end
 private
 
 def latest_date
-  EvapotranspirationDataImport.successful.last.readings_on
+  begin
+    EvapotranspirationDataImport.successful.last.readings_on
+  rescue
+    Date.yesterday
+  end
 end

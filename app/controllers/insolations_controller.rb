@@ -100,5 +100,9 @@ end
 private
 
 def latest_date
-  InsolationDataImport.successful.last.readings_on
+  begin
+    InsolationDataImport.successful.last.readings_on
+  rescue
+    Date.yesterday
+  end
 end

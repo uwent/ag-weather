@@ -15,7 +15,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
           longitude: long,
           date: date
         )
-        EvapotranspirationDataImport.successful.create(readings_on: date)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end
 
@@ -79,10 +79,13 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#show" do
-    context "when the request is valid" do
-      let(:date) { Date.yesterday }
-      let(:filename) { "/evapo_#{date.to_s(:number)}.png" }
+    let(:date) { Date.yesterday }
+    let(:filename) { "/evapo_#{date.to_s(:number)}.png" }
+    before(:each) do
+      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+    end
 
+    context "when the request is valid" do
       it "is okay" do
         get :show, params: { id: date }
         expect(response).to have_http_status(:ok)
@@ -100,26 +103,20 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
       it "has the correct response of map for date loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        EvapotranspirationDataImport.successful.create(readings_on: date)
         get :show, params: { id: date }
         expect(json["map"]).to eq filename
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        EvapotranspirationDataImport.successful.create(readings_on: date)
         get :show, params: { id: date, format: :png }
         expect(response.body).to include("<img src=#{filename}")
       end
     end
 
     context "when the request is invalid" do
-      let(:date) { Date.yesterday }
-      let(:filename) { "/evapo_#{date.to_s(:number)}.png" }
-
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        EvapotranspirationDataImport.successful.create(readings_on: date)
         get :show, params: { id: "" }
         expect(json["map"]).to eq(filename)
       end
@@ -127,7 +124,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#all_for_date" do
-    let(:date) { Date.today }
+    let(:date) { Date.yesterday - 1.month }
     let(:lat) { 50.0 }
     let(:long) { 50.0 }
     before(:each) do
@@ -142,7 +139,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
           )
         end
       end
-      EvapotranspirationDataImport.successful.create(readings_on: date)
+      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
     end
 
     context "when the request is valid" do
@@ -175,11 +172,9 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when params are empty" do
       it "defaults to most recent data" do
-        EvapotranspirationDataImport.successful.create(readings_on: date + 1.day)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date + 1.day)
         get :all_for_date
         expect(json["date"]).to eq((date + 1.day).to_s)
-        expect(json["status"]).to eq("no data")
-        expect(json["data"]).to be_empty
       end
     end
   end

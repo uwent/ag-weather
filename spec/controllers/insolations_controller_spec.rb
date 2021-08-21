@@ -15,7 +15,7 @@ RSpec.describe InsolationsController, type: :controller do
           longitude: long,
           date: date
         )
-        InsolationDataImport.successful.create(readings_on: date)
+        FactoryBot.create(:insolation_data_import, readings_on: date)
       end
     end
 
@@ -79,10 +79,13 @@ RSpec.describe InsolationsController, type: :controller do
   end
 
   describe "#show" do
-    context "when the request is valid" do
-      let(:date) { "2016-01-06" }
-      let(:filename) { "/insolation_20160106.png" }
+    let(:date) { Date.yesterday }
+    let(:filename) { "/insolation_#{date.to_s(:number)}.png" }
+    before(:each) do
+      FactoryBot.create(:insolation_data_import, readings_on: date)
+    end
 
+    context "when the request is valid" do
       it "is okay" do
         get :show, params: { id: date }
         expect(response).to have_http_status(:ok)
@@ -95,7 +98,6 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        InsolationDataImport.successful.create(readings_on: date)
         get :show, params: { id: date }
         expect(json["map"]).to eq filename
       end
@@ -107,19 +109,14 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        InsolationDataImport.successful.create(readings_on: date)
         get :show, params: { id: date, format: :png }
         expect(response.body).to include("<img src=#{filename}")
       end
     end
 
     context "when the request is invalid" do
-      let(:date) { Date.yesterday }
-      let(:filename) { "/insolation_#{date.to_s(:number)}.png" }
-
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        InsolationDataImport.successful.create(readings_on: date)
         get :show, params: { id: "" }
         expect(json["map"]).to eq(filename)
       end
@@ -142,7 +139,7 @@ RSpec.describe InsolationsController, type: :controller do
           )
         end
       end
-      InsolationDataImport.successful.create(readings_on: date)
+      FactoryBot.create(:insolation_data_import, readings_on: date)
     end
 
     context "when the request is valid" do
@@ -175,7 +172,7 @@ RSpec.describe InsolationsController, type: :controller do
 
     context "when params are empty" do
       it "defaults to most recent data" do
-        InsolationDataImport.successful.create(readings_on: date + 1.day)
+        FactoryBot.create(:insolation_data_import, readings_on: date + 1.day)
         get :all_for_date
         expect(json["date"]).to eq((date + 1.day).to_s)
         expect(json["status"]).to eq("no data")
