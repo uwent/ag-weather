@@ -55,20 +55,18 @@ class EvapotranspirationsController < ApplicationController
 
     ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
     data = []
+    info = {}
 
     if ets.length > 0
-      status = "OK"
       lats = ets.pluck(:latitude)
       longs = ets.pluck(:longitude)
       values = ets.pluck(:potential_et)
-
       info = {
         lat_range: [lats.min, lats.max],
         long_range: [longs.min, longs.max],
         value_range: [values.min, values.max],
         value_unit: "Potential ET (in/day)"
       }
-
       data = ets.collect do |et|
         {
           lat: et.latitude.round(1),
@@ -76,6 +74,7 @@ class EvapotranspirationsController < ApplicationController
           value: et.potential_et.round(3)
         }
       end
+      status = "OK"
     else
       status = "no data"
     end

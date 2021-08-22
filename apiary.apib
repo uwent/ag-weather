@@ -16,24 +16,27 @@ Retrieve weather data for the specified coordinates and dates.
     + base_temp: `50` (number, optional) - base temperature, Fahrenheit
     + upper_temp: `86` (number, optional) - upper temperature limit, Fahrenheit
     + method: `sine` (string, optional) - degree day calculation method
-    + units: `F` - temperature units (f/F or c/C)
+    + units: `F` (string, optional) - temperature units (f/F or c/C)
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
         + info (object)
-            + lat: 50
-            + long: 90
-            + start_date: 2020-01-01
-            + end_date: 2020-10-10
-            + days: 283
-            + base_temp: 50
-            + upper_temp: 86
-            + method: sine
-            + units: Fahrenheit
+            + lat (string) - latitude of the request
+            + long (string) - longitude of the request
+            + start_date (string) - start date of the request
+            + end_date (string) - end date of the request
+            + days (number) - number of days of weather data returned
+            + base_temp (number) - degree days base temp
+            + upper_temp (number) - degree days upper cutoff temp
+            + method (string) - degree days calculation method
+            + units (string) - temperature units
         + data (array)
-            + (object)
-                + date: 2020-01-01
-                + value: 23.4
+            + (object, optional)
+                + date (string) - observation date
+                + min_temp (number) - daily low temp
+                + max_temp (number) - daily high temp
+                + dd (number) - daily degree day accumulation
+                + cum_dd (number) - cumulative degree days
 
 ## Degree Day Info [GET /degree_days/info]
 Get parameter ranges available in the database
@@ -59,7 +62,7 @@ Retrieve ET data for the specified coordinates and dates.
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (array)
-        + (object)
+        + (object, optional)
             + date: `2020-01-01` (string)
             + value: 0.15 (number)
 
@@ -83,16 +86,26 @@ Retrieve all ET data for the specified date.
     + Attributes (object)
         + date (string)
         + status (string)
-        + info (object)
+        + info (object, optional)
             + lat_range (array)
             + long_range (array)
             + value_range (array)
             + value_unit (string)
         + data (array)
-            + (object)
+            + (object, optional)
                 + lat (number)
                 + long (number)
                 + value (number)
+
+## Evapotranspiration database info [GET /evapotranspirations/info]
+Get parameter ranges available in the database
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date_range (array) - min, max
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+        + value_range (array) - min, max
 
 
 # Group Insolations
@@ -106,6 +119,38 @@ Retrieve insolation map for a given date
 + Response 200 (application/json; charset=utf-8)
     + Attributes
         + map: `path/to/map.png` (string, required)
+
+## Get all insolations for date [GET /insolations/all_for_date{?date}]
+Retrieve all insolation data for the specified date.
+
++ Parameters
+    + date: `2020-01-01` (string, required) - the date
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date (string)
+        + status (string)
+        + info (object, optional)
+            + lat_range (array)
+            + long_range (array)
+            + value_range (array)
+            + value_unit (string)
+        + data (array)
+            + (object, optional)
+                + lat (number)
+                + long (number)
+                + value (number)
+
+## Insolation database info [GET /insolations/info]
+Get parameter ranges available in the database
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date_range (array) - min, max
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+        + value_range (array) - min, max
+
 
 # Group Weather
 

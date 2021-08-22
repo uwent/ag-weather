@@ -54,9 +54,9 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where("date = ?", date).order(:latitude, :longitude)
     data = []
+    info = {}
 
     if insols.length > 0
-      status = "OK"
       lats = insols.pluck(:latitude)
       longs = insols.pluck(:longitude)
       values = insols.pluck(:insolation)
@@ -73,6 +73,7 @@ class InsolationsController < ApplicationController
           value: insol.insolation.round(3)
         }
       end
+      status = "OK"
     else
       status = "no data"
     end

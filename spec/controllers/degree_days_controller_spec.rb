@@ -34,7 +34,7 @@ RSpec.describe DegreeDaysController, type: :controller do
         }
         get :index, params: params
         expect(json.keys).to match(["info", "data"])
-        expect(json["data"].first.keys).to match(["date", "value"])
+        expect(json["data"].first.keys).to match(["date", "min_temp", "max_temp", "dd", "cum_dd"])
       end
     end
 

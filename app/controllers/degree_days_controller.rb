@@ -45,7 +45,10 @@ class DegreeDaysController < ApplicationController
       total += dd
       {
         date: w.date,
-        value: total.round(1)
+        min_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.min_temperature) : w.min_temperature).round(1),
+        max_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.max_temperature) : w.max_temperature).round(1),
+        dd: dd.round(1),
+        cum_dd: total.round(1)
       }
     end
 
@@ -79,7 +82,7 @@ class DegreeDaysController < ApplicationController
   end
 
   def units_text
-    in_f ? "Fahrenheit degree days" : "Celcius degree days"
+    in_f ? "Fahrenheit" : "Celcius"
   end
 
   def default_base
