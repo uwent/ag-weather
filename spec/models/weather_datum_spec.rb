@@ -2,8 +2,8 @@ require "rails_helper"
 
 RSpec.describe WeatherDatum, type: :model do
 
-  describe "#calculate_all_degree_days_for_date_range" do
-    it 'calculates a degree day value for date range' do
+  describe "calculate_all_degree_days_for_date_range" do
+    it "calculates a degree day value for date range" do
       latitude = Wisconsin.min_lat
       longitude = Wisconsin.min_long
       key = [latitude, longitude]
@@ -15,11 +15,10 @@ RSpec.describe WeatherDatum, type: :model do
       )}
 
       grid = WeatherDatum.calculate_all_degree_days_for_date_range(
-        Wisconsin.latitudes,
-        Wisconsin.longitudes,
-        Date.current - 12.days,
-        Date.current,
-        'sine'
+        lat_range: Wisconsin.latitudes,
+        long_range: Wisconsin.longitudes,
+        start_date: Date.current - 12.days,
+        end_date: Date.current
       )
 
       expect(grid[key].round(1)).to eq 17.4
@@ -27,11 +26,11 @@ RSpec.describe WeatherDatum, type: :model do
   end
 
   describe "construct land grid with weather data for given date" do
-    it 'should constuct a land grid' do
+    it "should constuct a land grid" do
       expect(WeatherDatum.land_grid_for_date(Date.current)).to be_kind_of(LandGrid)
     end
 
-    it 'should have weather data stored in the grid' do
+    it "should have weather data stored in the grid" do
       date = Date.current
       latitude = Wisconsin.max_lat
       longitude = Wisconsin.min_long
@@ -45,15 +44,14 @@ RSpec.describe WeatherDatum, type: :model do
       expect(land_grid[latitude, longitude]).to be_kind_of(WeatherDatum)
     end
 
-    it 'should store nil in grid for points without values' do
+    it "should store nil in grid for points without values" do
       land_grid = WeatherDatum.land_grid_for_date(Date.current)
       expect(land_grid[Wisconsin.max_lat, Wisconsin.max_long]).to be_nil
     end
   end
 
   describe "construct land grid with weather data since a given date" do
-
-    it 'should have arrays of weather data in the grid' do
+    it "should have arrays of weather data in the grid" do
       latitude = Wisconsin.max_lat
       longitude = Wisconsin.min_long
       1.upto(10) do |i|
@@ -69,53 +67,65 @@ RSpec.describe WeatherDatum, type: :model do
       expect(land_grid[latitude, longitude].length).to eq 10
     end
 
-    it 'should store nil in grid for points without values' do
+    it "should store nil in grid for points without values" do
       land_grid = WeatherDatum.land_grid_since(10.days.ago)
       expect(land_grid[Wisconsin.max_lat, Wisconsin.min_long]).to be_nil
     end
   end
 
   describe "degree days" do
-
-    it 'should get degree days with its min and max temps in Fahrenheit' do
+    it "should get degree days with its base/upper in Fahrenheit" do
       weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
       expect(DegreeDaysCalculator).to receive(:calculate)
         .with(
-          "sine",
-          DegreeDaysCalculator.to_fahrenheit(weather.min_temperature),
-          DegreeDaysCalculator.to_fahrenheit(weather.max_temperature),
-          50,
-          86
+          DegreeDaysCalculator.c_to_f(weather.min_temperature),
+          DegreeDaysCalculator.c_to_f(weather.max_temperature),
+          base: 50, upper: 86, method: "sine"
         )
-      weather.degree_days("sine", 50, 86)
+      weather.degree_days(50, 86, "sine")
     end
 
-    it 'should get degree days with its min and max temps in Fahrenheit' do
+    it "should get degree days with its base/upper in Fahrenheit" do
       weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
+      expect(weather.degree_days(50, 86, "sine")).to eq 7.834757752132984
+    end
 
-      expect(weather.degree_days("sine", 50, 86)).to eq 7.834757752132984
+    it "should get degree days with its base/upper in Celcius" do
+      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
+      expect(DegreeDaysCalculator).to receive(:calculate)
+        .with(
+          weather.min_temperature,
+          weather.max_temperature,
+          base: 10, upper: 30, method: "sine"
+        )
+      weather.degree_days(10, 30, "sine", false)
+    end
+
+    it "should get degree days with its base/upper in Celcius" do
+      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
+      expect(weather.degree_days(10, 30, "sine", false)).to eq(4.352643195629435)
     end
   end
 
   describe "calculate all degree days" do
-    it 'should return a land grid' do
-      expect(WeatherDatum.calculate_all_degree_days("sine", Date.current)).to be_kind_of(LandGrid)
+    it "should return a land grid" do
+      expect(WeatherDatum.calculate_all_degree_days(Date.current)).to be_kind_of(LandGrid)
     end
 
-    it 'should call degree days for each point with data' do
+    it "should call degree days for each point with data" do
       FactoryBot.create(:weather_datum, latitude: 42, longitude: 93)
       FactoryBot.create(:weather_datum, latitude: 43, longitude: 93)
 
       expect(DegreeDaysCalculator).to receive(:calculate).exactly(2).times
-      WeatherDatum.calculate_all_degree_days("sine", 10.days.ago)
+      WeatherDatum.calculate_all_degree_days(10.days.ago)
     end
 
-    it 'should call degree days for each point for each day of data' do
+    it "should call degree days for each point for each day of data" do
       FactoryBot.create(:weather_datum, date: Date.yesterday, latitude: 42, longitude: 93)
       FactoryBot.create(:weather_datum, date: 2.days.ago, latitude: 42, longitude: 93)
 
       expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
-      WeatherDatum.calculate_all_degree_days("sine", 10.days.ago)
+      WeatherDatum.calculate_all_degree_days(10.days.ago)
     end
   end
 end

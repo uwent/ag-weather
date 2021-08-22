@@ -143,7 +143,7 @@ class PestForecastsController < ApplicationController
 
   def t_min
     if params[:t_min].blank?
-      DegreeDaysCalculator::DEFAULT_BASE
+      DegreeDaysCalculator::BASE_F
     else
       params[:t_min].to_f
     end

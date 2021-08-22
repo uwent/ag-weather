@@ -2,142 +2,127 @@ FORMAT: 1A
 
 # Agricultural Weather Service
 
-# Group Insolations
-
-## Insolation [/insolations/{date}]
-
-+ Parameters
-    + date: `2016-01-07` (string, required) - the desired date
-
-### View insolation [GET]
-
-Retrieve insolation map for a given date
-
-+ Response 200 (application/json)
-    + Attributes
-        + map: path/to/map1.img (string, required)
-
-# Group Evapotranspirations
-
-## Evapotranspiration [/evapotranspirations/{date}]
-
-+ Parameters
-
-    + date: `2016-01-07` (string, required) - the desired date
-
-### Show Evapotranspiration [GET]
-
-Retrieve the ET map for Wisconsin for a given date
-
-+ Response 200 (application/json; charset=utf-8)
-    + Attributes
-        + map: path/to/map1.img (string, required)
-
-## Evapotranspirations [/evapotranspirations{?lat,long,start_date,end_date}]
-
-+ Parameters
-    + lat: 42.8 (number, required) - the latitude
-    + long: 270.423 (number, required) - the longitude
-    + start_date: `2016-01-01` (string, required) - the start date
-    + end_date: `2016-01-07` (string, required) - the end date
-
-### List Evapotranspirations [GET]
-
-Retrieve ET data for the specified coordinates and dates.
-
-+ Response 200 (application/json; charset=utf-8)
-    + Attributes (array[ET Reading])
-
-## Evapotranspirations [/evapotranspirations/all_for_date{?date}]
-
-+ Parameters
-
-    + date: `2016-01-01` (string, required) - the date
-
-### List Evapotranspirations [GET]
-
-Retrieve all ET data for the specified date.
-
-+ Response 200 (application/json; charset=utf-8)
-
-    + Attributes (array[ET Location Reading])
-
-# Group Weather
-
-## Weather [/weather{?lat,long,start_date,end_date}]
-
-+ Parameters
-
-    + lat: 42.8 (number, required) - the latitude
-    + long: 270.423 (number, required) - the longitude
-    + start_date: `2016-01-01` (string, required) - the start date
-    + end_date: `2016-01-07` (string, required) - the end date
-
-### List Weather Data [GET]
-
-Retrieve  weather data for the specified coordinates and dates.
-
-+ Response 200 (application/json; charset=utf-8)
-    + Attributes (array[Weather Reading])
 
 # Group Degree Days
 
-## Degree Day [/degree_days{?lat,long,start_date,base_temp,upper_temp}]
+## List Degree Days For Location [GET /degree_days{?lat,long,start_date,end_date,base_temp,upper_temp,method,units}]
+Retrieve weather data for the specified coordinates and dates.
 
 + Parameters
-    + lat: 42.8 (number, required) - the latitude
-    + long: 270.423 (number, required) - the longitude
-    + start_date: `2016-01-01` (string, required) - the start date
-    + base_temp: 50 (number, required) - base temperature
-    + upper_temp: 86 (number, required) - upper temperature limit
-
-### List Degree Day Data [GET]
-
-Retrieve  weather data for the specified coordinates and dates.
+    + lat: `45.0` (number, required) - north latitude
+    + long: `90.0` (number, required) - west longitude
+    + start_date: `2020-01-01` (string, optional) - the start date (default: first of year)
+    + end_date: `2020-10-10` (string, optional) - end date (default: current date)
+    + base_temp: `50` (number, optional) - base temperature, Fahrenheit
+    + upper_temp: `86` (number, optional) - upper temperature limit, Fahrenheit
+    + method: `sine` (string, optional) - degree day calculation method
+    + units: `F` - temperature units (f/F or c/C)
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (array[Degree Day Value])
+    + Attributes (object)
+        + info (object)
+            + lat: 50
+            + long: 90
+            + start_date: 2020-01-01
+            + end_date: 2020-10-10
+            + days: 283
+            + base_temp: 50
+            + upper_temp: 86
+            + method: sine
+            + units: Fahrenheit
+        + data (array)
+            + (object)
+                + date: 2020-01-01
+                + value: 23.4
 
-## Degree Day [/degree_days/{date}]
+## Degree Day Info [GET /degree_days/info]
+Get parameter ranges available in the database
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date_range (array) - min, max
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+        + dd_methods (array) - list of methods
+
+
+# Group Evapotranspirations
+
+## List Evapotranspirations [GET /evapotranspirations{?lat,long,start_date,end_date}]
+Retrieve ET data for the specified coordinates and dates.
 
 + Parameters
+    + lat: 45.0 (number, required) - north latitude
+    + long: 90.0 (number, required) - west longitude
+    + start_date: `2020-01-01` (string, required) - start date
+    + end_date: `2020-10-10` (string, optional) - end date
 
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (array)
+        + (object)
+            + date: `2020-01-01` (string)
+            + value: 0.15 (number)
+
+## Get evapotranspiration map image url [GET /evapotranspirations/{date}]
+Retrieve the ET map for a given date.
+
++ Parameters
+    + date: `2020-01-01` (string, required) - the desired date
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes
+        + map: `path/to/map.png` (string, required)
+
+## Get all evapotranspirations for date [GET /evapotranspirations/all_for_date{?date}]
+Retrieve all ET data for the specified date.
+
++ Parameters
+    + date: `2020-01-01` (string, required) - the date
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date (string)
+        + status (string)
+        + info (object)
+            + lat_range (array)
+            + long_range (array)
+            + value_range (array)
+            + value_unit (string)
+        + data (array)
+            + (object)
+                + lat (number)
+                + long (number)
+                + value (number)
+
+
+# Group Insolations
+
+## Get insolation map image url [GET /insolations/{date}]
+Retrieve insolation map for a given date
+
++ Parameters
     + date: `2016-01-07` (string, required) - the desired date
 
-### Show Degree Days [GET]
++ Response 200 (application/json; charset=utf-8)
+    + Attributes
+        + map: `path/to/map.png` (string, required)
 
-Retrieve a map of the degree days for the specified method
+# Group Weather
+
+## Get weather data [GET /weather{?lat,long,start_date,end_date}]
+Returns weather data for location and date range
+
++ Parameters
+    + lat: 45 (number, required) - north latitude
+    + long: 90 (number, required) - west longitude
+    + start_date: `2020-01-01` (string, required) - start date
+    + end_date: `2020-10-10` (string, required) - end date
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (array[Degree Day Map])
-
-# Data Structures
-
-## ET Reading (object)
-
-+ date: 2016-01-01 (string, requried)
-+ value: 0.01 (number, required)
-
-## ET Location Reading (object)
-
-+ lat: 42.8 (number, required)
-+ long: 270.3 (number, required)
-+ value: 0.01 (number, required)
-
-## Weather Reading (object)
-
-+ date: 2016-01-01 (string, requried)
-+ min_temp: 0.01 (number, required)
-+ avg_temp: 0.01 (number, required)
-+ max_temp: 0.01 (number, required)
-+ pressure: 0.01 (number, required)
-
-## Degree Day Value
-
-+ date: 2016-01-01 (string, requried)
-+ value: 23.4 (number, required)
-
-## Degree Day Map (object)
-
-+ type: alfalfa weevil (string, required)
-+ map: path/to/degree_day/map.img (string, required)
+    + Attributes (array)
+        + (object)
+            + date (string)
+            + min_temp (number)
+            + avg_temp (number)
+            + max_temp (number)
+            + pressure (number)

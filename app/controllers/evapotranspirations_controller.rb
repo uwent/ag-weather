@@ -1,6 +1,7 @@
 class EvapotranspirationsController < ApplicationController
   
   # GET: returns ets for lat, long, date range
+  # params: lat, long, start_date, end_date
   def index
     end_date = params[:end_date] ? params[:end_date] : Date.current
 
