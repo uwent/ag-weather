@@ -64,7 +64,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   # fahrenheit min/max. base/upper must be F
-  def degree_days(base, upper, method, in_f = true)
+  def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
     min = in_f ? DegreeDaysCalculator.c_to_f(min_temperature) : min_temperature
     max = in_f ? DegreeDaysCalculator.c_to_f(max_temperature) : max_temperature
     DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)

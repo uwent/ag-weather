@@ -1,15 +1,61 @@
 class PestForecastsController < ApplicationController
 
+  # GET: returns pest data
+  # params:
+  #   pest (required)
+  #   start_date
+  #   end_date
   def index
-    # inputs: start_date, end_date, pest
-    freezing_data = check_hard_freeze
-    pest_data = get_pest_forecast_data
-    pest_forecast_data = pest_data.map do |gp|
-      gp[:freeze] = freezing_data[gp[:grid_key]] ? true : false
-      gp
-    end
-    render json: pest_forecast_data
+    info = {}
+    pest_data = []
 
+    if PestForecast.column_names.include?(pest)
+      freezing_data = check_hard_freeze
+
+      forecasts = PestForecast.where("date between ? and ?", start_date, end_date)
+
+      if forecasts.length > 0
+        lats = forecasts.pluck(:latitude)
+        longs = forecasts.pluck(:longitude)
+
+        info = {
+          start_date: start_date,
+          end_date: end_date,
+          days: (end_date - start_date).to_i,
+          lat_range: [lats.min, lats.max],
+          long_range: [longs.min, longs.max]
+        }
+
+        pest_data = forecasts.group(:latitude, :longitude)
+        .order(:latitude, :longitude)
+        .select(:latitude, :longitude, "sum(#{pest}) as total", "count(#{pest}) as count")
+        .collect do |point|
+          {
+            grid_key: "#{point.latitude}:#{point.longitude}",
+            lat: point.latitude,
+            long: point.longitude * -1,
+            total: point.total.round(2),
+            avg: (point.total.to_f / point.count).round(2),
+            freeze: false
+          }
+        end.map do |point|
+          point[:freeze] = freezing_data[point[:grid_key]] ? true : false
+          point
+        end
+        status = "OK"
+      else
+        status = "no data"
+      end
+    else
+      status = "pest not found"
+    end
+
+    render json: {
+      pest: pest,
+      status: status,
+      info: info,
+      data: pest_data
+    }
   end
 
   def custom
@@ -80,24 +126,38 @@ class PestForecastsController < ApplicationController
   private
 
   def get_pest_forecast_data
-    PestForecast.select(:latitude).select(:longitude).
-      select("sum(#{pest}) as total").
-      select("count(#{pest}) as count").
-      where("date between ? and ?", start_date, end_date).
-      group(:latitude, :longitude).
-      order(:latitude, :longitude).
-      collect {
-        |v| {
-          lat: v.latitude,
-          long: v.longitude * -1,
-          total: v.total.round(2),
-          days: v.count,
-          avg: (v.total.to_f / v.count).round(2),
-          after_november_first: after_november_first,
-          freeze: false,
-          grid_key: "#{v.latitude}:#{v.longitude}"
-        }
+    # PestForecast.select(:latitude).select(:longitude).
+    #   select("sum(#{pest}) as total").
+    #   select("count(#{pest}) as count").
+    #   where("date between ? and ?", start_date, end_date).
+    #   group(:latitude, :longitude).
+    #   order(:latitude, :longitude).
+    #   collect {
+    #     |v| {
+    #       lat: v.latitude,
+    #       long: v.longitude * -1,
+    #       total: v.total.round(2),
+    #       days: v.count,
+    #       avg: (v.total.to_f / v.count).round(2),
+    #       after_november_first: after_november_first,
+    #       freeze: false,
+    #       grid_key: "#{v.latitude}:#{v.longitude}"
+    #     }
+    #   }
+    PestForecast.where("date between ? and ?", start_date, end_date)
+    .select(:latitude, :longitude, "sum(#{pest}) as total", "count(#{pest}) as count")
+    .group(:latitude, :longitude)
+    .order(:latitude, :longitude)
+    .collect do |point|
+      {
+        grid_key: "#{point.latitude}:#{point.longitude}",
+        lat: point.latitude,
+        long: point.longitude * -1,
+        total: point.total.round(2),
+        avg: (point.total.to_f / point.count).round(2),
+        freeze: false
       }
+    end
   end
 
   def after_november_first

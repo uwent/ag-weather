@@ -171,3 +171,32 @@ Returns weather data for location and date range
             + avg_temp (number)
             + max_temp (number)
             + pressure (number)
+
+# Group Pest Forecasts
+
+## Get forecast data for pest [GET /pest_forecasts{?pest,start_date,end_date}]
+Returns pest forecast data for entire grid for pest and date range
+
++ Parameters
+    + pest: potato_blight_dsv (string, required) - column name of pest data
+    + start_date: `2020-01-01` (string, optional) - defaults to 7 days ago
+    + end_date: `2020-10-10` (string, optional) - defaults to today
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + pest (string)
+        + status (string)
+        + info (object, optional)
+            + start_date (string)
+            + end_date (string)
+            + days (number)
+            + lat_range (array)
+            + long_range (array)
+        + data (array)
+            + (object)
+                + grid_key (string)
+                + lat (string)
+                + long (string)
+                + total (number)
+                + avg (number)
+                + freeze (boolean)
