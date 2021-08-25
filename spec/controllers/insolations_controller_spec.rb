@@ -4,17 +4,13 @@ RSpec.describe InsolationsController, type: :controller do
   let(:json) { JSON.parse(response.body) }
 
   describe "#index" do
+    let(:start_date) { Date.current - 2.weeks }
+    let(:end_date) { Date.current - 1.week }
     let(:lat)  { 42.0 }
     let(:long) { 98.0 }
     before(:each) do
-      1.upto(5) do |i|
-        date = Date.yesterday - i.days
-        FactoryBot.create(
-          :insolation,
-          latitude: lat,
-          longitude: long,
-          date: date
-        )
+      (start_date..end_date).each do |date|
+        FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:insolation_data_import, readings_on: date)
       end
     end
@@ -23,8 +19,8 @@ RSpec.describe InsolationsController, type: :controller do
       let(:params) {{
         lat: lat,
         long: long,
-        start_date: Date.yesterday - 4.days,
-        end_date: Date.yesterday - 1.days
+        start_date: start_date,
+        end_date: end_date
       }}
 
       it "is okay" do
@@ -34,19 +30,26 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "has the correct response structure" do
         get :index, params: params
-        expect(json).to be_an(Array)
-        expect(json[0]).to include("date", "value")
+        expect(json["data"]).to be_an(Array)
+        expect(json["info"]).to be_an(Hash)
+        expect(json["data"][0]).to include("date", "value")
       end
 
       it "has the correct number of elements" do
         get :index, params: params
-        expect(json.length).to eq 4
+        expect(json["data"].length).to eq((start_date..end_date).count)
+      end
+
+      it "defaults start_date to beginning of year" do
+        params.delete(:start_date)
+        get :index, params: params
+        expect(json["info"]["start_date"]).to eq(start_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :index, params: params
-        expect(json.length).to eq 4
+        expect(json["info"]["end_date"]).to eq(Date.current.to_s)
       end
     end
 
@@ -54,26 +57,22 @@ RSpec.describe InsolationsController, type: :controller do
       let(:params) {{
         lat: lat,
         long: long,
-        start_date: Date.current - 4.days,
-        end_date: Date.current - 1.days
+        start_date: start_date,
+        end_date: end_date
       }}
 
-      it "and has no latitude return no content" do
+      it "and has no latitude return no data" do
         params.delete(:lat)
         get :index, params: params
-        expect(json).to be_empty
+        expect(json["status"]).to eq("no data")
+        expect(json["data"]).to be_empty
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
         get :index, params: params
-        expect(json).to be_empty
-      end
-
-      it "and has no start_date return no content" do
-        params.delete(:start_date)
-        get :index, params: params
-        expect(json).to be_empty
+        expect(json["status"]).to eq("no data")
+        expect(json["data"]).to be_empty
       end
     end
   end
@@ -126,7 +125,7 @@ RSpec.describe InsolationsController, type: :controller do
 
   describe "#all_for_date" do
     let(:date) { Date.current - 1.month }
-    let(:date2) { Date.current }
+    let(:date2) { Date.current - 1.week }
     let(:empty_date) { Date.current - 1.year }
     before(:each) do
       FactoryBot.create(:insolation, date: date)
@@ -143,13 +142,13 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "has the correct response structure" do
         get :all_for_date, params: { date: date }
-        expect(json.keys).to match(["date", "status", "info", "data"])
+        expect(json.keys).to match(["status", "info", "data"])
       end
 
       it "returns valid data" do
         get :all_for_date, params: { date: date }
-        expect(json["date"]).to eq(date.to_s)
         expect(json["status"]).to eq("OK")
+        expect(json["info"]).to be_an(Hash)
         expect(json["data"]).to be_an(Array)
         expect(json["data"][0]).to include("lat", "long", "value")
       end
@@ -158,7 +157,7 @@ RSpec.describe InsolationsController, type: :controller do
     context "when date is valid but has no data" do
       it "returns empty data" do
         get :all_for_date, params: { date: empty_date }
-        expect(json["date"]).to eq((empty_date).to_s)
+        expect(json["info"]["date"]).to eq((empty_date).to_s)
         expect(json["data"]).to be_empty
       end
     end
@@ -166,7 +165,7 @@ RSpec.describe InsolationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json["date"]).to eq((date2).to_s)
+        expect(json["info"]["date"]).to eq((date2).to_s)
       end
     end
   end
@@ -195,12 +194,13 @@ RSpec.describe InsolationsController, type: :controller do
 
     it "has the correct structure" do
       get :info
-      expect(json.keys).to match(["date_range", "lat_range", "long_range", "value_range"])
+      expect(json.keys).to match(["date_range", "num_dates", "lat_range", "long_range", "value_range"])
     end
 
     it "returns data ranges for insolation" do
       get :info
       expect(json["date_range"]).to eq(dates)
+      expect(json["num_dates"]).to eq(dates.count)
       expect(json["lat_range"].map(&:to_i)).to eq(lats)
       expect(json["long_range"].map(&:to_i)).to eq(longs)
       expect(json["value_range"]).to eq(insols)

@@ -1,22 +1,23 @@
 FORMAT: 1A
 
-# Agricultural Weather Service
+# UW-Madison Agricultural Weather Service API
 
 
 # Group Degree Days
 
-## List Degree Days For Location [GET /degree_days{?lat,long,start_date,end_date,base_temp,upper_temp,method,units}]
-Retrieve weather data for the specified coordinates and dates.
+## index [/degree_days]
+
+### List degree days for location [GET /degree_days{?lat,long,start_date,end_date,base_temp,upper_temp,method,units}]
 
 + Parameters
-    + lat: `45.0` (number, required) - north latitude
-    + long: `90.0` (number, required) - west longitude
+    + lat: 45.0 (number) - north latitude
+    + long: 90.0 (number) - west longitude
     + start_date: `2020-01-01` (string, optional) - the start date (default: first of year)
     + end_date: `2020-10-10` (string, optional) - end date (default: current date)
-    + base_temp: `50` (number, optional) - base temperature, Fahrenheit
-    + upper_temp: `86` (number, optional) - upper temperature limit, Fahrenheit
-    + method: `sine` (string, optional) - degree day calculation method
-    + units: `F` (string, optional) - temperature units (f/F or c/C)
+    + base_temp: 50 (number, optional) - base temperature, Fahrenheit
+    + upper_temp: 86 (number, optional) - upper temperature limit, Fahrenheit
+    + method: sine (string, optional) - degree day calculation method
+    + units: F (string, optional) - temperature units (f/F or c/C)
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -39,7 +40,6 @@ Retrieve weather data for the specified coordinates and dates.
                 + cum_dd (number) - cumulative degree days
 
 ## Degree Day Info [GET /degree_days/info]
-Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -51,53 +51,53 @@ Get parameter ranges available in the database
 
 # Group Evapotranspirations
 
-## List Evapotranspirations [GET /evapotranspirations{?lat,long,start_date,end_date}]
-Retrieve ET data for the specified coordinates and dates.
+## index [/evapotranspirations]
+
+### List evapotranspiration data for point and date range [GET /evapotranspirations{?lat,long,start_date,end_date}]
 
 + Parameters
-    + lat: 45.0 (number, required) - north latitude
-    + long: 90.0 (number, required) - west longitude
-    + start_date: `2020-01-01` (string, required) - start date
+    + lat: 45.0 (number) - north latitude
+    + long: 90.0 (number) - west longitude
+    + start_date: `2020-01-01` (string) - start date
     + end_date: `2020-10-10` (string, optional) - end date
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (array)
-        + (object, optional)
-            + date: `2020-01-01` (string)
-            + value: 0.15 (number)
+    + Attributes (`et/insol index data`)
 
-## Get evapotranspiration map image url [GET /evapotranspirations/{date}]
+
+## show [/evapotranspirations/]
+
+### Get evapotranspiration map image url [GET /evapotranspirations/{date}]
+
 Retrieve the ET map for a given date.
 
 + Parameters
-    + date: `2020-01-01` (string, required) - the desired date
+    + date: `2020-01-01` (string) - the desired date
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes
-        + map: `path/to/map.png` (string, required)
+        + map: `url/for/map.png` (string)
+
+### Show insolation mapimage in browser [GET /evapotranspirations/{date}.png]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/html; charset=utf-8)
+
 
 ## Get all evapotranspirations for date [GET /evapotranspirations/all_for_date{?date}]
+
 Retrieve all ET data for the specified date.
 
 + Parameters
     + date: `2020-01-01` (string, required) - the date
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (object)
-        + date (string)
-        + status (string)
-        + info (object, optional)
-            + lat_range (array)
-            + long_range (array)
-            + value_range (array)
-            + value_unit (string)
-        + data (array)
-            + (object, optional)
-                + lat (number)
-                + long (number)
-                + value (number)
+    + Attributes (`et/insol all_for_date data`)
 
 ## Evapotranspiration database info [GET /evapotranspirations/info]
+
 Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
@@ -110,39 +110,48 @@ Get parameter ranges available in the database
 
 # Group Insolations
 
-## Get insolation map image url [GET /insolations/{date}]
-Retrieve insolation map for a given date
+## index [/insolations]
+
+### Get insolation data for point and date range [GET /insolations{?lat,long,start_date,end_date}]
 
 + Parameters
-    + date: `2016-01-07` (string, required) - the desired date
+    + lat: 45 (number)
+    + long: 90 (number)
+    + start_date: `2021-01-01`
+    + end_date: `2021-10-10`
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes
-        + map: `path/to/map.png` (string, required)
+    + Attributes (`et/insol index data`)
 
-## Get all insolations for date [GET /insolations/all_for_date{?date}]
-Retrieve all insolation data for the specified date.
+## show [/insolations/show]
+
+### Get insolation map image url [GET /insolations/{date}]
 
 + Parameters
-    + date: `2020-01-01` (string, required) - the date
+    + date: `2020-01-01` (string)
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date (string)
-        + status (string)
-        + info (object, optional)
-            + lat_range (array)
-            + long_range (array)
-            + value_range (array)
-            + value_unit (string)
-        + data (array)
-            + (object, optional)
-                + lat (number)
-                + long (number)
-                + value (number)
+        + map: `path/to/map.png` (string)
+
+### Show insolation mapimage in browser [GET /insolations/{date}.png]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/html; charset=utf-8)
+
+## all_for_date [/insolations/all_for_date]
+
+### Get all insolations for date [GET /insolations/all_for_date{?date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`et/insol all_for_date data`)
 
 ## Insolation database info [GET /insolations/info]
-Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -154,14 +163,17 @@ Get parameter ranges available in the database
 
 # Group Weather
 
-## Get weather data [GET /weather{?lat,long,start_date,end_date}]
+## index [/weather]
+
+### Get weather data [GET /weather{?lat,long,start_date,end_date}]
+
 Returns weather data for location and date range
 
 + Parameters
-    + lat: 45 (number, required) - north latitude
-    + long: 90 (number, required) - west longitude
-    + start_date: `2020-01-01` (string, required) - start date
-    + end_date: `2020-10-10` (string, required) - end date
+    + lat: 45 (number) - north latitude
+    + long: 90 (number) - west longitude
+    + start_date: `2020-01-01` (string) - start date
+    + end_date: `2020-10-10` (string) - end date
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (array)
@@ -172,13 +184,17 @@ Returns weather data for location and date range
             + max_temp (number)
             + pressure (number)
 
+
 # Group Pest Forecasts
 
-## Get forecast data for pest [GET /pest_forecasts{?pest,start_date,end_date}]
+## index [/pest_forecasts]
+
+### Get pest forecast data for grid [GET /pest_forecasts{?pest,start_date,end_date}]
+
 Returns pest forecast data for entire grid for pest and date range
 
 + Parameters
-    + pest: potato_blight_dsv (string, required) - column name of pest data
+    + pest: potato_blight_dsv (string) - column name of pest data
     + start_date: `2020-01-01` (string, optional) - defaults to 7 days ago
     + end_date: `2020-10-10` (string, optional) - defaults to today
 
@@ -200,3 +216,173 @@ Returns pest forecast data for entire grid for pest and date range
                 + total (number)
                 + avg (number)
                 + freeze (boolean)
+
+
+## custom [/pest_forecasts/custom]
+
+### get degree day totals for grid [GET /pest_forecasts/custom{?pest,start_date,end_date}]
+
+If pest param is given, returns total degree days from existing degree day model
+
++ Parameters
+    + pest: dd_50_86 (string) - column name of pest data
+    + start_date: `2020-01-01` (string, optional) - defaults to 7 days ago
+    + end_date: `2020-10-10` (string, optional) - defaults to today
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`pest forecast custom data`)
+
+### get degree day totals for grid [GET /pest_forecasts/custom{?start_date,end_date,base,upper}]
+
+If pest not give, computes new degree day grid from weather and returns totals
+
++ Parameters
+    + start_date: `2020-01-01` (string, optional) - defaults to 7 days ago
+    + end_date: `2020-10-10` (string, optional) - defaults to today
+    + base: 50 (number, optional) - degree day base threshold
+    + upper: 86 (number, optional) - degree day upper threshold
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`pest forecast custom data`)
+
+
+## point_details [/pest_forecasts/point_details]
+
+### get pest data for grid point in date range [GET /pest_forecasts/point_details{?pest,lat,long,start_date,end_date}]
+
+Returns weather and pest forecast data for grid point in date range
+
++ Parameters
+    + pest: potato_blight_dsv (string)
+    + lat: 45 (number)
+    + long: 90 (number)
+    + start_date: `2020-01-01` (string)
+    + end_date: `2020-10-10` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + status (string)
+        + info (object)
+            + pest (string)
+            + lat (number)
+            + long (number)
+            + start_date (string)
+            + end_date (string)
+            + days (number) - days specified by date range
+            + data_days (number) - actual number of days returned
+            + compute_time (number) - seconds
+        + data (array)
+            + (object)
+                + date (string)
+                + value (number)
+                + cumulative_value (number)
+                + min_temp (number)
+                + max_temp (number)
+                + avg_temp (number)
+                + avg_temp_hi_rh (number)
+                + hours_hi_rh (number)
+                + rh_threshold (number)
+
+## custom_point_details [/pest_forecasts/custom_point_details]
+
+### get pest data for grid point in date range [GET /pest_forecasts/custom_point_details{?lat,long,base,upper,start_date,end_date}]
+
+Returns weather and pest forecast data for grid point in date range
+
++ Parameters
+    + lat: 45 (number) - degrees north latitude
+    + long: 90 (number) - positive degrees west longitude
+    + base: 50 (number) - degree day base temperature threshold (F)
+    + upper: 86 (number) - degree day upper cutoff threshold (F)
+    + start_date: `2020-01-01` (string)
+    + end_date: `2020-10-10` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + status (string)
+        + info (object)
+            + lat (number)
+            + long (number)
+            + base (number)
+            + upper (number)
+            + start_date (string)
+            + end_date (string)
+            + days (number) - days specified by date range
+            + data_days (number) - actual number of days returned
+            + compute_time (number) - seconds
+        + data (array)
+            + (object)
+                + date (string)
+                + min_temp (number) - weather
+                + max_temp (number) - weather
+                + avg_temp (number) - weather
+                + dds (number) - daily degree day accumulation
+                + cum_dds (number) - cumulative degree days
+
+## Pest forecast database info [GET /pest_forecasts/info]
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + pest_names (array) - list column names
+        + date_range (array) - min, max
+        + days (number) - days of data in db
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+
+
+# Data Structures
+
+## `et/insol index data` (object)
++ status (string)
++ info (object)
+    + lat (string)
+    + long (string)
+    + start_date (string)
+    + end_date (string)
+    + days_requested (number)
+    + days_returned (number)
+    + min_value (number, nullable)
+    + max_value (number, nullable)
+    + units (string)
+    + compute_time (number)
++ data (array)
+    + (object, optional)
+        + date (string)
+        + value (number)
+
+## `et/insol all_for_date data` (object)
++ date (string)
++ status (string)
++ info (object, optional)
+    + date (string)
+    + lat_range (array)
+    + long_range (array)
+    + points (number)
+    + min_value (number, nullable)
+    + max_value (number, nullable)
+    + unit (string)
+    + compute_time (number)
++ data (array)
+    + (object, optional)
+        + lat (number)
+        + long (number)
+        + value (number)
+
+## `pest forecast custom data` (object)
++ status (string)
++ info (object)
+    + pest (string)
+    + start_date (string)
+    + end_date (string)
+    + days (number)
+    + lat_range (array)
+    + long_range (array)
+    + grid_points (number)
+    + min_value (number)
+    + max_value (number)
+    + compute_time (number) - seconds
++ data (array)
+    + (object, optional)
+        + lat (string)
+        + long (string)
+        + total (number)

@@ -1,29 +1,64 @@
 class InsolationsController < ApplicationController
 
   # GET: returns insols for lat, long, date range
-  def index
-    end_date = params[:end_date] ? params[:end_date] : Date.current
+  # params:
+  #   lat (required)
+  #   long (required)
+  #   start_date - default 1st of year
+  #   end_date - default today
 
-    insols = Insolation.where(latitude: params[:lat], longitude: params[:long])
-      .where("date >= ? and date <= ?", params[:start_date], end_date)
+  def index
+    start_time = Time.current
+    status = "OK"
+    data = []
+
+    insols = Insolation.where(latitude: lat, longitude: long)
+      .where(date: start_date..end_date)
       .order(:date)
 
-    data = insols.collect do |insol|
-      {
-        date: insol.date.to_s,
-        value: insol.insolation.round(3)
-      }
+    if insols.size > 0
+      data = insols.collect do |insol|
+        {
+          date: insol.date.to_s,
+          value: insol.insolation.round(3)
+        }
+      end
+    else
+      status = "no data"
     end
 
-    render json: data
+    values = data.map{ |day| day[:insol] }
+
+    info = {
+      lat: lat,
+      long: long,
+      start_date: start_date,
+      end_date: end_date,
+      days_requested: (end_date - start_date).to_i,
+      days_returned: values.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "MJ/day/m^2",
+      compute_time: Time.current - start_time
+    }
+
+    status = "missing data" if status == "OK" && info[:days_requested] != info[:days_returned]
+
+    response = {
+      status: status,
+      info: info,
+      data: data
+    }
+
+    render json: response
   end
 
   # GET: create map and return url to it
   def show
-    begin
-      date = Date.parse(params[:id])
+    date = begin
+      params[:id] ? Date.parse(params[:id]) : default_insol_date
     rescue
-      date = Insolation.latest_date || Date.yesterday
+      default_insol_date
     end
 
     image_name = Insolation.image_name(date)
@@ -38,34 +73,31 @@ class InsolationsController < ApplicationController
     end
 
     if request.format.png?
-      render html: "<img src=#{url}>".html_safe
+      render html: "<img src=#{url} height=100%>".html_safe
     else
       render json: { map: url }
     end
   end
 
-  # GET: return all values for date
+  # GET: return grid of all values for date
+  # params:
+  #   date
+
   def all_for_date
-    begin
-      date = Date.parse(params[:date])
+    start_time = Time.current
+    status = "OK"
+    info = {}
+    data = []
+
+    date = begin
+      params[:date] ? Date.parse(params[:date]) : default_insol_date
     rescue
-      date = Insolation.latest_date || Date.yesterday
+      default_insol_date
     end
 
-    insols = Insolation.where("date = ?", date).order(:latitude, :longitude)
-    data = []
-    info = {}
+    insols = Insolation.where(date: date).order(:latitude, :longitude)
 
     if insols.length > 0
-      lats = insols.pluck(:latitude)
-      longs = insols.pluck(:longitude)
-      values = insols.pluck(:insolation)
-      info = {
-        lat_range: [lats.min, lats.max],
-        long_range: [longs.min, longs.max],
-        value_range: [values.min, values.max],
-        value_unit: "Solar Insolation (MJ/day)"
-      }
       data = insols.collect do |insol|
         {
           lat: insol.latitude.round(1),
@@ -78,12 +110,28 @@ class InsolationsController < ApplicationController
       status = "no data"
     end
 
-    render json: {
+    lats = data.map{ |d| d[:lat] }.uniq
+    longs = data.map{ |d| d[:long] }.uniq
+    values = data.map{ |d| d[:insol] }
+
+    info = {
       date: date,
+      lat_range: [lats.min, lats.max],
+      long_range: [longs.min, longs.max],
+      points: lats.count * longs.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "Solar insolation (MJ/day)",
+      compute_time: Time.current - start_time
+    }
+
+    response = {
       status: status,
       info: info,
       data: data
     }
+
+    render json: response
   end
 
   # GET: valid params for api
@@ -91,9 +139,32 @@ class InsolationsController < ApplicationController
     i = Insolation
     render json: {
       date_range: [i.minimum(:date).to_s, i.maximum(:date).to_s],
+      num_dates: i.distinct.pluck(:date).count,
       lat_range: [i.minimum(:latitude), i.maximum(:latitude)],
       long_range: [i.minimum(:longitude), i.maximum(:longitude)],
       value_range: [i.minimum(:insolation), i.maximum(:insolation)]
     }
   end
+end
+
+private
+
+def default_insol_date
+  Insolation.latest_date || Date.yesterday
+end
+
+def start_date
+  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+end
+
+def end_date
+  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+end
+
+def lat
+  params[:lat]
+end
+
+def long
+  params[:long]
 end

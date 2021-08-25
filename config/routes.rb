@@ -21,9 +21,10 @@ Rails.application.routes.draw do
   end
   resources :pest_forecasts, only: [:index] do
     collection do
-      get 'point_details'
       get 'custom'
+      get 'point_details'
       get 'custom_point_details'
+      get 'info'
     end
   end
   resources :station_observations, only: [:index]

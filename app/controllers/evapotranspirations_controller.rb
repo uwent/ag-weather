@@ -1,30 +1,64 @@
 class EvapotranspirationsController < ApplicationController
   
   # GET: returns ets for lat, long, date range
-  # params: lat, long, start_date, end_date
-  def index
-    end_date = params[:end_date] ? params[:end_date] : Date.current
+  # params:
+  #   lat (required)
+  #   long (required)
+  #   start_date - default 1st of year
+  #   end_date - default today
 
-    ets = Evapotranspiration.where(latitude: params[:lat], longitude: params[:long])
-      .where("date >= ? and date <= ?", params[:start_date], end_date)
+  def index
+    start_time = Time.current
+    status = "OK"
+    data = []
+
+    ets = Evapotranspiration.where(latitude: lat, longitude: long)
+      .where(date: start_date..end_date)
       .order(:date)
 
-    data = ets.collect do |et|
-      {
-        date: et.date.to_s,
-        value: et.potential_et.round(3)
-      }
+    if ets.size > 0
+      data = ets.collect do |et|
+        {
+          date: et.date.to_s,
+          value: et.potential_et.round(3)
+        }
+      end
+    else
+      status = "no data"
     end
 
-    render json: data
+    values = data.map{ |day| day[:et] }
+
+    info = {
+      lat: lat,
+      long: long,
+      start_date: start_date,
+      end_date: end_date,
+      days_requested: (end_date - start_date).to_i,
+      days_returned: values.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "in/day",
+      compute_time: Time.current - start_time
+    }
+
+    status = "missing data" if status == "OK" && info[:days_requested] != info[:days_returned]
+
+    response = {
+      status: status,
+      info: info,
+      data: data
+    }
+
+    render json: response
   end
 
   # GET: create map and return url to it
   def show
-    begin
-      date = Date.parse(params[:id])
+    date = begin
+      params[:id] ? Date.parse(params[:id]) : default_et_date
     rescue
-      date = Evapotranspiration.latest_date || Date.yesterday
+      default_et_date
     end
 
     image_name = Evapotranspiration.image_name(date)
@@ -39,34 +73,31 @@ class EvapotranspirationsController < ApplicationController
     end
 
     if request.format.png?
-      render html: "<img src=#{url}>".html_safe
+      render html: "<img src=#{url} height=100%>".html_safe
     else
       render json: { map: url }
     end
   end
 
-  # GET: return all values for date
-  def all_for_date
-    begin
-      date = Date.parse(params[:date])
-    rescue
-      date = Evapotranspiration.latest_date || Date.yesterday
-    end
+  # GET: return grid of all values for date
+  # params:
+  #   date
 
-    ets = Evapotranspiration.where("date = ?", date).order(:latitude, :longitude)
-    data = []
+  def all_for_date
+    start_time = Time.current
+    status = "OK"
     info = {}
+    data = []
+
+    date = begin
+      params[:date] ? Date.parse(params[:date]) : default_et_date
+    rescue
+      default_et_date
+    end
+    
+    ets = Evapotranspiration.where(date: date).order(:latitude, :longitude)
 
     if ets.length > 0
-      lats = ets.pluck(:latitude)
-      longs = ets.pluck(:longitude)
-      values = ets.pluck(:potential_et)
-      info = {
-        lat_range: [lats.min, lats.max],
-        long_range: [longs.min, longs.max],
-        value_range: [values.min, values.max],
-        value_unit: "Potential ET (in/day)"
-      }
       data = ets.collect do |et|
         {
           lat: et.latitude.round(1),
@@ -79,12 +110,28 @@ class EvapotranspirationsController < ApplicationController
       status = "no data"
     end
 
-    render json: {
+    lats = data.map{ |d| d[:lat] }.uniq
+    longs = data.map{ |d| d[:long] }.uniq
+    values = data.map{ |d| d[:et] }
+
+    info = {
       date: date,
+      lat_range: [lats.min, lats.max],
+      long_range: [longs.min, longs.max],
+      points: lats.count * longs.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "Potential evapotranspiration (in/day)",
+      compute_time: Time.current - start_time
+    }
+
+    response = {
       status: status,
       info: info,
       data: data
     }
+
+    render json: response
   end
 
   # GET: calculate et with arguments
@@ -100,10 +147,32 @@ class EvapotranspirationsController < ApplicationController
     et = Evapotranspiration
     render json: {
       date_range: [et.minimum(:date).to_s, et.maximum(:date).to_s],
+      num_dates: et.distinct.pluck(:date).count,
       lat_range: [et.minimum(:latitude), et.maximum(:latitude)],
       long_range: [et.minimum(:longitude), et.maximum(:longitude)],
       value_range: [et.minimum(:potential_et), et.maximum(:potential_et)]
     }
   end
+end
 
+private
+
+def default_et_date
+  Evapotranspiration.latest_date || Date.yesterday
+end
+
+def start_date
+  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+end
+
+def end_date
+  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+end
+
+def lat
+  params[:lat]
+end
+
+def long
+  params[:long]
 end
