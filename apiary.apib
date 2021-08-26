@@ -39,6 +39,7 @@ FORMAT: 1A
                 + dd (number) - daily degree day accumulation
                 + cum_dd (number) - cumulative degree days
 
+
 ## Degree Day Info [GET /degree_days/info]
 
 + Response 200 (application/json; charset=utf-8)
@@ -123,6 +124,7 @@ Get parameter ranges available in the database
 + Response 200 (application/json; charset=utf-8)
     + Attributes (`et/insol index data`)
 
+
 ## show [/insolations/show]
 
 ### Get insolation map image url [GET /insolations/{date}]
@@ -140,6 +142,7 @@ Get parameter ranges available in the database
     + date: `2020-01-01` (string)
 
 + Response 200 (text/html; charset=utf-8)
+
 
 ## all_for_date [/insolations/all_for_date]
 
@@ -294,6 +297,7 @@ Returns weather and pest forecast data for grid point in date range
                 + value (number)
                 + cumulative_value (number)
 
+
 ## custom_point_details [/pest_forecasts/custom_point_details]
 
 ### get pest data for grid point in date range [GET /pest_forecasts/custom_point_details{?lat,long,base,upper,start_date,end_date}]
@@ -327,8 +331,9 @@ Returns weather and pest forecast data for grid point in date range
                 + min_temp (number)
                 + max_temp (number)
                 + avg_temp (number)
-                + dds (number) - daily degree day accumulation
-                + cum_dds (number) - cumulative degree days
+                + value (number) - daily degree day accumulation
+                + cumulative_value (number) - cumulative degree days
+
 
 ## Pest forecast database info [GET /pest_forecasts/info]
 

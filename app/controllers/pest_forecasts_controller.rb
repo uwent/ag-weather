@@ -270,8 +270,8 @@ class PestForecastsController < ApplicationController
           min_temp: w.min_temperature.round(1),
           max_temp: w.max_temperature.round(1),
           avg_temp: w.avg_temperature.round(1),
-          dds: w.degree_days(base, upper).round(1),
-          cum_dds: build_cumulative_dd(weather, w.date, base, upper).round(1)
+          value: w.degree_days(base, upper).round(1),
+          cumulative_value: build_cumulative_dd(weather, w.date, base, upper).round(1)
         }
       end
     else
