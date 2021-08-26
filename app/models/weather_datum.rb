@@ -21,12 +21,12 @@ class WeatherDatum < ApplicationRecord
 
     WeatherDatum.where(date: start_date..end_date)
     .where(latitude: lat_range, longitude: long_range)
-    .each_with_object(Hash.new(0)) do |weather_datum, hash|
-      coordinate = [weather_datum.latitude.to_f, weather_datum.longitude.to_f]
-      if hash[coordinate].nil?
-        hash[coordinate] = weather_datum.degree_days(base, upper, method)
+    .each_with_object(Hash.new(0)) do |weather, hash|
+      coord = [weather.latitude.to_f, weather.longitude.to_f]
+      if hash[coord].nil?
+        hash[coord] = weather.degree_days(base, upper, method)
       else
-        hash[coordinate] += weather_datum.degree_days(base, upper, method)
+        hash[coord] += weather.degree_days(base, upper, method)
       end
       hash
     end

@@ -97,7 +97,7 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(date: date).order(:latitude, :longitude)
 
-    if insols.length > 0
+    if insols.size > 0
       data = insols.collect do |insol|
         {
           lat: insol.latitude.round(1),

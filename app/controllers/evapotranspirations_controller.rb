@@ -97,7 +97,7 @@ class EvapotranspirationsController < ApplicationController
     
     ets = Evapotranspiration.where(date: date).order(:latitude, :longitude)
 
-    if ets.length > 0
+    if ets.size > 0
       data = ets.collect do |et|
         {
           lat: et.latitude.round(1),
