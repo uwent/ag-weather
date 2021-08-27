@@ -32,4 +32,12 @@ class Insolation < ApplicationRecord
     insols
   end
 
+  def self.latest_date
+    Insolation.maximum(:date)
+  end
+
+  def self.earliest_date
+    Insolation.minimum(:date)
+  end
+
 end

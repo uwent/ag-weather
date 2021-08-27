@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe LandExtent do
 
-  LATS = 38..50
-  LONS = 82..98
+  LATS = BigDecimal("38")..BigDecimal("50")
+  LONS = BigDecimal("-98")..BigDecimal("-82")
   STEP = 0.1
 
   describe 'basic elements' do

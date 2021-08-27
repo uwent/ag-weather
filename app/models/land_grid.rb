@@ -40,11 +40,11 @@ class LandGrid
   end
 
   def latitudes
-    (@min_latitude..@max_latitude)
+    @min_latitude..@max_latitude
   end
 
   def longitudes
-    (@min_longitude..@max_longitude)
+    @min_longitude..@max_longitude
   end
 
   def inside?(lat, long)
@@ -60,7 +60,7 @@ class LandGrid
   end
 
   def closest_point(lat, long)
-    lat  = @data.closest_point(lat)
+    lat = @data.closest_point(lat)
     return lat, @data[lat].closest_point(long)
   end
 

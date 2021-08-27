@@ -3,11 +3,11 @@ class DataImport < ApplicationRecord
   DAYS_BACK_WINDOW = 5
 
   def self.latest_date
-    (Time.now - 24.hours).to_date
+    (24.hours.ago).to_date
   end
 
   def self.earliest_date
-    (Time.now - DAYS_BACK_WINDOW.days).to_date
+    Date.current - DAYS_BACK_WINDOW
   end
 
   def self.days_to_load
@@ -37,7 +37,7 @@ class DataImport < ApplicationRecord
   def self.start(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "started", message: message, updated_at: Time.now)
+      status.update(status: "started", message: message, updated_at: Time.current)
     else
       started.on(date).create!
     end
@@ -46,7 +46,7 @@ class DataImport < ApplicationRecord
   def self.succeed(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "successful", message: message, updated_at: Time.now)
+      status.update(status: "successful", message: message, updated_at: Time.current)
     else
       successful.on(date).create!
     end
@@ -55,7 +55,7 @@ class DataImport < ApplicationRecord
   def self.fail(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "unsuccessful", message: message, updated_at: Time.now)
+      status.update(status: "unsuccessful", message: message, updated_at: Time.current)
     else
       unsuccessful.on(date).create!
     end

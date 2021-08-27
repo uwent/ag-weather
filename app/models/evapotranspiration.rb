@@ -32,6 +32,14 @@ class Evapotranspiration <  ApplicationRecord
     ets
   end
 
+  def self.latest_date
+    Evapotranspiration.maximum(:date)
+  end
+
+  def self.earliest_date
+    Evapotranspiration.minimum(:date)
+  end
+
   def calculate_et(insolation, weather_data)
     EvapotranspirationCalculator.et(
       (weather_data.max_temperature + weather_data.min_temperature) / 2.0,

@@ -1,13 +1,13 @@
 require "rails_helper"
 
 RSpec.describe WeatherHour do
-  let (:temp_key) { '2t' }
-  let (:dew_point_key) { '2d' }
+  let (:temp_key) { "2t" }
+  let (:dew_point_key) { "2d" }
   let (:weather_hour) { WeatherHour.new }
 
   # grib on staging/production is grib_info, 
-  it 'has the grib tools available', skip: "This test doesn't work on CI" do
-    expect(system('codes_info > /dev/null')).to be(true)
+  it "has the grib tools available", skip: "This test doesn't work on CI" do
+    expect(system("codes_info > /dev/null")).to be(true)
   end
 
   context "initialization" do
@@ -43,14 +43,14 @@ RSpec.describe WeatherHour do
   end
 
   context "load" do
-    it 'should call popen3' do
+    it "should call popen3" do
       expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], [], []])
-      weather_hour.load_from('file.name')
+      weather_hour.load_from("file.name")
     end
 
-    it 'should read data in range from popen3' do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{Wisconsin.min_lat} #{360.0 - Wisconsin.min_long} 17.0 2t"], []])
-      weather_hour.load_from('file.name')
+    it "should read data in range from popen3" do
+      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{Wisconsin.min_lat} #{Wisconsin.min_long + 360.0} 17.0 2t"], []])
+      weather_hour.load_from("file.name")
       expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.min_long)).to eq 17.0
     end
   end
@@ -82,7 +82,7 @@ RSpec.describe WeatherHour do
       weather_hour.store(temp_key, Wisconsin.min_lat, Wisconsin.max_long + 0.05, 2)
       weather_hour.store(temp_key, Wisconsin.min_lat, Wisconsin.max_long + 0.01, 3)
       weather_hour.store(temp_key, Wisconsin.min_lat + 0.05, Wisconsin.max_long + 0.05, 4)
-      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.max_long)).to eq 3
+      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.max_long)).to eq(3)
     end
   end
 
@@ -91,11 +91,11 @@ RSpec.describe WeatherHour do
       expect(weather_hour.dew_point_at(Wisconsin.max_lat, Wisconsin.min_long)).to be_nil
     end
 
-    it "should return dew_point at closest lat, long " do
+    it "should return dew_point at closest lat, long" do
       weather_hour.store(dew_point_key, Wisconsin.max_lat + 0.05, Wisconsin.max_long, 1)
       weather_hour.store(dew_point_key, Wisconsin.max_lat, Wisconsin.max_long - 0.04, 2)
       weather_hour.store(dew_point_key, Wisconsin.max_lat + 0.01, Wisconsin.max_long - 0.01, 3)
-      expect(weather_hour.dew_point_at(Wisconsin.max_lat, Wisconsin.max_long)).to eq 3
+      expect(weather_hour.dew_point_at(Wisconsin.max_lat, Wisconsin.max_long)).to eq(3)
     end
   end
 end

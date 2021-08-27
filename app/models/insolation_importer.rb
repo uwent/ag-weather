@@ -26,6 +26,7 @@ class InsolationImporter
     Insolation.create_image(date)
   end
 
+  # longitudes are positive degrees west in data import
   def self.import_insolation_data(response, date)
     if response.lines[0..5].to_s.include?("404")
       raise StandardError.new "404 Not Found"
@@ -35,7 +36,7 @@ class InsolationImporter
       row = line.split
       value = row[0].to_i
       lat = row[1].to_f
-      long = row[2].to_f
+      long = row[2].to_f * -1
       next if value < 0
       next unless LandExtent.inside?(lat, long)
       insolations << Insolation.new(
