@@ -328,7 +328,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import (~> 1.2.0)
-  activesupport (= 6.1.4.1)
+  activesupport (~> 6.1.4)
   agwx_biophys (= 0.0.4)
   byebug (~> 11.1)
   capistrano (~> 3.16)
