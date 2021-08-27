@@ -23,7 +23,7 @@ set style increment userstyles
 
 unset key
 unset xtics
-set xrange [98:82]
+set xrange [-98:-82]
 set yrange [38:50]
 unset ytics
 unset border
