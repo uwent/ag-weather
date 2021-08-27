@@ -27,8 +27,8 @@ class RangeArray
   end
 
   def closest_point(point)
-    return @range.min if point < @range.min - EPSILON
-    return point_at_index(number_of_points - 1) if point > @range.max + EPSILON
+    return @range.min if point < @range.min
+    return point_at_index(number_of_points - 1) if point > @range.max
     return point_at_index(closest_index(point))
   end
 

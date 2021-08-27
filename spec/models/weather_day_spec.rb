@@ -8,7 +8,7 @@ RSpec.describe WeatherDay do
   #   (((Wisconsin.max_long - Wisconsin.min_long) / Wisconsin.step) + 1))
   #   .round(0)
   # }
-  let (:times) { Wisconsin.num_points }
+  # let (:times) { Wisconsin.num_points }
 
   context "initialization" do
     it "can be created" do
@@ -16,16 +16,14 @@ RSpec.describe WeatherDay do
     end
   end
 
-  context "load from files" do
+  context "load from files", skip: "This doesn't work on a CI test" do
     it "should load weather hour for each file in passed directory" do
       allow(Dir).to receive(:[]).and_return(["foo/a.grb2", "foo/b.grb2"])
       expect(weather_day).to receive(:add_data_from_weather_hour).twice
       weather_day.load_from("foo")
-      skip("This doesn't work on a CI test")
     end
   end
 
-  # TODO: Fix this
   context "add data from a weather hour" do
     let(:wh) { WeatherHour.new }
 
@@ -40,8 +38,6 @@ RSpec.describe WeatherDay do
       allow(wh).to receive(:dew_point_at).and_return(20.0)
       weather_day.add_data_from_weather_hour(wh)
     end
-
-    # skip("It returns one more value than it should!")
   end
 
   context "can access day's weather data" do

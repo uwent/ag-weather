@@ -3,11 +3,11 @@ class LandExtent
   STEP = 0.1
 
   def self.latitudes
-    BigDecimal("38.0")..BigDecimal("50.0")
+    38.0..50.0
   end
 
   def self.longitudes
-    BigDecimal("-98.0")..BigDecimal("-82.0")
+    -98.0..-82.0
   end
 
   def self.step
@@ -15,19 +15,19 @@ class LandExtent
   end
 
   def self.min_lat
-    latitudes.min
+    latitudes.min.to_d.round(1)
   end
 
   def self.max_lat
-    latitudes.max
+    latitudes.max.to_d.round(1)
   end
 
   def self.min_long
-    longitudes.min
+    longitudes.min.to_d.round(1)
   end
 
   def self.max_long
-    longitudes.max
+    longitudes.max.to_d.round(1)
   end
 
   def self.inside?(lat, long)

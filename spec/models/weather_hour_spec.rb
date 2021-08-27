@@ -6,9 +6,8 @@ RSpec.describe WeatherHour do
   let (:weather_hour) { WeatherHour.new }
 
   # grib on staging/production is grib_info, 
-  it "has the grib tools available" do
+  it "has the grib tools available", skip: "This test doesn't work on CI" do
     expect(system("codes_info > /dev/null")).to be(true)
-    skip("This test doesn't work on CI")
   end
 
   context "initialization" do

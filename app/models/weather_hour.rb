@@ -30,8 +30,11 @@ class WeatherHour
     _, stdout, _ = Open3.popen3(cmd)
     stdout.each do |line|
       (lat, long, data, type) = line.split
-      store(type, lat.to_f, long.to_f - 360.0, data.to_f) if
-        LandExtent.inside?(lat.to_f, long.to_f - 360.0)
+      lat = lat.to_f
+      long = long.to_f - 360.0
+      data = data.to_f
+      store(type, lat, long, data) if
+        LandExtent.inside?(lat, long)
     end
   end
 

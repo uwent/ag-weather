@@ -31,10 +31,10 @@ class LandGrid
     raise TypeError, "step must be greater than 0" if (step <= 0)
     raise TypeError, "step must be less than latitude difference and longitude difference" if (step > max_lat - min_lat || step > max_long - min_long)
 
-    @min_latitude = min_lat.to_d
-    @max_latitude = max_lat.to_d
-    @min_longitude = min_long.to_d
-    @max_longitude = max_long.to_d
+    @min_latitude = min_lat
+    @max_latitude = max_lat
+    @min_longitude = min_long
+    @max_longitude = max_long
     @step = step
     @data = create_grid
   end
