@@ -27,7 +27,7 @@ class EvapotranspirationsController < ApplicationController
       status = "no data"
     end
 
-    values = data.map{ |day| day[:value] }
+    values = data.map { |day| day[:value] }
     days_requested = (end_date - start_date).to_i
     days_returned = values.size
 
@@ -44,7 +44,7 @@ class EvapotranspirationsController < ApplicationController
       compute_time: Time.current - start_time
     }
 
-    status = "missing data" if status == "OK" && days_requested != days_returned
+    status = "missing days" if status == "OK" && days_requested != days_returned
 
     response = {
       status: status,
@@ -52,7 +52,15 @@ class EvapotranspirationsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "et data for #{lat}, #{long}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: create map and return url to it
@@ -102,8 +110,8 @@ class EvapotranspirationsController < ApplicationController
     if ets.size > 0
       data = ets.collect do |et|
         {
-          lat: et.latitude.round(1),
-          long: et.longitude.round(1),
+          lat: et.latitude.to_f.round(1),
+          long: et.longitude.to_f.round(1),
           value: et.potential_et.round(3)
         }
       end
@@ -114,13 +122,13 @@ class EvapotranspirationsController < ApplicationController
 
     lats = data.map{ |d| d[:lat] }.uniq
     longs = data.map{ |d| d[:long] }.uniq
-    values = data.map{ |d| d[:et] }
+    values = data.map{ |d| d[:value] }
 
     info = {
       date: date,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
-      points: lats.count * longs.count,
+      grid_points: lats.count * longs.count,
       min_value: values.min,
       max_value: values.max,
       units: "Potential evapotranspiration (in/day)",
@@ -133,7 +141,15 @@ class EvapotranspirationsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "et data grid for #{date.to_s}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: calculate et with arguments
@@ -149,7 +165,7 @@ class EvapotranspirationsController < ApplicationController
     et = Evapotranspiration
     render json: {
       date_range: [et.minimum(:date).to_s, et.maximum(:date).to_s],
-      num_dates: et.distinct.pluck(:date).count,
+      total_days: et.distinct.pluck(:date).size,
       lat_range: [et.minimum(:latitude), et.maximum(:latitude)],
       long_range: [et.minimum(:longitude), et.maximum(:longitude)],
       value_range: [et.minimum(:potential_et), et.maximum(:potential_et)]

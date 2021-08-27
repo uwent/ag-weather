@@ -22,7 +22,7 @@ class WeatherDatum < ApplicationRecord
     WeatherDatum.where(date: start_date..end_date)
     .where(latitude: lat_range, longitude: long_range)
     .each_with_object(Hash.new(0)) do |weather, hash|
-      coord = [weather.latitude.to_f, weather.longitude.to_f]
+      coord = [weather.latitude, weather.longitude]
       if hash[coord].nil?
         hash[coord] = weather.degree_days(base, upper, method)
       else
@@ -35,7 +35,7 @@ class WeatherDatum < ApplicationRecord
   def self.land_grid_since(date)
     grid = LandGrid.new
 
-    WeatherDatum.where('date >= ?', date).each do |weather|
+    WeatherDatum.where("date >= ?", date).each do |weather|
       if grid[weather.latitude, weather.longitude].nil?
         grid[weather.latitude, weather.longitude] = [weather]
       else

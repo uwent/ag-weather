@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe LandGrid  do
   context "initialize" do
     it "can make a grid with proper latitudes, longitudes, and step" do
-      grid = LandGrid.new(10, 20, 30, 40, 0.1)
+      grid = LandGrid.new(10, 20, -20, -10, 0.1)
       expect(grid).to be_truthy
     end
 
@@ -78,45 +78,55 @@ RSpec.describe LandGrid  do
     let (:land_grid) { LandGrid.new(5, 10, 15, 20, 0.5)}
 
     it "should raise error if latitude is not defined in grid" do
-      expect{ land_grid[17.1, 15] = 'foo'}.to raise_error(IndexError)
+      expect { land_grid[17.1, 15] = "foo" }.to raise_error(IndexError)
     end
 
     it "should raise error if longitude is not defined in grid" do
-      expect{ land_grid[5.5, 16.99] = 'foo'}.to raise_error(IndexError)
+      expect { land_grid[5.5, 16.99] = "foo" }.to raise_error(IndexError)
     end
 
     it "should store value at proper point" do
-      land_grid[5.5, 15] = 'foo'
-      expect(land_grid[5.5, 15]).to eq 'foo'
+      land_grid[5.5, 15] = "foo"
+      expect(land_grid[5.5, 15]).to eq "foo"
     end
   end
 
   context "[]" do
-    let (:land_grid) { LandGrid.new(5, 10, 15, 20, 0.5)}
+    let (:land_grid) { LandGrid.new(5, 10, -20, -10, 0.5)}
 
     it "should raise error if latitude is not defined in grid" do
-      expect{ land_grid[17.1, 15]}.to raise_error(IndexError)
+      expect { land_grid[17.1, -15] }.to raise_error(IndexError)
     end
 
     it "should raise error if longitude is not defined in grid" do
-      expect{ land_grid[5.5, 16.99]}.to raise_error(IndexError)
+      expect { land_grid[5.5, 10] }.to raise_error(IndexError)
     end
 
     it "should find nothing at proper point that hasn't been stored" do
-      expect(land_grid[5.5, 15]).to be_nil
+      expect(land_grid[5.5, -17]).to be_nil
     end
 
     it "should find a previously saved value at proper point" do
-      land_grid[5.0, 15.0] = 'foo'
-      land_grid[10.0, 20.0] = 'bar'
-      expect(land_grid[5.0, 15.0]).to eq 'foo'
-      expect(land_grid[10.0, 20.0]).to eq 'bar'
+      land_grid[5.0, -15.0] = "foo"
+      land_grid[10.0, -15.0] = "bar"
+      expect(land_grid[5.0, -15.0]).to eq "foo"
+      expect(land_grid[10.0, -15.0]).to eq "bar"
     end
   end
 
-  context "wisconsin grid" do
-    it 'should create a grid of Wisconsin' do
+  context "creates grids" do
+    it "should create a grid of full extents" do
+      land_grid = LandGrid.new
+      expect(land_grid).to_not be_nil
+    end
+
+    it "should create a grid of Wisconsin" do
       land_grid = LandGrid.wisconsin_grid
+      expect(land_grid).to_not be_nil
+    end
+
+    it "should create a grid of WiMn" do
+      land_grid = LandGrid.wi_mn_grid
       expect(land_grid).to_not be_nil
     end
   end

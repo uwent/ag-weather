@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe DegreeDaysController, type: :controller do
-  let(:json) { JSON.parse(response.body) }
+  let(:json) { JSON.parse(response.body, symbolize_names: true) }
 
   # describe "#show" do
   #   it "is okay" do
@@ -18,50 +18,81 @@ RSpec.describe DegreeDaysController, type: :controller do
   # end
 
   describe "#index" do
+    let(:params) { {
+      lat: 43.0,
+      long: -89.7,
+      start_date: Date.yesterday,
+      method: "average",
+      units: "C"
+     } }
+    before(:each) do
+      FactoryBot.create(:weather_datum)
+    end
+
+    it "is okay" do
+      get :index
+      expect(response).to have_http_status(:ok)
+    end
+
     context "when the request is valid" do
-      it "is okay" do
-        get :index
-        expect(response).to have_http_status(:ok)
-      end
 
       it "has the correct response structure" do
-        weather = FactoryBot.create(:weather_datum)
-        params = {
-          lat: weather.latitude,
-          long: weather.longitude,
-          start_date: weather.date,
-          method: "average"
-        }
         get :index, params: params
-        expect(json.keys).to match(["info", "data"])
-        expect(json["data"].first.keys).to match(["date", "min_temp", "max_temp", "value", "cumulative_value"])
+        expect(json.keys).to eq([:status, :info, :data])
+        expect(json[:status]).to be_an(String)
+        expect(json[:info]).to be_an(Hash)
+        expect(json[:data]).to be_an(Array)
+        expect(json[:data].first.keys).to eq([:date, :min_temp, :max_temp, :value, :cumulative_value])
+      end
+
+      it "returns valid data when units are C" do
+        get :index, params: params
+        data = json[:data].first
+        expect(json[:info][:units]).to include("Celcius")
+        expect(data[:min_temp]).to eq(8.9)
+        expect(data[:max_temp]).to eq(12.5)
+        expect(data[:value]).to eq(41.3)
+        expect(data[:cumulative_value]).to eq(41.3)
+      end
+
+      it "returns valid data when units are F" do
+        params.delete(:units)
+        get :index, params: params
+        data = json[:data].first
+        expect(json[:info][:units]).to include("Fahrenheit")
+        expect(data[:min_temp]).to eq(48.0)
+        expect(data[:max_temp]).to eq(54.5)
+        expect(data[:value]).to eq(1.3)
+        expect(data[:cumulative_value]).to eq(1.3)
+      end
+
+      it "can return a csv" do
+        get :index, params: params, as: :csv
+        expect(response).to have_http_status(:ok)
+        expect(response.header["Content-Type"]).to include("text/csv")
       end
     end
 
     context "when the request is not valid" do
-      let(:params) {{
-        lat: 42.0,
-        long: 89.0,
-        start_date: Date.current - 4.days,
-        method: "average"
-      }}
 
       it "and has no latitude return no content" do
         params.delete(:lat)
         get :index, params: params
-        expect(json["data"]).to be_empty
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
         get :index, params: params
-        expect(json["data"]).to be_empty
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
       end
 
       it "and has no method uses default method" do
         params.delete(:method)
         get :index, params: params
-        expect(json["info"]["method"]).to eq(DegreeDaysCalculator::METHOD)
+        expect(json[:info][:method]).to eq(DegreeDaysCalculator::METHOD)
       end
     end
   end

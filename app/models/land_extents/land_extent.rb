@@ -3,11 +3,11 @@ class LandExtent
   STEP = 0.1
 
   def self.latitudes
-    (38.0..50.0)
+    BigDecimal("38.0")..BigDecimal("50.0")
   end
 
   def self.longitudes
-    (82.0..98.0)
+    BigDecimal("-98.0")..BigDecimal("-82.0")
   end
 
   def self.step

@@ -27,8 +27,8 @@ class PestForecastsController < ApplicationController
         .collect do |point|
           {
             grid_key: "#{point.latitude}:#{point.longitude}",
-            lat: point.latitude,
-            long: point.longitude * -1,
+            lat: point.latitude.to_f.round(1),
+            long: point.longitude.to_f.round(1),
             total: point.total.round(2),
             avg: (point.total.to_f / point.count).round(2),
             freeze: false
@@ -61,7 +61,7 @@ class PestForecastsController < ApplicationController
       days_returned: days_returned,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
-      points: lats.count * longs.count || 0,
+      grid_points: lats.count * longs.count || 0,
       min_value: values.min,
       max_value: values.max,
       compute_time: Time.current - start_time
@@ -73,19 +73,31 @@ class PestForecastsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "pest data grid for #{pest}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: degree-day grid for date range
   # params (if pest):
-  #   pest
-  #   start_date
-  #   end_date
-  # params (if computed):
-  #   start_date
-  #   end_date
-  #   base
-  #   upper
+  #   pest (required) - column name from pest_forecasts
+  #   start_date - default 1st of year
+  #   end_date - default today
+  #   lat_range - min,max
+  #   long_range - min,max
+  # params (computed from weather if no pest given):
+  #   start_date - default first of year
+  #   end_date - default today
+  #   base - default 50F
+  #   upper - default 86F
+  #   lat_range (min,max) - default full extent
+  #   long_range (min,max) - default full extent
 
   def custom
     start_time = Time.current
@@ -105,8 +117,8 @@ class PestForecastsController < ApplicationController
           .select(:latitude, :longitude, "sum(#{pest}) as total")
           .collect do |point|
             {
-              lat: point.latitude,
-              long: point.longitude * -1,
+              lat: point.latitude.to_f.round(1),
+              long: point.longitude.to_f.round(1),
               total: point.total.round(2)
             }
           end
@@ -117,6 +129,11 @@ class PestForecastsController < ApplicationController
         status = "no data"
       end
     else
+      weather_info = {
+        base_temp: base,
+        upper_temp: upper,
+        units: "Fahrenheit degree days"
+      }
       weather = WeatherDatum.where(date: start_date..end_date)
       .where(latitude: lat_range, longitude: long_range)
 
@@ -134,7 +151,7 @@ class PestForecastsController < ApplicationController
         grid.keys.each do |coord|
           data << {
             lat: coord.first,
-            long: (coord.last * -1),
+            long: coord.last,
             total: grid[coord].round(2)
           }
         end
@@ -152,18 +169,20 @@ class PestForecastsController < ApplicationController
     status = "missing data" if status == "OK" && days_requested != days_returned
 
     info = {
-      pest: pest || "none",
+      pest: pest || "generic",
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
       days_returned: days_returned,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
-      grid_points: lats.count * longs.count || 0,
+      grid_points: lats.count * longs.count || 0 }
+    .merge(weather_info ||= {})
+    .merge({
       min_value: values.min,
       max_value: values.max,
       compute_time: Time.current - start_time
-    }
+      })
 
     response = {
       status: status,
@@ -171,7 +190,19 @@ class PestForecastsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        if pest
+          filename = "#{pest} data grid for #{start_date.to_s} to #{end_date.to_s}.csv"
+        else
+          filename = "degree day grid for #{start_date.to_s} to #{end_date.to_s}.csv"
+        end
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: returns pest data for dates at lat/long point
@@ -240,7 +271,15 @@ class PestForecastsController < ApplicationController
       data: data
     }
     
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "point details for #{pest} at #{lat}, #{long}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: returns degree day data for dates at lat/long point
@@ -286,8 +325,9 @@ class PestForecastsController < ApplicationController
     info = {
       lat: lat,
       long: long,
-      base: base,
-      upper: upper,
+      base_temp: base,
+      upper_temp: upper,
+      units: "Fahrenheit degree days",
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
@@ -301,7 +341,15 @@ class PestForecastsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "degree day data for #{lat}, #{long}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   def info
@@ -310,10 +358,9 @@ class PestForecastsController < ApplicationController
     response = {
       pest_names: cols,
       date_range: [pf.minimum(:date).to_s, pf.maximum(:date).to_s],
-      days: pf.distinct.pluck(:date).count,
+      total_days: pf.distinct.pluck(:date).count,
       lat_range: [pf.minimum(:latitude), pf.maximum(:latitude)],
-      long_range: [pf.minimum(:longitude), pf.maximum(:longitude)],
-      params: params
+      long_range: [pf.minimum(:longitude), pf.maximum(:longitude)]
     }
 
     render json: response
@@ -367,7 +414,7 @@ class PestForecastsController < ApplicationController
   end
 
   def long
-    params[:long].to_f.round(1).abs
+    params[:long].to_f.round(1)
   end
 
   def lat_range

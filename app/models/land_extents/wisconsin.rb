@@ -1,11 +1,11 @@
 class Wisconsin < LandExtent
 
   def self.latitudes
-    (42.0..47.1)
+    BigDecimal("42.0")..BigDecimal("47.1")
   end
 
   def self.longitudes
-    (86.8..93.1)
+    BigDecimal("-93.1")..BigDecimal("-86.8")
   end
 
 end

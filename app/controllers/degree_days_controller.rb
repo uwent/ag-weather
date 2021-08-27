@@ -18,52 +18,89 @@ class DegreeDaysController < ApplicationController
   #   render json: degree_day_maps
   # end
 
-  # GET: params lat, long, start_date, end_date, base, upper, method, units
+  # GET: returns weather and computed degree days for point
+  # params:
+  #   lat (required)
+  #   long (required)
+  #   start_date - default 1st of year
+  #   end_date - default today
+  #   base - default 50 F
+  #   upper - default 86 F
+  #   method - default sine
+  #   units - default F
+
   def index
+    start_time = Time.current
+    status = "OK"
+    total = 0
+    data = []
+
     weather = WeatherDatum.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
       .order(date: :asc)
 
+    if weather.size > 0
+      data = weather.collect do |w|
+        dd = w.degree_days(base_temp, upper_temp, method)
+        total += dd
+        {
+          date: w.date,
+          min_temp: (in_f ? helpers.c_to_f(w.min_temperature) : w.min_temperature).round(1),
+          max_temp: (in_f ? helpers.c_to_f(w.max_temperature) : w.max_temperature).round(1),
+          value: dd.round(1),
+          cumulative_value: total.round(1)
+        }
+      end
+    else
+      status = "no data"
+    end
+
+    values = data.map { |day| day[:value] }
+    days_requested = (end_date - start_date).to_i
+    days_returned = weather.size
+
+    status = "missing days" if status == "OK" && days_requested != days_returned
+
     info = {
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       start_date: start_date,
       end_date: end_date,
-      days: weather.count,
+      days_requested: days_requested,
+      days_returned: days_returned,
       base_temp: base_temp,
       upper_temp: upper_temp,
       method: method,
-      units: units_text
+      units: units_text,
+      min_value: values.min,
+      max_value: values.max,
+      total: total.round(1)
     }
 
-    total = 0
-    degree_days = []
-
-    # weather temps in C, but returns Fahrenheit dds
-    degree_days = weather.collect do |w|
-      dd = w.degree_days(base_temp, upper_temp, method)
-      total += dd
-      {
-        date: w.date,
-        min_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.min_temperature) : w.min_temperature).round(1),
-        max_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.max_temperature) : w.max_temperature).round(1),
-        value: dd.round(1),
-        cumulative_value: total.round(1)
-      }
-    end
-
-    render json: {
+    response = {
+      status: status,
       info: info,
-      data: degree_days
+      data: data
     }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "degree day data for #{lat}, #{long}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   def info
     t = WeatherDatum
     render json: {
       date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
+      total_days: t.distinct.pluck(:date).size,
+      lat_range: [t.minimum(:latitude).to_f, t.maximum(:latitude).to_f],
+      long_range: [t.minimum(:longitude).to_f, t.maximum(:longitude).to_f],
       dd_methods: DegreeDaysCalculator::METHODS
     }
   end
@@ -82,7 +119,7 @@ class DegreeDaysController < ApplicationController
   end
 
   def units_text
-    in_f ? "Fahrenheit" : "Celcius"
+    in_f ? "Fahrenheit degree days" : "Celcius degree days"
   end
 
   def default_base
@@ -133,12 +170,4 @@ class DegreeDaysController < ApplicationController
     params[:pest]
   end
 
-
-    # def latitude
-    #   params[:latitude].nil? ? Wisconsin.min_lat : params[:latitude]
-    # end
-
-    # def longitude
-    #   params[:longitude].nil? ? Wisconsin.min_long : params[:longitude]
-    # end
 end

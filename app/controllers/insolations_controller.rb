@@ -27,7 +27,7 @@ class InsolationsController < ApplicationController
       status = "no data"
     end
 
-    values = data.map{ |day| day[:insol] }
+    values = data.map{ |day| day[:value] }
 
     info = {
       lat: lat,
@@ -42,7 +42,7 @@ class InsolationsController < ApplicationController
       compute_time: Time.current - start_time
     }
 
-    status = "missing data" if status == "OK" && info[:days_requested] != info[:days_returned]
+    status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
 
     response = {
       status: status,
@@ -50,7 +50,15 @@ class InsolationsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "insol data for #{lat}, #{long}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: create map and return url to it
@@ -112,7 +120,7 @@ class InsolationsController < ApplicationController
 
     lats = data.map{ |d| d[:lat] }.uniq
     longs = data.map{ |d| d[:long] }.uniq
-    values = data.map{ |d| d[:insol] }
+    values = data.map{ |d| d[:value] }
 
     info = {
       date: date,
@@ -131,7 +139,15 @@ class InsolationsController < ApplicationController
       data: data
     }
 
-    render json: response
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.json { render json: response }
+      format.csv do
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "insol data grid for #{date.to_s}.csv"
+        send_data helpers.to_csv(response[:data], headers), filename: filename
+      end
+    end
   end
 
   # GET: valid params for api
@@ -139,7 +155,7 @@ class InsolationsController < ApplicationController
     i = Insolation
     render json: {
       date_range: [i.minimum(:date).to_s, i.maximum(:date).to_s],
-      num_dates: i.distinct.pluck(:date).count,
+      total_days: i.distinct.pluck(:date).size,
       lat_range: [i.minimum(:latitude), i.maximum(:latitude)],
       long_range: [i.minimum(:longitude), i.maximum(:longitude)],
       value_range: [i.minimum(:insolation), i.maximum(:insolation)]

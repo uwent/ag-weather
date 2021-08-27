@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :weather_datum do
     latitude { 43.0 }
-    longitude { 89.7 }
+    longitude { -89.7 }
     date { Date.yesterday }
     max_temperature { 12.5 }
     min_temperature { 8.9 }

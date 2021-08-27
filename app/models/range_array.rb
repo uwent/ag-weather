@@ -1,13 +1,13 @@
 class RangeArray
   include Enumerable
 
-  EPSILON = 0.000001
+  EPSILON = 0.00001
 
   def initialize(min, max, step)
     raise TypeError, "minimum must be less than maximum" if (min >= max)
     raise TypeError, "step must be greater than 0" if (step <= 0)
     raise TypeError, "step must be less than the difference of max and min" if (step > max - min)
-    @range = (min..max)
+    @range = min..max
     @step = step
     @data = Array.new(number_of_points)
   end
@@ -27,8 +27,8 @@ class RangeArray
   end
 
   def closest_point(point)
-    return @range.min if point < @range.min
-    return point_at_index(number_of_points - 1) if point > @range.max
+    return @range.min if point < @range.min - EPSILON
+    return point_at_index(number_of_points - 1) if point > @range.max + EPSILON
     return point_at_index(closest_index(point))
   end
 

@@ -31,20 +31,20 @@ class LandGrid
     raise TypeError, "step must be greater than 0" if (step <= 0)
     raise TypeError, "step must be less than latitude difference and longitude difference" if (step > max_lat - min_lat || step > max_long - min_long)
 
-    @min_latitude = min_lat
-    @max_latitude = max_lat
-    @min_longitude = min_long
-    @max_longitude = max_long
+    @min_latitude = min_lat.to_d
+    @max_latitude = max_lat.to_d
+    @min_longitude = min_long.to_d
+    @max_longitude = max_long.to_d
     @step = step
     @data = create_grid
   end
 
   def latitudes
-    (@min_latitude..@max_latitude)
+    @min_latitude..@max_latitude
   end
 
   def longitudes
-    (@min_longitude..@max_longitude)
+    @min_longitude..@max_longitude
   end
 
   def inside?(lat, long)
@@ -60,7 +60,7 @@ class LandGrid
   end
 
   def closest_point(lat, long)
-    lat  = @data.closest_point(lat)
+    lat = @data.closest_point(lat)
     return lat, @data[lat].closest_point(long)
   end
 

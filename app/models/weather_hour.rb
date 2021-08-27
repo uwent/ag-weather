@@ -1,4 +1,5 @@
-require 'open3'
+require "open3"
+
 class WeatherHour
   attr_reader :data
 
@@ -14,8 +15,8 @@ class WeatherHour
   end
 
   def data_key(data_type)
-    return :dew_points if data_type == '2d'
-    return :temperatures if data_type == '2t'
+    return :dew_points if data_type == "2d"
+    return :temperatures if data_type == "2t"
   end
 
   def store(data_type, lat, long, value)
@@ -29,8 +30,8 @@ class WeatherHour
     _, stdout, _ = Open3.popen3(cmd)
     stdout.each do |line|
       (lat, long, data, type) = line.split
-      store(type, lat.to_f, 360.0 - long.to_f, data.to_f) if
-        LandExtent.inside?(lat.to_f, 360.0 - long.to_f)
+      store(type, lat.to_f, long.to_f - 360.0, data.to_f) if
+        LandExtent.inside?(lat.to_f, long.to_f - 360.0)
     end
   end
 
