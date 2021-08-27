@@ -165,7 +165,6 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        puts Evapotranspiration.pluck(:date).to_a
         expect(json["info"]["date"]).to eq((date2).to_s)
       end
     end

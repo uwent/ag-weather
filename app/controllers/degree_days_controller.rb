@@ -18,10 +18,10 @@ class DegreeDaysController < ApplicationController
   #   render json: degree_day_maps
   # end
 
-  # GET: params lat, long, start_date, end_date, base_temp, upper_temp, method, units
+  # GET: params lat, long, start_date, end_date, base, upper, method, units
   def index
     weather = WeatherDatum.where(latitude: lat, longitude: long)
-      .where("date >= ? and date <= ?", start_date, end_date)
+      .where(date: start_date..end_date)
       .order(date: :asc)
 
     info = {
@@ -47,8 +47,8 @@ class DegreeDaysController < ApplicationController
         date: w.date,
         min_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.min_temperature) : w.min_temperature).round(1),
         max_temp: (in_f ? DegreeDaysCalculator.c_to_f(w.max_temperature) : w.max_temperature).round(1),
-        dd: dd.round(1),
-        cum_dd: total.round(1)
+        value: dd.round(1),
+        cumulative_value: total.round(1)
       }
     end
 
@@ -102,11 +102,19 @@ class DegreeDaysController < ApplicationController
   end
   
   def start_date
-    params[:start_date] ? params[:start_date] : Date.current.beginning_of_year
+    begin
+      params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+    rescue
+      Date.current.beginning_of_year
+    end
   end
 
   def end_date
-    params[:end_date] ? params[:end_date] : Date.current
+    begin
+      params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+    rescue
+      Date.current
+    end
   end
 
   def base_temp

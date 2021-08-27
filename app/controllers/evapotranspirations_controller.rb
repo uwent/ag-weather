@@ -27,22 +27,24 @@ class EvapotranspirationsController < ApplicationController
       status = "no data"
     end
 
-    values = data.map{ |day| day[:et] }
+    values = data.map{ |day| day[:value] }
+    days_requested = (end_date - start_date).to_i
+    days_returned = values.size
 
     info = {
       lat: lat,
       long: long,
       start_date: start_date,
       end_date: end_date,
-      days_requested: (end_date - start_date).to_i,
-      days_returned: values.count,
+      days_requested: days_requested,
+      days_returned: days_returned,
       min_value: values.min,
       max_value: values.max,
       units: "in/day",
       compute_time: Time.current - start_time
     }
 
-    status = "missing data" if status == "OK" && info[:days_requested] != info[:days_returned]
+    status = "missing data" if status == "OK" && days_requested != days_returned
 
     response = {
       status: status,
