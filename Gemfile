@@ -37,7 +37,7 @@ group :development do
   gem 'letter_opener', '~> 1.7'
   gem 'letter_opener_web', '~> 1.4'
   gem 'guard-rspec', '~> 4.7', require: false
-  gem 'spring', '~> 2.1'
+  gem 'spring', '~> 3.0'
   gem 'spring-commands-rspec', '~> 1.0'
   gem 'simplecov', '~> 0.21'
 end
