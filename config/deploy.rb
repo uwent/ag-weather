@@ -1,14 +1,15 @@
-branch = ENV['BRANCH'] || 'main'
+RUBY_VERSION = "3.0.2"
+BRANCH = ENV["BRANCH"] || "main"
 
-set :application, 'ag-weather'
-set :repo_url, 'git@agweather.github.com:uwent/ag-weather.git'
+set :application, "ag-weather"
+set :repo_url, "git@agweather.github.com:uwent/ag-weather.git"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
-set :branch, branch
+set :branch, BRANCH
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, '/home/deploy/ag-weather'
+set :deploy_to, "/home/deploy/ag-weather"
 
 # Default value for :scm is :git
 # set :scm, :git
@@ -37,27 +38,35 @@ set :linked_dirs, %w{log tmp/pids tmp/cache tmp/sockets}
 
 # rbenv
 set :rbenv_type, :user
-set :rbenv_ruby, '3.0.1'
+set :rbenv_ruby, RUBY_VERSION
 
 namespace :deploy do
 
-  desc 'Restart application'
-  task :restart do
-    on roles(:app), in: :sequence, wait: 5 do
-      # Your restart mechanism here, for example:
-      execute :touch, release_path.join('tmp/restart.txt')
+  desc "Update ruby install"
+  task :rbenv_install do
+    on roles(:web) do
+      within release_path do
+        execute("rbenv install #{RUBY_VERSION} -s")
+      end
     end
   end
 
+  desc "Restart application"
+  after :publishing, :restart do
+    on roles(:app), in: :sequence, wait: 5 do
+      # Your restart mechanism here, for example:
+      execute :touch, release_path.join("tmp/restart.txt")
+    end
+  end
+
+  desc "Clear cache"
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
       # Here we can do anything such as:
-      # within release_path do
-      #   execute :rake, 'cache:clear'
-      # end
+      within release_path do
+        execute :rake, "cache:clear"
+      end
     end
   end
-
-  after :publishing, :restart
 
 end
