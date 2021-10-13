@@ -1,90 +1,60 @@
 # Agricultural Weather API
+
 [![Circle CI](https://circleci.com/gh/uwent/ag-weather.svg?style=svg&circle-token=467dfd3ec0f5d33330548a6d939f94d52d3f07ec)](https://circleci.com/gh/uwent/ag-weather)
 
 ## Description
+
 This project is to support the UW-Extension's Agricultural Weather Service.  Included are the tools to load weather and insolation data from remote sources, calculate and store daily evapotranspiration data, calculate multiple formulas of degreee days, generate and save state-wide maps to display this data, and provide access to all of this information through public endpoints.
 
 ## Dependencies
 
-Ruby version `2.7.x`
+`Ruby 3.0.2`
+```
+sudo apt install rbenv
+rbenv install 3.0.2
+rbenv global 3.0.2
+gem install bundler
+```
 
-Rails version `6.1.x`
+`Postgres 12` and gem `pg`
+```
+sudo apt install postgresql-12 postgresql-client-12 libpq-dev
+sudo service postgresql start
+gem install pg
 
-`eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
+# Set postgres user password to 'password'
+sudo su - postgres
+psql -c "alter user postgres with password 'password'"
+exit
+```
+
+`Python` and `eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
+```
+sudo apt install python3 python3-pip libeccodes-tools
+pip install ecCodes
+grib_get_data # confirm it works
+```
 
 `gnuplot` and `imagemagicks` for Insolation and Evapotranspiration map creation
+```
+sudo apt install gnuplot
+gnuplot # confirm it works
+
+sudo apt install imagemagick
+composite # confirm it works
+```
 
 ## Setup
-1. Install [ecCodes](https://github.com/ecmwf/eccodes) with pip or use Homebrew `brew install eccodes`
-2. clone the project
-3. Install dependencies
-```
-bundle install
-```
-4. Create database and schema
-```
-bundle exec rake db:create db:migrate
-```
-5. Import data. Default settings limit data fetch to a maximum of three days. **DAYS_BACK_WINDOW** constant set in models/data_import.rb. Importing 3 days will take ~ 20-30 minutes.
-  * open the rails console `bundle exec rails c`
-  * follow the steps in parentheses in the Daily Process section
 
-6. Start server
-```
-bundle exec rails s
-```
-
-## Deployment
-Work with db admin to authorize your ssh key for the deploy user, then run the following commands from the master branch:
-
-### Staging:
-```
-cap staging deploy
-```
-### Production:
-```
-cap production deploy
-```
-
-## Daily Process
-
-Early every morning, the following jobs are run for staging and production. For local data, run commands manually in the rails console. Default settings will fetch max previous 3 days of data:
-* Load weather data from grib files into DB (`WeatherImporter.fetch`)
-* Load insolation data from SSEC server into DB (`InsolationImporter.fetch`)
-* Calculate ET data and save to DB (`EvapotranspirationImporter.create_et_data`)
-* Calculate Pest data and save to DB (`PestForecastImporter.create_forecast_data`)
-* Create static Evapotranspiration image (`Evapotranspiration.create_and_static_link_image`)
-* <strike>Import Station Observation File (`StationHourlyObservationImporter.check_for_file_and_load`)</strike> (not currently implemented)
-
-
-## Endpoints
-
-### Insolation
-The following is a summary of this project's API. For full documentation, see [our API Blueprint](apiary.apib).
-
-#### Show
-    GET /insolations/:date
-Will return a JSON object with the path to images of both east and west halves of the US.
-
-### Evapotranspiration
-
-#### Show
-    GET  /evapotranspirations/:date
-Will return a JSON object containing the path to an image of a map for ET estimates across Wisconsin and Minnesota.
-
-#### Index
-    GET  /evapotranspirations{?lat& long& start_date& end_date}
-Will return a JSON object with ET data for the point specified for every day in the range specified.
-
-### Degree Days
-
-#### Show
-    GET /degree_days/:date
-Will return a JSON object with paths to the maps for all the different Degree Day maps that are currently supported for that date
-
-#### Index
-    GET /degree_days{?lat& long& start_date& end_date& formula& lower_bound& (upper_bound)}
-Will return a JSON object with the total degree days for the input parameters
+1. Ensure dependencies above are satisfied
+2. Clone the project
+3. Install gems with `bundle install` in project directory
+4. Create database and schema with `bundle exec rake db:setup`
+5. Import and process weather data. By default it will fetch the last 5 days.
+    * Open the rails console `bundle exec rails c`
+    * Run all the data scripts with `RunTasks.all`
+    * Exit the rails console with `exit`
+6. Start the server with `bundle exec rails s`
 
 ### Running Tests
 
@@ -96,3 +66,18 @@ bundle exec rspec
 ```
 RAILS_ENV=test bundle exec rake dredd
 ```
+
+## Deployment
+
+Work with db admin to authorize your ssh key for the deploy user. Confirm you can access the dev and production servers:
+* `ssh deploy@dev.agweather.cals.wisc.edu -p 216`
+* `ssh deploy@agweather.cals.wisc.edu -p 216`
+
+Then run the following commands from the main branch to deploy:
+
+* Staging: `cap staging deploy`
+* Production: `cap production deploy`
+
+## Endpoints
+
+Endpoints are summarized in [our API Blueprint](apiary.apib) file.

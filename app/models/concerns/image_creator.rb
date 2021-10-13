@@ -10,12 +10,12 @@ module ImageCreator
     Rails.configuration.x.image.file_dir
   end
 
-  def self.create_image(data_grid, title, file_base_name)
+  def self.create_image(data_grid, title, file_base_name, max_value = nil)
     datafile_name = create_data_file(data_grid)
     image_filename = generate_image_file(
       datafile_name,
       file_base_name,
-      max_value_for_gnuplot(data_grid.max),
+      max_value || max_value_for_gnuplot(data_grid.max),
       title)
     File.delete(datafile_name)
     return image_filename
