@@ -8,17 +8,18 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 ## Dependencies
 
-`Ruby 3.0.2`
-```
-sudo apt install rbenv
-rbenv install 3.0.2
-rbenv global 3.0.2
+`Ruby 3.x`
+```bash
+# install rbenv and ruby
+sudo apt -y install rbenv
+rbenv install 3.0.2 # or latest version
 gem install bundler
 ```
 
 `Postgres 12` and gem `pg`
-```
-sudo apt install postgresql-12 postgresql-client-12 libpq-dev
+```bash
+# install postgres
+sudo apt -y install postgresql-12 postgresql-client-12 libpq-dev
 sudo service postgresql start
 gem install pg
 
@@ -29,18 +30,18 @@ exit
 ```
 
 `Python` and `eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
-```
-sudo apt install python3 python3-pip libeccodes-tools
+```bash
+sudo apt -y install python3 python3-pip libeccodes-tools
 pip install ecCodes
 grib_get_data # confirm it works
 ```
 
 `gnuplot` and `imagemagicks` for Insolation and Evapotranspiration map creation
-```
-sudo apt install gnuplot
+```bash
+sudo apt -y install gnuplot
 gnuplot # confirm it works
 
-sudo apt install imagemagick
+sudo apt -y install imagemagick
 composite # confirm it works
 ```
 
@@ -55,21 +56,23 @@ composite # confirm it works
     * Run all the data scripts with `RunTasks.all`
     * Exit the rails console with `exit`
 6. Start the server with `bundle exec rails s`
+7. Server will be listening on `localhost:8080`
 
 ### Running Tests
 
 #### RSpec
-```
+```bash
 bundle exec rspec
 ```
 #### API Documentation
-```
+```bash
 RAILS_ENV=test bundle exec rake dredd
 ```
 
 ## Deployment
 
 Work with db admin to authorize your ssh key for the deploy user. Confirm you can access the dev and production servers:
+
 * `ssh deploy@dev.agweather.cals.wisc.edu -p 216`
 * `ssh deploy@agweather.cals.wisc.edu -p 216`
 

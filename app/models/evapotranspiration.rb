@@ -1,7 +1,7 @@
 class Evapotranspiration <  ApplicationRecord
 
   # Find max value with `Evapotranspiration.all.maximum(:potential_et)`
-  MAX_VALUE = 0.35
+  MAX_VALUE = 0.30
 
   def self.create_image(date)
     if EvapotranspirationDataImport.successful.where(readings_on: date).exists?

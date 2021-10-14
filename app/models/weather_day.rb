@@ -16,9 +16,8 @@ class WeatherDay
       hour_start = Time.current
       wh = WeatherHour.new()
       wh.load_from(filename)
-      Rails.logger.info "-> Grib file processed in #{(Time.current - hour_start).to_i} seconds"
       add_data_from_weather_hour(wh)
-      Rails.logger.info "-> Loaded hour #{i} in #{(Time.current - hour_start).to_i} seconds"
+      Rails.logger.info ">> Loaded hour #{i} in #{(Time.current - hour_start).to_i} seconds"
     end
     Rails.logger.info "WeatherDay :: Loading weather hours completed in #{(Time.current - day_start).to_i} seconds"
   end
