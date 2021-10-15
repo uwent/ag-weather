@@ -6,6 +6,7 @@ class WeatherImporter
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp"
   MAX_TRIES = 10
+  KEEP_GRIB = ENV["KEEP_GRIB"] || false
 
   def self.fetch
     days_to_load = WeatherDataImport.days_to_load
@@ -85,7 +86,8 @@ class WeatherImporter
     WeatherDatum.where(date: date).delete_all
     persist_day_to_db(weather_day)
     WeatherDataImport.succeed(date)
-    FileUtils.rm_r self.local_dir(date) unless Rails.env.development?
+    FileUtils.rm_r self.local_dir(date) unless KEEP_GRIB
+    WeatherDatum.create_image(date)
   end
 
   def self.persist_day_to_db(weather_day)

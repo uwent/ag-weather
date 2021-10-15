@@ -27,16 +27,14 @@ class WeatherHour
 
   def load_from(filename)
     cmd = "grib_get_data -w shortName=2t/2d -p shortName #{filename}"
-    Rails.logger.debug "> cmd: #{cmd}"
+    Rails.logger.debug ">> grib cmd: #{cmd}"
     _, stdout, _ = Open3.popen3(cmd)
-    Rails.logger.debug "> grib file loaded, #{stdout.count} lines"
     stdout.each do |line|
       (lat, long, data, type) = line.split
       lat = lat.to_f
       long = long.to_f - 360.0
       data = data.to_f
-      store(type, lat, long, data) if
-        LandExtent.inside?(lat, long)
+      store(type, lat, long, data) if LandExtent.inside?(lat, long)
     end
   end
 

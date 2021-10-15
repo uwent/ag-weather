@@ -10,17 +10,30 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 `Ruby 3.x`
 ```bash
-# install rbenv and ruby
+# install rbenv
 sudo apt -y install rbenv
+
+# install ruby-build
+mkdir -p "$(rbenv root)"/plugins
+git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+
+# or update ruby-build if already installed
+git -C "$(rbenv root)"/plugins/ruby-build pull
+
+# install ruby with rbenv
 rbenv install 3.0.2 # or latest version
+
+# update bundler to latest
 gem install bundler
 ```
 
-`Postgres 12` and gem `pg`
+`Postgres 12` and `gem pg`
 ```bash
 # install postgres
 sudo apt -y install postgresql-12 postgresql-client-12 libpq-dev
 sudo service postgresql start
+
+# install gem pg
 gem install pg
 
 # Set postgres user password to 'password'

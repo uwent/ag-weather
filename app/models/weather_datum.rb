@@ -70,4 +70,38 @@ class WeatherDatum < ApplicationRecord
     DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
   end
 
+
+  # Image creator
+  def self.create_image(date)
+    if WeatherDataImport.successful.where(readings_on: date).exists?
+      begin
+        Rails.logger.info "WeatherDatum :: Creating image for #{date}"
+        w = land_grid_values_for_date(LandGrid.new, date)
+        title = "Mean daily temperature (C) for #{date.strftime('%-d %B %Y')}"
+        ImageCreator.create_image(w, title, image_name(date), 35)
+      rescue => e
+        Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
+        return "no_data.png"
+      end
+    else
+      Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: weather data missing"
+      return "no_data.png"
+    end
+  end
+
+  def self.image_name(date)
+    "mean_temp_#{date.to_s(:number)}.png"
+  end
+
+  def self.land_grid_values_for_date(grid, date)
+    weather = grid
+    WeatherDatum.where(date: date).each do |w|
+      lat = w.latitude
+      long = w.longitude
+      next unless grid.inside?(lat, long)
+      weather[lat, long] = ((w.min_temperature + w.max_temperature) / 2.0).round(2)
+    end
+    weather
+  end
+
 end

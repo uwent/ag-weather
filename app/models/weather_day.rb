@@ -11,13 +11,13 @@ class WeatherDay
 
   def load_from(dirname)
     day_start = Time.current
-    Rails.logger.info "WeatherDay :: Loading weather hours from #{dirname}"
+    Rails.logger.info "WeatherDay :: Loading weather hour grib files from #{dirname}"
     Dir["#{dirname}/*.grb2_wexp"].each_with_index do |filename, i|
       hour_start = Time.current
       wh = WeatherHour.new()
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
-      Rails.logger.info ">> Loaded hour #{i} in #{(Time.current - hour_start).to_i} seconds"
+      Rails.logger.info ">> Processed hour #{i} in #{(Time.current - hour_start).to_i} seconds"
     end
     Rails.logger.info "WeatherDay :: Loading weather hours completed in #{(Time.current - day_start).to_i} seconds"
   end
