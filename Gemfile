@@ -13,7 +13,7 @@ gem "turbolinks", "~> 5.2.0"
 gem "uglifier", "~> 4.2.0"
 gem "nokogiri", ">= 1.12.5" # per security vulnerability
 gem "httparty", "~> 0.20.0"
-gem "json", "~> 2.5.1"
+gem "json", "~> 2.6.0"
 gem "whenever", "~> 1.0.0"
 gem "agwx_biophys", "0.0.4"
 gem "sdoc", "~> 2.2.0", group: :doc
