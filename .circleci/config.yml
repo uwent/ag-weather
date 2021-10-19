@@ -7,13 +7,10 @@ jobs:
     docker:
       - image: circleci/ruby:3.0.2-node
         environment:
-          PG_HOST: localhost
-          PG_USER: postgres
           RAILS_ENV: test
-          RACK_ENV: test
       - image: circleci/postgres:12.8
         environment:
-          POSTGRES_USER: postgres
+          POSTGRES_USER: ag_weather
           POSTGRES_DB: ag_weather_test
           POSTGRES_PASSWORD: "password"
     executor: ruby/default
@@ -42,17 +39,11 @@ jobs:
       - run:
           name: Set up database
           command: bin/rails db:setup
-          environment:
-            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:
           name: Rspec
           command: bundle exec rspec
-          environment:
-            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:
           name: Run Dredd API test
           command: |
             export PATH="$(npm bin):$PATH"
             RAILS_ENV=test bundle exec rake dredd
-          environment:
-            DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
