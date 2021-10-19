@@ -8,7 +8,7 @@ jobs:
       - image: circleci/ruby:3.0.2-node
         environment:
           PG_HOST: localhost
-          PG_USER: ag_weather
+          PG_USER: postgres
           RAILS_ENV: test
           RACK_ENV: test
       - image: circleci/postgres:12.8
