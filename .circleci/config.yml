@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  ruby: circleci/ruby@0.1.2
+  ruby: circleci/ruby@1.2.0
 
 jobs:
   build:
@@ -11,15 +11,16 @@ jobs:
           PG_USER: ag_weather
           RAILS_ENV: test
           RACK_ENV: test
-      - image: circleci/postgres:12.2
+      - image: circleci/postgres:12.8
         environment:
-          POSTGRES_USER: ag_weather
+          POSTGRES_USER: postgres
           POSTGRES_DB: ag_weather_test
           POSTGRES_PASSWORD: "password"
+    executor: ruby/default
     steps:
       - checkout
       - run:
-          name: Update Bundler
+          name: Get Bundler
           command: gem install bundler
       - run:
           name: Configure Bundler
@@ -29,22 +30,22 @@ jobs:
           command: npm install dredd
       - restore_cache:
           keys:
-            - ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
-            - ag-weather-bundle-v1-
+            - agweather-bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
+            - agweather-bundle
       - run:
           name: Bundle Install
           command: bundle check || bundle install
       - save_cache:
-         key: ag-weather-bundle-v1-{{ checksum "Gemfile.lock" }}
+         key: agweather-bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
          paths:
            - ./vendor/bundle
       - run:
-          name: Set up DB
+          name: Set up database
           command: bin/rails db:setup
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
       - run:
-          name: Run Specs
+          name: Rspec
           command: bundle exec rspec
           environment:
             DATABASE_URL: postgres://ag_weather@localhost:5432/ag_weather_test
