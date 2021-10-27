@@ -1,9 +1,9 @@
 require "rails_helper"
 
 RSpec.describe WeatherHour do
-  let (:temp_key) { "2t" }
-  let (:dew_point_key) { "2d" }
-  let (:weather_hour) { WeatherHour.new }
+  let(:temp_key) { "2t" }
+  let(:dew_point_key) { "2d" }
+  let(:weather_hour) { WeatherHour.new }
 
   # grib on staging/production is grib_info, 
   it "has the grib tools available", skip: "This test doesn't work on CI" do
@@ -33,6 +33,7 @@ RSpec.describe WeatherHour do
         weather_hour.data[Wisconsin.min_lat, Wisconsin.min_long][:temperatures].length
       }.by(1)
     end
+
     it "should add an element to the dew points" do
       expect {
         weather_hour.store(dew_point_key, Wisconsin.min_lat, Wisconsin.min_long, 17)
@@ -55,47 +56,54 @@ RSpec.describe WeatherHour do
     end
   end
 
-  context "closest" do
-    it "should find the closest value at point" do
-      readings = [
-        Reading.new(17.1, 17.1, 16),
-        Reading.new(17.02, 17.02, 17),
-        Reading.new(16.9, 17.2, 18),
-        Reading.new(16.5, 17.0, 19),
-        Reading.new(17.2, 17.2, 20)
-      ]
-      expect(weather_hour.closest(17.0, 17.0, readings)).to eq readings[1]
-    end
+  # context "closest" do
+  #   it "should find the closest value at point" do
+  #     readings = [
+  #       Reading.new(17.1, 17.1, 16),
+  #       Reading.new(17.02, 17.02, 17),
+  #       Reading.new(16.9, 17.2, 18),
+  #       Reading.new(16.5, 17.0, 19),
+  #       Reading.new(17.2, 17.2, 20)
+  #     ]
+  #     expect(weather_hour.closest(17.0, 17.0, readings)).to eq readings[1]
+  #   end
 
-    it "should return null if given empty array" do
-      expect(weather_hour.closest(17.0, 17.0, [])).to be_nil
-    end
-  end
+  #   it "should return null if given empty array" do
+  #     expect(weather_hour.closest(17.0, 17.0, [])).to be_nil
+  #   end
+  # end
 
   context "temperature_at" do
+    let(:lat) { 45 }
+    let(:long) { -85 }
+
     it "should return no value if no temperature stored at lat, long" do
-      expect(weather_hour.temperature_at(Wisconsin.max_lat, Wisconsin.min_long)).to be_nil
+      expect(weather_hour.temperature_at(lat, long)).to be_nil
     end
 
-    it "should return temperature at closest lat, long " do
-      weather_hour.store(temp_key, Wisconsin.min_lat + 0.05, Wisconsin.max_long, 1)
-      weather_hour.store(temp_key, Wisconsin.min_lat, Wisconsin.max_long + 0.05, 2)
-      weather_hour.store(temp_key, Wisconsin.min_lat, Wisconsin.max_long + 0.01, 3)
-      weather_hour.store(temp_key, Wisconsin.min_lat + 0.05, Wisconsin.max_long + 0.05, 4)
-      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.max_long)).to eq(3)
+    it "should return average temperature at points within lat/long cell" do
+      weather_hour.store(temp_key, lat + 0.02, long, 1)
+      weather_hour.store(temp_key, lat, long + 0.03, 2)
+      weather_hour.store(temp_key, lat, long + 0.01, 3)
+      weather_hour.store(temp_key, lat + 0.1, long + 0.1, 100) # outside cell
+      expect(weather_hour.temperature_at(lat, long)).to eq(2.0)
     end
   end
 
   context "dew_point_at" do
+    let(:lat) { 45 }
+    let(:long) { -85 }
+
     it "should return no value if no dew point stored at lat, long" do
-      expect(weather_hour.dew_point_at(Wisconsin.max_lat, Wisconsin.min_long)).to be_nil
+      expect(weather_hour.dew_point_at(lat, long)).to be_nil
     end
 
-    it "should return dew_point at closest lat, long" do
-      weather_hour.store(dew_point_key, Wisconsin.max_lat + 0.05, Wisconsin.max_long, 1)
-      weather_hour.store(dew_point_key, Wisconsin.max_lat, Wisconsin.max_long - 0.04, 2)
-      weather_hour.store(dew_point_key, Wisconsin.max_lat + 0.01, Wisconsin.max_long - 0.01, 3)
-      expect(weather_hour.dew_point_at(Wisconsin.max_lat, Wisconsin.max_long)).to eq(3)
+    it "should return average dew_point at points within lat/long cell" do
+      weather_hour.store(dew_point_key, lat + 0.03, long, 1)
+      weather_hour.store(dew_point_key, lat, long - 0.04, 2)
+      weather_hour.store(dew_point_key, lat + 0.01, long - 0.01, 3)
+      weather_hour.store(dew_point_key, lat + 0.05, long - 0.1, 100) # outside cell
+      expect(weather_hour.dew_point_at(lat, long)).to eq(2.0)
     end
   end
 end

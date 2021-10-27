@@ -65,7 +65,7 @@ RSpec.describe ImageCreator do
       allow(ImageCreator).to receive(:temp_filename).and_return("/SZRIBZVL_20160418205412.png")
       expect(ImageCreator).to receive(:`).exactly(2).times
 
-      ImageCreator.generate_image_file("a", "b", 10, "some title")
+      ImageCreator.generate_image_file("a", "b", "some title", 0, 100)
     end
   end
 end

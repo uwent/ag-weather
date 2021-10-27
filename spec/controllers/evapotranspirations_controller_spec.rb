@@ -206,7 +206,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     it "has the correct structure" do
       get :info
-      expect(json.keys).to match([:date_range, :total_days, :lat_range, :long_range, :value_range])
+      expect(json.keys).to match([:date_range, :total_days, :lat_range, :long_range, :value_range, :table_cols])
     end
 
     it "returns data ranges for evapotranspiration" do

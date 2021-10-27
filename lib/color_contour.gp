@@ -1,17 +1,20 @@
 reset
-set cbrange [0:max_v]
+
+set cbrange [min_val:max_val]
+
 set pm3d explicit at b
 set pm3d interpolate 16,16
-set palette maxcolors 100
 
+set palette maxcolors 100
 set palette defined ( 0 '#a100c7', 1 '#6e00dc', 2 '#1f3dfa', 3 '#00c7c7', 4 '#00d18c', 5 '#a1e633', 6 '#e6dc33', 7 '#f08229', 8 '#f00000', 9 '#dc0063')
+
 set view map 
 
 set contour base
 set cntrparam bspline
-set cntrparam level incremental 0, max_v/10.0, max_v
+set cntrparam level incremental min_val, max_val / 10.0, max_val
 
-set cbtics 0, max_v/10.0, max_v
+set cbtics min_val, (max_val - min_val) / 10.0, max_val
 set cbtics out scale 0.01
 set cntrlabel start 50 interval -1
 set cntrlabel format "%0.1f"

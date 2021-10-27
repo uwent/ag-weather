@@ -27,7 +27,7 @@ class InsolationsController < ApplicationController
       status = "no data"
     end
 
-    values = data.map{ |day| day[:value] }
+    values = data.map { |day| day[:value] }
 
     info = {
       lat: lat,
@@ -152,14 +152,16 @@ class InsolationsController < ApplicationController
 
   # GET: valid params for api
   def info
-    i = Insolation
-    render json: {
-      date_range: [i.minimum(:date).to_s, i.maximum(:date).to_s],
-      total_days: i.distinct.pluck(:date).size,
-      lat_range: [i.minimum(:latitude), i.maximum(:latitude)],
-      long_range: [i.minimum(:longitude), i.maximum(:longitude)],
-      value_range: [i.minimum(:insolation), i.maximum(:insolation)]
+    t = Insolation
+    response = {
+      date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
+      total_days: t.distinct.pluck(:date).size,
+      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
+      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
+      value_range: [t.minimum(:insolation), t.maximum(:insolation)],
+      table_cols: t.column_names
     }
+    render json: response
   end
 end
 

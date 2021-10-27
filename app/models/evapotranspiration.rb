@@ -1,7 +1,6 @@
 class Evapotranspiration <  ApplicationRecord
 
-  # Find max value with `Evapotranspiration.all.maximum(:potential_et)`
-  MAX_VALUE = 0.30
+  # Find max value for image creator with `Evapotranspiration.all.maximum(:potential_et)`
 
   def self.create_image(date)
     if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
@@ -9,7 +8,7 @@ class Evapotranspiration <  ApplicationRecord
         Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
         ets = land_grid_values_for_date(LandGrid.new, date)
         title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-        ImageCreator.create_image(ets, title, image_name(date), MAX_VALUE)
+        ImageCreator.create_image(ets, title, image_name(date), min_value: 0, max_value: 0.3)
       rescue => e
         Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
         return "no_data.png"

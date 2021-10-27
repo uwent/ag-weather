@@ -145,6 +145,7 @@ Get parameter ranges available in the database
         + lat_range (array) - min, max
         + long_range (array) - min, max
         + value_range (array) - min, max
+        + table_cols (array) - column names in database
 
 
 # Group Insolations
@@ -221,6 +222,7 @@ Get parameter ranges available in the database
         + lat_range (array) - min, max
         + long_range (array) - min, max
         + value_range (array) - min, max
+        + table_cols (array) - column names in database
 
 
 # Group Weather
@@ -238,13 +240,7 @@ Returns weather data for location and date range
     + end_date: `2020-10-10` (string) - end date
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (array)
-        + (object)
-            + date (string)
-            + min_temp (number)
-            + avg_temp (number)
-            + max_temp (number)
-            + pressure (number)
+    + Attributes (`weather index data`)
 
 ### Download csv [GET /weather.csv{?lat,long,start_date,end_date}]
 
@@ -255,6 +251,54 @@ Returns weather data for location and date range
     + end_date: `2020-10-10` (string) - end date
 
 + Response 200 (text/csv)
+
+
+## show [/weather/show]
+
+### Get weather map image url [GET /weather/{date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + map: `path/to/map.png` (string)
+
+### Show weather map image in browser [GET /weather/{date}.png]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/html; charset=utf-8)
+
+
+## all_for_date [/weather/all_for_date]
+
+### Get all insolations for date [GET /weather/all_for_date{?date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`weather all_for_date data`)
+
+### Get all insolations for date [GET /weather/all_for_date.csv{?date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/csv)
+
+
+## Weather database info [GET /weather/info]
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date_range (array) - min, max
+        + total_days (number) - days in database
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+        + table_cols (array) - column names in database
 
 
 # Group Pest Forecasts
@@ -504,6 +548,45 @@ Returns weather and pest forecast data for grid point in date range
         + lat (number)
         + long (number)
         + value (number)
+
+## `weather index data` (object)
++ status (string)
++ info (object)
+    + lat (string)
+    + long (string)
+    + start_date (string)
+    + end_date (string)
+    + days_requested (number)
+    + days_returned (number)
+    + compute_time (number)
++ data (array)
+    + (object, optional)
+        + date (string)
+        + min_temp (number)
+        + avg_temp (number)
+        + max_temp (number)
+        + pressure (number)
+        + hours_rh_over_90 (number)
+        + avg_temp_rh_over_90 (number)
+
+## `weather all_for_date data` (object)
++ date (string)
++ status (string)
++ info (object, optional)
+    + date (string)
+    + lat_range (array)
+    + long_range (array)
+    + points (number)
+    + compute_time (number)
++ data (array)
+    + (object, optional)
+        + date (string)
+        + min_temp (number)
+        + avg_temp (number)
+        + max_temp (number)
+        + pressure (number)
+        + hours_rh_over_90 (number)
+        + avg_temp_rh_over_90 (number)
 
 ## `pest forecast custom data` (object)
 + status (string)
