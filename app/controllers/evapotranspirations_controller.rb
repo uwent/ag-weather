@@ -162,14 +162,16 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: valid params for api
   def info
-    et = Evapotranspiration
-    render json: {
-      date_range: [et.minimum(:date).to_s, et.maximum(:date).to_s],
-      total_days: et.distinct.pluck(:date).size,
-      lat_range: [et.minimum(:latitude), et.maximum(:latitude)],
-      long_range: [et.minimum(:longitude), et.maximum(:longitude)],
-      value_range: [et.minimum(:potential_et), et.maximum(:potential_et)]
+    t = Evapotranspiration
+    response = {
+      date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
+      total_days: t.distinct.pluck(:date).size,
+      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
+      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
+      value_range: [t.minimum(:potential_et), t.maximum(:potential_et)],
+      table_cols: t.column_names
     }
+    render json: response
   end
 end
 

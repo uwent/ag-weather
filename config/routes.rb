@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       get 'info'
     end
   end
+
   resources :evapotranspirations, only: [:show, :index] do
     collection do
       get 'info'
@@ -13,12 +14,14 @@ Rails.application.routes.draw do
       get 'calculate_et'
     end
   end
+
   resources :insolations, only: [:show, :index] do
     collection do
       get 'info'
       get 'all_for_date'
     end
   end
+
   resources :pest_forecasts, only: [:index] do
     collection do
       get 'custom'
@@ -27,9 +30,16 @@ Rails.application.routes.draw do
       get 'info'
     end
   end
+  
+  resources :weather, only: [:show, :index] do
+    collection do
+      get 'info'
+      get 'all_for_date'
+    end
+  end
+
   resources :station_observations, only: [:index]
   resources :stations, only: [:index]
-  resources :weather, only: [:index]
 
   root to: 'application#index'
 end

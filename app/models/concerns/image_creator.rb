@@ -10,13 +10,15 @@ module ImageCreator
     Rails.configuration.x.image.file_dir
   end
 
-  def self.create_image(data_grid, title, file_base_name, max_value = nil)
+  def self.create_image(data_grid, title, file_base_name, min_value: nil, max_value: nil)
     datafile_name = create_data_file(data_grid)
     image_filename = generate_image_file(
       datafile_name,
       file_base_name,
-      max_value || max_value_for_gnuplot(data_grid.max),
-      title)
+      title,
+      min_value || min_value_for_gnuplot(data_grid.min),
+      max_value || max_value_for_gnuplot(data_grid.max)
+    )
     File.delete(datafile_name)
     return image_filename
   end
@@ -37,18 +39,18 @@ module ImageCreator
     data_filename
   end
 
-  def self.generate_image_file(datafile_name, image_name, max_value, title)
+  def self.generate_image_file(datafile_name, image_name, title, min_value, max_value)
     temp_image = temp_filename('png')
     image_fullpath = File.join(self.file_path, image_name)
 
     # Gnuplot
-    gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; max_v=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
-    Rails.logger.debug("GNUPLOT CMD: #{gnuplot_cmd}")
+    gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min_value}; max_val=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
+    Rails.logger.debug(">> gnuplot cmd: #{gnuplot_cmd}")
     %x(#{gnuplot_cmd})
 
     # Image Magick
     image_cmd = "composite lib/map_overlay_branded.png #{temp_image} #{image_fullpath}"
-    Rails.logger.debug("IMAGEMAGICK CMD: #{image_cmd}")
+    Rails.logger.debug(">> imagemagick cmd: #{image_cmd}")
     %x(#{image_cmd})
 
     File.delete(temp_image)
@@ -70,6 +72,18 @@ module ImageCreator
       (val + 0.05).round(1)
     else
       val.ceil
+    end
+  end
+
+  def self.min_value_for_gnuplot(val)
+    if val.nil?
+      0
+    elsif val < 0.1
+      (val - 0.005).round(2)
+    elsif val < 1
+      (val - 0.05).round(1)
+    else
+      val.floor
     end
   end
 

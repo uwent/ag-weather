@@ -5,7 +5,6 @@ class WeatherHour
 
   def initialize()
     @data = LandGrid.new
-      
     LandExtent.each_point do |lat, long|
       @data[lat, long] = {
         temperatures: [],
@@ -19,36 +18,46 @@ class WeatherHour
     return :temperatures if data_type == "2t"
   end
 
-  def store(data_type, lat, long, value)
-    key = data_key(data_type)
-    closest_lat, closest_long = @data.closest_point(lat, long)
-    @data[closest_lat, closest_long][key] << Reading.new(lat, long, value)
+  def store(type, lat, long, data)
+    lat, long = lat.round(1), long.round(1)
+    @data[lat, long][data_key(type)] << data
   end
 
   def load_from(filename)
+    grib_start = Time.current
+
     cmd = "grib_get_data -w shortName=2t/2d -p shortName #{filename}"
     Rails.logger.debug ">> grib cmd: #{cmd}"
     _, stdout, _ = Open3.popen3(cmd)
+
     stdout.each do |line|
-      (lat, long, data, type) = line.split
+      lat, long, data, type = line.split
       lat = lat.to_f
       long = long.to_f - 360.0
       data = data.to_f
       store(type, lat, long, data) if LandExtent.inside?(lat, long)
     end
-  end
 
-  def closest(lat, long, arr)
-    arr.min_by { |pt| pt.distance(lat, long) }
+    Rails.logger.debug ">> Grib file read in #{Time.current - grib_start} seconds"
   end
 
   def temperature_at(lat, long)
-    reading = closest(lat, long, @data[lat, long][:temperatures])
-    reading && reading.value
+    temps = @data[lat, long][:temperatures]
+    if temps.size > 0
+      return temps.sum(0.0) / temps.size
+    else
+      Rails.logger.warn "WeatherHour :: Missing temperature data for [#{lat}, #{long}]"
+      return nil
+    end
   end
 
   def dew_point_at(lat, long)
-    reading = closest(lat, long, @data[lat, long][:dew_points])
-    reading && reading.value
+    dewpts = @data[lat, long][:dew_points]
+    if dewpts.size > 0
+      return dewpts.sum(0.0) / dewpts.size
+    else
+      Rails.logger.warn "WeatherHour :: Missing dewpoint data for [#{lat}, #{long}]"
+      return nil
+    end
   end
 end
