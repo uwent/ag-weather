@@ -76,7 +76,7 @@ class WeatherDatum < ApplicationRecord
       begin
         Rails.logger.info "WeatherDatum :: Creating image for #{date}"
         data = create_image_data_grid(date)
-        title = "Mean daily temperature (F) for #{date.strftime('%-d %B %Y')}"
+        title = "Mean daily temperature (°F) for #{date.strftime('%-d %B %Y')}"
         ImageCreator.create_image(data, title, image_name(date))
       rescue => e
         Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"

@@ -49,6 +49,58 @@ module RunTasks
     end
   end
 
+  # re-generates map images for specific dates
+  def self.redo_images(start_date, end_date = Date.current)
+    dates = start_date..end_date
+    dates.each do |date|
+      WeatherDatum.create_image(date)
+      Insolation.create_image(date)
+      Evapotranspiration.create_image(date)
+    end
+  end
+
+  def self.redo_weather_images(start_date, end_date = Date.current)
+    dates = start_date..end_date
+    dates.each do |date|
+      WeatherDatum.create_image(date)
+    end
+  end
+
+  def self.redo_insol_images(start_date, end_date = Date.current)
+    dates = start_date..end_date
+    dates.each do |date|
+      Insolation.create_image(date)
+    end
+  end
+
+  def self.redo_et_images(start_date, end_date = Date.current)
+    dates = start_date..end_date
+    dates.each do |date|
+      Evapotranspiration.create_image(date)
+    end
+  end
+
+  def self.purge_old_images(delete: false, age: 1.year)
+    image_dir = ImageCreator.file_path
+    files = Dir[image_dir + "/*"]
+    del_count = keep_count = 0
+    files.each do |file|
+      modified = File.mtime(file)
+      del = (Time.current - modified) > age
+      if del
+        del_count += 1
+        puts file + " << DELETE"
+        File.rm(file) if delete
+      else
+        keep_count += 1
+        puts file + " -- keep"
+      end
+    end
+    puts "Keep: #{keep_count}, Delete: #{del_count}"
+    puts "Run with 'delete: true' to permanently delete image files." if delete == false
+    del_count
+  end
+
   # re-generates pest forecasts for year from WeatherDatum
   # can be run if new models are added
   def self.redo_forecasts(year)

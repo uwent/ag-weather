@@ -58,37 +58,21 @@ module ImageCreator
   end
 
   def self.temp_filename(suffix)
-    File.join(
-      Rails.configuration.x.image.temp_directory,
-      "#{DateTime.current.to_s(:number)}_#{random_string(8)}.#{suffix}")
+    File.join(Rails.configuration.x.image.temp_directory, "#{SecureRandom.urlsafe_base64(8)}.#{suffix}")
   end
 
   def self.max_value_for_gnuplot(val)
-    if val.nil?
-      0
-    elsif val < 0.1
-      (val + 0.005).round(2)
-    elsif val < 1
-      (val + 0.05).round(1)
-    else
-      val.ceil
-    end
+    return 0 if val.nil?
+    return (val + 0.005).round(2) if val < 0.1
+    return (val + 0.05).round(1) if val < 1
+    return val.ceil
   end
 
   def self.min_value_for_gnuplot(val)
-    if val.nil?
-      0
-    elsif val < 0.1
-      (val - 0.005).round(2)
-    elsif val < 1
-      (val - 0.05).round(1)
-    else
-      val.floor
-    end
+    return 0 if val.nil?
+    return (val - 0.005).round(2) if val < 0.1
+    return (val - 0.05).round(1) if val < 1
+    return val.floor
   end
 
-  private
-    def self.random_string(length)
-      (0...length).map { (65 + rand(26)).chr }.join
-    end
 end
