@@ -90,7 +90,7 @@ module RunTasks
       if del
         del_count += 1
         puts file + " << DELETE"
-        File.rm(file) if delete
+        FileUtils.rm(file) if delete
       else
         keep_count += 1
         puts file + " -- keep"
