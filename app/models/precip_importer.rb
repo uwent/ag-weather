@@ -16,7 +16,7 @@ class PrecipImporter
   end
 
   def self.connect_to_server
-    Rails.logger.info "PrecipImporter :: Connecting to #{REMOTE_SERVER}..."
+    Rails.logger.debug "Connecting to #{REMOTE_SERVER}..."
     client = Net::FTP.new(REMOTE_SERVER)
     client.login
     client
@@ -39,7 +39,7 @@ class PrecipImporter
     start_time = Time.current
     PrecipDataImport.start(date)
 
-    Rails.logger.info "PrecipImporter :: Fetching precip file for #{date}..."
+    Rails.logger.info "PrecipImporter :: Fetching precip data for #{date}..."
     remote_dir = remote_dir(date)
     remote_file = remote_file(date)
     local_file = local_file(date)
