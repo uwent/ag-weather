@@ -40,7 +40,8 @@ class WeatherDay
       @data[lat, long] <<
         WeatherObservation.new(
           hour.temperature_at(lat, long),
-          hour.dew_point_at(lat, long))
+          hour.dew_point_at(lat, long)
+        )
     end
   end
 end

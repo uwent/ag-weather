@@ -1,10 +1,10 @@
-require 'rails_helper'
-require 'net/ftp'
+require "rails_helper"
+require "net/ftp"
 
 RSpec.describe WeatherImporter, type: :model do
   let(:today) { Date.new(2016, 2, 1) }
 
-  describe '.remote_dir' do
+  describe ".remote_dir" do
     it "should get the proper remote directory given a date" do
       expect(WeatherImporter.remote_dir(today)).to eq "#{WeatherImporter::REMOTE_BASE_DIR}/urma2p5.#{today.strftime('%Y%m%d')}"
     end
@@ -13,12 +13,12 @@ RSpec.describe WeatherImporter, type: :model do
   describe ".local_dir" do
     let(:today) { Date.current }
     it "should return the local directory to store the weather files" do
-      expect(WeatherImporter.local_dir(today)).to eq "#{WeatherImporter::LOCAL_BASE_DIR}/gribdata/#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.local_dir(today)).to eq "#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime('%Y%m%d')}"
     end
 
     it "should create local directories if they don't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/gribdata/#{today.strftime('%Y%m%d')}").once
+      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime('%Y%m%d')}").once
       WeatherImporter.local_dir(today)
     end
   end
@@ -33,8 +33,8 @@ RSpec.describe WeatherImporter, type: :model do
       allow(ftp_client_mock).to receive(:close)
     end
 
-    describe '.fetch' do
-      it 'get and load files for every day returned by DataImport' do
+    describe ".fetch" do
+      it "get and load files for every day returned by DataImport" do
         unloaded_days = [Date.yesterday, Date.current - 3.days]
         allow(WeatherDataImport).to receive(:days_to_load)
           .and_return(unloaded_days)
@@ -63,13 +63,13 @@ RSpec.describe WeatherImporter, type: :model do
       end
 
       # folder changes due to NOAA server storing files in UTC time and we are in CST
-      it 'should change to the appropriate directories on the remote server' do
+      it "should change to the appropriate directories on the remote server" do
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today)).exactly(18).times
         expect(ftp_client_mock).to receive(:chdir).with(WeatherImporter.remote_dir(today + 1.day)).exactly(6).times
         WeatherImporter.fetch_day(today)
       end
 
-      it 'should try to get a file for every hour' do
+      it "should try to get a file for every hour" do
         expect(ftp_client_mock).to receive(:get).exactly(24).times
         WeatherImporter.fetch_day(today)
       end
@@ -119,13 +119,13 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
-  describe '.dew_point_to_vapor_pressure' do
+  describe ".dew_point_to_vapor_pressure" do
     it "should return the vapor pressure given a dew point (in Celcius)" do
       expect(WeatherImporter.dew_point_to_vapor_pressure(29.85)).to be_within(0.001).of(4.313)
     end
   end
 
-  describe '.relative_humidity_over' do
+  describe ".relative_humidity_over" do
     it "counts all if temperature is same as dewpoint (rel. humidity is 100) " do
       observations = FactoryBot.build_list :weather_observation, 20
       expect(WeatherImporter.relative_humidity_over(observations, 85.0)).to eq 20
@@ -141,13 +141,8 @@ RSpec.describe WeatherImporter, type: :model do
       expect(WeatherImporter.relative_humidity_over([], 85.0)).to eq 0
     end
 
-    it 'counts those on edge of 85.0' do
-      observation = FactoryBot.build(:weather_observation, dew_point: 287.60953)
-      expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq 1
-    end
-
-    it "doesn't count those on edge of 85.0" do
-      observation = FactoryBot.build(:weather_observation, dew_point: 287.60953)
+    it "counts those on edge of 85.0" do
+      observation = FactoryBot.build(:weather_observation, dew_point: 287.60954)
       expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq 1
     end
 
@@ -157,7 +152,7 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
-  describe '.weather_average' do
+  describe ".weather_average" do
     it "should return the 'average' (sum of low and high/2) of an array" do
       expect(WeatherImporter.weather_average([0.0, 1.0, 5.0, 10.0])).to eq 5.0
     end
@@ -167,16 +162,16 @@ RSpec.describe WeatherImporter, type: :model do
     end
   end
 
-  describe 'central time' do
-    it 'should return a time for a given date and hour in Central Time' do
+  describe "central time" do
+    it "should return a time for a given date and hour in Central Time" do
       expect(WeatherImporter.central_time(today, 0).zone).to eq 'CST'
     end
 
-    it 'should set the hour as given' do
+    it "should set the hour as given" do
       expect(WeatherImporter.central_time(today, 0).hour).to eq 0
     end
 
-    it 'should set the date as given' do
+    it "should set the date as given" do
       expect(WeatherImporter.central_time(today, 0).to_date).to eq today
     end
   end

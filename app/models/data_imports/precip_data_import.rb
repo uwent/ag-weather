@@ -1,0 +1,2 @@
+class PrecipDataImport < DataImport
+end

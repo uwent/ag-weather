@@ -29,7 +29,7 @@ RSpec.describe WeatherObservation do
   end
 
   context 'relative humidity' do
-    # Verified data via http://andrew.rsmas.miami.edu/bmcnoldy/Humidity.html
+    # Verified data via https://bmcnoldy.rsmas.miami.edu/Humidity.html
     it 'will compute correctly' do
       expect(weather_observation.relative_humidity).to be_within(0.01).of(54.33)
 
@@ -44,9 +44,9 @@ RSpec.describe WeatherObservation do
     end
   end
 
-  describe '.K_to_C' do
+  describe '.k_to_c' do
     it "should return the proper value in Celcius" do
-      expect(weather_observation.K_to_C(283.0)).to be_within(0.001).of(9.85)
+      expect(weather_observation.k_to_c(283.0)).to be_within(0.001).of(9.85)
     end
   end
 end

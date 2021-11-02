@@ -120,9 +120,9 @@ class WeatherController < ApplicationController
       status = "no data"
     end
 
-    lats = data.map{ |d| d[:lat] }.uniq
-    longs = data.map{ |d| d[:long] }.uniq
-    values = data.map{ |d| d[:value] }
+    lats = data.map { |d| d[:lat] }.uniq
+    longs = data.map { |d| d[:long] }.uniq
+    values = data.map { |d| d[:value] }
 
     info = {
       date: date,

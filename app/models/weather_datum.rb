@@ -83,7 +83,7 @@ class WeatherDatum < ApplicationRecord
         return "no_data.png"
       end
     else
-      Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: weather data missing"
+      Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: Weather data missing."
       return "no_data.png"
     end
   end
