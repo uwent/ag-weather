@@ -1,24 +1,23 @@
-require 'net/ftp'
+require "net/ftp"
 
 class WeatherImporter
 
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
-  LOCAL_BASE_DIR = "/tmp"
+  LOCAL_BASE_DIR = "/tmp/gribdata"
   MAX_TRIES = 10
   KEEP_GRIB = ENV["KEEP_GRIB"] || false
 
   def self.fetch
-    days_to_load = WeatherDataImport.days_to_load
-    days_to_load.each { |day| self.fetch_day(day) }
+    WeatherDataImport.days_to_load.each { |day| fetch_day(day) }
   end
 
   def self.remote_dir(date)
-    "#{REMOTE_BASE_DIR}/urma2p5.#{date.strftime('%Y%m%d')}"
+    "#{REMOTE_BASE_DIR}/urma2p5.#{date.to_s(:number)}"
   end
 
   def self.local_dir(date)
-    savedir = "#{LOCAL_BASE_DIR}/gribdata/#{date.strftime('%Y%m%d')}"
+    savedir = "#{LOCAL_BASE_DIR}/#{date.to_s(:number)}"
     FileUtils.mkdir_p(savedir)
     savedir
   end
@@ -28,10 +27,9 @@ class WeatherImporter
   end
 
   def self.connect_to_server
+    Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
     client = Net::FTP.new(REMOTE_SERVER)
-    # client.read_timeout = 10
     client.login
-    # client.debug_mode = true if Rails.env.development?
     client
   end
 
@@ -40,14 +38,13 @@ class WeatherImporter
     WeatherDataImport.start(date)
 
     begin
-      Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
       client = connect_to_server
 
       Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
-      start = central_time(date, 0)
+      first = central_time(date, 0)
       last = central_time(date, 23)
       
-      (start.to_i..last.to_i).step(1.hour) do |time_in_central|
+      (first.to_i..last.to_i).step(1.hour) do |time_in_central|
         time = Time.at(time_in_central).utc
         remote_dir = remote_dir(time.to_date)
         remote_file = remote_file_name(time.hour)
@@ -64,7 +61,6 @@ class WeatherImporter
           FileUtils.mv("#{local_file}_part", local_file)
         end
       end
-
     rescue => e
       Rails.logger.warn "WeatherImporter :: Unable to retrieve remote weather file. Reason: #{e.message}"
       client.close
@@ -77,16 +73,16 @@ class WeatherImporter
       return "Unable to retrieve weather data for #{date}."
     end
 
-    self.import_weather_data(date)
+    import_weather_data(date)
   end
 
   def self.import_weather_data(date)
+    grib_dir = local_dir(date)
     weather_day = WeatherDay.new(date)
-    weather_day.load_from(local_dir(date))
-    WeatherDatum.where(date: date).delete_all
+    weather_day.load_from(grib_dir)
     persist_day_to_db(weather_day)
     WeatherDataImport.succeed(date)
-    FileUtils.rm_r self.local_dir(date) unless KEEP_GRIB
+    FileUtils.rm_r grib_dir unless KEEP_GRIB
     WeatherDatum.create_image(date)
   end
 
@@ -97,6 +93,7 @@ class WeatherImporter
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)
+
       weather_data << WeatherDatum.new(
         latitude: lat,
         longitude: long,
@@ -112,7 +109,10 @@ class WeatherImporter
       )
     end
 
-    WeatherDatum.import(weather_data, validate: false)
+    WeatherDatum.transaction do
+      WeatherDatum.where(date: weather_day.date).delete_all
+      WeatherDatum.import(weather_data)
+    end
   end
 
   def self.relative_humidity_over(observations, rh_cutoff)

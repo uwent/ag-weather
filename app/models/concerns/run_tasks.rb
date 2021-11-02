@@ -4,6 +4,9 @@ module RunTasks
     # fetch insolation data from SSEC server
     InsolationImporter.fetch
 
+    # fetch precip data from NOAA server
+    PrecipImporter.fetch
+
     # fetch weather data from NOAA server
     WeatherImporter.fetch
 
@@ -13,6 +16,7 @@ module RunTasks
     # generate pest forecasts for VDIFN from WeatherDatum
     PestForecastImporter.create_forecast_data
 
+    # display status of import attempts
     DataImport.check_statuses
   end
 
@@ -29,6 +33,7 @@ module RunTasks
 
   def self.all_for_date(date)
     InsolationImporter.fetch_day(date)
+    PrecipImporter.fetch_day(date)
     WeatherImporter.fetch_day(date)
     EvapotranspirationImporter.calculate_et_for_date(date)
     PestForecastImporter.calculate_forecast_for_date(date)
@@ -53,31 +58,27 @@ module RunTasks
   def self.redo_images(start_date, end_date = Date.current)
     dates = start_date..end_date
     dates.each do |date|
-      WeatherDatum.create_image(date)
       Insolation.create_image(date)
-      Evapotranspiration.create_image(date)
-    end
-  end
-
-  def self.redo_weather_images(start_date, end_date = Date.current)
-    dates = start_date..end_date
-    dates.each do |date|
+      Precip.create_image(date)
       WeatherDatum.create_image(date)
+      Evapotranspiration.create_image(date)
     end
   end
 
   def self.redo_insol_images(start_date, end_date = Date.current)
-    dates = start_date..end_date
-    dates.each do |date|
-      Insolation.create_image(date)
-    end
+    (start_date..end_date).each { |date| Insolation.create_image(date) }
+  end
+
+  def self.redo_precip_images(start_date, end_date = Date.current)
+    (start_date..end_date).each { |date| Precip.create_image(date) }
+  end
+
+  def self.redo_weather_images(start_date, end_date = Date.current)
+    (start_date..end_date).each { |date| WeatherDatum.create_image(date) }
   end
 
   def self.redo_et_images(start_date, end_date = Date.current)
-    dates = start_date..end_date
-    dates.each do |date|
-      Evapotranspiration.create_image(date)
-    end
+    (start_date..end_date).each { |date| Evapotranspiration.create_image(date) }
   end
 
   def self.purge_old_images(delete: false, age: 1.year)

@@ -372,15 +372,13 @@ class PestForecastsController < ApplicationController
     nov_1 = Date.new(end_date.year, 11, 1)
 
     return {} if end_date < nov_1
-    weather = WeatherDatum.select(:latitude, :longitude).distinct.
-      where(date: nov_1..end_date).
-      where("min_temperature < ?", -2.22).
-      order(:latitude, :longitude).
-      collect do |w|
-        {
-          "#{w.latitude}:#{w.longitude}" => true
-        }
-    end.inject({}, :merge)
+    weather = WeatherDatum.select(:latitude, :longitude)
+      .distinct
+      .where(date: nov_1..end_date)
+      .where("min_temperature < ?", -2.22)
+      .order(:latitude, :longitude)
+      .collect { |w| { "#{w.latitude}:#{w.longitude}" => true } }
+      .inject({}, :merge)
     weather
   end
 

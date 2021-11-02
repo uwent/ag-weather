@@ -79,7 +79,7 @@ bundle exec rspec
 ```
 #### API Documentation
 ```bash
-RAILS_ENV=test bundle exec rake dredd
+bundle exec rake dredd RAILS_ENV=test
 ```
 
 ## Deployment

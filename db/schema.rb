@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_08_27_145514) do
+ActiveRecord::Schema.define(version: 2021_11_01_223211) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -104,6 +104,16 @@ ActiveRecord::Schema.define(version: 2021_08_27_145514) do
     t.index ["date"], name: "index_pest_forecasts_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_pest_forecasts_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
+  end
+
+  create_table "precips", force: :cascade do |t|
+    t.date "date"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.float "precip"
+    t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_precips_on_date"
+    t.index ["latitude", "longitude"], name: "index_precips_on_latitude_and_longitude"
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|

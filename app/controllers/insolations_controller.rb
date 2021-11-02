@@ -62,6 +62,7 @@ class InsolationsController < ApplicationController
   end
 
   # GET: create map and return url to it
+  
   def show
     date = begin
       params[:id] ? Date.parse(params[:id]) : default_insol_date

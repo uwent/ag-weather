@@ -22,6 +22,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :precips, only: [:show, :index] do
+    collection do
+      get 'info'
+      get 'all_for_date'
+    end
+  end
+
   resources :pest_forecasts, only: [:index] do
     collection do
       get 'custom'

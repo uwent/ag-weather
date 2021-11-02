@@ -30,6 +30,12 @@ class LandExtent
     longitudes.max.to_d.round(1)
   end
 
+  def self.random_point
+    lat = rand(latitudes).round(1)
+    long = rand(longitudes).round(1)
+    [lat, long]
+  end
+
   def self.inside?(lat, long)
     (latitudes === lat) && (longitudes === long)
   end

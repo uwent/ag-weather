@@ -13,9 +13,9 @@ class WeatherHour
     end
   end
 
-  def data_key(data_type)
-    return :dew_points if data_type == "2d"
-    return :temperatures if data_type == "2t"
+  def data_key(type)
+    return :dew_points if type == "2d"
+    return :temperatures if type == "2t"
   end
 
   def store(type, lat, long, data)
@@ -23,6 +23,7 @@ class WeatherHour
     @data[lat, long][data_key(type)] << data
   end
 
+  # processes hourly weather grib files and pulls temperatures and dewpoints
   def load_from(filename)
     grib_start = Time.current
 
@@ -41,23 +42,15 @@ class WeatherHour
     Rails.logger.debug ">> Grib file read in #{(Time.current - grib_start).to_i} seconds"
   end
 
+  # averages all temperatures assigned to the lat/long cell
   def temperature_at(lat, long)
     temps = @data[lat, long][:temperatures]
-    if temps.size > 0
-      return temps.sum(0.0) / temps.size
-    else
-      Rails.logger.warn "WeatherHour :: Missing temperature data for [#{lat}, #{long}]"
-      return nil
-    end
+    temps.size > 0 ? temps.sum(0.0) / temps.size : nil
   end
 
+  # averages all dewpoints assigned to the lat/long cell
   def dew_point_at(lat, long)
     dewpts = @data[lat, long][:dew_points]
-    if dewpts.size > 0
-      return dewpts.sum(0.0) / dewpts.size
-    else
-      Rails.logger.warn "WeatherHour :: Missing dewpoint data for [#{lat}, #{long}]"
-      return nil
-    end
+    dewpts.size > 0 ? dewpts.sum(0.0) / dewpts.size : nil
   end
 end

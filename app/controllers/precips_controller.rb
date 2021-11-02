@@ -1,31 +1,26 @@
-class WeatherController < ApplicationController
+class PrecipsController < ApplicationController
 
-  # GET: returns insols for lat, long, date range
+  # GET: returns precips for lat, long, date range
   # params:
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
   #   end_date - default today
-
   def index
     start_time = Time.current
     status = "OK"
     data = []
 
-    weather = WeatherDatum.where(latitude: lat, longitude: long)
+    precips = Precip.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
       .order(:date)
 
-    if weather.size > 0
-      data = weather.collect do |w|
+    if precips.size > 0
+      data = precips.collect do |precip|
         {
-          date: w.date.to_s, 
-          min_temp: w.min_temperature.round(2),
-          avg_temp: w.avg_temperature.round(2),
-          max_temp: w.max_temperature.round(2), 
-          pressure: w.vapor_pressure.round(2),
-          hours_rh_over_90: w.hours_rh_over_90,
-          avg_temp_rh_over_90: w.avg_temp_rh_over_90
+          date: precip.date.to_s,
+          value: precip.precip.round(2),
+          cum_value: precips.where("date <= ?", precip.date).sum(:precip).round(2)
         }
       end
     else
@@ -41,6 +36,9 @@ class WeatherController < ApplicationController
       end_date: end_date,
       days_requested: (end_date - start_date).to_i,
       days_returned: values.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "Total daily precipitation (mm)",
       compute_time: Time.current - start_time
     }
 
@@ -56,7 +54,8 @@ class WeatherController < ApplicationController
       format.html { render json: response, content_type: "application/json; charset=utf-8"}
       format.json { render json: response }
       format.csv do
-        filename = "weather data for #{lat}, #{long} for #{end_date}.csv"
+        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        filename = "precip data for #{lat}, #{long}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end
@@ -65,19 +64,19 @@ class WeatherController < ApplicationController
   # GET: create map and return url to it
   def show
     date = begin
-      params[:id] ? Date.parse(params[:id]) : default_weather_date
+      params[:id] ? Date.parse(params[:id]) : default_precip_date
     rescue
-      default_weather_date
+      default_precip_date
     end
 
-    image_name = WeatherDatum.image_name(date)
+    image_name = Precip.image_name(date)
     image_filename = File.join(ImageCreator.file_path, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exists?(image_filename)
       url = image_url
     else
-      image_name = WeatherDatum.create_image(date)
+      image_name = Precip.create_image(date)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
@@ -88,6 +87,9 @@ class WeatherController < ApplicationController
     end
   end
 
+  # GET: return grid of all values for date
+  # params:
+  #   date
   def all_for_date
     start_time = Time.current
     status = "OK"
@@ -95,24 +97,19 @@ class WeatherController < ApplicationController
     data = []
 
     date = begin
-      params[:date] ? Date.parse(params[:date]) : default_weather_date
+      params[:date] ? Date.parse(params[:date]) : default_precip_date
     rescue
-      default_weather_date
+      default_precip_date
     end
 
-    weather = WeatherDatum.where(date: date).order(:latitude, :longitude)
+    precips = Precip.where(date: date).order(:latitude, :longitude)
 
-    if weather.size > 0
-      data = weather.collect do |weather|
+    if precips.size > 0
+      data = precips.collect do |precip|
         {
-          lat: weather.latitude.round(1),
-          long: weather.longitude.round(1),
-          min_temp: weather.min_temperature.round(2),
-          avg_temp: weather.avg_temperature.round(2),
-          max_temp: weather.max_temperature.round(2), 
-          pressure: weather.vapor_pressure.round(2),
-          hours_rh_over_90: weather.hours_rh_over_90,
-          avg_temp_rh_over_90: weather.avg_temp_rh_over_90
+          lat: precip.latitude.round(1),
+          long: precip.longitude.round(1),
+          value: precip.precip.round(3)
         }
       end
       status = "OK"
@@ -120,15 +117,18 @@ class WeatherController < ApplicationController
       status = "no data"
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
+    lats = data.map{ |d| d[:lat] }.uniq
+    longs = data.map{ |d| d[:long] }.uniq
+    values = data.map{ |d| d[:value] }
 
     info = {
       date: date,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
-      points: lats.size * longs.size,
+      points: lats.count * longs.count,
+      min_value: values.min,
+      max_value: values.max,
+      units: "Total daily precipitation (mm)",
       compute_time: Time.current - start_time
     }
 
@@ -143,45 +143,45 @@ class WeatherController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = { status: status }.merge(info) unless params[:headers] == "false"
-        filename = "weather data grid for #{date.to_s}.csv"
+        filename = "precip data grid for #{date.to_s}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end
   end
 
-  # GET: valid params for api
+  # GET: returns valid params for api
   def info
-    t = WeatherDatum
+    t = Precip
     response = {
       date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
       total_days: t.distinct.pluck(:date).size,
       lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
       long_range: [t.minimum(:longitude), t.maximum(:longitude)],
+      value_range: [t.minimum(:Precip), t.maximum(:Precip)],
       table_cols: t.column_names
     }
     render json: response
   end
+end
 
-  private
+private
 
-  def default_weather_date
-    WeatherDatum.latest_date || Date.yesterday
-  end
+def default_precip_date
+  Precip.latest_date || Date.yesterday
+end
 
-  def start_date
-    params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
-  end
+def start_date
+  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+end
 
-  def end_date
-    params[:end_date] ? Date.parse(params[:end_date]) : Date.current
-  end
+def end_date
+  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+end
 
-  def lat
-    params[:lat]
-  end
+def lat
+  params[:lat]
+end
 
-  def long
-    params[:long]
-  end
-
+def long
+  params[:long]
 end
