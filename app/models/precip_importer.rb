@@ -97,7 +97,7 @@ class PrecipImporter
       end
     end
 
-    FileUtils.rm_r local_file(date) unless KEEP_GRIB
+    FileUtils.rm_r grib unless KEEP_GRIB
 
     # average all pts in a cell
     data.each_point do |lat, long|
