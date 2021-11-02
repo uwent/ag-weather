@@ -85,8 +85,6 @@ class PrecipImporter
     Rails.logger.debug "grib cmd: #{cmd}"
     _, stdout, _ = Open3.popen3(cmd)
 
-    precips = []
-
     stdout.each do |line|
       lat, long, precip = line.split
       lat = lat.to_f
@@ -94,8 +92,8 @@ class PrecipImporter
       precip = precip.to_f
       if LandExtent.inside?(lat, long)
         lat, long = lat.round(1), long.round(1)
+        precip = 0 if precip < 0
         data[lat, long] << precip
-        precips << precip
       end
     end
 

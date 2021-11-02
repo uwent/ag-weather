@@ -79,7 +79,7 @@ FORMAT: 1A
     + end_date: `2020-10-10` (string, optional) - end date
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (`et/insol index data`)
+    + Attributes (`et/insol/precip index data`)
 
 
 ### Download csv [GET /evapotranspirations.csv{?lat,long,start_date,end_date}]
@@ -123,7 +123,7 @@ Retrieve all ET data for the specified date.
     + date: `2020-01-01` (string)
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (`et/insol all_for_date data`)
+    + Attributes (`et/insol/precip all_for_date data`)
 
 
 ## Download csv [GET /evapotranspirations/all_for_date.csv{?date}]
@@ -161,7 +161,7 @@ Get parameter ranges available in the database
     + end_date: `2021-10-10`
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (`et/insol index data`)
+    + Attributes (`et/insol/precip index data`)
 
 ### Download csv [GET /insolations.csv{?lat,long,start_date,end_date}]
 
@@ -202,7 +202,7 @@ Get parameter ranges available in the database
     + date: `2020-01-01` (string)
 
 + Response 200 (application/json; charset=utf-8)
-    + Attributes (`et/insol all_for_date data`)
+    + Attributes (`et/insol/precip all_for_date data`)
 
 
 ### Get all insolations for date [GET /insolations/all_for_date.csv{?date}]
@@ -214,6 +214,83 @@ Get parameter ranges available in the database
 
 
 ## Insolation database info [GET /insolations/info]
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + date_range (array) - min, max
+        + total_days (number) - days in database
+        + lat_range (array) - min, max
+        + long_range (array) - min, max
+        + value_range (array) - min, max
+        + table_cols (array) - column names in database
+
+
+# Group Precipitations
+
+## index [/precips]
+
+### Get precip data for point and date range [GET /precips{?lat,long,start_date,end_date}]
+
++ Parameters
+    + lat: `45.0` (number)
+    + long: `-90.0` (number)
+    + start_date: `2021-01-01`
+    + end_date: `2021-10-10`
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`et/insol/precip index data`)
+
+### Download csv [GET /precips.csv{?lat,long,start_date,end_date}]
+
++ Parameters
+    + lat: `45.0` (number)
+    + long: `-90.0` (number)
+    + start_date: `2021-01-01`
+    + end_date: `2021-10-10`
+
++ Response 200 (text/csv)
+
+
+## show [/precips/show]
+
+### Get precip map image url [GET /precips/{date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + map: `path/to/map.png` (string)
+
+
+### Show precip map image in browser [GET /precips/{date}.png]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/html; charset=utf-8)
+
+
+## all_for_date [/precips/all_for_date]
+
+### Get all precips for date [GET /precips/all_for_date{?date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (`et/insol/precip all_for_date data`)
+
+
+### Get all precips for date [GET /precips/all_for_date.csv{?date}]
+
++ Parameters
+    + date: `2020-01-01` (string)
+
++ Response 200 (text/csv)
+
+
+## Precipitation database info [GET /precips/info]
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -513,7 +590,7 @@ Returns weather and pest forecast data for grid point in date range
 
 # Data Structures
 
-## `et/insol index data` (object)
+## `et/insol/precip index data` (object)
 + status (string)
 + info (object)
     + lat (string)
@@ -531,7 +608,7 @@ Returns weather and pest forecast data for grid point in date range
         + date (string)
         + value (number)
 
-## `et/insol all_for_date data` (object)
+## `et/insol/precip all_for_date data` (object)
 + date (string)
 + status (string)
 + info (object, optional)

@@ -59,7 +59,7 @@ class Precip < ApplicationRecord
         data = land_grid_for_date(date)
         title = "Total daily precip (mm) for #{date.strftime("%b %-d, %Y")}"
         file = image_name(date)
-        ImageCreator.create_image(data, title, file)
+        ImageCreator.create_image(data, title, file, min_value: 0.0)
       rescue => e
         Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
         return "no_data.png"

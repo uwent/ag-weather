@@ -19,7 +19,8 @@ class PrecipsController < ApplicationController
       data = precips.collect do |precip|
         {
           date: precip.date.to_s,
-          value: precip.precip.round(3)
+          value: precip.precip.round(2),
+          cum_value: precips.where("date <= ?", precip.date).sum(:precip).round(2)
         }
       end
     else
