@@ -58,7 +58,7 @@ class Precip < ApplicationRecord
         Rails.logger.info "Precip :: Creating image for #{date}"
         data = land_grid_for_date(date)
         title = "Total daily precip (mm) for #{date.strftime("%b %-d, %Y")}"
-        file = "precip_#{date.to_s(:number)}.png"
+        file = image_name(date)
         ImageCreator.create_image(data, title, file)
       rescue => e
         Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
@@ -68,6 +68,10 @@ class Precip < ApplicationRecord
       Rails.logger.warn "Precip :: Failed to create image for #{date}: Precip data missing."
       return "no_data.png"
     end
+  end
+
+  def self.image_name(date)
+    "precip_#{date.to_s(:number)}.png"
   end
 
 end

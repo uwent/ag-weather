@@ -1,26 +1,25 @@
-class InsolationsController < ApplicationController
+class PrecipsController < ApplicationController
 
-  # GET: returns insols for lat, long, date range
+  # GET: returns precips for lat, long, date range
   # params:
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
   #   end_date - default today
-
   def index
     start_time = Time.current
     status = "OK"
     data = []
 
-    insols = Insolation.where(latitude: lat, longitude: long)
+    precips = Precip.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
       .order(:date)
 
-    if insols.size > 0
-      data = insols.collect do |insol|
+    if precips.size > 0
+      data = precips.collect do |precip|
         {
-          date: insol.date.to_s,
-          value: insol.insolation.round(3)
+          date: precip.date.to_s,
+          value: precip.precip.round(3)
         }
       end
     else
@@ -38,7 +37,7 @@ class InsolationsController < ApplicationController
       days_returned: values.count,
       min_value: values.min,
       max_value: values.max,
-      units: "MJ/day/m^2",
+      units: "Total daily precipitation (mm)",
       compute_time: Time.current - start_time
     }
 
@@ -55,29 +54,28 @@ class InsolationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = { status: status }.merge(info) unless params[:headers] == "false"
-        filename = "insol data for #{lat}, #{long}.csv"
+        filename = "precip data for #{lat}, #{long}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end
   end
 
   # GET: create map and return url to it
-  
   def show
     date = begin
-      params[:id] ? Date.parse(params[:id]) : default_insol_date
+      params[:id] ? Date.parse(params[:id]) : default_precip_date
     rescue
-      default_insol_date
+      default_precip_date
     end
 
-    image_name = Insolation.image_name(date)
+    image_name = Precip.image_name(date)
     image_filename = File.join(ImageCreator.file_path, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exists?(image_filename)
       url = image_url
     else
-      image_name = Insolation.create_image(date)
+      image_name = Precip.create_image(date)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
@@ -91,7 +89,6 @@ class InsolationsController < ApplicationController
   # GET: return grid of all values for date
   # params:
   #   date
-
   def all_for_date
     start_time = Time.current
     status = "OK"
@@ -99,19 +96,19 @@ class InsolationsController < ApplicationController
     data = []
 
     date = begin
-      params[:date] ? Date.parse(params[:date]) : default_insol_date
+      params[:date] ? Date.parse(params[:date]) : default_precip_date
     rescue
-      default_insol_date
+      default_precip_date
     end
 
-    insols = Insolation.where(date: date).order(:latitude, :longitude)
+    precips = Precip.where(date: date).order(:latitude, :longitude)
 
-    if insols.size > 0
-      data = insols.collect do |insol|
+    if precips.size > 0
+      data = precips.collect do |precip|
         {
-          lat: insol.latitude.round(1),
-          long: insol.longitude.round(1),
-          value: insol.insolation.round(3)
+          lat: precip.latitude.round(1),
+          long: precip.longitude.round(1),
+          value: precip.precip.round(3)
         }
       end
       status = "OK"
@@ -130,7 +127,7 @@ class InsolationsController < ApplicationController
       points: lats.count * longs.count,
       min_value: values.min,
       max_value: values.max,
-      units: "Solar insolation (MJ/day)",
+      units: "Total daily precipitation (mm)",
       compute_time: Time.current - start_time
     }
 
@@ -145,21 +142,21 @@ class InsolationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = { status: status }.merge(info) unless params[:headers] == "false"
-        filename = "insol data grid for #{date.to_s}.csv"
+        filename = "precip data grid for #{date.to_s}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end
   end
 
-  # GET: valid params for api
+  # GET: returns valid params for api
   def info
-    t = Insolation
+    t = Precip
     response = {
       date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
       total_days: t.distinct.pluck(:date).size,
       lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
       long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:insolation), t.maximum(:insolation)],
+      value_range: [t.minimum(:Precip), t.maximum(:Precip)],
       table_cols: t.column_names
     }
     render json: response
@@ -168,8 +165,8 @@ end
 
 private
 
-def default_insol_date
-  Insolation.latest_date || Date.yesterday
+def default_precip_date
+  Precip.latest_date || Date.yesterday
 end
 
 def start_date
