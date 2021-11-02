@@ -66,29 +66,29 @@ RSpec.describe Evapotranspiration, type: :model do
 
   describe "construct land grid with evapotranspiration for given date" do
     it 'should constuct a land grid' do
-      expect(Evapotranspiration.land_grid_values_for_date(LandGrid.new, Date.current)).to be_kind_of(LandGrid)
+      expect(Evapotranspiration.land_grid_for_date(Date.current)).to be_kind_of(LandGrid)
     end
 
     it 'should have evapotranspirations stored in the grid' do
       date = Date.current
-      latitude = LandExtent.max_lat
-      longitude = LandExtent.min_long
+      lat = LandExtent.max_lat
+      long = LandExtent.min_long
 
       FactoryBot.create(
         :evapotranspiration,
         date: date,
-        latitude: latitude,
-        longitude: longitude,
+        latitude: lat,
+        longitude: long,
         potential_et: 23.4
       )
 
-      land_grid = Evapotranspiration.land_grid_values_for_date(LandGrid.new, date)
-      expect(land_grid[latitude, longitude]).to eq 23.4
+      grid = Evapotranspiration.land_grid_for_date(date)
+      expect(grid[lat, long]).to eq 23.4
     end
 
     it 'should store nil in grid for points without values' do
-      land_grid = Evapotranspiration.land_grid_values_for_date(LandGrid.new, Date.current)
-      expect(land_grid[LandExtent.max_lat, LandExtent.min_long]).to be_nil
+      grid = Evapotranspiration.land_grid_for_date(Date.current)
+      expect(grid[LandExtent.max_lat, LandExtent.min_long]).to be_nil
     end
   end
 end

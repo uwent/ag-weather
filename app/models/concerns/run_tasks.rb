@@ -4,11 +4,11 @@ module RunTasks
     # fetch insolation data from SSEC server
     InsolationImporter.fetch
 
-    # fetch weather data from NOAA server
-    WeatherImporter.fetch
-
     # fetch precip data from NOAA server
     PrecipImporter.fetch
+
+    # fetch weather data from NOAA server
+    WeatherImporter.fetch
 
     # generate ETs from WeatherDatum and Insolation databases
     EvapotranspirationImporter.create_et_data
@@ -33,8 +33,8 @@ module RunTasks
 
   def self.all_for_date(date)
     InsolationImporter.fetch_day(date)
-    WeatherImporter.fetch_day(date)
     PrecipImporter.fetch_day(date)
+    WeatherImporter.fetch_day(date)
     EvapotranspirationImporter.calculate_et_for_date(date)
     PestForecastImporter.calculate_forecast_for_date(date)
   end
@@ -58,23 +58,23 @@ module RunTasks
   def self.redo_images(start_date, end_date = Date.current)
     dates = start_date..end_date
     dates.each do |date|
-      WeatherDatum.create_image(date)
-      Precip.create_image(date)
       Insolation.create_image(date)
+      Precip.create_image(date)
+      WeatherDatum.create_image(date)
       Evapotranspiration.create_image(date)
     end
   end
 
-  def self.redo_weather_images(start_date, end_date = Date.current)
-    (start_date..end_date).each { |date| WeatherDatum.create_image(date) }
+  def self.redo_insol_images(start_date, end_date = Date.current)
+    (start_date..end_date).each { |date| Insolation.create_image(date) }
   end
 
   def self.redo_precip_images(start_date, end_date = Date.current)
     (start_date..end_date).each { |date| Precip.create_image(date) }
   end
 
-  def self.redo_insol_images(start_date, end_date = Date.current)
-    (start_date..end_date).each { |date| Insolation.create_image(date) }
+  def self.redo_weather_images(start_date, end_date = Date.current)
+    (start_date..end_date).each { |date| WeatherDatum.create_image(date) }
   end
 
   def self.redo_et_images(start_date, end_date = Date.current)

@@ -1,37 +1,19 @@
 class Evapotranspiration <  ApplicationRecord
 
-  # Find max value for image creator with `Evapotranspiration.all.maximum(:potential_et)`
-
-  def self.create_image(date)
-    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
-      begin
-        Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
-        ets = land_grid_values_for_date(LandGrid.new, date)
-        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
-        ImageCreator.create_image(ets, title, image_name(date), min_value: 0, max_value: 0.3)
-      rescue => e
-        Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
-        return "no_data.png"
-      end
-    else
-      Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: ET data missing"
-      return "no_data.png"
-    end
+  def has_required_data?
+    weather && insolation
   end
 
-  def self.image_name(date)
-    "evapo_#{date.to_s(:number)}.png"
+  def weather
+    @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 
-  def self.land_grid_values_for_date(grid, date)
-    ets = grid
-    Evapotranspiration.where(date: date).each do |et|
-      lat = et.latitude
-      long = et.longitude
-      next unless grid.inside?(lat, long)
-      ets[lat, long] = et.potential_et
-    end
-    ets
+  def insolation
+    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
+  end
+
+  def already_calculated?
+    Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
   end
 
   def self.latest_date
@@ -51,19 +33,37 @@ class Evapotranspiration <  ApplicationRecord
       latitude)
   end
 
-  def has_required_data?
-    weather && insolation
+  def self.land_grid_for_date(date)
+    grid = LandGrid.new
+    Evapotranspiration.where(date: date).each do |et|
+      lat, long = et.latitude, et.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = et.potential_et
+    end
+    grid
   end
 
-  def weather
-    @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+  # Find max value for image creator with `Evapotranspiration.all.maximum(:potential_et)`
+  def self.create_image(date)
+    if EvapotranspirationDataImport.successful.where(readings_on: date).exists?
+      Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
+      begin
+        data = land_grid_for_date(date)
+        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+        file = image_name(date)
+        ImageCreator.create_image(data, title, file, min_value: 0, max_value: 0.3)
+      rescue => e
+        Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
+        return "no_data.png"
+      end
+    else
+      Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: ET data missing"
+      return "no_data.png"
+    end
   end
 
-  def insolation
-    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
+  def self.image_name(date)
+    "evapo_#{date.to_s(:number)}.png"
   end
 
-  def already_calculated?
-    Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
-  end
 end

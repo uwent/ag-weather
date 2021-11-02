@@ -2,6 +2,14 @@ class Precip < ApplicationRecord
 
   # precip units are in mm
 
+  def self.latest_date
+    Precip.maximum(:date)
+  end
+
+  def self.earliest_date
+    Precip.minimum(:date)
+  end
+
   def self.stats(date)
     precips = Precip.where(date: date)
 
@@ -33,23 +41,13 @@ class Precip < ApplicationRecord
     end
   end
 
-  def self.collect(query)
-    query.collect do |precip|
-      {
-        lat: precip.latitude,
-        long: precip.longitude,
-        precip: precip.precip
-      }
-    end
-  end
-
-  def self.create_image_data(date)
+  def self.land_grid_for_date(date)
     grid = LandGrid.new
     Precip.where(date: date).each do |precip|
       lat = precip.latitude
       long = precip.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = precip.precip.round(1)
+      grid[lat, long] = precip.precip.round(2)
     end
     grid
   end
@@ -58,7 +56,7 @@ class Precip < ApplicationRecord
     if PrecipDataImport.successful.where(readings_on: date).exists?
       begin
         Rails.logger.info "Precip :: Creating image for #{date}"
-        data = create_image_data(date)
+        data = land_grid_for_date(date)
         title = "Total daily precip (mm) for #{date.strftime("%b %-d, %Y")}"
         file = "precip_#{date.to_s(:number)}.png"
         ImageCreator.create_image(data, title, file)
@@ -68,15 +66,8 @@ class Precip < ApplicationRecord
       end
     else
       Rails.logger.warn "Precip :: Failed to create image for #{date}: Precip data missing."
+      return "no_data.png"
     end
-  end
-
-  def self.latest_date
-    Precip.maximum(:date)
-  end
-
-  def self.earliest_date
-    Precip.minimum(:date)
   end
 
 end
