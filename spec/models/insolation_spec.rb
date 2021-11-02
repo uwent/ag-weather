@@ -26,4 +26,22 @@ RSpec.describe Insolation, type: :model do
       expect(grid[LandExtent.max_lat, LandExtent.min_long]).to be_nil
     end
   end
+
+  describe "create image for date" do
+    let(:date) { Date.yesterday }
+
+    before(:each) do
+      FactoryBot.create(:insolation_data_import, readings_on: date)
+    end
+
+    it "should call ImageCreator when data sources loaded" do
+      expect(Insolation).to receive(:land_grid_for_date).exactly(1).times
+      expect(ImageCreator).to receive(:create_image).exactly(1).times
+      Insolation.create_image(date)
+    end
+
+    it "should return 'no_data.png' when data sources not loaded" do
+      expect(Insolation.create_image(date - 1.day)).to eq("no_data.png")
+    end
+  end
 end

@@ -22,8 +22,10 @@ class InsolationImporter
       InsolationDataImport.succeed(date)
       Insolation.create_image(date)
     rescue => e
-      Rails.logger.warn "InsolationImporter :: Fetch day failed: #{e.message}"
-      InsolationDataImport.fail(date, e.message)
+      msg = "Unable to retrieve insolation data: #{e.message}"
+      Rails.logger.warn "InsolationImporter :: #{msg}"
+      InsolationDataImport.fail(date, msg)
+      return msg
     end
   end
 

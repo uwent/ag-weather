@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe WeatherDatum, type: :model do
 
-  describe "calculate_all_degree_days_for_date_range" do
+  describe ".calculate_all_degree_days_for_date_range" do
     it "calculates a degree day value for date range" do
       latitude = Wisconsin.min_lat
       longitude = Wisconsin.min_long
@@ -126,6 +126,24 @@ RSpec.describe WeatherDatum, type: :model do
 
       expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
       WeatherDatum.calculate_all_degree_days(10.days.ago)
+    end
+  end
+
+  describe "create image for date" do
+    let(:date) { Date.yesterday }
+
+    before(:each) do
+      FactoryBot.create(:weather_data_import, readings_on: date)
+    end
+
+    it "should call ImageCreator when data sources loaded" do
+      expect(WeatherDatum).to receive(:image_data_grid).exactly(1).times
+      expect(ImageCreator).to receive(:create_image).exactly(1).times
+      WeatherDatum.create_image(date)
+    end
+
+    it "should return 'no_data.png' when data sources not loaded" do
+      expect(WeatherDatum.create_image(date - 1.day)).to eq("no_data.png")
     end
   end
 end

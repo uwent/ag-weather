@@ -27,13 +27,21 @@ class PrecipImporter
     "#{LOCAL_DIR}/#{date.to_s(:number)}.grb2"
   end
 
+  def self.remote_dir(date)
+    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_s(:number)}"
+  end
+
+  def self.remote_file(date)
+    "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+  end
+
   def self.fetch_day(date)
     start_time = Time.current
     PrecipDataImport.start(date)
 
     Rails.logger.info "PrecipImporter :: Fetching precip file for #{date}..."
-    remote_dir = "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_s(:number)}"
-    remote_file = "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+    remote_dir = remote_dir(date)
+    remote_file = remote_file(date)
     local_file = local_file(date)
 
     if File.exist?(local_file)
@@ -48,10 +56,9 @@ class PrecipImporter
         end
         FileUtils.mv("#{local_file}_part", local_file)
       rescue => e
-        client.close
         msg = "Unable to retrieve precip file: #{e.message}"
         Rails.logger.warn "PrecipImporter :: #{msg}"
-        PrecipDataImport.fail(msg)
+        PrecipDataImport.fail(date, msg)
         return msg
       end
     end
@@ -62,13 +69,13 @@ class PrecipImporter
   end
 
   def self.import_precip_data(date)
-    precips = load_grib(local_file(date))
+    precips = load_from(local_file(date))
     write_to_db(precips, date)
     PrecipDataImport.succeed(date)
     Precip.create_image(date)
   end
 
-  def self.load_grib(grib)
+  def self.load_from(grib)
     data = LandGrid.new
     data.each_point do |lat, long|
       data[lat, long] = []
