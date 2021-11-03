@@ -85,17 +85,19 @@ class PestForecastsController < ApplicationController
   end
 
   # GET: degree-day grid for date range
+
   # params (if pest):
   #   pest (required) - column name from pest_forecasts
   #   start_date - default 1st of year
   #   end_date - default today
   #   lat_range - min,max
   #   long_range - min,max
-  # params (computed from weather if no pest given):
+
+  # params (if no pest, degree days are computed from weather):
   #   start_date - default first of year
   #   end_date - default today
-  #   base - default 50F
-  #   upper - default 86F
+  #   t_base - default 50F
+  #   t_upper - default 86F
   #   lat_range (min,max) - default full extent
   #   long_range (min,max) - default full extent
 
@@ -130,8 +132,8 @@ class PestForecastsController < ApplicationController
       end
     else
       weather_info = {
-        base_temp: base,
-        upper_temp: upper,
+        t_base: t_base,
+        t_upper: t_upper,
         units: "Fahrenheit degree days"
       }
       weather = WeatherDatum.where(date: start_date..end_date)
@@ -142,9 +144,9 @@ class PestForecastsController < ApplicationController
         grid = weather.each_with_object(Hash.new(0)) do |w, h|
           coord = [w.latitude.to_f, w.longitude.to_f]
           if h[coord].nil?
-            h[coord] = w.degree_days(base, upper)
+            h[coord] = w.degree_days(t_base, t_upper)
           else
-            h[coord] += w.degree_days(base, upper)
+            h[coord] += w.degree_days(t_base, t_upper)
           end
           h
         end
@@ -286,8 +288,8 @@ class PestForecastsController < ApplicationController
   # params:
   #   lat (required) - degrees north
   #   long (required) - positive degrees west
-  #   base - degrees F
-  #   upper - degrees F
+  #   t_base - degrees F, default 50
+  #   t_upper - degrees F, default 86
   #   start_date - default 1st of year
   #   end_date - default today
 
@@ -309,8 +311,8 @@ class PestForecastsController < ApplicationController
           min_temp: w.min_temperature.round(1),
           max_temp: w.max_temperature.round(1),
           avg_temp: w.avg_temperature.round(1),
-          value: w.degree_days(base, upper).round(1),
-          cumulative_value: build_cumulative_dd(weather, w.date, base, upper).round(1)
+          value: w.degree_days(t_base, t_upper).round(1),
+          cumulative_value: build_cumulative_dd(weather, w.date, t_base, t_upper).round(1)
         }
       end
     else
@@ -325,8 +327,8 @@ class PestForecastsController < ApplicationController
     info = {
       lat: lat,
       long: long,
-      base_temp: base,
-      upper_temp: upper,
+      t_base: t_base,
+      t_upper: t_upper,
       units: "Fahrenheit degree days",
       start_date: start_date,
       end_date: end_date,
@@ -382,29 +384,21 @@ class PestForecastsController < ApplicationController
     weather
   end
 
-  def build_cumulative_dd(weather, date, base, upper)
+  def build_cumulative_dd(weather, date, t_base, t_upper)
     degree_days = []
     weather.select { |day| date >= day.date }
       .each do |w|
-        degree_days << w.degree_days(base, upper)
+        degree_days << w.degree_days(t_base, t_upper)
       end
     degree_days.sum
   end
 
   def start_date
-    begin
-      params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
-    rescue
-      Date.current.beginning_of_year
-    end
+    parse_date(params[:start_date], Date.current.beginning_of_year)
   end
 
   def end_date
-    begin
-      params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current
-    rescue
-      Date.current
-    end
+    parse_date(params[:end_date], Date.current)
   end
 
   def lat
@@ -416,31 +410,47 @@ class PestForecastsController < ApplicationController
   end
 
   def lat_range
-    begin
-      params[:lat_range] ? params[:lat_range].split(",").inject { |s,e| s.to_f.round(1)..e.to_f.round(1) } : LandExtent.latitudes
-    rescue
-      LandExtent.latitudes
-    end
+    parse_coords(params[:lat_range], LandExtent.latitudes)
   end
 
   def long_range
-    begin
-      params[:long_range] ? params[:long_range].split(",").inject { |s,e| s.to_f.round(1)..e.to_f.round(1) } : LandExtent.longitudes
-    rescue
-      LandExtent.longitudes
-    end
+    parse_coords(params[:long_range], LandExtent.longitudes)
   end
 
   def pest
     params[:pest]
   end
 
-  def base
-    params[:base].present? ? params[:base].to_f : DegreeDaysCalculator::BASE_F
+  def t_base
+    params[:t_base].present? ? params[:t_base].to_f : DegreeDaysCalculator::BASE_F
   end
 
-  def upper
-    params[:upper].present? ? params[:upper].to_f : PestForecast::NO_MAX
+  def t_upper
+    params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
+  end
+
+  def parse_date(param, default)
+    begin
+      param ? Date.parse(param) : default
+    rescue
+      default
+    end
+  end
+
+  def parse_coord(param, default)
+    begin
+      param.present? ? param.to_f.round(1) : default
+    rescue
+      default
+    end
+  end
+
+  def parse_coords(param, default)
+    begin
+      param.present? ? param.split(",").map(&:to_f).sort.inject { |a, b| a.round(1)..b.round(1) } : default
+    rescue
+      default
+    end
   end
 
 end
