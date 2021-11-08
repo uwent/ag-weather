@@ -113,134 +113,323 @@ RSpec.describe PestForecastsController, type: :controller do
     end
   end
 
-  describe "#custom if pest" do
+  describe "#custom" do
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
     let(:lats)  { 49..50 }
     let(:longs) { -90..-89 }
-    before(:each) do
-      lats.each do |lat|
-        longs.each do |long|
-          (start_date..end_date).each do |date|
-            FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+
+    context "if pest name given" do
+
+      before(:each) do
+        lats.each do |lat|
+          longs.each do |long|
+            (start_date..end_date).each do |date|
+              FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+            end
           end
         end
+      end
+
+      context "when request is valid" do
+        let(:params) {{
+          pest: "potato_blight_dsv",
+          start_date: start_date,
+          end_date: end_date
+        }}
+
+        it "is ok" do
+          get :custom, params: params
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "has the correct response structure" do
+          get :custom, params: params
+          expect(json.keys).to match([:status, :info, :data])
+          expect(json[:status]).to be_an(String)
+          expect(json[:info]).to be_an(Hash)
+          expect(json[:data]).to be_an(Array)
+          expect(json[:data][0].keys).to match([:lat, :long, :total])
+        end
+
+        it "has the correct number of elements" do
+          get :custom, params: params
+          expect(json[:data].size).to eq(lats.size * longs.size)
+        end
+
+        it "returns valid data" do
+          get :custom, params: params
+          expect(json[:data][0][:lat]).to be_an(Numeric)
+          expect(json[:data][0][:long]).to be_an(Numeric)
+          expect(json[:data][0][:total]).to be_an(Numeric)
+        end
+
+        it "defaults start_date to beginning of year" do
+          params.delete(:start_date)
+          get :custom, params: params
+          expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        end
+
+        it "defaults end_date to today" do
+          params.delete(:end_date)
+          get :custom, params: params
+          expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        end
+
+        it "can restrict lat range" do
+          params[:lat_range] = "50,50"
+          get :custom, params: params
+          expect(json[:info][:lat_range]).to eq([50.0, 50.0])
+          expect(json[:data].size).to eq(longs.size)
+        end
+
+        it "can restrict long range" do
+          params[:long_range] = "-90,-90"
+          get :custom, params: params
+          expect(json[:info][:long_range]).to eq([-90.0, -90.0])
+          expect(json[:data].size).to eq(lats.size)
+        end
+
+        it "can return a csv" do
+          get :custom, params: params, as: :csv
+          expect(response).to have_http_status(:ok)
+          expect(response.header["Content-Type"]).to include("text/csv")
+        end
+      end
+    end
+
+    context "if no pest name given" do
+
+      before(:each) do
+        lats.each do |lat|
+          longs.each do |long|
+            (start_date..end_date).each do |date|
+              FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
+            end
+          end
+        end
+      end
+
+      context "when request is valid" do
+        let(:params) {{
+          start_date: start_date,
+          end_date: end_date
+        }}
+
+        it "is ok" do
+          get :custom, params: params
+          expect(response).to have_http_status(:ok)
+        end
+
+        it "has the correct response structure" do
+          get :custom, params: params
+          expect(json.keys).to match([:status, :info, :data])
+          expect(json[:status]).to be_an(String)
+          expect(json[:info]).to be_an(Hash)
+          expect(json[:data]).to be_an(Array)
+          expect(json[:data][0].keys).to match([:lat, :long, :total])
+        end
+
+        it "has the correct number of elements" do
+          get :custom, params: params
+          expect(json[:data].size).to eq(lats.size * longs.size)
+        end
+
+        it "returns valid data" do
+          get :custom, params: params
+          expect(json[:data][0][:lat]).to be_an(Numeric)
+          expect(json[:data][0][:long]).to be_an(Numeric)
+          expect(json[:data][0][:total]).to be_an(Numeric)
+        end
+      end
+    end
+  end
+
+  describe "#point_details" do
+    let(:lat)  { 42.0 }
+    let(:long) { -89.0 }
+    let(:start_date) { Date.current - 2.weeks }
+    let(:end_date) { Date.current - 1.week }
+
+    before(:each) do
+      (start_date..end_date).each do |date|
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
       end
     end
 
     context "when request is valid" do
       let(:params) {{
-        pest: "potato_blight_dsv",
+        lat: lat,
+        long: long,
         start_date: start_date,
-        end_date: end_date
+        end_date: end_date,
+        pest: "dd_50_86"
       }}
 
-      it "is ok" do
-        get :custom, params: params
+      it "is okay" do
+        get :point_details, params: params
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :custom, params: params
-        expect(json.keys).to match([:status, :info, :data])
-        expect(json[:status]).to be_an(String)
+        get :point_details, params: params
+        expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
-        expect(json[:data][0].keys).to match([:lat, :long, :total])
+        expect(json[:data].first.keys).to match([:date, :min_temp, :max_temp, :avg_temp, :avg_temp_hi_rh, :hours_hi_rh, :value, :cumulative_value])
       end
 
       it "has the correct number of elements" do
-        get :custom, params: params
-        expect(json[:data].size).to eq(lats.size * longs.size)
-      end
-
-      it "returns valid data" do
-        get :custom, params: params
-        expect(json[:data][0][:lat]).to be_an(Numeric)
-        expect(json[:data][0][:long]).to be_an(Numeric)
-        expect(json[:data][0][:total]).to be_an(Numeric)
+        get :point_details, params: params
+        expect(json[:data].length).to eq((start_date..end_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
-        get :custom, params: params
+        get :point_details, params: params
         expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
-        get :custom, params: params
+        get :point_details, params: params
         expect(json[:info][:end_date]).to eq(Date.current.to_s)
       end
-
-      it "can restrict lat range" do
-        params[:lat_range] = "50,50"
-        get :custom, params: params
-        expect(json[:info][:lat_range]).to eq([50.0, 50.0])
-        expect(json[:data].size).to eq(longs.size)
-      end
-
-      it "can restrict long range" do
-        params[:long_range] = "-90,-90"
-        get :custom, params: params
-        expect(json[:info][:long_range]).to eq([-90.0, -90.0])
-        expect(json[:data].size).to eq(lats.size)
+      
+      it "rounds lat and long to the nearest 0.1 degree" do
+        lat = 43.015
+        long = -89.49
+        params.update({
+          lat: lat,
+          long: long
+        })
+        get :point_details, params: params
+        expect(json[:info][:lat]).to eq(lat.round(1))
+        expect(json[:info][:long]).to eq(long.round(1))
       end
 
       it "can return a csv" do
-        get :custom, params: params, as: :csv
+        get :point_details, params: params, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
     end
 
+    context "when the request is invalid" do
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: start_date,
+        end_date: end_date,
+        pest: "dd_50_86"
+      }}
+
+      it "and has no latitude return no data" do
+        params.delete(:lat)
+        get :point_details, params: params
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
+      end
+
+      it "and has no longitude return no content" do
+        params.delete(:long)
+        get :point_details, params: params
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
+      end
+    end
   end
 
-  describe "#custom if no pest" do
+  describe "#custom_point_details" do
+    let(:lat)  { 42.0 }
+    let(:long) { -89.0 }
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
-    let(:lats)  { 49..50 }
-    let(:longs) { -90..-89 }
+
     before(:each) do
-      lats.each do |lat|
-        longs.each do |long|
-          (start_date..end_date).each do |date|
-            FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
-          end
-        end
+      (start_date..end_date).each do |date|
+        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
       end
     end
 
     context "when request is valid" do
       let(:params) {{
+        lat: lat,
+        long: long,
         start_date: start_date,
         end_date: end_date
       }}
 
-      it "is ok" do
-        get :custom, params: params
+      it "is okay" do
+        get :custom_point_details, params: params
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :custom, params: params
-        expect(json.keys).to match([:status, :info, :data])
-        expect(json[:status]).to be_an(String)
+        get :custom_point_details, params: params
+        expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
-        expect(json[:data][0].keys).to match([:lat, :long, :total])
+        expect(json[:data].first.keys).to match([:date, :min_temp, :max_temp, :avg_temp, :value, :cumulative_value])
       end
 
       it "has the correct number of elements" do
-        get :custom, params: params
-        expect(json[:data].size).to eq(lats.size * longs.size)
+        get :custom_point_details, params: params
+        expect(json[:data].length).to eq((start_date..end_date).count)
       end
 
-      it "returns valid data" do
-        get :custom, params: params
-        expect(json[:data][0][:lat]).to be_an(Numeric)
-        expect(json[:data][0][:long]).to be_an(Numeric)
-        expect(json[:data][0][:total]).to be_an(Numeric)
+      it "defaults start_date to beginning of year" do
+        params.delete(:start_date)
+        get :custom_point_details, params: params
+        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+      end
+
+      it "defaults end_date to today" do
+        params.delete(:end_date)
+        get :custom_point_details, params: params
+        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+      end
+      
+      it "rounds lat and long to the nearest 0.1 degree" do
+        lat = 43.015
+        long = -89.49
+        params.update({
+          lat: lat,
+          long: long
+        })
+        get :custom_point_details, params: params
+        expect(json[:info][:lat]).to eq(lat.round(1))
+        expect(json[:info][:long]).to eq(long.round(1))
+      end
+
+      it "can return a csv" do
+        get :custom_point_details, params: params, as: :csv
+        expect(response).to have_http_status(:ok)
+        expect(response.header["Content-Type"]).to include("text/csv")
+      end
+    end
+
+    context "when the request is invalid" do
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: start_date,
+        end_date: end_date
+      }}
+
+      it "and has no latitude return no data" do
+        params.delete(:lat)
+        get :custom_point_details, params: params
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
+      end
+
+      it "and has no longitude return no content" do
+        params.delete(:long)
+        get :custom_point_details, params: params
+        expect(json[:status]).to eq("no data")
+        expect(json[:data]).to be_empty
       end
     end
   end

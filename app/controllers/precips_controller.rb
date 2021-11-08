@@ -16,11 +16,14 @@ class PrecipsController < ApplicationController
       .order(:date)
 
     if precips.size > 0
+      cum_value = 0
       data = precips.collect do |precip|
+        value = precip.precip
+        cum_value += value
         {
           date: precip.date.to_s,
-          value: precip.precip.round(2),
-          cum_value: precips.where("date <= ?", precip.date).sum(:precip).round(2)
+          value: value.round(2),
+          cumulative_value: cum_value.round(2)
         }
       end
     else
@@ -30,8 +33,8 @@ class PrecipsController < ApplicationController
     values = data.map { |day| day[:value] }
 
     info = {
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       start_date: start_date,
       end_date: end_date,
       days_requested: (end_date - start_date).to_i,
@@ -179,9 +182,9 @@ def end_date
 end
 
 def lat
-  params[:lat]
+  params[:lat].to_d.round(1)
 end
 
 def long
-  params[:long]
+  params[:long].to_d.round(1)
 end

@@ -7,7 +7,7 @@ FORMAT: 1A
 
 ## index [/degree_days]
 
-### List degree days for location [GET /degree_days{?lat,long,start_date,end_date,base,upper,method,units}]
+### List degree days for location [GET /degree_days{?lat,long,start_date,end_date,t_base,t_upper,method,units}]
 
 + Parameters
     + lat: `45.0` (number) - north latitude
@@ -501,6 +501,10 @@ Returns weather and pest forecast data for grid point in date range
             + end_date (string)
             + days_requested (number)
             + days_returned (number)
+            + units (object)
+            + cumulative_value (number)
+            + mean_value (number)
+            + mean_value_last_7_days (number)
             + compute_time (number)
         + data (array)
             + (object)
@@ -551,6 +555,7 @@ Returns weather and pest forecast data for grid point in date range
             + end_date (string)
             + days_requested (number)
             + days_returned (number)
+            + units (object)
             + compute_time (number)
         + data (array)
             + (object)
@@ -593,8 +598,8 @@ Returns weather and pest forecast data for grid point in date range
 ## `et/insol/precip index data` (object)
 + status (string)
 + info (object)
-    + lat (string)
-    + long (string)
+    + lat (number)
+    + long (number)
     + start_date (string)
     + end_date (string)
     + days_requested (number)
@@ -629,8 +634,8 @@ Returns weather and pest forecast data for grid point in date range
 ## `weather index data` (object)
 + status (string)
 + info (object)
-    + lat (string)
-    + long (string)
+    + lat (number)
+    + long (number)
     + start_date (string)
     + end_date (string)
     + days_requested (number)
@@ -681,6 +686,6 @@ Returns weather and pest forecast data for grid point in date range
     + compute_time (number) - seconds
 + data (array)
     + (object, optional)
-        + lat (string)
-        + long (string)
+        + lat (number)
+        + long (number)
         + total (number)

@@ -35,8 +35,8 @@ class WeatherController < ApplicationController
     values = data.map { |day| day[:value] }
 
     info = {
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       start_date: start_date,
       end_date: end_date,
       days_requested: (end_date - start_date).to_i,
@@ -177,11 +177,11 @@ class WeatherController < ApplicationController
   end
 
   def lat
-    params[:lat]
+    params[:lat].to_d.round(1)
   end
 
   def long
-    params[:long]
+    params[:long].to_d.round(1)
   end
 
 end

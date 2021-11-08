@@ -228,11 +228,15 @@ class PestForecastsController < ApplicationController
         .map { |pf| [pf.date, pf.send(pest)] }.to_h
       forecasts.default = 0
 
+      cum_value = 0
+
       if forecasts.size > 0
         data = WeatherDatum.where(latitude: lat, longitude: long)
         .where(date: start_date..end_date)
         .order(:date)
         .collect do |w|
+          value = forecasts[w.date]
+          cum_value += value
           {
             date: w.date,
             min_temp: w.min_temperature.round(1),
@@ -240,8 +244,8 @@ class PestForecastsController < ApplicationController
             avg_temp: w.avg_temperature.round(1),
             avg_temp_hi_rh: w.avg_temp_rh_over_90,
             hours_hi_rh: w.hours_rh_over_90,
-            value: forecasts[w.date].round(1),
-            cumulative_value: forecasts.select { |k, v| w.date >= k }.values.sum.round(1)
+            value: value.round(1),
+            cumulative_value: cum_value.round(1)
           }
         end
       else
@@ -251,19 +255,32 @@ class PestForecastsController < ApplicationController
       status = "pest not found"
     end
 
-    days_requested = (end_date - start_date).to_i
+    days_requested = (start_date..end_date).count
     days_returned = data.size
 
     status = "missing data" if status == "OK" && days_requested != days_returned ||= 0
 
+    values = data.map{ |d| d[:value] }
+
+    if values.count > 0
+      mean_value = (values.sum.to_f / values.count).round(1)
+      mean_value_last_7_days = (values.last(7).sum.to_f / values.last(7).count).round(1)
+    else
+      mean_value = mean_value_last_7_days = 0
+    end
+
     info = {
       pest: pest,
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
       days_returned: days_returned,
+      units: { temp: "C" },
+      cumulative_value: cum_value.round(1),
+      mean_value: mean_value,
+      mean_value_last_7_days: mean_value_last_7_days,
       compute_time: Time.current - start_time
     }
 
@@ -292,6 +309,7 @@ class PestForecastsController < ApplicationController
   #   t_upper - degrees F, default 86
   #   start_date - default 1st of year
   #   end_date - default today
+  #   in_f - default true (fahrenheit or celcius units)
 
   def custom_point_details
     start_time = Time.current
@@ -303,37 +321,41 @@ class PestForecastsController < ApplicationController
     .where(date: start_date..end_date)
     .order(:date)
 
+    cum_value = 0
+
     if weather.size > 0
       days_returned = weather.distinct.pluck(:date).size
       data = weather.collect do |w|
+        value = w.degree_days(t_base, t_upper)
+        cum_value += value
         {
           date: w.date,
           min_temp: w.min_temperature.round(1),
           max_temp: w.max_temperature.round(1),
           avg_temp: w.avg_temperature.round(1),
-          value: w.degree_days(t_base, t_upper).round(1),
-          cumulative_value: build_cumulative_dd(weather, w.date, t_base, t_upper).round(1)
+          value: value.round(1),
+          cumulative_value: cum_value.round(1)
         }
       end
     else
       status = "no data"
     end
 
-    days_requested = (end_date - start_date).to_i
+    days_requested = (start_date..end_date).count
     days_returned = data.size
 
     status = "missing data" if status == "OK" && days_requested != days_returned ||= 0
 
     info = {
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       t_base: t_base,
       t_upper: t_upper,
-      units: "Fahrenheit degree days",
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
       days_returned: days_returned,
+      units: { weather: "C", degree_days: "F" },
       compute_time: Time.current - start_time
     }
 
@@ -402,11 +424,11 @@ class PestForecastsController < ApplicationController
   end
 
   def lat
-    params[:lat].to_f.round(1)
+    params[:lat].to_d.round(1)
   end
 
   def long
-    params[:long].to_f.round(1)
+    params[:long].to_d.round(1)
   end
 
   def lat_range

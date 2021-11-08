@@ -32,8 +32,8 @@ class EvapotranspirationsController < ApplicationController
     days_returned = values.size
 
     info = {
-      lat: lat,
-      long: long,
+      lat: lat.to_f,
+      long: long.to_f,
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
@@ -190,9 +190,9 @@ def end_date
 end
 
 def lat
-  params[:lat]
+  params[:lat].to_d.round(1)
 end
 
 def long
-  params[:long]
+  params[:long].to_d.round(1)
 end

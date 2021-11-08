@@ -52,6 +52,18 @@ RSpec.describe WeatherController, type: :controller do
         expect(json[:info][:end_date]).to eq(Date.current.to_s)
       end
 
+      it "rounds lat and long to the nearest 0.1 degree" do
+        lat = 43.015
+        long = -89.49
+        params.update({
+          lat: lat,
+          long: long
+        })
+        get :index, params: params
+        expect(json[:info][:lat]).to eq(lat.round(1))
+        expect(json[:info][:long]).to eq(long.round(1))
+      end
+
       it "can return a csv" do
         get :index, params: params, as: :csv
         expect(response).to have_http_status(:ok)
