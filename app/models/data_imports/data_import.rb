@@ -1,9 +1,8 @@
 class DataImport < ApplicationRecord
-
   DAYS_BACK_WINDOW = 5
 
   def self.latest_date
-    (24.hours.ago).to_date
+    24.hours.ago.to_date
   end
 
   def self.earliest_date
@@ -67,7 +66,7 @@ class DataImport < ApplicationRecord
     count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
-    (start_date .. end_date).each do |date|
+    (start_date..end_date).each do |date|
       statuses = DataImport.on(date)
       if statuses.empty?
         count += 1
@@ -95,12 +94,12 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
-    return { count: count, message: message }
+    {count: count, message: message}
   end
 
   # sends status email if data loads have failed recently
   def self.send_status_email
-    status = self.check_statuses
+    status = check_statuses
     if status[:count] > 0
       Rails.logger.info("DataImport :: Abnormal data load detected, sending status email.")
       StatusMailer.daily_mail(status[:message]).deliver

@@ -1,5 +1,5 @@
 class StationHourlyObservationImporter
-  DATA_DIR = ENV['STATION_OBSERVATION_DIR'] || '/tmp/station_obs'
+  DATA_DIR = ENV["STATION_OBSERVATION_DIR"] || "/tmp/station_obs"
 
   def self.check_for_file_and_load
     datafiles = File.join(DATA_DIR, "*.dat")
@@ -7,30 +7,30 @@ class StationHourlyObservationImporter
       Rails.logger.info("Processing #{path}")
       process_file = path + ".processing"
       File.rename(path, process_file)
-      if self.load_data(process_file)
+      if load_data(process_file)
         File.delete(process_file) if File.exist?(process_file)
       end
     end
   end
 
   def self.get_location_from_file(path)
-    location = ''
+    location = ""
     CSV.foreach(path) do |row|
       location = row[1]
       break
     end
-    return Station.where(name: location).first
+    Station.where(name: location).first
   end
 
   def self.load_data(path)
-    station = self.get_location_from_file(path)
+    station = get_location_from_file(path)
     if station.nil?
       Rails.logger.warn("Unable to process (can't find station): #{path}")
       return false
     end
 
     last_reading = station.last_reading
-    last_date = last_reading.nil? ? Date.new(1900,1,1) : last_reading.reading_on
+    last_date = last_reading.nil? ? Date.new(1900, 1, 1) : last_reading.reading_on
     last_hour = last_reading.nil? ? 0 : last_reading.hour
 
     CSV.parse(File.readlines(path).drop(4).join) do |row|
@@ -42,7 +42,6 @@ class StationHourlyObservationImporter
       end
     end
 
-    return true
+    true
   end
-
 end

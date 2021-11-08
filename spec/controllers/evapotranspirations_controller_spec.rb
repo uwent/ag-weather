@@ -6,7 +6,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   describe "#index" do
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
-    let(:lat)  { 42.0 }
+    let(:lat) { 42.0 }
     let(:long) { -98.0 }
     before(:each) do
       (start_date..end_date).each do |date|
@@ -16,12 +16,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "is okay" do
         get :index, params: params
@@ -51,7 +53,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
         get :index, params: params
         expect(json[:info][:end_date]).to eq(Date.current.to_s)
       end
-      
+
       it "rounds lat and long to the nearest 0.1 degree" do
         lat = 43.015
         long = -89.49
@@ -72,12 +74,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -105,29 +109,29 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json.keys).to eq([:map])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json[:map]).to eq(filename)
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date, format: :png }
+        get :show, params: {id: date, format: :png}
         expect(response.body).to include("<img src=#{filename}")
       end
     end
@@ -135,7 +139,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when the request is invalid" do
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: "foo" }
+        get :show, params: {id: "foo"}
         expect(json[:map]).to eq(filename)
       end
     end
@@ -154,17 +158,17 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -172,7 +176,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       end
 
       it "can return a csv" do
-        get :all_for_date, params: { date: date }, as: :csv
+        get :all_for_date, params: {date: date}, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -180,8 +184,8 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get :all_for_date, params: { date: empty_date }
-        expect(json[:info][:date]).to eq((empty_date).to_s)
+        get :all_for_date, params: {date: empty_date}
+        expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
       end
     end
@@ -189,7 +193,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json[:info][:date]).to eq((date2).to_s)
+        expect(json[:info][:date]).to eq(date2.to_s)
       end
     end
   end
@@ -243,7 +247,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
         latitude: 43
       }
 
-      expect(json.keys).to match([:inputs,:value])
+      expect(json.keys).to match([:inputs, :value])
     end
   end
 end

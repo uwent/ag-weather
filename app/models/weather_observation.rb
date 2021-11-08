@@ -1,6 +1,6 @@
 class WeatherObservation
   attr_accessor :temperature, :dew_point
-  
+
   # assumes the data passed in is in Kelvin
   def initialize(temperature, dew_point)
     @temperature = temperature.nil? ? 0.0 : k_to_c(temperature)

@@ -3,7 +3,7 @@ require "open3"
 class WeatherHour
   attr_reader :data
 
-  def initialize()
+  def initialize
     @data = LandGrid.new
     LandExtent.each_point do |lat, long|
       @data[lat, long] = {

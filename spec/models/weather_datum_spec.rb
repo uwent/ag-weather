@@ -1,18 +1,19 @@
 require "rails_helper"
 
 RSpec.describe WeatherDatum, type: :model do
-
   describe ".calculate_all_degree_days_for_date_range" do
     it "calculates a degree day value for date range" do
       latitude = Wisconsin.min_lat
       longitude = Wisconsin.min_long
       key = [latitude, longitude]
-      1.upto(10) { |i| FactoryBot.create(
-        :weather_datum,
-        date: Date.current - i.days,
-        latitude: latitude,
-        longitude: longitude
-      )}
+      1.upto(10) { |i|
+        FactoryBot.create(
+          :weather_datum,
+          date: Date.current - i.days,
+          latitude: latitude,
+          longitude: longitude
+        )
+      }
 
       grid = WeatherDatum.calculate_all_degree_days_for_date_range(
         lat_range: Wisconsin.latitudes,

@@ -4,9 +4,9 @@ class RangeArray
   EPSILON = 0.00001
 
   def initialize(min, max, step)
-    raise TypeError, "minimum must be less than maximum" if (min >= max)
-    raise TypeError, "step must be greater than 0" if (step <= 0)
-    raise TypeError, "step must be less than the difference of max and min" if (step > max - min)
+    raise TypeError, "minimum must be less than maximum" if min >= max
+    raise TypeError, "step must be greater than 0" if step <= 0
+    raise TypeError, "step must be less than the difference of max and min" if step > max - min
     @range = min..max
     @step = step
     @data = Array.new(number_of_points)
@@ -23,13 +23,13 @@ class RangeArray
   def point_at_index(idx)
     raise IndexError, "idx must be greater than zero" if idx < 0
     raise IndexError, "idx must be less than length" if idx >= number_of_points
-    return (idx * @step + @range.min).round(6)
+    (idx * @step + @range.min).round(6)
   end
 
   def closest_point(point)
     return @range.min if point < @range.min
     return point_at_index(number_of_points - 1) if point > @range.max
-    return point_at_index(closest_index(point))
+    point_at_index(closest_index(point))
   end
 
   def includes_point?(point)
@@ -37,7 +37,7 @@ class RangeArray
   end
 
   def index_for_point(point)
-    raise IndexError, "point [#{point}] not defined in RangeArray" unless (includes_point? point)
+    raise IndexError, "point [#{point}] not defined in RangeArray" unless includes_point? point
     closest_index(point)
   end
 
@@ -49,8 +49,9 @@ class RangeArray
     @data[index_for_point(point)] = value
   end
 
-  private 
-    def closest_index(point)
-      ((point - @range.min) / @step).round
-    end
+  private
+
+  def closest_index(point)
+    ((point - @range.min) / @step).round
+  end
 end

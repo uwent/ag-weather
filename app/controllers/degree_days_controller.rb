@@ -1,5 +1,4 @@
 class DegreeDaysController < ApplicationController
-
   # This was never implemented and doesn't generate any map images.
   # def show
   #   @map = "path/to/degree_day/map.img"
@@ -84,10 +83,10 @@ class DegreeDaysController < ApplicationController
     }
 
     respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "degree day data for #{lat}, #{long}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
@@ -137,21 +136,17 @@ class DegreeDaysController < ApplicationController
   def long
     params[:long] ? params[:long].to_d.round(1) : nil
   end
-  
+
   def start_date
-    begin
-      params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
-    rescue
-      Date.current.beginning_of_year
-    end
+    params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+  rescue
+    Date.current.beginning_of_year
   end
 
   def end_date
-    begin
-      params[:end_date] ? Date.parse(params[:end_date]) : Date.current
-    rescue
-      Date.current
-    end
+    params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+  rescue
+    Date.current
   end
 
   def base_temp
@@ -169,5 +164,4 @@ class DegreeDaysController < ApplicationController
   def pest
     params[:pest]
   end
-
 end

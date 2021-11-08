@@ -1,10 +1,9 @@
-require 'rails_helper'
-require 'net/ftp'
+require "rails_helper"
+require "net/ftp"
 
 RSpec.describe PrecipImporter, type: :model do
-
   let(:date) { Date.current }
-  
+
   describe ".fetch" do
     it "should fetch precips for each day required" do
       unloaded_days = [Date.current - 3.days, Date.current - 1.day]
@@ -38,7 +37,7 @@ RSpec.describe PrecipImporter, type: :model do
 
     describe ".local_file" do
       it "should create the local directory if it doesn't exist" do
-        expect(FileUtils).to receive(:mkdir_p).with("#{PrecipImporter::LOCAL_DIR}").once
+        expect(FileUtils).to receive(:mkdir_p).with(PrecipImporter::LOCAL_DIR.to_s).once
         PrecipImporter.local_file(date)
       end
 
@@ -95,5 +94,4 @@ RSpec.describe PrecipImporter, type: :model do
       expect { PrecipImporter.write_to_db(precip_mock, date) }.to change { Precip.count }.by(LandExtent.num_points)
     end
   end
-
 end

@@ -15,7 +15,7 @@ class WeatherDay
     Dir["#{dirname}/*.grb2_wexp"].each_with_index do |filename, i|
       Rails.logger.info "WeatherDay :: Loading hour #{i}..."
       hour_start = Time.current
-      wh = WeatherHour.new()
+      wh = WeatherHour.new
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
       Rails.logger.info ">> Processed hour #{i} in #{(Time.current - hour_start).to_i} seconds"
@@ -28,11 +28,11 @@ class WeatherDay
   end
 
   def temperatures_at(lat, long)
-    @data[lat,long].map(&:temperature)
+    @data[lat, long].map(&:temperature)
   end
 
   def dew_points_at(lat, long)
-    @data[lat,long].map(&:dew_point)
+    @data[lat, long].map(&:dew_point)
   end
 
   def add_data_from_weather_hour(hour)

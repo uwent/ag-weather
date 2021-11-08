@@ -58,7 +58,7 @@ RSpec.describe ImageCreator do
       # skip("Returns one extra line than it should!")
     end
   end
-  
+
   describe "generate image files" do
     it "should call gnuplot and imagemagick" do
       allow(File).to receive(:delete)

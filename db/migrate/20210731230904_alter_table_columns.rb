@@ -29,6 +29,5 @@ class AlterTableColumns < ActiveRecord::Migration[6.1]
       t.change :latitude, :decimal, precision: 10, scale: 6
       t.change :longitude, :decimal, precision: 10, scale: 6
     end
-
   end
 end

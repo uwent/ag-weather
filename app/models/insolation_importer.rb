@@ -1,5 +1,4 @@
 class InsolationImporter
-
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
 
   def self.fetch
@@ -7,13 +6,13 @@ class InsolationImporter
   end
 
   def self.formatted_date(date)
-    "#{date.year}#{date.yday.to_s.rjust(3, '0')}"
+    "#{date.year}#{date.yday.to_s.rjust(3, "0")}"
   end
 
   def self.fetch_day(date)
     InsolationDataImport.start(date)
     Rails.logger.info "InsolationImporter :: Fetching insolation data for #{date}"
-    
+
     begin
       url = "#{URL_BASE}.#{formatted_date(date)}"
       Rails.logger.info "GET #{url}"
@@ -25,7 +24,7 @@ class InsolationImporter
       msg = "Unable to retrieve insolation data: #{e.message}"
       Rails.logger.warn "InsolationImporter :: #{msg}"
       InsolationDataImport.fail(date, msg)
-      return msg
+      msg
     end
   end
 
@@ -55,5 +54,4 @@ class InsolationImporter
       Insolation.import(insolations)
     end
   end
-
 end

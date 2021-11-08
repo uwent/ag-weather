@@ -1,5 +1,4 @@
 class PestForecastImporter
-
   def self.create_forecast_data
     days_to_load = PestForecastDataImport.days_to_load
 
@@ -17,7 +16,7 @@ class PestForecastImporter
 
     weather = WeatherDatum.land_grid_for_date(date)
     forecasts = []
-    
+
     LandExtent.each_point do |lat, long|
       next unless LandExtent.inside?(lat, long)
 

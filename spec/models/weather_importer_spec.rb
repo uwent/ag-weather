@@ -6,19 +6,19 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe ".remote_dir" do
     it "should get the proper remote directory given a date" do
-      expect(WeatherImporter.remote_dir(today)).to eq "#{WeatherImporter::REMOTE_BASE_DIR}/urma2p5.#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.remote_dir(today)).to eq "#{WeatherImporter::REMOTE_BASE_DIR}/urma2p5.#{today.strftime("%Y%m%d")}"
     end
   end
 
   describe ".local_dir" do
     let(:today) { Date.current }
     it "should return the local directory to store the weather files" do
-      expect(WeatherImporter.local_dir(today)).to eq "#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime('%Y%m%d')}"
+      expect(WeatherImporter.local_dir(today)).to eq "#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime("%Y%m%d")}"
     end
 
     it "should create local directories if they don't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime('%Y%m%d')}").once
+      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/#{today.strftime("%Y%m%d")}").once
       WeatherImporter.local_dir(today)
     end
   end
@@ -115,7 +115,7 @@ RSpec.describe WeatherImporter, type: :model do
     it "should save the weather data" do
       allow(weather_day).to receive(:observations_at).and_return([WeatherObservation.new(21, 18)])
       allow(weather_day).to receive(:date).and_return(Date.yesterday)
-      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change {WeatherDatum.count}.by(LandExtent.num_points)
+      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
     end
   end
 
@@ -156,7 +156,7 @@ RSpec.describe WeatherImporter, type: :model do
     it "should return the 'average' (sum of low and high/2) of an array" do
       expect(WeatherImporter.weather_average([0.0, 1.0, 5.0, 10.0])).to eq 5.0
     end
-    
+
     it "should return 0 for an empty array" do
       expect(WeatherImporter.weather_average([])).to eq 0.0
     end
@@ -164,7 +164,7 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe "central time" do
     it "should return a time for a given date and hour in Central Time" do
-      expect(WeatherImporter.central_time(today, 0).zone).to eq 'CST'
+      expect(WeatherImporter.central_time(today, 0).zone).to eq "CST"
     end
 
     it "should set the hour as given" do
@@ -175,5 +175,4 @@ RSpec.describe WeatherImporter, type: :model do
       expect(WeatherImporter.central_time(today, 0).to_date).to eq today
     end
   end
-
 end

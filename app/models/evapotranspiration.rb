@@ -1,5 +1,4 @@
-class Evapotranspiration <  ApplicationRecord
-
+class Evapotranspiration < ApplicationRecord
   def has_required_data?
     weather && insolation
   end
@@ -30,7 +29,8 @@ class Evapotranspiration <  ApplicationRecord
       weather_data.vapor_pressure,
       insolation,
       date.yday,
-      latitude)
+      latitude
+    )
   end
 
   def self.land_grid_for_date(date)
@@ -49,21 +49,20 @@ class Evapotranspiration <  ApplicationRecord
       Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
       begin
         data = land_grid_for_date(date)
-        title = "Estimated ET (Inches/day) for #{date.strftime('%-d %B %Y')}"
+        title = "Estimated ET (Inches/day) for #{date.strftime("%-d %B %Y")}"
         file = image_name(date)
         ImageCreator.create_image(data, title, file, min_value: 0, max_value: 0.3)
       rescue => e
         Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
-        return "no_data.png"
+        "no_data.png"
       end
     else
       Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: ET data missing"
-      return "no_data.png"
+      "no_data.png"
     end
   end
 
   def self.image_name(date)
     "evapo_#{date.to_s(:number)}.png"
   end
-
 end

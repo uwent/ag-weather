@@ -6,7 +6,7 @@ RSpec.describe PrecipsController, type: :controller do
   describe "#index" do
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
-    let(:lat)  { 42.0 }
+    let(:lat) { 42.0 }
     let(:long) { -95.0 }
 
     before(:each) do
@@ -17,12 +17,14 @@ RSpec.describe PrecipsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) { {
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      } }
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "is okay" do
         get :index, params: params
@@ -61,12 +63,14 @@ RSpec.describe PrecipsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -95,29 +99,29 @@ RSpec.describe PrecipsController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json.keys).to eq([:map])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json[:map]).to eq(filename)
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date, format: :png }
+        get :show, params: {id: date, format: :png}
         expect(response.body).to include("<img src=#{filename}")
       end
     end
@@ -125,7 +129,7 @@ RSpec.describe PrecipsController, type: :controller do
     context "when the request is invalid" do
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: "foo" }
+        get :show, params: {id: "foo"}
         expect(json[:map]).to eq(filename)
       end
     end
@@ -135,7 +139,7 @@ RSpec.describe PrecipsController, type: :controller do
     let(:date) { Date.current - 1.month }
     let(:date2) { Date.current - 1.week }
     let(:empty_date) { Date.current - 1.year }
-    let(:params) { { date: date } }
+    let(:params) { {date: date} }
     before(:each) do
       FactoryBot.create(:precip, date: date)
       FactoryBot.create(:precip_data_import, readings_on: date)
@@ -171,8 +175,8 @@ RSpec.describe PrecipsController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get :all_for_date, params: { date: empty_date }
-        expect(json[:info][:date]).to eq((empty_date).to_s)
+        get :all_for_date, params: {date: empty_date}
+        expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
       end
     end
@@ -180,7 +184,7 @@ RSpec.describe PrecipsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json[:info][:date]).to eq((date2).to_s)
+        expect(json[:info][:date]).to eq(date2.to_s)
       end
     end
   end

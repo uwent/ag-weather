@@ -1,5 +1,5 @@
 begin
-  require 'dredd/rack'
+  require "dredd/rack"
 
   # Allow the automatic setup of a local application server when necessary
   #

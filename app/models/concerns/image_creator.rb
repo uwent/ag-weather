@@ -1,5 +1,4 @@
 module ImageCreator
-
   IMAGE_STEP = 0.1
 
   def self.url_path
@@ -20,18 +19,18 @@ module ImageCreator
       max_value || max_value_for_gnuplot(data_grid.max)
     )
     File.delete(datafile_name)
-    return image_filename
+    image_filename
   end
 
   def self.create_data_file(data_grid)
-    data_filename = temp_filename('dat')
+    data_filename = temp_filename("dat")
 
     last_lat = data_grid.latitudes.min
-    File.open(data_filename, 'w') do |file|
+    File.open(data_filename, "w") do |file|
       data_grid.each_point do |lat, long|
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
-        file.puts "#{lat} #{long} #{data_grid[lat,long].round(2)}" unless data_grid[lat, long].nil?
+        file.puts "#{lat} #{long} #{data_grid[lat, long].round(2)}" unless data_grid[lat, long].nil?
         last_lat = lat
       end
     end
@@ -40,21 +39,21 @@ module ImageCreator
   end
 
   def self.generate_image_file(datafile_name, image_name, title, min_value, max_value)
-    temp_image = temp_filename('png')
-    image_fullpath = File.join(self.file_path, image_name)
+    temp_image = temp_filename("png")
+    image_fullpath = File.join(file_path, image_name)
 
     # Gnuplot
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min_value}; max_val=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
     Rails.logger.debug(">> gnuplot cmd: #{gnuplot_cmd}")
-    %x(#{gnuplot_cmd})
+    `#{gnuplot_cmd}`
 
     # Image Magick
     image_cmd = "composite lib/map_overlay_branded.png #{temp_image} #{image_fullpath}"
     Rails.logger.debug(">> imagemagick cmd: #{image_cmd}")
-    %x(#{image_cmd})
+    `#{image_cmd}`
 
     File.delete(temp_image)
-    return image_name
+    image_name
   end
 
   def self.temp_filename(suffix)
@@ -65,14 +64,13 @@ module ImageCreator
     return 0 if val.nil?
     return (val + 0.005).round(2) if val < 0.1
     return (val + 0.05).round(1) if val < 1
-    return val.ceil
+    val.ceil
   end
 
   def self.min_value_for_gnuplot(val)
     return 0 if val.nil?
     return (val - 0.005).round(2) if val < 0.1
     return (val - 0.05).round(1) if val < 1
-    return val.floor
+    val.floor
   end
-
 end

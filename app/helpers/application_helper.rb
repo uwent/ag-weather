@@ -1,5 +1,4 @@
 module ApplicationHelper
-
   # convert celcius to fahrenheit
   def c_to_f(c)
     c.to_f * 9.0 / 5.0 + 32.0
@@ -22,18 +21,15 @@ module ApplicationHelper
 
   def to_csv(data, headers = nil)
     CSV.generate do |csv|
-      begin
-        if headers
-          headers.each { |h| csv << [h[0], h[1]]}
-          csv << []
-        end
-        csv << data.first.keys
-        data.each do |h|
-          csv << h.values
-        end
-      rescue
+      if headers
+        headers.each { |h| csv << [h[0], h[1]] }
+        csv << []
       end
+      csv << data.first.keys
+      data.each do |h|
+        csv << h.values
+      end
+    rescue
     end
   end
-  
 end

@@ -1,7 +1,6 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Precip, type: :model do
-  
   describe "construct land grid grid with precip values for given date" do
     let(:date) { Date.current }
 
@@ -12,13 +11,14 @@ RSpec.describe Precip, type: :model do
     it "should have precips stored" do
       1.upto(5) do
         lat, long = LandExtent.random_point
-        precip = rand().round(2)
+        precip = rand.round(2)
         FactoryBot.create(
           :precip,
           date: date,
           latitude: lat,
           longitude: long,
-          precip: precip)
+          precip: precip
+        )
         grid = Precip.land_grid_for_date(date)
         expect(grid[lat, long]).to eq precip
       end
@@ -48,5 +48,4 @@ RSpec.describe Precip, type: :model do
       expect(Precip.create_image(date - 1.day)).to eq("no_data.png")
     end
   end
-
 end

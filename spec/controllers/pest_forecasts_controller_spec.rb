@@ -6,7 +6,7 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#index" do
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
-    let(:lats)  { 49..50 }
+    let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
     before(:each) do
       lats.each do |lat|
@@ -19,11 +19,13 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {{
-        pest: "potato_blight_dsv",
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          pest: "potato_blight_dsv",
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "is okay" do
         get :index, params: params
@@ -78,11 +80,13 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when request is invalid" do
-      let(:params) {{
-        pest: "potato_blight_dsv",
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          pest: "potato_blight_dsv",
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "returns no data if no pest" do
         params.delete(:pest)
@@ -116,11 +120,10 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#custom" do
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
-    let(:lats)  { 49..50 }
+    let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
 
     context "if pest name given" do
-
       before(:each) do
         lats.each do |lat|
           longs.each do |long|
@@ -132,11 +135,13 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       context "when request is valid" do
-        let(:params) {{
-          pest: "potato_blight_dsv",
-          start_date: start_date,
-          end_date: end_date
-        }}
+        let(:params) {
+          {
+            pest: "potato_blight_dsv",
+            start_date: start_date,
+            end_date: end_date
+          }
+        }
 
         it "is ok" do
           get :custom, params: params
@@ -199,7 +204,6 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "if no pest name given" do
-
       before(:each) do
         lats.each do |lat|
           longs.each do |long|
@@ -211,10 +215,12 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       context "when request is valid" do
-        let(:params) {{
-          start_date: start_date,
-          end_date: end_date
-        }}
+        let(:params) {
+          {
+            start_date: start_date,
+            end_date: end_date
+          }
+        }
 
         it "is ok" do
           get :custom, params: params
@@ -246,7 +252,7 @@ RSpec.describe PestForecastsController, type: :controller do
   end
 
   describe "#point_details" do
-    let(:lat)  { 42.0 }
+    let(:lat) { 42.0 }
     let(:long) { -89.0 }
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
@@ -259,13 +265,15 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date,
-        pest: "dd_50_86"
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date,
+          pest: "dd_50_86"
+        }
+      }
 
       it "is okay" do
         get :point_details, params: params
@@ -296,7 +304,7 @@ RSpec.describe PestForecastsController, type: :controller do
         get :point_details, params: params
         expect(json[:info][:end_date]).to eq(Date.current.to_s)
       end
-      
+
       it "rounds lat and long to the nearest 0.1 degree" do
         lat = 43.015
         long = -89.49
@@ -317,13 +325,15 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date,
-        pest: "dd_50_86"
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date,
+          pest: "dd_50_86"
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -342,7 +352,7 @@ RSpec.describe PestForecastsController, type: :controller do
   end
 
   describe "#custom_point_details" do
-    let(:lat)  { 42.0 }
+    let(:lat) { 42.0 }
     let(:long) { -89.0 }
     let(:start_date) { Date.current - 2.weeks }
     let(:end_date) { Date.current - 1.week }
@@ -354,12 +364,14 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "is okay" do
         get :custom_point_details, params: params
@@ -390,7 +402,7 @@ RSpec.describe PestForecastsController, type: :controller do
         get :custom_point_details, params: params
         expect(json[:info][:end_date]).to eq(Date.current.to_s)
       end
-      
+
       it "rounds lat and long to the nearest 0.1 degree" do
         lat = 43.015
         long = -89.49
@@ -411,12 +423,14 @@ RSpec.describe PestForecastsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: start_date,
-        end_date: end_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: start_date,
+          end_date: end_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -470,7 +484,6 @@ RSpec.describe PestForecastsController, type: :controller do
       expect(json[:long_range].map(&:to_i)).to eq(longs)
     end
   end
-
 end
 
 private

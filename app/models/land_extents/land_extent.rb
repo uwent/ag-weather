@@ -1,5 +1,4 @@
 class LandExtent
-
   STEP = 0.1
 
   def self.latitudes
