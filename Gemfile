@@ -26,7 +26,7 @@ group :development do
   gem 'capistrano-rails', '~> 1.6', require: false
   gem 'capistrano-bundler', '~> 2.0', require: false
   gem 'letter_opener', '~> 1.7'
-  gem 'letter_opener_web', '~> 1.4'
+  gem 'letter_opener_web', '~> 2.0'
   gem 'web-console', '~> 4.1'
 end
 
