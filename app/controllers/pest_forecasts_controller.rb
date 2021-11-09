@@ -104,6 +104,7 @@ class PestForecastsController < ApplicationController
     start_time = Time.current
     status = "OK"
     info = {}
+    weather_info = {}
     data = []
 
     if pest
@@ -112,7 +113,6 @@ class PestForecastsController < ApplicationController
           .where(latitude: lat_range, longitude: long_range)
 
         if pest_data.size > 0
-          days_returned = pest_data.distinct.pluck(:date).size
           data = pest_data.group(:latitude, :longitude)
             .order(:latitude, :longitude)
             .select(:latitude, :longitude, "sum(#{pest}) as total")
@@ -139,7 +139,6 @@ class PestForecastsController < ApplicationController
         .where(latitude: lat_range, longitude: long_range)
 
       if weather.size > 0
-        days_returned = weather.distinct.pluck(:date).size
         grid = weather.each_with_object(Hash.new(0)) do |w, h|
           coord = [w.latitude.to_f, w.longitude.to_f]
           if h[coord].nil?
@@ -164,8 +163,8 @@ class PestForecastsController < ApplicationController
     lats = data.map { |d| d[:lat] }.uniq
     longs = data.map { |d| d[:long] }.uniq
     values = data.map { |d| d[:total] }
-    days_requested = (end_date - start_date).to_i
-    days_returned ||= 0
+    days_requested = (start_date..end_date).count
+    days_returned = data.size
 
     status = "missing data" if status == "OK" && days_requested != days_returned
 
@@ -179,7 +178,7 @@ class PestForecastsController < ApplicationController
       long_range: [longs.min, longs.max],
       grid_points: lats.count * longs.count || 0
     }
-      .merge(weather_info ||= {})
+      .merge(weather_info)
       .merge({
         min_value: values.min,
         max_value: values.max,
@@ -324,7 +323,6 @@ class PestForecastsController < ApplicationController
     cum_value = 0
 
     if weather.size > 0
-      days_returned = weather.distinct.pluck(:date).size
       data = weather.collect do |w|
         value = w.degree_days(t_base, t_upper)
         cum_value += value

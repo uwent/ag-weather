@@ -73,6 +73,12 @@ composite # confirm it works
 
 ### Running Tests
 
+#### Lint
+```bash
+# check code for style before commit
+bundle exec standardrb --fix
+```
+
 #### RSpec
 ```bash
 bundle exec rspec

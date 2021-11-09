@@ -3,7 +3,7 @@ require "rails_helper"
 # All resultant numbers have been pulled from UC-Davis degree calculator:
 # http://www.ipm.ucdavis.edu/WEATHER/index.html
 RSpec.describe DegreeDaysCalculator, type: :module do
-  EPSILON = 0.000001
+  let(:epsilon) { 0.000001 }
 
   describe "converts between temperature units" do
     it "should convert celcius to fahrenheit" do
@@ -16,7 +16,7 @@ RSpec.describe DegreeDaysCalculator, type: :module do
     it "should convert fahrenheit to celcius" do
       expect(DegreeDaysCalculator.f_to_c(-40)).to eq(-40)
       expect(DegreeDaysCalculator.f_to_c(32)).to eq(0)
-      expect(DegreeDaysCalculator.f_to_c(73.94)).to be_within(EPSILON).of(23.3)
+      expect(DegreeDaysCalculator.f_to_c(73.94)).to be_within(epsilon).of(23.3)
       expect(DegreeDaysCalculator.f_to_c(212)).to eq(100)
     end
   end
@@ -48,13 +48,13 @@ RSpec.describe DegreeDaysCalculator, type: :module do
       # min < max < base < upper
       expect(DegreeDaysCalculator.sine_degree_days(30, 39, 40, 90)).to eq(0.0)
       # min <  base < max < upper
-      expect(DegreeDaysCalculator.sine_degree_days(30, 45, 40, 90)).to be_within(EPSILON).of(1.2712244)
+      expect(DegreeDaysCalculator.sine_degree_days(30, 45, 40, 90)).to be_within(epsilon).of(1.2712244)
       # min <  base < upper < max
-      expect(DegreeDaysCalculator.sine_degree_days(38, 100, 40, 90)).to be_within(EPSILON).of(27.419432)
+      expect(DegreeDaysCalculator.sine_degree_days(38, 100, 40, 90)).to be_within(epsilon).of(27.419432)
       # base < min < max < upper
       expect(DegreeDaysCalculator.sine_degree_days(47, 80, 40, 90)).to eq(23.5)
       # base < min < upper < max
-      expect(DegreeDaysCalculator.sine_degree_days(63, 95, 40, 90)).to be_within(EPSILON).of(38.1473627)
+      expect(DegreeDaysCalculator.sine_degree_days(63, 95, 40, 90)).to be_within(epsilon).of(38.1473627)
       # base < upper < min < max
       expect(DegreeDaysCalculator.sine_degree_days(90, 95, 40, 80)).to eq(40.0)
     end

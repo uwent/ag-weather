@@ -34,7 +34,6 @@ RSpec.describe DataImport, type: :model do
 
     describe ".on" do
       it "returns DataImport records on date" do
-        record = DataImport.start(Date.current)
         expect(DataImport.on(Date.current)).to eq(DataImport.where(readings_on: Date.current))
       end
     end
@@ -45,13 +44,13 @@ RSpec.describe DataImport, type: :model do
       end
 
       it "or updates existing record" do
-        record = DataImport.start(Date.current)
+        DataImport.start(Date.current)
         expect { DataImport.start(Date.current) }.to change(DataImport, :count).by 0
       end
 
       it "creates a record with status started" do
-        newRecord = DataImport.start(Date.current)
-        expect(newRecord.status).to eq("started")
+        new_record = DataImport.start(Date.current)
+        expect(new_record.status).to eq("started")
       end
     end
 
@@ -61,7 +60,7 @@ RSpec.describe DataImport, type: :model do
       end
 
       it "or updates existing record" do
-        record = DataImport.start(Date.current)
+        DataImport.start(Date.current)
         expect { DataImport.succeed(Date.current) }.to change(DataImport, :count).by 0
       end
 
@@ -77,7 +76,7 @@ RSpec.describe DataImport, type: :model do
       end
 
       it "or updates an existing record" do
-        record = DataImport.fail(Date.current)
+        DataImport.fail(Date.current)
         expect { DataImport.fail(Date.current) }.to change(DataImport, :count).by 0
       end
 

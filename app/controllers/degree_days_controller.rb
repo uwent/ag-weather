@@ -73,7 +73,8 @@ class DegreeDaysController < ApplicationController
       units: units_text,
       min_value: values.min,
       max_value: values.max,
-      total: total.round(1)
+      total: total.round(1),
+      compute_time: Time.current - start_time
     }
 
     response = {

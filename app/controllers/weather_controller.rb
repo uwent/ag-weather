@@ -121,7 +121,6 @@ class WeatherController < ApplicationController
 
     lats = data.map { |d| d[:lat] }.uniq
     longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
 
     info = {
       date: date,

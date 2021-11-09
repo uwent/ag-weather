@@ -115,11 +115,11 @@ class WeatherImporter
   end
 
   def self.relative_humidity_over(observations, rh_cutoff)
-    observations.map(&:relative_humidity).select { |x| x >= rh_cutoff }.length
+    observations.map(&:relative_humidity).count { |x| x >= rh_cutoff }
   end
 
   def self.avg_temp_rh_over(observations, rh_cutoff)
-    over_rh_observations = observations.select { |observation| observation.relative_humidity >= rh_cutoff }
+    over_rh_observations = observations.select { |obs| obs.relative_humidity >= rh_cutoff }
     if over_rh_observations.size >= 1
       (over_rh_observations.map(&:temperature).sum / over_rh_observations.size).round(2)
     end
@@ -133,7 +133,7 @@ class WeatherImporter
 
   def self.weather_average(array)
     return 0.0 if array.empty?
-    (array.max + array.min) / 2
+    (array.max + array.min) / 2.0
   end
 
   def self.central_time(date, hour)

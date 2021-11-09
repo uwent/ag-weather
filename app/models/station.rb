@@ -13,7 +13,7 @@ class Station < ApplicationRecord
     min_temp = hours.map { |h| h.min_temperature }.min
     max_temp = hours.map { |h| h.max_temperature }.max
     avg_temp = (min_temp + max_temp) / 2.0
-    wet_hours = hours.select { |h| h.wet_hour? }.count
+    wet_hours = hours.count { |h| h.wet_hour? }
     {
       date: date,
       potato_late_blight_dsv: potato_late_blight_dsv_for(hours),
