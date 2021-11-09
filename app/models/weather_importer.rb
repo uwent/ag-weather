@@ -1,7 +1,6 @@
 require "net/ftp"
 
 class WeatherImporter
-
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp/gribdata"
@@ -43,7 +42,7 @@ class WeatherImporter
       Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
       first = central_time(date, 0)
       last = central_time(date, 23)
-      
+
       (first.to_i..last.to_i).step(1.hour) do |time_in_central|
         time = Time.at(time_in_central).utc
         remote_dir = remote_dir(time.to_date)
@@ -116,11 +115,11 @@ class WeatherImporter
   end
 
   def self.relative_humidity_over(observations, rh_cutoff)
-    observations.map(&:relative_humidity).select { |x| x >= rh_cutoff }.length
+    observations.map(&:relative_humidity).count { |x| x >= rh_cutoff }
   end
 
   def self.avg_temp_rh_over(observations, rh_cutoff)
-    over_rh_observations = observations.select { |observation| observation.relative_humidity >= rh_cutoff }
+    over_rh_observations = observations.select { |obs| obs.relative_humidity >= rh_cutoff }
     if over_rh_observations.size >= 1
       (over_rh_observations.map(&:temperature).sum / over_rh_observations.size).round(2)
     end
@@ -134,7 +133,7 @@ class WeatherImporter
 
   def self.weather_average(array)
     return 0.0 if array.empty?
-    (array.max + array.min) / 2
+    (array.max + array.min) / 2.0
   end
 
   def self.central_time(date, hour)
@@ -142,5 +141,4 @@ class WeatherImporter
       Time.zone.local(date.year, date.month, date.day, hour)
     end
   end
-
 end

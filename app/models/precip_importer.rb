@@ -2,7 +2,6 @@ require "net/ftp"
 require "open3"
 
 class PrecipImporter
-
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_DIR_BASE = "/pub/data/nccf/com/pcpanl/prod"
   LOCAL_DIR = "/tmp/gribdata/precip"
@@ -11,7 +10,7 @@ class PrecipImporter
   def self.fetch
     days_to_load = PrecipDataImport.days_to_load
     days_to_load.each do |day|
-      self.fetch_day(day)
+      fetch_day(day)
     end
   end
 
@@ -48,7 +47,7 @@ class PrecipImporter
       Rails.logger.debug "File #{local_file} ==> Exists"
     else
       begin
-        client = connect_to_server()
+        client = connect_to_server
         Rails.logger.debug "GET #{remote_dir}/#{remote_file} ==> #{local_file}"
         client.chdir(remote_dir)
         Timeout.timeout(60) do
@@ -125,5 +124,4 @@ class PrecipImporter
       Precip.import(precip_data)
     end
   end
-
 end

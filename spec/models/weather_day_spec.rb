@@ -1,8 +1,7 @@
 require "rails_helper"
 
 RSpec.describe WeatherDay do
-
-  let (:weather_day) { WeatherDay.new(Date.current) }
+  let(:weather_day) { WeatherDay.new(Date.current) }
   # let (:times) {
   #   ((((Wisconsin.max_lat - Wisconsin.min_lat) / Wisconsin.step) + 1) *
   #   (((Wisconsin.max_long - Wisconsin.min_long) / Wisconsin.step) + 1))
@@ -66,5 +65,4 @@ RSpec.describe WeatherDay do
       expect(weather_day.dew_points_at(Wisconsin.min_lat, Wisconsin.min_long)).to contain_exactly(1.0, 2.0)
     end
   end
-
 end

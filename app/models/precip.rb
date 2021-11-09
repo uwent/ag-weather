@@ -1,5 +1,4 @@
 class Precip < ApplicationRecord
-
   # precip units are in mm
 
   def self.latest_date
@@ -21,7 +20,7 @@ class Precip < ApplicationRecord
           precip: precip.precip
         }
       end
-      
+
       precips = data.map { |d| d[:precip] }
       pos_precips = precips.find_all { |n| n > 0 }
 
@@ -62,16 +61,15 @@ class Precip < ApplicationRecord
         ImageCreator.create_image(data, title, file, min_value: 0.0)
       rescue => e
         Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
-        return "no_data.png"
+        "no_data.png"
       end
     else
       Rails.logger.warn "Precip :: Failed to create image for #{date}: Precip data missing."
-      return "no_data.png"
+      "no_data.png"
     end
   end
 
   def self.image_name(date)
     "precip_#{date.to_s(:number)}.png"
   end
-
 end

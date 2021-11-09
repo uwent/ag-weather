@@ -1,36 +1,35 @@
 require "rails_helper"
 
 RSpec.describe WeatherObservation do
-
-  let (:weather_observation) { WeatherObservation.new(300.15, 290.15) }
+  let(:weather_observation) { WeatherObservation.new(300.15, 290.15) }
 
   context "initialization" do
-    it 'can be created' do
+    it "can be created" do
       expect(weather_observation).not_to be_nil
     end
 
-    it 'will default the temperature to 0.0 if nil' do
+    it "will default the temperature to 0.0 if nil" do
       observation = WeatherObservation.new(nil, 290.0)
       expect(observation.temperature).to eq 0.0
     end
 
-    it 'will default the dew point to 0.0 if nil' do
+    it "will default the dew point to 0.0 if nil" do
       observation = WeatherObservation.new(290.0, nil)
       expect(observation.dew_point).to eq 0.0
     end
 
-    it 'will set temperature passed to celcius' do
+    it "will set temperature passed to celcius" do
       expect(weather_observation.temperature).to eq 27.0
     end
 
-    it 'will set dew point passed to celcius' do
+    it "will set dew point passed to celcius" do
       expect(weather_observation.dew_point).to eq 17.0
     end
   end
 
-  context 'relative humidity' do
+  context "relative humidity" do
     # Verified data via https://bmcnoldy.rsmas.miami.edu/Humidity.html
-    it 'will compute correctly' do
+    it "will compute correctly" do
       expect(weather_observation.relative_humidity).to be_within(0.01).of(54.33)
 
       observation = WeatherObservation.new(300.0, 300.0)
@@ -44,7 +43,7 @@ RSpec.describe WeatherObservation do
     end
   end
 
-  describe '.k_to_c' do
+  describe ".k_to_c" do
     it "should return the proper value in Celcius" do
       expect(weather_observation.k_to_c(283.0)).to be_within(0.001).of(9.85)
     end

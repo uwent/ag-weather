@@ -1,5 +1,4 @@
 module RunTasks
-
   def self.all
     # fetch insolation data from SSEC server
     InsolationImporter.fetch
@@ -21,14 +20,12 @@ module RunTasks
   end
 
   def self.daily
-    begin
-      RunTasks.all
-      DataImport.send_status_email
-    rescue => e
-      status = DataImport.check_statuses
-      status[:message] << "ERROR: #{e.message}"
-      StatusMailer.daily_mail(status[:message]).deliver
-    end
+    RunTasks.all
+    DataImport.send_status_email
+  rescue => e
+    status = DataImport.check_statuses
+    status[:message] << "ERROR: #{e.message}"
+    StatusMailer.daily_mail(status[:message]).deliver
   end
 
   def self.all_for_date(date)

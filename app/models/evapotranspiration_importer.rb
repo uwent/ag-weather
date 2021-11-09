@@ -1,5 +1,4 @@
 class EvapotranspirationImporter
-
   def self.create_et_data
     EvapotranspirationDataImport.days_to_load.each { |day| calculate_et_for_date(day) }
   end
@@ -42,5 +41,4 @@ class EvapotranspirationImporter
     EvapotranspirationDataImport.succeed(date)
     Evapotranspiration.create_image(date)
   end
-
 end

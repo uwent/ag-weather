@@ -1,5 +1,4 @@
 class Station < ApplicationRecord
-
   has_many :station_hourly_observations
 
   def observations_for_day(date)
@@ -13,9 +12,9 @@ class Station < ApplicationRecord
 
     min_temp = hours.map { |h| h.min_temperature }.min
     max_temp = hours.map { |h| h.max_temperature }.max
-    avg_temp = (min_temp + max_temp)/2.0
-    wet_hours = hours.select { |h| h.wet_hour? }.count
-    return {
+    avg_temp = (min_temp + max_temp) / 2.0
+    wet_hours = hours.count { |h| h.wet_hour? }
+    {
       date: date,
       potato_late_blight_dsv: potato_late_blight_dsv_for(hours),
       min_temperature: min_temp.round(1),
@@ -73,35 +72,35 @@ class Station < ApplicationRecord
   end
 
   private
+
   def potato_late_blight_dsv_for hourly_observations
-    wet_hours = hourly_observations.select do | observation |
+    wet_hours = hourly_observations.select do |observation|
       observation.wet_hour?
     end
 
     return 0 if wet_hours.count == 0
 
-    wet_avg_temp = hourly_observations.map { |ob| (ob.max_temperature + ob.min_temperature)/2.0 }.sum/wet_hours.count
+    wet_avg_temp = hourly_observations.map { |ob| (ob.max_temperature + ob.min_temperature) / 2.0 }.sum / wet_hours.count
 
-    return compute_late_blight_dsv(wet_hours.count, wet_avg_temp)
+    compute_late_blight_dsv(wet_hours.count, wet_avg_temp)
   end
 
   def compute_late_blight_dsv(hours, temp)
-    if temp.in? (7.22 ... 12.222)
-      return 1 if hours.in? (16 .. 18)
-      return 2 if hours.in? (19 .. 21)
+    if temp.in?(7.22...12.222)
+      return 1 if hours.in?(16..18)
+      return 2 if hours.in?(19..21)
       return 3 if hours >= 22
-    elsif temp.in? (12.222 ... 15.556)
-      return 1 if hours.in? (13 .. 15)
-      return 2 if hours.in? (16 .. 18)
-      return 3 if hours.in? (19 .. 21)
+    elsif temp.in?(12.222...15.556)
+      return 1 if hours.in?(13..15)
+      return 2 if hours.in?(16..18)
+      return 3 if hours.in?(19..21)
       return 4 if hours >= 22
-    elsif temp.in? (15.556 ... 26.667)
-      return 1 if hours.in? (10 .. 12)
-      return 2 if hours.in? (13 .. 15)
-      return 3 if hours.in? (16 .. 18)
-      return 4 if hours.in? (19 .. 21)
+    elsif temp.in?(15.556...26.667)
+      return 1 if hours.in?(10..12)
+      return 2 if hours.in?(13..15)
+      return 3 if hours.in?(16..18)
+      return 4 if hours.in?(19..21)
     end
-    return 0
+    0
   end
-
 end

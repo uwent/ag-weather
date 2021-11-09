@@ -1,5 +1,4 @@
 class WeatherController < ApplicationController
-
   # GET: returns insols for lat, long, date range
   # params:
   #   lat (required)
@@ -19,10 +18,10 @@ class WeatherController < ApplicationController
     if weather.size > 0
       data = weather.collect do |w|
         {
-          date: w.date.to_s, 
+          date: w.date.to_s,
           min_temp: w.min_temperature.round(2),
           avg_temp: w.avg_temperature.round(2),
-          max_temp: w.max_temperature.round(2), 
+          max_temp: w.max_temperature.round(2),
           pressure: w.vapor_pressure.round(2),
           hours_rh_over_90: w.hours_rh_over_90,
           avg_temp_rh_over_90: w.avg_temp_rh_over_90
@@ -53,7 +52,7 @@ class WeatherController < ApplicationController
     }
 
     respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
         filename = "weather data for #{lat}, #{long} for #{end_date}.csv"
@@ -74,7 +73,7 @@ class WeatherController < ApplicationController
     image_filename = File.join(ImageCreator.file_path, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
-    if File.exists?(image_filename)
+    if File.exist?(image_filename)
       url = image_url
     else
       image_name = WeatherDatum.create_image(date)
@@ -84,7 +83,7 @@ class WeatherController < ApplicationController
     if request.format.png?
       render html: "<img src=#{url} height=100%>".html_safe
     else
-      render json: { map: url }
+      render json: {map: url}
     end
   end
 
@@ -109,7 +108,7 @@ class WeatherController < ApplicationController
           long: weather.longitude.round(1),
           min_temp: weather.min_temperature.round(2),
           avg_temp: weather.avg_temperature.round(2),
-          max_temp: weather.max_temperature.round(2), 
+          max_temp: weather.max_temperature.round(2),
           pressure: weather.vapor_pressure.round(2),
           hours_rh_over_90: weather.hours_rh_over_90,
           avg_temp_rh_over_90: weather.avg_temp_rh_over_90
@@ -122,7 +121,6 @@ class WeatherController < ApplicationController
 
     lats = data.map { |d| d[:lat] }.uniq
     longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
 
     info = {
       date: date,
@@ -139,11 +137,11 @@ class WeatherController < ApplicationController
     }
 
     respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = { status: status }.merge(info) unless params[:headers] == "false"
-        filename = "weather data grid for #{date.to_s}.csv"
+        headers = {status: status}.merge(info) unless params[:headers] == "false"
+        filename = "weather data grid for #{date}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end
@@ -183,5 +181,4 @@ class WeatherController < ApplicationController
   def long
     params[:long].to_d.round(1)
   end
-
 end

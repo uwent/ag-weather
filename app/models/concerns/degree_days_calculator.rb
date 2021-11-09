@@ -1,5 +1,4 @@
 module DegreeDaysCalculator
-
   INVERSE_PI = 1 / Math::PI
   BASE_F = 50
   UPPER_F = 86
@@ -45,11 +44,11 @@ module DegreeDaysCalculator
   def self.calculate(min, max, base: BASE_C, upper: UPPER_C, method: METHOD)
     case method
     when "average"
-      return average_degree_days(min, max, base)
+      average_degree_days(min, max, base)
     when "modified"
-      return modified_degree_days(min, max, base, upper)
+      modified_degree_days(min, max, base, upper)
     when "sine"
-      return sine_degree_days(min, max, base, upper)
+      sine_degree_days(min, max, base, upper)
     else
       raise ArgumentError, "method must be average, modified, or sine"
     end
@@ -75,37 +74,37 @@ module DegreeDaysCalculator
     average = (min + max) / 2.0
 
     # both min and max greater than upper
-    return upper - base if (min >= upper) 
+    return upper - base if min >= upper
 
     # both min and max less than base
-    return 0 if (max <= base) 
+    return 0 if max <= base
 
     # both min and max between base and upper
-    return average - base if (max <= upper && min >= base)
+    return average - base if max <= upper && min >= base
 
     alpha = (max - min) / 2.0
 
     # max is between base and upper, min is less than base
-    if (max <= upper && min < base)
+    if max <= upper && min < base
       time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
-      return INVERSE_PI *
-        ((average - base) *  (Math::PI / 2 - time_of_base_threshold_in_radians) +
+      INVERSE_PI *
+        ((average - base) * (Math::PI / 2 - time_of_base_threshold_in_radians) +
          alpha * Math.cos(time_of_base_threshold_in_radians))
 
     # max is greater than upper and min is between base and upper
-    elsif (max > upper && min >= base)
+    elsif max > upper && min >= base
       time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
-      return INVERSE_PI * (
-        (average - base) * (time_of_upper_threshold_in_radians + Math::PI/2) +
+      INVERSE_PI * (
+        (average - base) * (time_of_upper_threshold_in_radians + Math::PI / 2) +
         (upper - base) * (Math::PI / 2 - time_of_upper_threshold_in_radians) -
         alpha * Math.cos(time_of_upper_threshold_in_radians)
       )
 
     # max is greater than upper and min is less than base
-    elsif (max > upper && min < base)
+    elsif max > upper && min < base
       time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
       time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
-      return INVERSE_PI *
+      INVERSE_PI *
         ((average - base) *
          (time_of_upper_threshold_in_radians - time_of_base_threshold_in_radians) +
          alpha * (Math.cos(time_of_base_threshold_in_radians) -

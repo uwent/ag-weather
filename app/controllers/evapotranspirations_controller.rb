@@ -1,5 +1,4 @@
 class EvapotranspirationsController < ApplicationController
-  
   # GET: returns ets for lat, long, date range
   # params:
   #   lat (required)
@@ -53,10 +52,10 @@ class EvapotranspirationsController < ApplicationController
     }
 
     respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = { status: status }.merge(info) unless params[:headers] == "false"
+        headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "et data for #{lat}, #{long}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
@@ -75,7 +74,7 @@ class EvapotranspirationsController < ApplicationController
     image_filename = File.join(ImageCreator.file_path, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
-    if File.exists?(image_filename)
+    if File.exist?(image_filename)
       url = image_url
     else
       image_name = Evapotranspiration.create_image(date)
@@ -85,7 +84,7 @@ class EvapotranspirationsController < ApplicationController
     if request.format.png?
       render html: "<img src=#{url} height=100%>".html_safe
     else
-      render json: { map: url }
+      render json: {map: url}
     end
   end
 
@@ -104,7 +103,7 @@ class EvapotranspirationsController < ApplicationController
     rescue
       default_et_date
     end
-    
+
     ets = Evapotranspiration.where(date: date).order(:latitude, :longitude)
 
     if ets.size > 0
@@ -120,9 +119,9 @@ class EvapotranspirationsController < ApplicationController
       status = "no data"
     end
 
-    lats = data.map{ |d| d[:lat] }.uniq
-    longs = data.map{ |d| d[:long] }.uniq
-    values = data.map{ |d| d[:value] }
+    lats = data.map { |d| d[:lat] }.uniq
+    longs = data.map { |d| d[:long] }.uniq
+    values = data.map { |d| d[:value] }
 
     info = {
       date: date,
@@ -142,11 +141,11 @@ class EvapotranspirationsController < ApplicationController
     }
 
     respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8"}
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = { status: status }.merge(info) unless params[:headers] == "false"
-        filename = "et data grid for #{date.to_s}.csv"
+        headers = {status: status}.merge(info) unless params[:headers] == "false"
+        filename = "et data grid for #{date}.csv"
         send_data helpers.to_csv(response[:data], headers), filename: filename
       end
     end

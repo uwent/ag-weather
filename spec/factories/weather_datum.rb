@@ -6,6 +6,6 @@ FactoryBot.define do
     max_temperature { 12.5 }
     min_temperature { 8.9 }
     avg_temperature { 10.7 }
-    vapor_pressure  { 1.6 }
+    vapor_pressure { 1.6 }
   end
 end

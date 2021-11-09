@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe RangeArray  do
+RSpec.describe RangeArray do
   context "initialize" do
     it "can make a range array with proper min, max, and step" do
       range = RangeArray.new(10, 20, 0.1)
@@ -42,7 +42,7 @@ RSpec.describe RangeArray  do
   end
 
   context "point_at_index" do
-    let (:ra) { RangeArray.new(0, 10, 0.5) }
+    let(:ra) { RangeArray.new(0, 10, 0.5) }
     it "can't find point for a negative index" do
       expect { ra.point_at_index(-1) }.to raise_error(IndexError)
     end
@@ -59,7 +59,7 @@ RSpec.describe RangeArray  do
   end
 
   context "closest_point" do
-    let (:ra) { RangeArray.new(0, 10.4, 0.5) }
+    let(:ra) { RangeArray.new(0, 10.4, 0.5) }
     it "will find the minimum point if given point less the min of range" do
       expect(ra.closest_point(-1.0)).to eq 0.0
     end
@@ -78,7 +78,7 @@ RSpec.describe RangeArray  do
   end
 
   context "includes_point?" do
-    let (:ra) { RangeArray.new(-1.0, 10.4, 0.5) }
+    let(:ra) { RangeArray.new(-1.0, 10.4, 0.5) }
     it "will affirm a point is in the range and on point" do
       expect(ra.includes_point?(6.5)).to be_truthy
       expect(ra.includes_point?(-1.0)).to be_truthy
@@ -99,15 +99,14 @@ RSpec.describe RangeArray  do
   end
 
   context "index_for_point" do
-    let (:ra) { RangeArray.new(5.0, 11.2, 1) }
+    let(:ra) { RangeArray.new(5.0, 11.2, 1) }
 
     it "will not find an index for point less than minimum" do
-      expect {ra.index_for_point(4.0)}.to raise_error(IndexError)
+      expect { ra.index_for_point(4.0) }.to raise_error(IndexError)
     end
 
     it "will not find an index to given point in range if not on defined point" do
-      expect {ra.index_for_point(5.5)}.to raise_error(IndexError)
-
+      expect { ra.index_for_point(5.5) }.to raise_error(IndexError)
     end
 
     it "will find index for defined points" do
@@ -118,7 +117,7 @@ RSpec.describe RangeArray  do
   end
 
   context "enumerable" do
-    let (:ra) { RangeArray.new(5.0, 11.0, 0.5) }
+    let(:ra) { RangeArray.new(5.0, 11.0, 0.5) }
 
     it "implements each" do
       expect(ra).to respond_to(:each)
@@ -130,9 +129,8 @@ RSpec.describe RangeArray  do
     end
   end
 
-
   context "[]" do
-    let (:ra) { RangeArray.new(10, 15, 0.1) }
+    let(:ra) { RangeArray.new(10, 15, 0.1) }
     it "will not find a value for point less than minimum" do
       expect { ra[4.0] }.to raise_error(IndexError)
     end
@@ -145,8 +143,8 @@ RSpec.describe RangeArray  do
       ra[10.0] = "foo"
       ra[15.0] = "bar"
 
-      expect(ra[10.0]).to eq 'foo'
-      expect(ra[15.0]).to eq 'bar'
+      expect(ra[10.0]).to eq "foo"
+      expect(ra[15.0]).to eq "bar"
     end
 
     it "will find an empty value for given index not stored" do
@@ -155,7 +153,7 @@ RSpec.describe RangeArray  do
   end
 
   context "[]=" do
-    let (:ra) { RangeArray.new(5.0, 11, 0.5) }
+    let(:ra) { RangeArray.new(5.0, 11, 0.5) }
 
     it "will not store a value for point less than minimum" do
       expect { ra[4.0] = "foo" }.to raise_error(IndexError)
@@ -173,8 +171,8 @@ RSpec.describe RangeArray  do
       ra[5.0] = "foo"
       ra[11.0] = "bar"
 
-      expect(ra[5.0]).to eq 'foo'
-      expect(ra[11.0]).to eq 'bar'
+      expect(ra[5.0]).to eq "foo"
+      expect(ra[11.0]).to eq "bar"
     end
   end
 end

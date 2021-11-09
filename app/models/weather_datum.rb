@@ -1,5 +1,4 @@
 class WeatherDatum < ApplicationRecord
-
   def self.latest_date
     WeatherDatum.maximum(:date)
   end
@@ -20,8 +19,8 @@ class WeatherDatum < ApplicationRecord
   )
 
     WeatherDatum.where(date: start_date..end_date)
-    .where(latitude: lat_range, longitude: long_range)
-    .each_with_object(Hash.new(0)) do |weather, hash|
+      .where(latitude: lat_range, longitude: long_range)
+      .each_with_object(Hash.new(0)) do |weather, hash|
       coord = [weather.latitude, weather.longitude]
       if hash[coord].nil?
         hash[coord] = weather.degree_days(base, upper, method)
@@ -54,7 +53,7 @@ class WeatherDatum < ApplicationRecord
     temp_grid = land_grid_since(date)
     dd_grid = LandGrid.new
     LandExtent.each_point do |lat, long|
-      next if temp_grid[lat,long].nil?
+      next if temp_grid[lat, long].nil?
       dd = temp_grid[lat, long].collect do |weather_day|
         weather_day.degree_days(method, base, upper)
       end.sum
@@ -98,21 +97,20 @@ class WeatherDatum < ApplicationRecord
       Rails.logger.info "WeatherDatum :: Creating image for #{date}"
       begin
         data = image_data_grid(date)
-        title = "Mean daily temperature (°F) for #{date.strftime('%-d %B %Y')}"
+        title = "Mean daily temperature (°F) for #{date.strftime("%-d %B %Y")}"
         file = image_name(date)
         ImageCreator.create_image(data, title, file)
       rescue => e
         Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
-        return "no_data.png"
+        "no_data.png"
       end
     else
       Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: Weather data missing."
-      return "no_data.png"
+      "no_data.png"
     end
   end
 
   def self.image_name(date)
     "mean_temp_#{date.to_s(:number)}.png"
   end
-
 end

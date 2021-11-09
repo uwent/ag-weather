@@ -18,13 +18,15 @@ RSpec.describe DegreeDaysController, type: :controller do
   # end
 
   describe "#index" do
-    let(:params) { {
-      lat: 43.0,
-      long: -89.7,
-      start_date: Date.yesterday,
-      method: "average",
-      units: "C"
-     } }
+    let(:params) {
+      {
+        lat: 43.0,
+        long: -89.7,
+        start_date: Date.yesterday,
+        method: "average",
+        units: "C"
+      }
+    }
     before(:each) do
       FactoryBot.create(:weather_datum)
     end
@@ -35,7 +37,6 @@ RSpec.describe DegreeDaysController, type: :controller do
     end
 
     context "when the request is valid" do
-
       it "has the correct response structure" do
         get :index, params: params
         expect(json.keys).to eq([:status, :info, :data])
@@ -86,7 +87,6 @@ RSpec.describe DegreeDaysController, type: :controller do
     end
 
     context "when the request is not valid" do
-
       it "and has no latitude return no content" do
         params.delete(:lat)
         get :index, params: params
