@@ -34,7 +34,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
         get :index, params: params
         expect(json[:data]).to be_an(Array)
         expect(json[:info]).to be_an(Hash)
-        expect(json[:data][0].keys).to match([:date, :value])
+        expect(json[:data][0].keys).to match([:date, :value, :cumulative_value])
       end
 
       it "has the correct number of elements" do

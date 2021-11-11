@@ -16,10 +16,14 @@ class EvapotranspirationsController < ApplicationController
       .order(:date)
 
     if ets.size > 0
+      cum_value = 0
       data = ets.collect do |et|
+        value = et.potential_et
+        cum_value += value
         {
           date: et.date.to_s,
-          value: et.potential_et.round(3)
+          value: value.round(3),
+          cumulative_value: cum_value.round(3)
         }
       end
     else

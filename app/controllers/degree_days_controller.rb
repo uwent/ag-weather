@@ -40,7 +40,7 @@ class DegreeDaysController < ApplicationController
 
     if weather.size > 0
       data = weather.collect do |w|
-        dd = w.degree_days(base_temp, upper_temp, method)
+        dd = w.degree_days(base, upper, method)
         total += dd
         {
           date: w.date,
@@ -67,8 +67,8 @@ class DegreeDaysController < ApplicationController
       end_date: end_date,
       days_requested: days_requested,
       days_returned: days_returned,
-      base_temp: base_temp,
-      upper_temp: upper_temp,
+      base: base,
+      upper: upper,
       method: method,
       units: units_text,
       min_value: values.min,
@@ -150,12 +150,12 @@ class DegreeDaysController < ApplicationController
     Date.current
   end
 
-  def base_temp
-    params[:base_temp] ? params[:base_temp].to_f : default_base
+  def base
+    params[:base] ? params[:base].to_f : default_base
   end
 
-  def upper_temp
-    params[:upper_temp] ? params[:upper_temp].to_f : default_upper
+  def upper
+    params[:upper] ? params[:upper].to_f : default_upper
   end
 
   def method
