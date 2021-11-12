@@ -91,7 +91,7 @@ class WeatherImporter
     LandExtent.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
-      dew_points = observations.map(&:dew_point)
+      dew_point = weather_average(observations.map(&:dew_point))
 
       weather_data << WeatherDatum.new(
         latitude: lat,
@@ -100,7 +100,8 @@ class WeatherImporter
         max_temperature: temperatures.max,
         min_temperature: temperatures.min,
         avg_temperature: weather_average(temperatures),
-        vapor_pressure: dew_point_to_vapor_pressure(weather_average(dew_points)),
+        dew_point: dew_point,
+        vapor_pressure: dew_point_to_vapor_pressure(dew_point),
         hours_rh_over_85: relative_humidity_over(observations, 85.0),
         avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
         hours_rh_over_90: relative_humidity_over(observations, 90.0),

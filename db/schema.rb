@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_01_223211) do
+ActiveRecord::Schema.define(version: 2021_11_11_235150) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -155,6 +155,7 @@ ActiveRecord::Schema.define(version: 2021_11_01_223211) do
     t.float "avg_temp_rh_over_85"
     t.float "avg_temp_rh_over_90"
     t.integer "hours_rh_over_90"
+    t.float "dew_point"
     t.index ["date"], name: "index_weather_data_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_weather_data_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_weather_data_on_latitude_and_longitude"
