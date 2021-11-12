@@ -34,7 +34,7 @@ RSpec.describe WeatherController, type: :controller do
         get :index, params: params
         expect(json[:data]).to be_an(Array)
         expect(json[:info]).to be_an(Hash)
-        expect(json[:data].first.keys).to match([:date, :min_temp, :avg_temp, :max_temp, :pressure, :hours_rh_over_90, :avg_temp_rh_over_90])
+        expect(json[:data].first.keys).to match([:date, :min_temp, :max_temp, :avg_temp, :dew_point, :pressure, :hours_rh_over_90, :avg_temp_rh_over_90])
       end
 
       it "has the correct number of elements" do
@@ -173,7 +173,7 @@ RSpec.describe WeatherController, type: :controller do
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
-        expect(json[:data][0].keys).to match([:lat, :long, :min_temp, :avg_temp, :max_temp, :pressure, :hours_rh_over_90, :avg_temp_rh_over_90])
+        expect(json[:data][0].keys).to match([:lat, :long, :min_temp, :max_temp, :avg_temp, :dew_point, :pressure, :hours_rh_over_90, :avg_temp_rh_over_90])
       end
 
       it "can return a csv" do

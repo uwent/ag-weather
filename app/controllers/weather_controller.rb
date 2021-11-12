@@ -19,12 +19,13 @@ class WeatherController < ApplicationController
       data = weather.collect do |w|
         {
           date: w.date.to_s,
-          min_temp: w.min_temperature.round(2),
-          avg_temp: w.avg_temperature.round(2),
-          max_temp: w.max_temperature.round(2),
-          pressure: w.vapor_pressure.round(2),
+          min_temp: w.min_temperature&.round(2),
+          max_temp: w.max_temperature&.round(2),
+          avg_temp: w.avg_temperature&.round(2),
+          dew_point: w.dew_point&.round(2),
+          pressure: w.vapor_pressure&.round(2),
           hours_rh_over_90: w.hours_rh_over_90,
-          avg_temp_rh_over_90: w.avg_temp_rh_over_90
+          avg_temp_rh_over_90: w.avg_temp_rh_over_90&.round(2)
         }
       end
     else
@@ -102,16 +103,17 @@ class WeatherController < ApplicationController
     weather = WeatherDatum.where(date: date).order(:latitude, :longitude)
 
     if weather.size > 0
-      data = weather.collect do |weather|
+      data = weather.collect do |w|
         {
-          lat: weather.latitude.round(1),
-          long: weather.longitude.round(1),
-          min_temp: weather.min_temperature.round(2),
-          avg_temp: weather.avg_temperature.round(2),
-          max_temp: weather.max_temperature.round(2),
-          pressure: weather.vapor_pressure.round(2),
-          hours_rh_over_90: weather.hours_rh_over_90,
-          avg_temp_rh_over_90: weather.avg_temp_rh_over_90
+          lat: w.latitude.round(1),
+          long: w.longitude.round(1),
+          min_temp: w.min_temperature&.round(2),
+          max_temp: w.max_temperature&.round(2),
+          avg_temp: w.avg_temperature&.round(2),
+          dew_point: w.dew_point&.round(2),
+          pressure: w.vapor_pressure&.round(2),
+          hours_rh_over_90: w.hours_rh_over_90,
+          avg_temp_rh_over_90: w.avg_temp_rh_over_90&.round(2)
         }
       end
       status = "OK"
