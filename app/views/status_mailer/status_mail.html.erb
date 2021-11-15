@@ -4,7 +4,8 @@
     <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
   </head>
   <body>
-    <h3>AgWeather status (<%= Rails.env %>)</h3>
+    <h3>AgWeather problem on <%= ENV["SERVER_ROLE"] %> (<%= ENV["AG_WEATHER_HOST"] %>)</h3>
+    <p>Messages for <%= Time.current %>:</p>
     <pre>
 <% @statuses.each do |status| %>
 <%= status %>

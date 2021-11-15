@@ -1,6 +1,6 @@
-AgWeather status (<%= Rails.env %>)
+AgWeather problem on <%= ENV["SERVER_ROLE"] %> (<%= ENV["AG_WEATHER_HOST"] %>)
 =============================================================
-Messages for <%= (Date.today - 1).strftime("%m/%d/%Y") %>:
+Messages for <%= Time.current %>:
 <% @statuses.each do |status| %>
   <%= status %>
 <% end %>

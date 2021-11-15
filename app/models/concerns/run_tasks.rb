@@ -23,9 +23,8 @@ module RunTasks
     RunTasks.all
     DataImport.send_status_email
   rescue => e
-    status = DataImport.check_statuses
-    status[:message] << "ERROR: #{e.message}"
-    StatusMailer.daily_mail(status[:message]).deliver
+    status = ["ERROR: Daily tasks failed to run with message: #{e.message}"]
+    StatusMailer.status_mail(status).deliver
   end
 
   def self.all_for_date(date)
@@ -140,4 +139,8 @@ module RunTasks
       puts date.strftime + " - no data"
     end
   end
+
+  private
+
+  def
 end

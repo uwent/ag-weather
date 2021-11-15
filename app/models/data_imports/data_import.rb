@@ -36,7 +36,7 @@ class DataImport < ApplicationRecord
   def self.start(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "started", message: message, updated_at: Time.current)
+      status.update(status: "started", message: message)
     else
       started.on(date).create!
     end
@@ -45,7 +45,7 @@ class DataImport < ApplicationRecord
   def self.succeed(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "successful", message: message, updated_at: Time.current)
+      status.update(status: "successful", message: message)
     else
       successful.on(date).create!
     end
@@ -54,7 +54,7 @@ class DataImport < ApplicationRecord
   def self.fail(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "unsuccessful", message: message, updated_at: Time.current)
+      status.update(status: "unsuccessful", message: message)
     else
       unsuccessful.on(date).create!
     end
@@ -72,7 +72,7 @@ class DataImport < ApplicationRecord
         count += 1
         message << "  #{date}: Data load not attempted."
       elsif statuses.unsuccessful.count > 0 || statuses.started.count > 0
-        message << "  #{date}: FAIL"
+        message << "  #{date}: PROBLEM"
         statuses.each do |status|
           case status.status
           when "unsuccessful"
@@ -94,17 +94,17 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
-    {count: count, message: message}
+    { count: count, message: message }
   end
 
   # sends status email if data loads have failed recently
   def self.send_status_email
     status = check_statuses
     if status[:count] > 0
-      Rails.logger.info("DataImport :: Abnormal data load detected, sending status email.")
-      StatusMailer.daily_mail(status[:message]).deliver
+      Rails.logger.error "DataImport :: Abnormal data load detected, sending status email!"
+      StatusMailer.status_mail(status[:message]).deliver
     else
-      Rails.logger.info("DataImport :: All data loads successful, skipping status email.")
+      Rails.logger.info "DataImport :: All data loads successful, skipping status email."
     end
   end
 end

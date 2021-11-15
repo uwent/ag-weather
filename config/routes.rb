@@ -49,4 +49,8 @@ Rails.application.routes.draw do
   resources :stations, only: [:index]
 
   root to: "application#index"
+
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
+  get "*path", to: redirect("/") unless Rails.env.development?
 end
