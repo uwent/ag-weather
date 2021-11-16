@@ -31,7 +31,7 @@ class EvapotranspirationsController < ApplicationController
     end
 
     values = data.map { |day| day[:value] }
-    days_requested = (end_date - start_date).to_i
+    days_requested = (start_date..end_date).count
     days_returned = values.size
 
     info = {

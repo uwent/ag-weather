@@ -34,6 +34,7 @@ Rails.application.routes.draw do
       get "custom"
       get "point_details"
       get "custom_point_details"
+      get "pvy"
       get "info"
     end
   end

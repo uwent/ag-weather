@@ -223,7 +223,7 @@ class PestForecastsController < ApplicationController
     if PestForecast.column_names.include?(pest)
       forecasts = PestForecast.where(latitude: lat, longitude: long)
         .where(date: start_date..end_date)
-        .order(date: :desc)
+        .order(:date)
         .map { |pf| [pf.date, pf.send(pest)] }.to_h
       forecasts.default = 0
 
@@ -374,6 +374,85 @@ class PestForecastsController < ApplicationController
     end
   end
 
+  # GET: returns pvy model data for dates at lat/long point
+  # params:
+  #   lat (required)
+  #   long (required)
+
+  def pvy
+    start_time = Time.current
+    end_date = Date.yesterday
+    start_date = end_date.beginning_of_year
+    days_requested = (start_date..end_date).count
+
+    data = []
+    forecast = []
+    status = "OK"
+
+    forecasts = PestForecast.where(latitude: lat, longitude: long)
+    .where(date: start_date..end_date)
+    .order(:date)
+
+    days_returned = forecasts.size
+    status = "missing days" if days_returned < days_requested - 1
+
+    if forecasts.size > 0
+      cum_dd = 0
+      data = forecasts.collect do |pf|
+        dd = pf.dd_39p2_86
+        cum_dd += dd
+        {
+          date: pf.date.to_s,
+          dd: dd.round(1),
+          cum_dd: cum_dd.round(1)
+        }
+      end
+
+      max_value = data.map { |day| day[:cum_dd] }.max
+
+      # 7-day forecast using last 7 day average
+      last_7 = data.last(7).map { |day| day[:dd] }
+      last_7_avg = last_7.sum / last_7.count
+
+      cum_dd = max_value
+      forecast = 1.upto(7).collect do |day|
+        cum_dd += last_7_avg
+        {
+          date: (end_date + day.days).to_s,
+          dd: last_7_avg.round(1),
+          cum_dd: cum_dd.round(1)
+        }
+      end
+
+      forecast_value = forecast.map { |day| day[:cum_dd] }.max
+    else
+      status = "no data"
+    end
+
+    info = {
+      model: "PVY DD model (base 39.2F, upper 86F)",
+      latitude: lat,
+      longitude: long,
+      start_date: start_date,
+      end_date: end_date,
+      days_requested: days_requested,
+      days_returned: days_returned,
+      status: status,
+      compute_time: Time.current - start_time
+    }
+
+    response = {
+      info: info,
+      current_dds: max_value,
+      future_dds: forecast_value,
+      data: data.last(7),
+      forecast: forecast
+    }
+
+    render json: response
+  end
+
+  # Pest forecasts database info. No params.
   def info
     pf = PestForecast
     cols = (pf.column_names - ["id", "date", "latitude", "longitude", "created_at", "updated_at"]).sort

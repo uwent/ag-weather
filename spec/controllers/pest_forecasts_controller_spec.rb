@@ -448,6 +448,21 @@ RSpec.describe PestForecastsController, type: :controller do
     end
   end
 
+  describe "#pvy" do
+    let(:lat) { 42.0 }
+    let(:long) { -89.0 }
+    let(:params) {{
+      lat: lat,
+      long: long
+    }}
+
+    it "is okay" do
+      get :pvy, params: params
+      expect(response).to have_http_status(:ok)
+    end
+
+  end
+
   describe "#info" do
     let(:dates) { [1.week.ago.to_date.to_s, Date.yesterday.to_s] }
     let(:lats) { [50.0, 55.0] }
