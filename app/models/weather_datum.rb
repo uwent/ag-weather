@@ -66,7 +66,8 @@ class WeatherDatum < ApplicationRecord
   def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
     min = in_f ? DegreeDaysCalculator.c_to_f(min_temperature) : min_temperature
     max = in_f ? DegreeDaysCalculator.c_to_f(max_temperature) : max_temperature
-    DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
+    dd = DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
+    [0, dd].max unless dd.nil?
   end
 
   def self.land_grid_for_date(date)

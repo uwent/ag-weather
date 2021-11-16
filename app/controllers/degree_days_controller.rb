@@ -40,12 +40,14 @@ class DegreeDaysController < ApplicationController
 
     if weather.size > 0
       data = weather.collect do |w|
-        dd = w.degree_days(base, upper, method)
+        dd = w.degree_days(base, upper, method, in_f)
+        min = in_f ? DegreeDaysCalculator.c_to_f(w.min_temperature) : w.min_temperature
+        max = in_f ? DegreeDaysCalculator.c_to_f(w.max_temperature) : w.max_temperature
         total += dd
         {
           date: w.date,
-          min_temp: (in_f ? helpers.c_to_f(w.min_temperature) : w.min_temperature).round(1),
-          max_temp: (in_f ? helpers.c_to_f(w.max_temperature) : w.max_temperature).round(1),
+          min_temp: min.round(1),
+          max_temp: max.round(1),
           value: dd.round(1),
           cumulative_value: total.round(1)
         }
@@ -159,7 +161,7 @@ class DegreeDaysController < ApplicationController
   end
 
   def method
-    DegreeDaysCalculator::METHODS.include?(params[:method]) ? params[:method] : DegreeDaysCalculator::METHOD
+    DegreeDaysCalculator::METHODS.include?(params[:method]&.downcase) ? params[:method].downcase : DegreeDaysCalculator::METHOD
   end
 
   def pest

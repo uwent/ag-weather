@@ -52,8 +52,8 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(json[:info][:units]).to include("Celcius")
         expect(data[:min_temp]).to eq(8.9)
         expect(data[:max_temp]).to eq(12.5)
-        expect(data[:value]).to eq(41.3)
-        expect(data[:cumulative_value]).to eq(41.3)
+        expect(data[:value]).to eq(0.7)
+        expect(data[:cumulative_value]).to eq(0.7)
       end
 
       it "returns valid data when units are F" do
