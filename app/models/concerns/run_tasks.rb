@@ -139,8 +139,4 @@ module RunTasks
       puts date.strftime + " - no data"
     end
   end
-
-  private
-
-  def
 end
