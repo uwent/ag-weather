@@ -378,10 +378,10 @@ class PestForecastsController < ApplicationController
   # params:
   #   lat (required)
   #   long (required)
+  #   end_date (optional, default today)
 
   def pvy
     start_time = Time.current
-    end_date = Date.yesterday
     start_date = end_date.beginning_of_year
     days_requested = (start_date..end_date).count
 
