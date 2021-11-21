@@ -2,6 +2,8 @@ require "rails_helper"
 
 RSpec.describe PestForecastsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
+  let(:info) { json[:info] }
+  let(:data) { json[:data] }
 
   describe "#index" do
     let(:start_date) { Date.current - 2.weeks }
@@ -34,42 +36,62 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "has the correct response structure" do
         get :index, params: params
-        expect(json.keys).to match([:status, :info, :data])
-        expect(json[:status]).to be_an(String)
-        expect(json[:info]).to be_an(Hash)
-        expect(json[:data]).to be_an(Array)
-        expect(json[:data][0].keys).to match([:lat, :long, :total, :avg, :freeze])
+        expect(json.keys).to match([:info, :data])
+        expect(info).to be_an(Hash)
+        expect(info.keys).to match([
+          :pest,
+          :start_date,
+          :end_date,
+          :lat_range,
+          :long_range,
+          :grid_points,
+          :min_value,
+          :max_value,
+          :days_requested,
+          :days_returned,
+          :status,
+          :compute_time
+        ])
+        expect(info[:status]).to eq("OK")
+        expect(data).to be_an(Array)
+        expect(data.first.keys).to match([
+          :lat,
+          :long,
+          :total,
+          :avg,
+          :freeze
+        ])
       end
 
       it "has the correct number of elements" do
         get :index, params: params
-        expect(json[:data].size).to eq(lats.size * longs.size)
+        expect(data.size).to eq(lats.size * longs.size)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :index, params: params
-        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :index, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(Date.current.to_s)
       end
 
       it "can restrict lat range" do
         params[:lat_range] = "50,50"
         get :index, params: params
-        expect(json[:info][:lat_range]).to eq([50.0, 50.0])
-        expect(json[:data].size).to eq(longs.size)
+        expect(info[:lat_range]).to eq([50.0, 50.0])
+        expect(data.size).to eq(longs.size)
       end
 
       it "can restrict long range" do
         params[:long_range] = "-90,-90"
         get :index, params: params
-        expect(json[:info][:long_range]).to eq([-90.0, -90.0])
-        expect(json[:data].size).to eq(lats.size)
+        expect(info[:long_range]).to eq([-90.0, -90.0])
+        expect(data.size).to eq(lats.size)
       end
 
       it "can return a csv" do
@@ -91,28 +113,28 @@ RSpec.describe PestForecastsController, type: :controller do
       it "returns no data if no pest" do
         params.delete(:pest)
         get :index, params: params
-        expect(json[:status]).to eq("pest not found")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("pest not found")
+        expect(data).to be_empty
       end
 
       it "returns no data when no data in date range" do
         params[:start_date] = Date.tomorrow
         params[:end_date] = Date.tomorrow
         get :index, params: params
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("no data")
+        expect(data).to be_empty
       end
 
       it "rescues start_date to defaults" do
         params[:start_date] = "foo"
         get :index, params: params
-        expect(json[:info][:start_date]).to eq(Date.current.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(Date.current.beginning_of_year.to_s)
       end
 
       it "rescues invalid end_date to default" do
         params[:end_date] = "foo"
         get :index, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(Date.current.to_s)
       end
     end
   end
@@ -127,7 +149,7 @@ RSpec.describe PestForecastsController, type: :controller do
       before(:each) do
         lats.each do |lat|
           longs.each do |long|
-            (start_date..end_date).each do |date|
+            start_date.upto(end_date) do |date|
               FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
             end
           end
@@ -150,49 +172,67 @@ RSpec.describe PestForecastsController, type: :controller do
 
         it "has the correct response structure" do
           get :custom, params: params
-          expect(json.keys).to match([:status, :info, :data])
-          expect(json[:status]).to be_an(String)
-          expect(json[:info]).to be_an(Hash)
-          expect(json[:data]).to be_an(Array)
-          expect(json[:data][0].keys).to match([:lat, :long, :total])
+          expect(json.keys).to match([:info, :data])
+          expect(info).to be_an(Hash)
+          expect(info.keys).to match([
+            :pest,
+            :start_date,
+            :end_date,
+            :lat_range,
+            :long_range,
+            :grid_points,
+            :min_value,
+            :max_value,
+            :days_requested,
+            :days_returned,
+            :status,
+            :compute_time
+          ])
+          expect(info[:status]).to eq("OK")
+          expect(data).to be_an(Array)
+          expect(data.first.keys).to match([
+            :lat,
+            :long,
+            :total
+          ])
         end
 
         it "has the correct number of elements" do
           get :custom, params: params
-          expect(json[:data].size).to eq(lats.size * longs.size)
+          expect(data.size).to eq(lats.size * longs.size)
         end
 
         it "returns valid data" do
           get :custom, params: params
-          expect(json[:data][0][:lat]).to be_an(Numeric)
-          expect(json[:data][0][:long]).to be_an(Numeric)
-          expect(json[:data][0][:total]).to be_an(Numeric)
+          expect(data.first[:lat]).to be_an(Numeric)
+          expect(data.first[:long]).to be_an(Numeric)
+          expect(data.first[:total]).to be_an(Numeric)
         end
 
         it "defaults start_date to beginning of year" do
           params.delete(:start_date)
           get :custom, params: params
-          expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+          expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
         end
 
         it "defaults end_date to today" do
           params.delete(:end_date)
           get :custom, params: params
-          expect(json[:info][:end_date]).to eq(Date.current.to_s)
+          expect(info[:end_date]).to eq(Date.current.to_s)
         end
 
         it "can restrict lat range" do
           params[:lat_range] = "50,50"
           get :custom, params: params
-          expect(json[:info][:lat_range]).to eq([50.0, 50.0])
-          expect(json[:data].size).to eq(longs.size)
+          expect(info[:lat_range]).to eq([50.0, 50.0])
+          expect(data.size).to eq(longs.size)
         end
 
         it "can restrict long range" do
           params[:long_range] = "-90,-90"
           get :custom, params: params
-          expect(json[:info][:long_range]).to eq([-90.0, -90.0])
-          expect(json[:data].size).to eq(lats.size)
+          expect(info[:long_range]).to eq([-90.0, -90.0])
+          expect(data.size).to eq(lats.size)
         end
 
         it "can return a csv" do
@@ -229,23 +269,40 @@ RSpec.describe PestForecastsController, type: :controller do
 
         it "has the correct response structure" do
           get :custom, params: params
-          expect(json.keys).to match([:status, :info, :data])
-          expect(json[:status]).to be_an(String)
-          expect(json[:info]).to be_an(Hash)
-          expect(json[:data]).to be_an(Array)
-          expect(json[:data][0].keys).to match([:lat, :long, :total])
+          expect(json.keys).to match([:info, :data])
+          expect(info).to be_an(Hash)
+          expect(info.keys).to match([
+            :pest,
+            :start_date,
+            :end_date,
+            :lat_range,
+            :long_range,
+            :grid_points,
+            :t_base,
+            :t_upper,
+            :units,
+            :min_value,
+            :max_value,
+            :days_requested,
+            :days_returned,
+            :status,
+            :compute_time
+          ])
+          expect(info[:status]).to eq("OK")
+          expect(data).to be_an(Array)
+          expect(data.first.keys).to match([:lat, :long, :total])
         end
 
         it "has the correct number of elements" do
           get :custom, params: params
-          expect(json[:data].size).to eq(lats.size * longs.size)
+          expect(data.size).to eq(lats.size * longs.size)
         end
 
         it "returns valid data" do
           get :custom, params: params
-          expect(json[:data][0][:lat]).to be_an(Numeric)
-          expect(json[:data][0][:long]).to be_an(Numeric)
-          expect(json[:data][0][:total]).to be_an(Numeric)
+          expect(data.first[:lat]).to be_an(Numeric)
+          expect(data.first[:long]).to be_an(Numeric)
+          expect(data.first[:total]).to be_an(Numeric)
         end
       end
     end
@@ -282,27 +339,50 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "has the correct response structure" do
         get :point_details, params: params
-        expect(json[:status]).to eq("OK")
-        expect(json[:info]).to be_an(Hash)
-        expect(json[:data]).to be_an(Array)
-        expect(json[:data].first.keys).to match([:date, :min_temp, :max_temp, :avg_temp, :avg_temp_hi_rh, :hours_hi_rh, :value, :cumulative_value])
+        expect(json.keys).to eq([:info, :data])
+        expect(info).to be_an(Hash)
+        expect(info.keys).to match([
+          :pest,
+          :lat,
+          :long,
+          :start_date,
+          :end_date,
+          :units,
+          :cumulative_value,
+          :days_requested,
+          :days_returned,
+          :status,
+          :compute_time
+        ])
+        expect(info[:status]).to eq("OK")
+        expect(data).to be_an(Array)
+        expect(data.first.keys).to match([
+          :date,
+          :min_temp,
+          :max_temp,
+          :avg_temp,
+          :avg_temp_hi_rh,
+          :hours_hi_rh,
+          :value,
+          :cumulative_value
+        ])
       end
 
       it "has the correct number of elements" do
         get :point_details, params: params
-        expect(json[:data].length).to eq((start_date..end_date).count)
+        expect(data.size).to eq((start_date..end_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :point_details, params: params
-        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :point_details, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(Date.current.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -313,8 +393,8 @@ RSpec.describe PestForecastsController, type: :controller do
           long: long
         })
         get :point_details, params: params
-        expect(json[:info][:lat]).to eq(lat.round(1))
-        expect(json[:info][:long]).to eq(long.round(1))
+        expect(info[:lat]).to eq(lat.round(1))
+        expect(info[:long]).to eq(long.round(1))
       end
 
       it "can return a csv" do
@@ -338,15 +418,15 @@ RSpec.describe PestForecastsController, type: :controller do
       it "and has no latitude return no data" do
         params.delete(:lat)
         get :point_details, params: params
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("no data")
+        expect(data).to be_empty
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
         get :point_details, params: params
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("no data")
+        expect(data).to be_empty
       end
     end
   end
@@ -380,27 +460,34 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "has the correct response structure" do
         get :custom_point_details, params: params
-        expect(json[:status]).to eq("OK")
-        expect(json[:info]).to be_an(Hash)
-        expect(json[:data]).to be_an(Array)
-        expect(json[:data].first.keys).to match([:date, :min_temp, :max_temp, :avg_temp, :value, :cumulative_value])
+        expect(info).to be_an(Hash)
+        expect(info[:status]).to eq("OK")
+        expect(data).to be_an(Array)
+        expect(data.first.keys).to match([
+          :date,
+          :min_temp,
+          :max_temp,
+          :avg_temp,
+          :value,
+          :cumulative_value
+        ])
       end
 
       it "has the correct number of elements" do
         get :custom_point_details, params: params
-        expect(json[:data].length).to eq((start_date..end_date).count)
+        expect(data.length).to eq((start_date..end_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :custom_point_details, params: params
-        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :custom_point_details, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(Date.current.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -411,8 +498,8 @@ RSpec.describe PestForecastsController, type: :controller do
           long: long
         })
         get :custom_point_details, params: params
-        expect(json[:info][:lat]).to eq(lat.round(1))
-        expect(json[:info][:long]).to eq(long.round(1))
+        expect(info[:lat]).to eq(lat.round(1))
+        expect(info[:long]).to eq(long.round(1))
       end
 
       it "can return a csv" do
@@ -435,15 +522,15 @@ RSpec.describe PestForecastsController, type: :controller do
       it "and has no latitude return no data" do
         params.delete(:lat)
         get :custom_point_details, params: params
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("no data")
+        expect(data).to be_empty
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
         get :custom_point_details, params: params
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+        expect(info[:status]).to eq("no data")
+        expect(data).to be_empty
       end
     end
   end
@@ -461,6 +548,16 @@ RSpec.describe PestForecastsController, type: :controller do
       expect(response).to have_http_status(:ok)
     end
 
+    it "has the correct response structure" do
+      get :pvy, params: params
+      expect(json.keys).to eq([
+        :info,
+        :current_dds,
+        :future_dds,
+        :data,
+        :forecast
+      ])
+    end
   end
 
   describe "#info" do
@@ -487,7 +584,13 @@ RSpec.describe PestForecastsController, type: :controller do
 
     it "has the correct structure" do
       get :info
-      expect(json.keys).to match([:pest_names, :date_range, :total_days, :lat_range, :long_range])
+      expect(json.keys).to match([
+        :pest_names,
+        :date_range,
+        :total_days,
+        :lat_range,
+        :long_range
+      ])
     end
 
     it "returns data ranges for pest forecasts" do

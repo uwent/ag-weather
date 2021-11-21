@@ -5,11 +5,6 @@ RSpec.describe WeatherHour do
   let(:dew_point_key) { "2d" }
   let(:weather_hour) { WeatherHour.new }
 
-  # grib on staging/production is grib_info,
-  it "has the grib tools available", skip: "This test doesn't work on CI" do
-    expect(system("codes_info > /dev/null")).to be(true)
-  end
-
   context "initialization" do
     it "can be created" do
       expect(weather_hour).to_not be_nil

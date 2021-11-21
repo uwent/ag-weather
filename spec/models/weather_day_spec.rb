@@ -15,8 +15,9 @@ RSpec.describe WeatherDay do
     end
   end
 
-  context "load from files", skip: "This doesn't work on a CI test" do
+  context "load from files" do
     it "should load weather hour for each file in passed directory" do
+      # skip "This doesn't work on a CI test"
       allow(Dir).to receive(:[]).and_return(["foo/a.grb2", "foo/b.grb2"])
       expect(weather_day).to receive(:add_data_from_weather_hour).twice
       weather_day.load_from("foo")

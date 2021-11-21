@@ -79,8 +79,8 @@ RSpec.describe WeatherDatum, type: :model do
       weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
       expect(DegreeDaysCalculator).to receive(:calculate)
         .with(
-          DegreeDaysCalculator.c_to_f(weather.min_temperature),
-          DegreeDaysCalculator.c_to_f(weather.max_temperature),
+          UnitConverter.c_to_f(weather.min_temperature),
+          UnitConverter.c_to_f(weather.max_temperature),
           base: 50, upper: 86, method: "sine"
         )
       weather.degree_days(50, 86, "sine")

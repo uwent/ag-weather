@@ -57,7 +57,7 @@ class WeatherController < ApplicationController
       format.json { render json: response }
       format.csv do
         filename = "weather data for #{lat}, #{long} for #{end_date}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end
@@ -144,7 +144,7 @@ class WeatherController < ApplicationController
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "weather data grid for #{date}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end

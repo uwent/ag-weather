@@ -5,22 +5,6 @@ require "rails_helper"
 RSpec.describe DegreeDaysCalculator, type: :module do
   let(:epsilon) { 0.000001 }
 
-  describe "converts between temperature units" do
-    it "should convert celcius to fahrenheit" do
-      expect(DegreeDaysCalculator.c_to_f(-40)).to eq(-40)
-      expect(DegreeDaysCalculator.c_to_f(0)).to eq(32)
-      expect(DegreeDaysCalculator.c_to_f(23.3)).to eq(73.94)
-      expect(DegreeDaysCalculator.c_to_f(100)).to eq(212)
-    end
-
-    it "should convert fahrenheit to celcius" do
-      expect(DegreeDaysCalculator.f_to_c(-40)).to eq(-40)
-      expect(DegreeDaysCalculator.f_to_c(32)).to eq(0)
-      expect(DegreeDaysCalculator.f_to_c(73.94)).to be_within(epsilon).of(23.3)
-      expect(DegreeDaysCalculator.f_to_c(212)).to eq(100)
-    end
-  end
-
   describe "calculates degree days" do
     it "should calculate average degree days" do
       expect(DegreeDaysCalculator.average_degree_days(40, 49, 50)).to eq(0.0)

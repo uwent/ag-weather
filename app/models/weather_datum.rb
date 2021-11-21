@@ -64,8 +64,8 @@ class WeatherDatum < ApplicationRecord
 
   # fahrenheit min/max. base/upper must be F
   def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
-    min = in_f ? DegreeDaysCalculator.c_to_f(min_temperature) : min_temperature
-    max = in_f ? DegreeDaysCalculator.c_to_f(max_temperature) : max_temperature
+    min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
+    max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
     dd = DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
     [0, dd].max unless dd.nil?
   end
@@ -86,7 +86,7 @@ class WeatherDatum < ApplicationRecord
       lat, long = w.latitude, w.longitude
       next unless grid.inside?(lat, long)
       mean_temp_c = (w.min_temperature + w.max_temperature) / 2.0
-      mean_temp_f = DegreeDaysCalculator.c_to_f(mean_temp_c)
+      mean_temp_f = UnitConverter.c_to_f(mean_temp_c)
       grid[lat, long] = mean_temp_f.round(2)
     end
     grid

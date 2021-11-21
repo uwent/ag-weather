@@ -41,8 +41,8 @@ class DegreeDaysController < ApplicationController
     if weather.size > 0
       data = weather.collect do |w|
         dd = w.degree_days(base, upper, method, in_f)
-        min = in_f ? DegreeDaysCalculator.c_to_f(w.min_temperature) : w.min_temperature
-        max = in_f ? DegreeDaysCalculator.c_to_f(w.max_temperature) : w.max_temperature
+        min = in_f ? UnitConverter.c_to_f(w.min_temperature) : w.min_temperature
+        max = in_f ? UnitConverter.c_to_f(w.max_temperature) : w.max_temperature
         total += dd
         {
           date: w.date,
@@ -91,7 +91,7 @@ class DegreeDaysController < ApplicationController
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "degree day data for #{lat}, #{long}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end

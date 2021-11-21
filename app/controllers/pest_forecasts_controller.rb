@@ -1,4 +1,5 @@
 class PestForecastsController < ApplicationController
+  
   # GET: returns grid of pest data for dates
   # params:
   #   pest (required)
@@ -9,33 +10,37 @@ class PestForecastsController < ApplicationController
 
   def index
     start_time = Time.current
+    days_requested = (start_date..end_date).count
     status = "OK"
     info = {}
     data = []
 
     if PestForecast.column_names.include?(pest)
-      freezing_data = check_hard_freeze
-      forecasts = PestForecast.where(date: start_date..end_date)
-        .where(latitude: lat_range, longitude: long_range)
+      forecasts = PestForecast.where(latitude: lat_range, longitude: long_range)
+      .where(date: start_date..end_date)
 
+      days_returned = forecasts.distinct.count(:date)
+      latest_date = forecasts.order(:date).last&.date
+      status = "missing data" if days_returned < days_requested - 2
+      
       if forecasts.size > 0
-        days_returned = forecasts.distinct.pluck(:date).size
-        data = forecasts.select(:latitude, :longitude, "sum(#{pest}) as total", "count(#{pest}) as count")
-          .group(:latitude, :longitude)
-          .order(:latitude, :longitude)
-          .collect do |point|
-                 {
-                   grid_key: "#{point.latitude}:#{point.longitude}",
-                   lat: point.latitude.to_f.round(1),
-                   long: point.longitude.to_f.round(1),
-                   total: point.total.round(2),
-                   avg: (point.total.to_f / point.count).round(2),
-                   freeze: false
-                 }
-               end.map do |point|
-                 point[:freeze] = freezing_data[point[:grid_key]] ? true : false
-                 point
-               end.each { |h| h.delete(:grid_key) }
+        freezing_data = {}
+        PestForecast.where(date: latest_date).map do |point|
+          freezing_data[[point.latitude, point.longitude]] = point.freeze
+        end
+
+        data = forecasts.group(:latitude, :longitude)
+        .order(:latitude, :longitude)
+        .select(:latitude, :longitude, "sum(#{pest}) as total")
+        .collect do |point|
+          {
+            lat: point.latitude.to_f.round(1),
+            long: point.longitude.to_f.round(1),
+            total: point.total.round(2),
+            avg: (point.total.to_f / days_returned).round(2),
+            freeze: freezing_data[[point.latitude, point.longitude]]
+          }
+        end
       else
         status = "no data"
       end
@@ -43,31 +48,24 @@ class PestForecastsController < ApplicationController
       status = "pest not found"
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
     values = data.map { |d| d[:total] }
-    data = data.each { |h| h.delete(:count) }
-    days_requested = (end_date - start_date).to_i
-    days_returned ||= 0
-
-    status = "missing data" if status == "OK" && days_requested != days_returned
 
     info = {
       pest: pest,
       start_date: start_date,
       end_date: end_date,
-      days_requested: days_requested,
-      days_returned: days_returned,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      grid_points: lats.count * longs.count || 0,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
       min_value: values.min,
       max_value: values.max,
+      days_requested: days_requested,
+      days_returned: days_returned || 0,
+      status: status,
       compute_time: Time.current - start_time
     }
 
     response = {
-      status: status,
       info: info,
       data: data
     }
@@ -76,12 +74,13 @@ class PestForecastsController < ApplicationController
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status: status}.merge(info) unless params[:headers] == "false"
+        headers = info unless params[:headers] == "false"
         filename = "pest data grid for #{pest}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end
+
 
   # GET: degree-day grid for date range
 
@@ -102,6 +101,7 @@ class PestForecastsController < ApplicationController
 
   def custom
     start_time = Time.current
+    days_requested = (start_date..end_date).count
     status = "OK"
     info = {}
     weather_info = {}
@@ -110,13 +110,16 @@ class PestForecastsController < ApplicationController
     if pest
       if PestForecast.column_names.include?(pest)
         pest_data = PestForecast.where(date: start_date..end_date)
-          .where(latitude: lat_range, longitude: long_range)
+        .where(latitude: lat_range, longitude: long_range)
+
+        days_returned = pest_data.distinct.count(:date)
+        status = "missing data" if days_returned < days_requested - 2
 
         if pest_data.size > 0
           data = pest_data.group(:latitude, :longitude)
-            .order(:latitude, :longitude)
-            .select(:latitude, :longitude, "sum(#{pest}) as total")
-            .collect do |point|
+          .order(:latitude, :longitude)
+          .select(:latitude, :longitude, "sum(#{pest}) as total")
+          .collect do |point|
             {
               lat: point.latitude.to_f.round(1),
               long: point.longitude.to_f.round(1),
@@ -130,13 +133,18 @@ class PestForecastsController < ApplicationController
         status = "no data"
       end
     else
+      weather = WeatherDatum.where(date: start_date..end_date)
+      .where(latitude: lat_range, longitude: long_range)
+
+      dates = weather.distinct.pluck(:date)
+      days_returned = dates.size
+      status = "missing data" if days_returned < days_requested - 2
+
       weather_info = {
         t_base: t_base,
         t_upper: t_upper,
         units: "Fahrenheit degree days"
       }
-      weather = WeatherDatum.where(date: start_date..end_date)
-        .where(latitude: lat_range, longitude: long_range)
 
       if weather.size > 0
         grid = weather.each_with_object(Hash.new(0)) do |w, h|
@@ -160,33 +168,27 @@ class PestForecastsController < ApplicationController
       end
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
     values = data.map { |d| d[:total] }
-    days_requested = (start_date..end_date).count
-    days_returned = data.size
-
-    status = "missing data" if status == "OK" && days_requested != days_returned
 
     info = {
-      pest: pest || "generic",
+      pest: pest || "degree day model",
       start_date: start_date,
       end_date: end_date,
-      days_requested: days_requested,
-      days_returned: days_returned,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      grid_points: lats.count * longs.count || 0
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
     }
-      .merge(weather_info)
-      .merge({
-        min_value: values.min,
-        max_value: values.max,
-        compute_time: Time.current - start_time
-      })
+    .merge(weather_info)
+    .merge({
+      min_value: values.min,
+      max_value: values.max,
+      days_requested: days_requested,
+      days_returned: days_returned || 0,
+      status: status,
+      compute_time: Time.current - start_time
+    })
 
     response = {
-      status: status,
       info: info,
       data: data
     }
@@ -201,10 +203,11 @@ class PestForecastsController < ApplicationController
         else
           "degree day grid for #{start_date} to #{end_date}.csv"
         end
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end
+
 
   # GET: returns pest data for dates at lat/long point
   # params:
@@ -216,24 +219,27 @@ class PestForecastsController < ApplicationController
 
   def point_details
     start_time = Time.current
+    days_requested = (start_date..end_date).count
     status = "OK"
     info = {}
     data = []
-
+    
     if PestForecast.column_names.include?(pest)
       forecasts = PestForecast.where(latitude: lat, longitude: long)
-        .where(date: start_date..end_date)
-        .order(:date)
-        .map { |pf| [pf.date, pf.send(pest)] }.to_h
+      .where(date: start_date..end_date)
+      .order(:date)
+      .map { |pf| [pf.date, pf.send(pest)] }.to_h
       forecasts.default = 0
 
-      cum_value = 0
+      days_returned = forecasts.size
+      status = "missing data" if days_returned < days_requested - 2
 
+      cum_value = 0
       if forecasts.size > 0
         data = WeatherDatum.where(latitude: lat, longitude: long)
-          .where(date: start_date..end_date)
-          .order(:date)
-          .collect do |w|
+        .where(date: start_date..end_date)
+        .order(:date)
+        .collect do |w|
           value = forecasts[w.date]
           cum_value += value
           {
@@ -254,37 +260,23 @@ class PestForecastsController < ApplicationController
       status = "pest not found"
     end
 
-    days_requested = (start_date..end_date).count
-    days_returned = data.size
-
-    status = "missing data" if status == "OK" && days_requested != days_returned ||= 0
-
     values = data.map { |d| d[:value] }
-
-    if values.count > 0
-      mean_value = (values.sum.to_f / values.count).round(1)
-      mean_value_last_7_days = (values.last(7).sum.to_f / values.last(7).count).round(1)
-    else
-      mean_value = mean_value_last_7_days = 0
-    end
 
     info = {
       pest: pest,
-      lat: lat.to_f,
-      long: long.to_f,
+      lat: lat.to_f.round(1),
+      long: long.to_f.round(1),
       start_date: start_date,
       end_date: end_date,
-      days_requested: days_requested,
-      days_returned: days_returned,
-      units: {temp: "C"},
+      units: { weather: "C", degree_days: "F" },
       cumulative_value: cum_value.round(1),
-      mean_value: mean_value,
-      mean_value_last_7_days: mean_value_last_7_days,
+      days_requested: days_requested,
+      days_returned: days_returned || 0,
+      status: status,
       compute_time: Time.current - start_time
     }
 
     response = {
-      status: status,
       info: info,
       data: data
     }
@@ -295,7 +287,7 @@ class PestForecastsController < ApplicationController
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "point details for #{pest} at #{lat}, #{long}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end
@@ -312,16 +304,19 @@ class PestForecastsController < ApplicationController
 
   def custom_point_details
     start_time = Time.current
+    days_requested = (start_date..end_date).count
     status = "OK"
     info = {}
     data = []
 
     weather = WeatherDatum.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
-      .order(:date)
+    .where(date: start_date..end_date)
+    .order(:date)
+
+    days_returned = weather.size
+    status = "missing data" if days_returned < days_requested - 2
 
     cum_value = 0
-
     if weather.size > 0
       data = weather.collect do |w|
         value = w.degree_days(t_base, t_upper)
@@ -339,26 +334,21 @@ class PestForecastsController < ApplicationController
       status = "no data"
     end
 
-    days_requested = (start_date..end_date).count
-    days_returned = data.size
-
-    status = "missing data" if status == "OK" && days_requested != days_returned ||= 0
-
     info = {
-      lat: lat.to_f,
-      long: long.to_f,
-      t_base: t_base,
-      t_upper: t_upper,
+      lat: lat.to_f.round(1),
+      long: long.to_f.round(1),
       start_date: start_date,
       end_date: end_date,
+      t_base: t_base,
+      t_upper: t_upper,
+      units: { weather: "C", degree_days: "F" },
       days_requested: days_requested,
-      days_returned: days_returned,
-      units: {weather: "C", degree_days: "F"},
+      days_returned: days_returned || 0,
+      status: status,
       compute_time: Time.current - start_time
     }
 
     response = {
-      status: status,
       info: info,
       data: data
     }
@@ -369,7 +359,7 @@ class PestForecastsController < ApplicationController
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
         filename = "degree day data for #{lat}, #{long}.csv"
-        send_data helpers.to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename: filename
       end
     end
   end
@@ -384,17 +374,16 @@ class PestForecastsController < ApplicationController
     start_time = Time.current
     start_date = end_date.beginning_of_year
     days_requested = (start_date..end_date).count
-
+    status = "OK"
     data = []
     forecast = []
-    status = "OK"
-
+    
     forecasts = PestForecast.where(latitude: lat, longitude: long)
     .where(date: start_date..end_date)
     .order(:date)
 
     days_returned = forecasts.size
-    status = "missing days" if days_returned < days_requested - 1
+    status = "missing data" if days_returned < days_requested - 2
 
     if forecasts.size > 0
       cum_dd = 0
@@ -431,12 +420,12 @@ class PestForecastsController < ApplicationController
 
     info = {
       model: "PVY DD model (base 39.2F, upper 86F)",
-      latitude: lat,
-      longitude: long,
+      lat: lat.to_f.round(1),
+      long: long.to_f.round(1),
       start_date: start_date,
       end_date: end_date,
       days_requested: days_requested,
-      days_returned: days_returned,
+      days_returned: days_returned || 0,
       status: status,
       compute_time: Time.current - start_time
     }
@@ -469,27 +458,27 @@ class PestForecastsController < ApplicationController
 
   private
 
-  def check_hard_freeze
-    nov_1 = Date.new(end_date.year, 11, 1)
+  # def check_hard_freeze
+  #   nov_1 = Date.new(end_date.year, 11, 1)
 
-    return {} if end_date < nov_1
-    WeatherDatum.select(:latitude, :longitude)
-      .distinct
-      .where(date: nov_1..end_date)
-      .where("min_temperature < ?", -2.22)
-      .order(:latitude, :longitude)
-      .collect { |w| {"#{w.latitude}:#{w.longitude}" => true} }
-      .inject({}, :merge)
-  end
+  #   return {} if end_date < nov_1
+  #   WeatherDatum.select(:latitude, :longitude)
+  #     .distinct
+  #     .where(date: nov_1..end_date)
+  #     .where("min_temperature < ?", -2.22)
+  #     .order(:latitude, :longitude)
+  #     .collect { |w| {"#{w.latitude},#{w.longitude}" => true} }
+  #     .inject({}, :merge)
+  # end
 
-  def build_cumulative_dd(weather, date, t_base, t_upper)
-    degree_days = []
-    weather.select { |day| date >= day.date }
-      .each do |w|
-        degree_days << w.degree_days(t_base, t_upper)
-      end
-    degree_days.sum
-  end
+  # def build_cumulative_dd(weather, date, t_base, t_upper)
+  #   degree_days = []
+  #   weather.select { |day| date >= day.date }
+  #     .each do |w|
+  #       degree_days << w.degree_days(t_base, t_upper)
+  #     end
+  #   degree_days.sum
+  # end
 
   def start_date
     parse_date(params[:start_date], Date.current.beginning_of_year)

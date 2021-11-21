@@ -34,15 +34,41 @@ class PestForecast < ApplicationRecord
       dd_50_none: weather.degree_days(50, NO_MAX), # 10 / none C
       dd_52_none: weather.degree_days(52, NO_MAX), # 11.1 / none C
       dd_54_92: weather.degree_days(54, 92), # 12.2 / 33.3 C
-      dd_55_92: weather.degree_days(55, 92) # 12.8 / 33.3 C
+      dd_55_92: weather.degree_days(55, 92), # 12.8 / 33.3 C
+      frost: weather.min_temperature < 0,
+      freeze: weather.min_temperature < -2.22
     )
   end
 
+  def self.pest_titles
+    {
+      potato_blight_dsv: "Late blight",
+      potato_p_days: "Early blight",
+      carrot_foliar_dsv: "Carrot foliar disease",
+      cercospora_div: "Cercospora leaf spot",
+      dd_39p2_86: "Fahrenheit degree days (base 39F, upper 86F)",
+      dd_41_86: "Fahrenheit degree days (base 41F, upper 86F)",
+      dd_41_88: "Fahrenheit degree days (base 41F, upper 88F)",
+      dd_41_none: "Fahrenheit degree days (base 41F)",
+      dd_42p8_86: "Fahrenheit degree days (base 42.8F, upper 86F)",
+      dd_45_none: "Fahrenheit degree days (base 45F)",
+      dd_45_86: "Fahrenheit degree days (base 45F, upper 86F)",
+      dd_48_none: "Fahrenheit degree days (base 48F)",
+      dd_50_86: "Fahrenheit degree days (base 50F, upper 86F)",
+      dd_50_88: "Fahrenheit degree days (base 50F, upper 88F)",
+      dd_50_90: "Fahrenheit degree days (base 50F, upper 90F)",
+      dd_50_none: "Fahrenheit degree days (base 50F)",
+      dd_52_none: "Fahrenheit degree days (base 52F)",
+      dd_54_92: "Fahrenheit degree days (base 54F, upper 92F)",
+      dd_55_92: "Fahrenheit degree days (base 55F, upper 92F)",
+      frost: "Frost (min temperature < 32F)",
+      freeze: "Freeze (min temperature < 28F)"
+    }
+  end
+
   def self.create_image(pest, start_date = Date.current.beginning_of_year, end_date = Date.current)
-    raise ArgumentError.new("Pest not found!") if !PestForecast.column_names.include?(pest)
-
+    raise ArgumentError.new("Pest not found!") unless PestForecast.column_names.include?(pest)
     Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
-
     forecasts = PestForecast.where(date: start_date..end_date)
 
     if forecasts.size > 0
@@ -57,7 +83,7 @@ class PestForecast < ApplicationRecord
         grid[lat, long] = pf.total
       end
 
-      title = "Totals map for #{pest.tr("_", "-")} for #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
+      title = "#{pest_titles[pest.to_sym]} for #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
       ImageCreator.create_image(grid, title, image_name(pest, start_date, end_date))
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
