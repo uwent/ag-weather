@@ -7,7 +7,7 @@ namespace :calc do
     puts "Getting frost data"
     frosts = {}
     WeatherDatum.select(:date, :latitude, :longitude)
-    .where("min_temperature <= ?", 0.0)
+    .where("min_temperature < ?", 0.0)
     .each do |w|
       frosts["#{w.date.to_s}_#{w.latitude}_#{w.longitude}"] = true
     end
@@ -15,7 +15,7 @@ namespace :calc do
     puts "Getting freeze data"
     freezes = {}
     WeatherDatum.select(:date, :latitude, :longitude)
-    .where("min_temperature <= ?", -2.22)
+    .where("min_temperature < ?", -2.22)
     .each do |w|
       freezes["#{w.date.to_s}_#{w.latitude}_#{w.longitude}"] = true
     end
