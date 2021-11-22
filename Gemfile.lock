@@ -326,7 +326,7 @@ GEM
     uglifier (4.2.0)
       execjs (>= 0.3.0, < 3)
     unicode-display_width (2.1.0)
-    web-console (4.1.0)
+    web-console (4.2.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
@@ -383,7 +383,7 @@ DEPENDENCIES
   standard
   turbolinks (~> 5.2)
   uglifier (~> 4.2)
-  web-console (~> 4.1)
+  web-console (~> 4.2)
   webmock (~> 3.14)
   whenever (~> 1.0)
 
