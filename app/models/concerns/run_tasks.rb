@@ -115,7 +115,9 @@ module RunTasks
 
   # re-generates pest forecast for date
   def self.redo_forecast(date)
-    if WeatherDatum.where(date: date).exists?
+    ActiveRecord::Base.logger.level = 1 
+
+    if WeatherDatum.where(date: date).size > 0
       puts date.strftime + " - ready - recalculating..."
 
       weather = WeatherDatum.land_grid_for_date(date)
@@ -123,20 +125,46 @@ module RunTasks
 
       LandExtent.each_point do |lat, long|
         next unless LandExtent.inside?(lat, long)
-
-        if weather[lat, long].nil?
-          Rails.logger.error("Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")
-          next
-        end
-
+        next if weather[lat, long].nil?
         forecasts << PestForecast.new_from_weather(weather[lat, long])
       end
 
-      PestForecast.where(date: date).delete_all
-      PestForecast.import(forecasts, validate: false)
+      PestForecast.transaction do
+        PestForecast.where(date: date).delete_all
+        PestForecast.import(forecasts)
+      end
       PestForecastDataImport.succeed(date)
     else
       puts date.strftime + " - no data"
+    end
+  end
+
+  def self.calc_frost(start_date = WeatherDatum.earliest_date, end_date = WeatherDatum.latest_date)
+    puts "Calculating freeze and frost data..."
+    ActiveRecord::Base.logger.level = 1 
+    dates = start_date..end_date
+    day = 0
+    days = (start_date..end_date).count
+    dates.each do |date|
+      day += 1
+      weather = WeatherDatum.where(date: date).select(:latitude, :longitude)
+      if weather.size > 0
+        frosts = {}
+        freezes = {}
+        weather.where("min_temperature < ?", 0.0).each { |w| frosts[[w.latitude, w.longitude]] = true }
+        weather.where("min_temperature < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
+        frost_ids = []
+        freeze_ids = []
+        PestForecast.where(date: date).each do |pf|
+          frost_ids << pf.id if frosts[[pf.latitude, pf.longitude]]
+          freeze_ids << pf.id if freezes[[pf.latitude, pf.longitude]]
+        end
+        PestForecast.where(id: frost_ids.sort).update_all(frost: true)
+        PestForecast.where(id: freeze_ids.sort).update_all(freeze: true)
+        puts "Day #{day}/#{days}: #{date.to_s} ==> OK (frost #{sprintf('%.0f', frosts.size.to_f / weather.size * 100)}%, freeze #{sprintf('%.0f', freezes.size.to_f / weather.size * 100)}%)"
+      else
+        puts "Day #{day}/#{days}: #{date.to_s} ==> No data"
+      end
     end
   end
 end
