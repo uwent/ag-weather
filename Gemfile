@@ -25,7 +25,7 @@ group :development do
   gem "capistrano-bundler", "~> 2.0"
   gem "letter_opener", "~> 1.7"
   gem "letter_opener_web", "~> 2.0"
-  gem "web-console", "~> 4.1"
+  gem "web-console", "~> 4.2"
 end
 
 group :development, :test do
