@@ -35,6 +35,7 @@ Rails.application.routes.draw do
       get "point_details"
       get "custom_point_details"
       get "pvy"
+      get "freeze"
       get "info"
     end
   end

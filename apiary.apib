@@ -650,6 +650,71 @@ Returns weather and pest forecast data for grid point in date range
 
 + Response 200 (text/csv)
 
+## pvy [/pest_forecasts/pvy]
+
+### Get pvy degree day model [GET /pest_forecasts/pvy{?lat,long,end_date}]
+
+Returns total degree days for pvy model plus one week forecast
+
++ Parameters
+    + lat: `45` (number) - north latitude
+    + long: `-90` (number) - west longitude
+    + end_date: `2020-10-10` (string, optional) - defaults to today
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + info (object)
+            + model (string)
+            + lat (number)
+            + long (number)
+            + start_date (string)
+            + end_date (string)
+            + days_requested (number)
+            + days_returned (number)
+            + status (string)
+            + compute_time (number)
+        + current_dds (number, nullable)
+        + future_dds (number, nullable)
+        + data (array)
+            + (object, optional)
+                + date (string)
+                + dd (number)
+                + cum_dd (number)
+        + forecast (array)
+            + (object, optional)
+                + date (string)
+                + dd (number)
+                + cum_dd (number)
+
+
+## freeze [/pest_forecasts/freeze]
+
+### Get number of freezing days [GET /pest_forecasts/freeze{?start_date,end_date,lat_range,long_range}]
+
+If pest param is given, returns total degree days from existing degree day model
+
++ Parameters
+    + start_date: `2020-01-01` (string, optional) - defaults to 7 days ago
+    + end_date: `2020-10-10` (string, optional) - defaults to today
+    + lat_range: `45,50` (string, optional) - restrict latitude range
+    + long_range: `-90,-85` (string, optional) - restrict longitude range
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + info (object)
+            + start_date (string)
+            + end_date (string)
+            + lat_range (array)
+            + long_range (array)
+            + grid_points (number)
+            + status (string)
+            + compute_time (number)
+        + data (array)
+            + (object, optional)
+                + lat (number)
+                + long (number)
+                + freeze (number)
+
 
 ## Pest forecast database info [GET /pest_forecasts/info]
 

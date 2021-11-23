@@ -20,15 +20,9 @@ class PestForecastsController < ApplicationController
       .where(date: start_date..end_date)
 
       days_returned = forecasts.distinct.count(:date)
-      latest_date = forecasts.order(:date).last&.date
       status = "missing data" if days_returned < days_requested - 2
       
       if forecasts.size > 0
-        freezing_data = {}
-        PestForecast.where(date: latest_date).map do |point|
-          freezing_data[[point.latitude, point.longitude]] = point.freeze
-        end
-
         data = forecasts.group(:latitude, :longitude)
         .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(#{pest}) as total")
@@ -37,8 +31,7 @@ class PestForecastsController < ApplicationController
             lat: point.latitude.to_f.round(1),
             long: point.longitude.to_f.round(1),
             total: point.total.round(2),
-            avg: (point.total.to_f / days_returned).round(2),
-            freeze: freezing_data[[point.latitude, point.longitude]]
+            avg: (point.total.to_f / days_returned).round(2)
           }
         end
       else
@@ -440,6 +433,66 @@ class PestForecastsController < ApplicationController
 
     render json: response
   end
+
+
+  # GET: returns grid of pest data for dates
+  # params:
+  #   start_date
+  #   end_date
+  #   lat_range - min,max
+  #   long_range - min,max
+
+  def freeze
+    start_time = Time.current
+    status = "OK"
+    info = {}
+    data = []
+
+    forecasts = PestForecast.where(date: start_date..end_date)
+
+    if forecasts.size > 0
+      data = forecasts.where(freeze: true)
+      .group(:latitude, :longitude)
+      .order(:latitude, :longitude)
+      .count
+      .map do |point|
+        {
+          lat: point[0][0].to_f.round(1),
+          long: point[0][1].to_f.round(1),
+          freeze: point[1]
+        }
+      end
+    else
+      status = "no data"
+    end
+
+    info = {
+      start_date: start_date,
+      end_date: end_date,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
+      status: status,
+      compute_time: Time.current - start_time
+    }
+
+    response = {
+      info: info,
+      data: data
+    }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.csv do
+        headers = info unless params[:headers] == "false"
+        filename = "pest data grid for #{pest}.csv"
+        send_data to_csv(response[:data], headers), filename: filename
+      end
+    end
+  end
+
+
 
   # Pest forecasts database info. No params.
   def info

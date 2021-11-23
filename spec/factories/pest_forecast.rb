@@ -6,5 +6,6 @@ FactoryBot.define do
     potato_blight_dsv { rand(4) }
     potato_p_days { rand(8) }
     dd_50_86 { rand(100) }
+    freeze { true }
   end
 end

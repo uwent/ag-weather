@@ -58,8 +58,7 @@ RSpec.describe PestForecastsController, type: :controller do
           :lat,
           :long,
           :total,
-          :avg,
-          :freeze
+          :avg
         ])
       end
 
@@ -556,6 +555,49 @@ RSpec.describe PestForecastsController, type: :controller do
         :future_dds,
         :data,
         :forecast
+      ])
+    end
+  end
+
+  describe "#freeze" do
+    let(:lat) { 42.0 }
+    let(:long) { -89.0 }
+    let(:start_date) { Date.current - 2.weeks }
+    let(:end_date) { Date.current - 1.week }
+
+    before(:each) do
+      start_date.upto(end_date) do |date|
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+      end
+    end
+    let(:params) {{
+      start_date: start_date,
+      end_date: end_date
+    }}
+
+    it "is okay" do
+      get :freeze, params: params
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "has the correct response structure" do
+      get :freeze, params: params
+      expect(json.keys).to match([:info, :data])
+      expect(info).to be_an(Hash)
+      expect(info.keys).to match([
+        :start_date,
+        :end_date,
+        :lat_range,
+        :long_range,
+        :grid_points,
+        :status,
+        :compute_time
+      ])
+      expect(data).to be_an(Array)
+      expect(data.first.keys).to match([
+        :lat,
+        :long,
+        :freeze
       ])
     end
   end
