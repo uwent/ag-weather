@@ -6,7 +6,7 @@ reset
 set palette maxcolors 100
 set palette defined ( 0 '#a100c7', 1 '#6e00dc', 2 '#1f3dfa', 3 '#00c7c7', 4 '#00d18c', 5 '#a1e633', 6 '#e6dc33', 7 '#f08229', 8 '#f00000', 9 '#dc0063')
 # set linetype 1 dt 5 lw 1
-set linetype 1 lw 0.5
+set linetype 1 dt 1 lw 0.5
 # set for [i=1:50] style line i dt i lt 1 lc rgb "#000000"
 # set for [i=1:11] linetype i dt 4
 # set for [i=1:10] linetype i dt 5 lw 1
