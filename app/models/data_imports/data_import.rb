@@ -2,11 +2,11 @@ class DataImport < ApplicationRecord
   DAYS_BACK_WINDOW = 5
 
   def self.latest_date
-    24.hours.ago.to_date
+    Time.now.in_time_zone("US/Central").yesterday.to_date
   end
 
   def self.earliest_date
-    Date.current - DAYS_BACK_WINDOW
+    (Time.now.in_time_zone("US/Central") - DAYS_BACK_WINDOW.days).to_date
   end
 
   def self.days_to_load
