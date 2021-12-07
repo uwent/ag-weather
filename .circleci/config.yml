@@ -25,9 +25,6 @@ jobs:
       - run:
           name: Configure Bundler
           command: bundle config set --local path './vendor/bundle'
-      - run:
-          name: Install Dredd
-          command: npm install dredd
       - restore_cache:
           name: Restore Gem Cache
           keys:
@@ -41,6 +38,9 @@ jobs:
           key: bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
           paths:
             - ./vendor/bundle
+      - run:
+          name: Install Dredd
+          command: npm install dredd
       - run:
           name: Set up database
           command: bin/rails db:setup
