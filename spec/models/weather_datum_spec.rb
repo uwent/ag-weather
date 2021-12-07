@@ -135,6 +135,7 @@ RSpec.describe WeatherDatum, type: :model do
 
     before(:each) do
       FactoryBot.create(:weather_data_import, readings_on: date)
+      FactoryBot.create(:weather_datum, date: date)
     end
 
     it "should call ImageCreator when data sources loaded" do

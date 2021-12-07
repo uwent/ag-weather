@@ -98,9 +98,13 @@ class WeatherDatum < ApplicationRecord
       Rails.logger.info "WeatherDatum :: Creating image for #{date}"
       begin
         data = image_data_grid(date)
-        title = "Mean daily temperature (°F) for #{date.strftime("%-d %B %Y")}"
+        title = "Mean air temperature (°F) for #{date.strftime("%-d %B %Y")}"
         file = image_name(date)
-        ImageCreator.create_image(data, title, file)
+        if data
+          min = (data.min / 10.0).floor * 10
+          max = (data.max / 10.0).ceil * 10
+        end
+        ImageCreator.create_image(data, title, file, min_value: min || 0, max_value: max || 100)
       rescue => e
         Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
         "no_data.png"

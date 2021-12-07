@@ -10,14 +10,14 @@ module ImageCreator
   end
 
   def self.create_image(data_grid, title, file_base_name, min_value: nil, max_value: nil)
+    grid_min = min_value_for_gnuplot(data_grid.min, data_grid.max)
+    grid_max = max_value_for_gnuplot(data_grid.min, data_grid.max)
+    min = min_value || grid_min
+    max = max_value || grid_max
+    Rails.logger.debug "ImageCreator :: Gunplot data range: #{grid_min} -> #{grid_max} = #{grid_max - grid_min} (#{(grid_max - grid_min) / 10.0}/tick)"
+    Rails.logger.debug "ImageCreator :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
     datafile_name = create_data_file(data_grid)
-    image_filename = generate_image_file(
-      datafile_name,
-      file_base_name,
-      title,
-      min_value || min_value_for_gnuplot(data_grid.min),
-      max_value || max_value_for_gnuplot(data_grid.max)
-    )
+    image_filename = generate_image_file(datafile_name, file_base_name, title, min, max)
     File.delete(datafile_name)
     image_filename
   end
@@ -44,14 +44,15 @@ module ImageCreator
 
     # Gnuplot
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min_value}; max_val=#{max_value}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
-    Rails.logger.debug(">> gnuplot cmd: #{gnuplot_cmd}")
+    Rails.logger.debug ">> gnuplot cmd: #{gnuplot_cmd}"
     `#{gnuplot_cmd}`
 
     # Image Magick
     image_cmd = "composite lib/map_overlay_branded.png #{temp_image} #{image_fullpath}"
-    Rails.logger.debug(">> imagemagick cmd: #{image_cmd}")
+    Rails.logger.debug ">> imagemagick cmd: #{image_cmd}"
     `#{image_cmd}`
 
+    Rails.logger.debug "ImageCreator :: Created image #{image_fullpath}"
     File.delete(temp_image)
     image_name
   end
@@ -60,17 +61,19 @@ module ImageCreator
     File.join(Rails.configuration.x.image.temp_directory, "#{SecureRandom.urlsafe_base64(8)}.#{suffix}")
   end
 
-  def self.max_value_for_gnuplot(val)
-    return 0 if val.nil?
-    return (val + 0.005).round(2) if val < 0.1
-    return (val + 0.05).round(1) if val < 1
-    val.ceil
+  def self.max_value_for_gnuplot(min, max)
+    return 0 if max.nil?
+    range = max - min
+    return (max + 0.005).round(2) if range <= 1
+    return (max + 0.05).round(1) if range <= 10
+    max.ceil
   end
 
-  def self.min_value_for_gnuplot(val)
-    return 0 if val.nil?
-    return (val - 0.005).round(2) if val < 0.1
-    return (val - 0.05).round(1) if val < 1
-    val.floor
+  def self.min_value_for_gnuplot(min, max)
+    return 0 if min.nil?
+    range = max - min
+    return (min - 0.005).round(2) if range <= 1
+    return (min - 0.05).round(1) if range <= 10
+    min.floor
   end
 end
