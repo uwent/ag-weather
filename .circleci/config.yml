@@ -29,16 +29,18 @@ jobs:
           name: Install Dredd
           command: npm install dredd
       - restore_cache:
+          name: Restore Gem Cache
           keys:
-            - agweather-bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
-            - agweather-bundle
+            - bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
+            - bundle-{{ checksum ".ruby-version" }}
       - run:
           name: Bundle Install
           command: bundle check || bundle install
       - save_cache:
-         key: agweather-bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
-         paths:
-           - ./vendor/bundle
+          name: Save Gem Cache
+          key: bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ./vendor/bundle
       - run:
           name: Set up database
           command: bin/rails db:setup
