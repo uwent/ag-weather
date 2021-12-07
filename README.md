@@ -63,7 +63,7 @@ composite # confirm it works
 1. Ensure dependencies above are satisfied
 2. Clone the project
 3. Install gems with `bundle install` in project directory
-4. Create database and schema with `bundle exec rake db:setup`
+4. Create database and schema with `bundle exec rails db:setup`
 5. Import and process weather data. By default it will fetch the last 5 days.
     * Open the rails console `bundle exec rails c`
     * Run all the data scripts with `RunTasks.all`
