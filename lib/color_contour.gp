@@ -37,7 +37,7 @@ set cbtics min_val, (max_val - min_val) / 10.0, max_val
 set cbtics out nomirror scale 0.5
 
 # Plot the surface
-splot infile u 2:1:3 with pm3d
+splot infile u 2:1:3 with pm3d nocontour
 
 # Plot contour lines
 set for [i=1:12] linetype i dt 4 lc rgb "#000000"
