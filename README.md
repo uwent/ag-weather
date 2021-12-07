@@ -8,7 +8,7 @@ This project is to support the UW-Extension's Agricultural Weather Service.  Inc
 
 ## Dependencies
 
-`Ruby 3.x`
+`Ruby 3.0.x`
 ```bash
 # install rbenv
 sudo apt -y install rbenv
@@ -21,7 +21,7 @@ git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-b
 git -C "$(rbenv root)"/plugins/ruby-build pull
 
 # install ruby with rbenv
-rbenv install 3.0.2 # or latest version
+rbenv install 3.0.3 # or latest version
 
 # update bundler to latest
 gem install bundler
@@ -71,19 +71,23 @@ composite # confirm it works
 6. Start the server with `bundle exec rails s`
 7. Server will be listening on `localhost:8080`
 
-### Running Tests
+## Running Tests
 
-#### Lint
+### Lint
+
 ```bash
 # check code for style before commit
 bundle exec standardrb --fix
 ```
 
-#### RSpec
+### RSpec
+
 ```bash
 bundle exec rspec
 ```
-#### API Documentation
+
+### API Documentation
+
 ```bash
 bundle exec rake dredd RAILS_ENV=test
 ```
