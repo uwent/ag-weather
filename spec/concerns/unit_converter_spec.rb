@@ -7,7 +7,7 @@ RSpec.describe UnitConverter, type: :module do
     it "should convert celcius to fahrenheit" do
       expect(UnitConverter.c_to_f(-40)).to eq(-40)
       expect(UnitConverter.c_to_f(0)).to eq(32)
-      expect(UnitConverter.c_to_f(23.3)).to eq(73.94)
+      expect(UnitConverter.c_to_f(23.3)).to be_within(epsilon).of(73.94)
       expect(UnitConverter.c_to_f(100)).to eq(212)
     end
 
@@ -20,8 +20,8 @@ RSpec.describe UnitConverter, type: :module do
 
     it "should convert celcius degree days to fahrenheit" do
       expect(UnitConverter.cdd_to_fdd(0)).to eq(0)
-      expect(UnitConverter.cdd_to_fdd(42)).to eq(75.6)
-      expect(UnitConverter.cdd_to_fdd(123)).to eq(221.4)
+      expect(UnitConverter.cdd_to_fdd(42)).to be_within(epsilon).of(75.6)
+      expect(UnitConverter.cdd_to_fdd(123)).to be_within(epsilon).of(221.4)
     end
 
     it "should convert fahrenheit degree days to celcius" do

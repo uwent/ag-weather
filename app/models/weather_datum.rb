@@ -85,9 +85,7 @@ class WeatherDatum < ApplicationRecord
     WeatherDatum.where(date: date).each do |w|
       lat, long = w.latitude, w.longitude
       next unless grid.inside?(lat, long)
-      mean_temp_c = (w.min_temperature + w.max_temperature) / 2.0
-      mean_temp_f = UnitConverter.c_to_f(mean_temp_c)
-      grid[lat, long] = mean_temp_f.round(2)
+      grid[lat, long] = UnitConverter.c_to_f(w.avg_temperature).round(2)
     end
     grid
   end
