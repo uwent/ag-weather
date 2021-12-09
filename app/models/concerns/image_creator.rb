@@ -48,7 +48,7 @@ module ImageCreator
     `#{gnuplot_cmd}`
 
     # Image Magick
-    image_cmd = "composite lib/map_overlay_branded.png #{temp_image} #{image_fullpath}"
+    image_cmd = "composite lib/map_overlay_branded.png '#{temp_image}' '#{image_fullpath}'"
     Rails.logger.debug ">> imagemagick cmd: #{image_cmd}"
     `#{image_cmd}`
 

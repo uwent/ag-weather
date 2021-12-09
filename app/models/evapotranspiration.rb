@@ -49,7 +49,7 @@ class Evapotranspiration < ApplicationRecord
       Rails.logger.info "Evapotranspiration :: Creating image for #{date}"
       begin
         data = land_grid_for_date(date)
-        title = "Estimated ET (Inches/day) for #{date.strftime("%-d %B %Y")}"
+        title = "Estimated ET (in/day) for #{date.strftime("%-d %B %Y")}"
         file = image_name(date)
         ImageCreator.create_image(data, title, file, min_value: 0, max_value: 0.3)
       rescue => e

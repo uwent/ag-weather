@@ -3,6 +3,14 @@ class PestForecast < ApplicationRecord
 
   NO_MAX = 150
 
+  def self.latest_date
+    PestForecast.maximum(:date)
+  end
+
+  def self.earliest_date
+    PestForecast.minimum(:date)
+  end
+
   def self.for_lat_long_date_range(lat, long, start_date, end_date)
     where(latitude: lat)
       .where(longitude: long)
@@ -66,40 +74,97 @@ class PestForecast < ApplicationRecord
     }
   end
 
-  def self.create_image(pest, start_date = Date.current.beginning_of_year, end_date = Date.current)
-    raise ArgumentError.new("Pest not found!") unless PestForecast.column_names.include?(pest)
-    Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
-    forecasts = PestForecast.where(date: start_date..end_date)
+  def self.pest_models
+    %w[potato_blight_dsv potato_p_days carrot_foliar_dsv cercospora_div]
+  end
 
-    if forecasts.size > 0
-      grid = LandGrid.new
-      totals = forecasts.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(#{pest}) as total")
+  def self.dd_models
+    self.column_names.select { |c| c.include? "dd_" }
+  end
 
-      totals.each do |pf|
-        lat = pf.latitude
-        long = pf.longitude
-        grid[lat, long] = pf.total
-      end
-
-      title = "#{pest_titles[pest.to_sym]} for #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
-      ImageCreator.create_image(grid, title, image_name(pest, start_date, end_date))
-    else
-      Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
-      "no_data.png"
+  def self.create_dd_maps
+    dd_models.each_with_index do |model, i|
+      Rails.logger.info "PestForecast :: Generating map #{i + 1} (#{model})"
+      create_dd_map(model)
     end
   end
 
-  def self.image_name(pest, start_date, end_date)
-    "#{pest}_grid_#{start_date.to_s(:number)}_#{end_date.to_s(:number)}.png"
+  def self.create_dd_map(model, start_date: Date.current.beginning_of_year, end_date: Date.current, units: "F")
+    raise ArgumentError.new("Invalid model!") unless dd_models.include? model
+    raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
+    Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
+
+    forecasts = PestForecast.where(date: start_date..end_date)
+    if forecasts.size > 0
+      grid = LandGrid.new
+      totals = forecasts.group(:latitude, :longitude)
+      .order(:latitude, :longitude)
+      .select(:latitude, :longitude, "sum(#{model}) as total")
+
+      totals.each do |pf|
+        lat, long = pf.latitude, pf.longitude
+        grid[lat, long] = units == "F" ? pf.total : UnitConverter.fdd_to_cdd(pf.total)
+      end
+
+      # define map scale by rounding the interval up to divisible by 5
+      tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
+      title, file = dd_map_attr(model, start_date, end_date, units)
+      ImageCreator.create_image(grid, title, file, min_value: 0, max_value: tick * 10)
+    else
+      Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
+      return "no_data.png"
+    end
   end
 
-  def self.latest_date
-    PestForecast.maximum(:date)
+  def self.dd_map_attr(model, start_date, end_date, units)
+    _, base, upper = model.gsub("p", ".").split("_")
+    if units == "C"
+      base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
+      upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) unless upper == "none"
+    end
+    model_name = "base #{base}°#{units}"
+    model_name += ", upper #{upper}°#{units}" unless upper == "none"
+    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").gsub(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}.png"
+    title = "Degree day totals for #{model_name} from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
+    [title, file]
   end
 
-  def self.earliest_date
-    PestForecast.minimum(:date)
+  def self.create_pest_maps
+    pest_models.each_with_index do |model, i|
+      Rails.logger.info "PestForecast :: Generating map #{i + 1} (#{model})"
+      create_pest_map(model)
+    end
+  end
+
+  def self.create_pest_map(pest, start_date: Date.current.beginning_of_year, end_date: Date.current)
+    raise ArgumentError.new("Invalid pest!") unless pest_models.include? pest
+    Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
+
+    forecasts = PestForecast.where(date: start_date..end_date)
+    if forecasts.size > 0
+      grid = LandGrid.new
+      totals = forecasts.group(:latitude, :longitude)
+      .order(:latitude, :longitude)
+      .select(:latitude, :longitude, "sum(#{pest}) as total")
+
+      totals.each do |pf|
+        lat, long = pf.latitude, pf.longitude
+        grid[lat, long] = pf.total
+      end
+
+      tick = (grid.max / 10.0).ceil
+      title, file = pest_map_attr(pest, start_date, end_date)
+      ImageCreator.create_image(grid, title, file, min_value: 0, max_value: tick * 10)
+    else
+      Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
+      return "no_data.png"
+    end
+  end
+
+  def self.pest_map_attr(pest, start_date, end_date)
+    pest_title = pest_titles[pest.to_sym]
+    title = pest_title + " DSV accumulation from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
+    file = "dsv-totals-for-#{pest_title.gsub(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}.png"
+    [title, file]
   end
 end
