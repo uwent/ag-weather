@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe LandGrid do
+RSpec.describe LandGrid, type: :model do
   context "initialize" do
     it "can make a grid with proper latitudes, longitudes, and step" do
       grid = LandGrid.new(10, 20, -20, -10, 0.1)

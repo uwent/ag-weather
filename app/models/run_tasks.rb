@@ -1,18 +1,12 @@
-module RunTasks
+class RunTasks
   def self.all
-    # fetch insolation data from SSEC server
+    # fetch remote data
     InsolationImporter.fetch
-
-    # fetch precip data from NOAA server
     PrecipImporter.fetch
-
-    # fetch weather data from NOAA server
     WeatherImporter.fetch
 
-    # generate ETs from WeatherDatum and Insolation databases
+    # generate new data
     EvapotranspirationImporter.create_et_data
-
-    # generate pest forecasts for VDIFN from WeatherDatum
     PestForecastImporter.create_forecast_data
 
     # display status of import attempts
@@ -115,7 +109,7 @@ module RunTasks
 
   # re-generates pest forecast for date
   def self.redo_forecast(date)
-    ActiveRecord::Base.logger.level = 1 
+    ActiveRecord::Base.logger.level = 1
 
     if WeatherDatum.where(date: date).size > 0
       puts date.strftime + " - ready - recalculating..."
@@ -141,7 +135,7 @@ module RunTasks
 
   def self.calc_frost(start_date = WeatherDatum.earliest_date, end_date = WeatherDatum.latest_date)
     puts "Calculating freeze and frost data..."
-    ActiveRecord::Base.logger.level = 1 
+    ActiveRecord::Base.logger.level = 1
     dates = start_date..end_date
     day = 0
     days = (start_date..end_date).count
@@ -161,9 +155,9 @@ module RunTasks
         end
         PestForecast.where(id: frost_ids.sort).update_all(frost: true)
         PestForecast.where(id: freeze_ids.sort).update_all(freeze: true)
-        puts "Day #{day}/#{days}: #{date.to_s} ==> OK (frost #{sprintf('%.0f', frosts.size.to_f / weather.size * 100)}%, freeze #{sprintf('%.0f', freezes.size.to_f / weather.size * 100)}%)"
+        puts "Day #{day}/#{days}: #{date} ==> OK (frost #{sprintf("%.0f", frosts.size.to_f / weather.size * 100)}%, freeze #{sprintf("%.0f", freezes.size.to_f / weather.size * 100)}%)"
       else
-        puts "Day #{day}/#{days}: #{date.to_s} ==> No data"
+        puts "Day #{day}/#{days}: #{date} ==> No data"
       end
     end
   end

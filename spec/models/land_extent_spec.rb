@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe LandExtent do
+RSpec.describe LandExtent, type: :model do
   let(:lats) { BigDecimal("38")..BigDecimal("50") }
   let(:longs) { BigDecimal("-98")..BigDecimal("-82") }
   let(:step) { 0.1 }

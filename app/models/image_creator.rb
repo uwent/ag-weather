@@ -1,4 +1,4 @@
-module ImageCreator
+class ImageCreator
   IMAGE_STEP = 0.1
 
   def self.url_path

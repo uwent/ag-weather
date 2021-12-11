@@ -1,5 +1,4 @@
-module DegreeDaysCalculator
-
+class DegreeDaysCalculator
   INVERSE_PI = 1 / Math::PI
   BASE_F = 50
   UPPER_F = 86
@@ -59,10 +58,14 @@ module DegreeDaysCalculator
 
     # max is between base and upper, min is less than base
     if max <= upper && min < base
-      time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
-      INVERSE_PI *
-        ((average - base) * (Math::PI / 2 - time_of_base_threshold_in_radians) +
-         alpha * Math.cos(time_of_base_threshold_in_radians))
+      base_radians = Math.asin((base - average) / alpha)
+      a = average - base
+      b = Math::PI / 2.0 - base_radians
+      c = alpha * Math.cos(base_radians)
+      INVERSE_PI * (a * b + c)
+    # INVERSE_PI *
+    #   ((average - base) * (Math::PI / 2 - time_of_base_threshold_in_radians) +
+    #    alpha * Math.cos(time_of_base_threshold_in_radians))
 
     # max is greater than upper and min is between base and upper
     elsif max > upper && min >= base

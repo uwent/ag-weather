@@ -1,16 +1,18 @@
-class PestForecastImporter
+module PestForecastImporter
   def self.create_forecast_data
-    days_to_load = PestForecastDataImport.days_to_load
-
-    days_to_load.each do |day|
-      calculate_forecast_for_date(day)
+    PestForecastDataImport.days_to_load.each do |date|
+      calculate_forecast_for_date(date)
     end
+  end
+
+  def self.data_sources_loaded?(date)
+    WeatherDataImport.successful.find_by(readings_on: date)
   end
 
   def self.calculate_forecast_for_date(date)
     unless data_sources_loaded?(date)
-      Rails.logger.warn "PestForecastImporter :: FAIL: Data sources not loaded."
-      PestForecastDataImport.fail(date, "Data sources not loaded.")
+      Rails.logger.error "PestForecastImporter :: FAIL: Weather data not found for #{date}"
+      PestForecastDataImport.fail(date, "Weather data not found")
       return
     end
 
@@ -18,22 +20,19 @@ class PestForecastImporter
     forecasts = []
 
     LandExtent.each_point do |lat, long|
-      next unless LandExtent.inside?(lat, long)
-
-      if weather[lat, long].nil?
-        Rails.logger.error("PestForecastImporter :: Failed to calculate pest forcast for #{date}, lat: #{lat} long: #{long}.")
-        next
-      end
-
+      next if weather[lat, long].nil?
       forecasts << PestForecast.new_from_weather(weather[lat, long])
     end
 
-    PestForecast.where(date: date).delete_all
-    PestForecast.import(forecasts, validate: false)
-    PestForecastDataImport.succeed(date)
-  end
+    PestForecast.transaction do
+      PestForecast.where(date: date).delete_all
+      PestForecast.import(forecasts)
+    end
 
-  def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by(readings_on: date)
+    PestForecastDataImport.succeed(date)
+  rescue => e
+    msg = "Failed to calculate pest forecasts for #{date}: #{e.message}"
+    Rails.logger.error "PestForecastImporter :: #{msg}"
+    PestForecastDataImport.fail(date, msg)
   end
 end

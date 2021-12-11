@@ -537,10 +537,12 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#pvy" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:params) {{
-      lat: lat,
-      long: long
-    }}
+    let(:params) {
+      {
+        lat: lat,
+        long: long
+      }
+    }
 
     it "is okay" do
       get :pvy, params: params
@@ -570,10 +572,12 @@ RSpec.describe PestForecastsController, type: :controller do
         FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
       end
     end
-    let(:params) {{
-      start_date: start_date,
-      end_date: end_date
-    }}
+    let(:params) {
+      {
+        start_date: start_date,
+        end_date: end_date
+      }
+    }
 
     it "is okay" do
       get :freeze, params: params

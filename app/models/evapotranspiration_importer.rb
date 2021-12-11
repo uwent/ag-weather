@@ -1,6 +1,8 @@
 class EvapotranspirationImporter
   def self.create_et_data
-    EvapotranspirationDataImport.days_to_load.each { |day| calculate_et_for_date(day) }
+    EvapotranspirationDataImport.days_to_load.each do |date|
+      calculate_et_for_date(date)
+    end
   end
 
   def self.data_sources_loaded?(date)
@@ -13,8 +15,8 @@ class EvapotranspirationImporter
     Rails.logger.info "EvapotranspirationImporter :: Calculating ET for #{date}"
 
     unless data_sources_loaded?(date)
-      Rails.logger.warn "EvapotranspirationImporter :: FAIL: Data sources not loaded."
-      EvapotranspirationDataImport.fail(date, "Data sources not loaded.")
+      Rails.logger.warn "EvapotranspirationImporter :: FAIL: Data sources not loaded"
+      EvapotranspirationDataImport.fail(date, "Data sources not loaded")
       return
     end
 
@@ -23,10 +25,7 @@ class EvapotranspirationImporter
 
     ets = []
     LandExtent.each_point do |lat, long|
-      if weather[lat, long].nil? || insols[lat, long].nil?
-        Rails.logger.error("Failed to calculate evapotranspiration for #{date}, lat: #{lat} long: #{long}.")
-        next
-      end
+      next if weather[lat, long].nil? || insols[lat, long].nil?
 
       et = Evapotranspiration.new(latitude: lat, longitude: long, date: date)
       et.potential_et = et.calculate_et(insols[lat, long], weather[lat, long])
@@ -40,5 +39,9 @@ class EvapotranspirationImporter
 
     EvapotranspirationDataImport.succeed(date)
     Evapotranspiration.create_image(date)
+  rescue => e
+    msg = "Failed to calculate ET for #{date}: #{e.message}"
+    Rails.logger.error "EvapotranspirationImporter :: #{msg}"
+    EvapotranspirationDataImport.fail(date, msg)
   end
 end

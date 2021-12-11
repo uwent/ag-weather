@@ -467,6 +467,26 @@ Returns pest forecast data for entire grid for pest and date range
 + Response 200 (text/csv)
 
 
+## show [/pest_forecasts/{pest}]
+
+### Get pest or dd map image url [GET /pest_forecasts/{pest}{?start_date,end_date,units}]
+
+Retrieve the pest or dd map for a given date.
+
++ Parameters
+    + pest: `dd_50_none` (string) - the desired pest forecast data column
+    + start_date (string, optional)
+    + end_date (string, optional)
+    + units (string, optional) - either F or C, only matters when pest is a dd model
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes
+        + status (string)
+        + params (object)
+        + compute_time (number)
+        + map: `url/for/map.png` (string)
+
+
 ## custom [/pest_forecasts/custom]
 
 ### Get degree day totals for grid [GET /pest_forecasts/custom{?pest,start_date,end_date,lat_range,long_range}]
