@@ -106,60 +106,81 @@ class PestForecast < ApplicationRecord
     end
   end
 
-  def self.create_pest_map(pest, start_date = latest_date - 1.week, end_date = latest_date)
+  def self.create_pest_map(pest, start_date = latest_date - 1.week, end_date = latest_date, min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid pest!") unless pest_models.include? pest
     Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
 
     forecasts = PestForecast.where(date: start_date..end_date)
     if forecasts.size > 0
-      grid = LandGrid.new
+      grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
         .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(#{pest}) as total")
 
       totals.each do |pf|
         lat, long = pf.latitude, pf.longitude
+        next unless grid.inside?(lat, long)
         grid[lat, long] = pf.total
       end
 
       tick = (grid.max / 10.0).ceil
-      title, file = pest_map_attr(pest, start_date, end_date)
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: 0, max_value: [10, tick * 10].max)
+
+      if min_value || max_value
+        min_value ||= 0
+        max_value ||= tick * 10
+        title, file = pest_map_attr(pest, start_date, end_date, min_value, max_value)
+      else
+        min_value = 0
+        max_value = tick * 10
+        title, file = pest_map_attr(pest, start_date, end_date, nil, nil)
+      end
+
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
       "no_data.png"
     end
   end
 
-  def self.pest_map_attr(pest, start_date, end_date)
+  def self.pest_map_attr(pest, start_date, end_date, min_value, max_value)
     pest_title = pest_titles[pest.to_sym]
     title = pest_title + " accumulation from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
-    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}.png"
+    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
+    file += ".png"
     [title, file]
   end
 
-  def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F", min_value = nil, max_value = nil)
+  def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F", min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid model!") unless dd_models.include? model
     raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
     Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
 
     forecasts = PestForecast.where(date: start_date..end_date)
     if forecasts.size > 0
-      grid = LandGrid.new
+      grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
         .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(#{model}) as total")
 
       totals.each do |pf|
         lat, long = pf.latitude, pf.longitude
+        next unless grid.inside?(lat, long)
         grid[lat, long] = units == "F" ? pf.total : UnitConverter.fdd_to_cdd(pf.total)
       end
 
       # define map scale by rounding the interval up to divisible by 5
       tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
-      min_value ||= 0
-      max_value ||= tick * 10
-      title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value)
+
+      if min_value || max_value
+        min_value ||= 0
+        max_value ||= tick * 10
+        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value)
+      else
+        min_value = 0
+        max_value = tick * 10
+        title, file = dd_map_attr(model, start_date, end_date, units, nil, nil)
+      end
       ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"

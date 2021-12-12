@@ -505,11 +505,11 @@ class PestForecastsController < ApplicationController
 
     if PestForecast.all_models.include?(@model)
       if PestForecast.pest_models.include?(@model)
-        _, image_name = PestForecast.pest_map_attr(@model, @start_date, @end_date)
+        _, image_name = PestForecast.pest_map_attr(@model, @start_date, @end_date, @min_value, @max_value)
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
         unless File.exist? image_filename
-          image_name = PestForecast.create_pest_map(model, start_date, end_date)
+          image_name = PestForecast.create_pest_map(@model, @start_date, @end_date, @min_value, @max_value, @wi_only)
         end
       else
         _, image_name, base, upper = PestForecast.dd_map_attr(@model, @start_date, @end_date, @units, @min_value, @max_value)
@@ -517,7 +517,7 @@ class PestForecastsController < ApplicationController
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
         unless File.exist? image_filename
-          image_name = PestForecast.create_dd_map(@model, @start_date, @end_date, @units, @min_value, @max_value)
+          image_name = PestForecast.create_dd_map(@model, @start_date, @end_date, @units, @min_value, @max_value, @wi_only)
         end
       end
       if image_name == "no_data.png"
@@ -592,6 +592,7 @@ class PestForecastsController < ApplicationController
     @units = %w[F C].include?(params[:units]) ? params[:units] : "F"
     @min_value = params[:min_value].present? ? parse_number(params[:min_value]) : nil
     @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil
+    @wi_only = params[:wi_only] == "true"
   end
 
   def parse_number(s)
