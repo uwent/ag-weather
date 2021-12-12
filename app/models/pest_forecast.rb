@@ -11,6 +11,14 @@ class PestForecast < ApplicationRecord
     PestForecast.minimum(:date)
   end
 
+  def self.pest_map_dir
+    "pest_maps"
+  end
+
+  def self.dd_map_dir
+    "dd_maps"
+  end
+
   def self.for_lat_long_date_range(lat, long, start_date, end_date)
     where(latitude: lat)
       .where(longitude: long)
@@ -33,8 +41,8 @@ class PestForecast < ApplicationRecord
       dd_41_88: weather.degree_days(41, 88), # 5 / 31 C
       dd_41_none: weather.degree_days(41, NO_MAX), # 5 / none C
       dd_42p8_86: weather.degree_days(42.8, 86), # 6 / 30 C
-      dd_45_none: weather.degree_days(45, NO_MAX), # 7.2 / none C
       dd_45_86: weather.degree_days(45, 86), # 7.2 / 30 C
+      dd_45_none: weather.degree_days(45, NO_MAX), # 7.2 / none C
       dd_48_none: weather.degree_days(48, NO_MAX), # 9 / none C
       dd_50_86: weather.degree_days(50, 86), # 10 / 30 C
       dd_50_88: weather.degree_days(50, 88), # 10 / 31.1 C
@@ -116,7 +124,7 @@ class PestForecast < ApplicationRecord
 
       tick = (grid.max / 10.0).ceil
       title, file = pest_map_attr(pest, start_date, end_date)
-      ImageCreator.create_image(grid, title, file, min_value: 0, max_value: [10, tick * 10].max)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: 0, max_value: [10, tick * 10].max)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
       "no_data.png"
@@ -150,7 +158,7 @@ class PestForecast < ApplicationRecord
       # define map scale by rounding the interval up to divisible by 5
       tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
       title, file = dd_map_attr(model, start_date, end_date, units)
-      ImageCreator.create_image(grid, title, file, min_value: 0, max_value: tick * 10)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: 0, max_value: tick * 10)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
       "no_data.png"

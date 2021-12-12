@@ -499,23 +499,31 @@ class PestForecastsController < ApplicationController
     model = params[:id]
     status = "OK"
     dd_params = {}
+    image_dir = File.join(ImageCreator.file_dir, PestForecast.pest_map_dir)
+    url_prefix = ImageCreator.url_path + "/" + PestForecast.pest_map_dir
 
     if PestForecast.all_models.include?(model)
       if PestForecast.pest_models.include?(model)
         _, image_name = PestForecast.pest_map_attr(model, start_date, end_date)
-        image_filename = File.join(ImageCreator.file_path, image_name)
-        image_name = PestForecast.create_pest_map(model, start_date, end_date) unless File.exist? image_filename
+        image_filename = File.join(image_dir, image_name)
+        Rails.logger.debug "Looking for #{image_filename}"
+        unless File.exist? image_filename
+          image_name = PestForecast.create_pest_map(model, start_date, end_date)
+        end
       else
         _, image_name, base, upper = PestForecast.dd_map_attr(model, start_date, end_date, units)
         dd_params = {base: base, upper: upper, units: units}
-        image_filename = File.join(ImageCreator.file_path, image_name)
-        image_name = PestForecast.create_dd_map(model, start_date, end_date, units) unless File.exist? image_filename
+        image_filename = File.join(image_dir, image_name)
+        Rails.logger.debug "Looking for #{image_filename}"
+        unless File.exist? image_filename
+          image_name = PestForecast.create_dd_map(model, start_date, end_date, units)
+        end
       end
       if image_name == "no_data.png"
         status = "ERR: No data"
         url = "/no_data.png"
       else
-        url = File.join(ImageCreator.url_path, image_name)
+        puts url = "#{url_prefix}/#{image_name}"
       end
     else
       status = "ERR: Model '#{model}' not found, must be one of: #{PestForecast.all_models.join(", ")}"

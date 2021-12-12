@@ -5,8 +5,8 @@ Rails.application.configure do
 
   # Image generation and service configuration
   config.x.image.temp_directory = "tmp"
-  config.x.image.file_dir = "public/tmp"
-  config.x.image.url_path = "/tmp"
+  config.x.image.file_dir = "public/dev"
+  config.x.image.url_path = "/dev"
 
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
