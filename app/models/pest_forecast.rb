@@ -128,11 +128,11 @@ class PestForecast < ApplicationRecord
       if min_value || max_value
         min_value ||= 0
         max_value ||= tick * 10
-        title, file = pest_map_attr(pest, start_date, end_date, min_value, max_value)
+        title, file = pest_map_attr(pest, start_date, end_date, min_value, max_value, wi_only)
       else
+        title, file = pest_map_attr(pest, start_date, end_date, min_value, max_value, wi_only)
         min_value = 0
         max_value = tick * 10
-        title, file = pest_map_attr(pest, start_date, end_date, nil, nil)
       end
 
       ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
@@ -142,11 +142,12 @@ class PestForecast < ApplicationRecord
     end
   end
 
-  def self.pest_map_attr(pest, start_date, end_date, min_value, max_value)
+  def self.pest_map_attr(pest, start_date, end_date, min_value, max_value, wi_only)
     pest_title = pest_titles[pest.to_sym]
     title = pest_title + " accumulation from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
     file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
+    file += "-wi" if wi_only
     file += ".png"
     [title, file]
   end
@@ -175,11 +176,11 @@ class PestForecast < ApplicationRecord
       if min_value || max_value
         min_value ||= 0
         max_value ||= tick * 10
-        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value)
+        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value, wi_only)
       else
+        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value, wi_only)
         min_value = 0
         max_value = tick * 10
-        title, file = dd_map_attr(model, start_date, end_date, units, nil, nil)
       end
       ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
@@ -188,7 +189,7 @@ class PestForecast < ApplicationRecord
     end
   end
 
-  def self.dd_map_attr(model, start_date, end_date, units, min_value, max_value)
+  def self.dd_map_attr(model, start_date, end_date, units, min_value, max_value, wi_only)
     _, base, upper = model.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
@@ -196,10 +197,11 @@ class PestForecast < ApplicationRecord
     end
     model_name = "base #{base}°#{units}"
     model_name += ", upper #{upper}°#{units}" unless upper == "none"
+    title = "Degree day totals for #{model_name} from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
     file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
+    file += "-wi" if wi_only
     file += ".png"
-    title = "Degree day totals for #{model_name} from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
     [title, file, base, upper]
   end
 end

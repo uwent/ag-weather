@@ -505,14 +505,14 @@ class PestForecastsController < ApplicationController
 
     if PestForecast.all_models.include?(@model)
       if PestForecast.pest_models.include?(@model)
-        _, image_name = PestForecast.pest_map_attr(@model, @start_date, @end_date, @min_value, @max_value)
+        _, image_name = PestForecast.pest_map_attr(@model, @start_date, @end_date, @min_value, @max_value, @wi_only)
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
         unless File.exist? image_filename
           image_name = PestForecast.create_pest_map(@model, @start_date, @end_date, @min_value, @max_value, @wi_only)
         end
       else
-        _, image_name, base, upper = PestForecast.dd_map_attr(@model, @start_date, @end_date, @units, @min_value, @max_value)
+        _, image_name, base, upper = PestForecast.dd_map_attr(@model, @start_date, @end_date, @units, @min_value, @max_value, @wi_only)
         dd_params = {base: base, upper: upper, units: @units}
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
