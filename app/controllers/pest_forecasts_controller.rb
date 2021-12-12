@@ -496,27 +496,28 @@ class PestForecastsController < ApplicationController
 
   def show
     start_time = Time.current
-    model = params[:id]
+    parse_map_params()
+
     status = "OK"
     dd_params = {}
     image_dir = File.join(ImageCreator.file_dir, PestForecast.pest_map_dir)
     url_prefix = ImageCreator.url_path + "/" + PestForecast.pest_map_dir
 
-    if PestForecast.all_models.include?(model)
-      if PestForecast.pest_models.include?(model)
-        _, image_name = PestForecast.pest_map_attr(model, start_date, end_date)
+    if PestForecast.all_models.include?(@model)
+      if PestForecast.pest_models.include?(@model)
+        _, image_name = PestForecast.pest_map_attr(@model, @start_date, @end_date)
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
         unless File.exist? image_filename
           image_name = PestForecast.create_pest_map(model, start_date, end_date)
         end
       else
-        _, image_name, base, upper = PestForecast.dd_map_attr(model, start_date, end_date, units)
-        dd_params = {base: base, upper: upper, units: units}
+        _, image_name, base, upper = PestForecast.dd_map_attr(@model, @start_date, @end_date, @units, @min_value, @max_value)
+        dd_params = {base: base, upper: upper, units: @units}
         image_filename = File.join(image_dir, image_name)
         Rails.logger.debug "Looking for #{image_filename}"
         unless File.exist? image_filename
-          image_name = PestForecast.create_dd_map(model, start_date, end_date, units)
+          image_name = PestForecast.create_dd_map(@model, @start_date, @end_date, @units, @min_value, @max_value)
         end
       end
       if image_name == "no_data.png"
@@ -526,7 +527,7 @@ class PestForecastsController < ApplicationController
         puts url = "#{url_prefix}/#{image_name}"
       end
     else
-      status = "ERR: Model '#{model}' not found, must be one of: #{PestForecast.all_models.join(", ")}"
+      status = "ERR: Model '#{@model}' not found, must be one of: #{PestForecast.all_models.join(", ")}"
       url = "/no_data.png"
     end
 
@@ -536,9 +537,9 @@ class PestForecastsController < ApplicationController
       render json: {
         status: status,
         params: {
-          model: model,
-          start_date: start_date,
-          end_date: end_date
+          model: @model,
+          start_date: @start_date,
+          end_date: @end_date
         }.merge(dd_params),
         compute_time: Time.current - start_time,
         map: url
@@ -584,12 +585,17 @@ class PestForecastsController < ApplicationController
   #   degree_days.sum
   # end
 
-  def start_date
-    parse_date(params[:start_date], Date.current.beginning_of_year)
+  def parse_map_params
+    @model = params[:id]
+    @start_date = parse_date(params[:start_date], Date.current.beginning_of_year)
+    @end_date = parse_date(params[:end_date], Date.current)
+    @units = %w[F C].include?(params[:units]) ? params[:units] : "F"
+    @min_value = params[:min_value].present? ? parse_number(params[:min_value]) : nil
+    @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil
   end
 
-  def end_date
-    parse_date(params[:end_date], Date.current)
+  def parse_number(s)
+    s !~ /\D/ ? s.to_i : nil
   end
 
   def lat
@@ -610,10 +616,6 @@ class PestForecastsController < ApplicationController
 
   def pest
     params[:pest]
-  end
-
-  def units
-    %w[F C].include?(params[:units]) ? params[:units] : "F"
   end
 
   def t_base

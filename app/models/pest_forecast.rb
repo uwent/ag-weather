@@ -138,7 +138,7 @@ class PestForecast < ApplicationRecord
     [title, file]
   end
 
-  def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F")
+  def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F", min_value = nil, max_value = nil)
     raise ArgumentError.new("Invalid model!") unless dd_models.include? model
     raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
     Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
@@ -157,15 +157,17 @@ class PestForecast < ApplicationRecord
 
       # define map scale by rounding the interval up to divisible by 5
       tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
-      title, file = dd_map_attr(model, start_date, end_date, units)
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: 0, max_value: tick * 10)
+      min_value ||= 0
+      max_value ||= tick * 10
+      title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
       "no_data.png"
     end
   end
 
-  def self.dd_map_attr(model, start_date, end_date, units)
+  def self.dd_map_attr(model, start_date, end_date, units, min_value, max_value)
     _, base, upper = model.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
@@ -173,7 +175,9 @@ class PestForecast < ApplicationRecord
     end
     model_name = "base #{base}°#{units}"
     model_name += ", upper #{upper}°#{units}" unless upper == "none"
-    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}.png"
+    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
+    file += ".png"
     title = "Degree day totals for #{model_name} from #{start_date.strftime("%b %d")} - #{end_date.strftime("%b %d, %Y")}"
     [title, file, base, upper]
   end
