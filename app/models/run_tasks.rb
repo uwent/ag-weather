@@ -8,7 +8,7 @@ class RunTasks
     # generate new data
     EvapotranspirationImporter.create_et_data
     PestForecastImporter.create_forecast_data
-    PestForecast.create_dd_map("dd_50_none")
+    PestForecast.create_dd_map("dd_50_86")
 
     # display status of import attempts
     DataImport.check_statuses
