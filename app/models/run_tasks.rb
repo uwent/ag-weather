@@ -72,20 +72,23 @@ class RunTasks
     (start_date..end_date).each { |date| Evapotranspiration.create_image(date) }
   end
 
-  def self.purge_old_images(delete: false, age: 1.year)
-    image_dir = ImageCreator.file_dir
-    files = Dir[image_dir + "/*"]
+  def self.purge_old_images(delete: false)
+    purge_images(ImageCreator.file_dir, 1.year, delete)
+    purge_images(File.join(ImageCreator.file_dir, PestForecast.pest_map_dir), 1.week, delete)
+  end
+
+  def self.purge_images(dir, age, delete)
+    files = Dir[dir + "/**/*"]
     del_count = keep_count = 0
     files.each do |file|
       modified = File.mtime(file)
-      del = (Time.current - modified) > age
-      if del
+      if (Time.current - modified) > age
         del_count += 1
         puts file + " << DELETE"
         FileUtils.rm(file) if delete
       else
         keep_count += 1
-        puts file + " -- keep"
+        puts file + " << keep"
       end
     end
     puts "Keep: #{keep_count}, Delete: #{del_count}"
