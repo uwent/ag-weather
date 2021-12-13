@@ -37,7 +37,7 @@ group :development, :test do
   gem "rspec_junit_formatter", "~> 0.4"
   gem "rspec-rails", "~> 5.0"
   gem "simplecov", "~> 0.21"
-  gem "spring", "~> 3.1"
+  gem "spring", "~> 4.0"
   gem "spring-commands-rspec", "~> 1.0"
   gem "webmock", "~> 3.14"
   gem "standard"
