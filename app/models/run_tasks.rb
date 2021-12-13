@@ -8,6 +8,7 @@ class RunTasks
     # generate new data
     EvapotranspirationImporter.create_et_data
     PestForecastImporter.create_forecast_data
+    PestForecast.create_dd_map("dd_50_none")
 
     # display status of import attempts
     DataImport.check_statuses
@@ -72,7 +73,7 @@ class RunTasks
   end
 
   def self.purge_old_images(delete: false, age: 1.year)
-    image_dir = ImageCreator.file_path
+    image_dir = ImageCreator.file_dir
     files = Dir[image_dir + "/*"]
     del_count = keep_count = 0
     files.each do |file|

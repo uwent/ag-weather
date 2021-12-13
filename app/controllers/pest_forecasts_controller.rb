@@ -585,10 +585,18 @@ class PestForecastsController < ApplicationController
   #   degree_days.sum
   # end
 
+  def start_date
+    parse_date(params[:start_date], Date.current.beginning_of_year)
+  end
+
+  def end_date
+    parse_date(params[:end_date], Date.current)
+  end
+
   def parse_map_params
     @model = params[:id]
-    @start_date = parse_date(params[:start_date], Date.current.beginning_of_year)
-    @end_date = parse_date(params[:end_date], Date.current)
+    @start_date = start_date
+    @end_date = end_date
     @units = %w[F C].include?(params[:units]) ? params[:units] : "F"
     @min_value = params[:min_value].present? ? parse_number(params[:min_value]) : nil
     @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil

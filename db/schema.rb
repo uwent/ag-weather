@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_19_234634) do
+ActiveRecord::Schema.define(version: 2021_12_13_021500) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -103,6 +103,7 @@ ActiveRecord::Schema.define(version: 2021_11_19_234634) do
     t.float "dd_45_86"
     t.boolean "frost", default: false
     t.boolean "freeze", default: false
+    t.float "dd_32_none"
     t.index ["date"], name: "index_pest_forecasts_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_pest_forecasts_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"

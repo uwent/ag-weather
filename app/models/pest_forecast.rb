@@ -36,6 +36,7 @@ class PestForecast < ApplicationRecord
       potato_p_days: compute_potato_p_days(weather),
       carrot_foliar_dsv: compute_carrot_foliar_dsv(weather),
       cercospora_div: compute_cercospora_div(weather),
+      dd_32_none: weather.degree_days(32, NO_MAX), # 0 / none C
       dd_39p2_86: weather.degree_days(39.2, 86), # 4 / 30 C
       dd_41_86: weather.degree_days(41, 86), # 5 / 30 C
       dd_41_88: weather.degree_days(41, 88), # 5 / 31 C
