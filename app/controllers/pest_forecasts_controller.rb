@@ -595,8 +595,8 @@ class PestForecastsController < ApplicationController
 
   def parse_map_params
     @model = params[:id]
-    @start_date = start_date
-    @end_date = end_date
+    @end_date = [end_date, PestForecast.latest_date].min
+    @start_date = [start_date, @end_date].min
     @units = %w[F C].include?(params[:units]) ? params[:units] : "F"
     @min_value = params[:min_value].present? ? parse_number(params[:min_value]) : nil
     @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil
