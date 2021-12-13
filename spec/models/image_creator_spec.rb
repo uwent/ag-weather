@@ -35,9 +35,9 @@ RSpec.describe ImageCreator, type: :module do
 
     it "should give next hundredth below value when range is <= 1" do
       expect(ImageCreator.min_value_for_gnuplot(0.005, 0.5)).to eq 0.0
-      expect(ImageCreator.min_value_for_gnuplot(-0.085, 0.5)).to eq -0.09
+      expect(ImageCreator.min_value_for_gnuplot(-0.085, 0.5)).to eq(-0.09)
       expect(ImageCreator.min_value_for_gnuplot(0.071, 0.5)).to eq 0.07
-      expect(ImageCreator.min_value_for_gnuplot(-0.050, 0.5)).to eq -0.06
+      expect(ImageCreator.min_value_for_gnuplot(-0.050, 0.5)).to eq(-0.06)
     end
 
     it "should give next tenth below value passed when data range is <= 10" do
@@ -89,10 +89,11 @@ RSpec.describe ImageCreator, type: :module do
   describe "generate image files" do
     it "should call gnuplot and imagemagick" do
       allow(File).to receive(:delete)
-      allow(ImageCreator).to receive(:temp_filename).and_return("/SZRIBZVL_20160418205412.png")
+      allow(ImageCreator).to receive(:temp_filename).and_return("/foo.png")
+      # allow(Kernel).to receive(:`).and_return(0)
       expect(ImageCreator).to receive(:`).exactly(2).times
 
-      ImageCreator.generate_image_file("a", "b", "some title", 0, 100)
+      ImageCreator.generate_image_file("foo.dat", "bar.png", "baz", "some title", 0, 100, [1,2,3,4])
     end
   end
 end

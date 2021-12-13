@@ -1,4 +1,4 @@
-module UnitConverter
+class UnitConverter
   # convert celcius to fahrenheit
   def self.c_to_f(c)
     c.to_f * 9.0 / 5.0 + 32

@@ -1,4 +1,4 @@
-module EvapotranspirationCalculator
+class EvapotranspirationCalculator
   # This is an implementation of evapotranspiration based on the formula in
   # the paper:  http://wisp.cals.wisc.edu/diakEtal1998.pdf.
 
@@ -50,9 +50,7 @@ module EvapotranspirationCalculator
 
   # Only used by clr_ratio.
   def self.to_clr(day_of_year, lat)
-    to_eir(day_of_year, lat) *
-      (-0.7 + 0.86 * day_hours(day_of_year, lat)) /
-      day_hours(day_of_year, lat)
+    to_eir(day_of_year, lat) * (-0.7 + 0.86 * day_hours(day_of_year, lat)) / day_hours(day_of_year, lat)
   end
 
   # Estimation of upwelling thermal radition from the land given the

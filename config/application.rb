@@ -24,7 +24,7 @@ module AgWeather
 
     # Image generation and service configuration
     config.x.image.temp_directory = "tmp"
-    config.x.image.file_dir = "public"
+    config.x.image.base_dir = "public"
     config.x.image.url_path = ""
   end
 end

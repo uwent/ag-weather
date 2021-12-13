@@ -4,9 +4,7 @@ RSpec.describe InsolationImporter, type: :model do
   describe ".fetch" do
     it "runs fetch_day for every day returned by DataImport" do
       unloaded_days = [Date.yesterday, Date.current - 3.days]
-      allow(InsolationDataImport).to receive(:days_to_load)
-        .and_return(unloaded_days)
-
+      allow(InsolationDataImport).to receive(:days_to_load).and_return(unloaded_days)
       expect(InsolationImporter).to receive(:fetch_day).exactly(unloaded_days.count).times
 
       InsolationImporter.fetch
@@ -20,9 +18,9 @@ RSpec.describe InsolationImporter, type: :model do
       before do
         stub_request(:get, /prodserv1.ssec.wisc.edu\/insolation.*/)
           .to_return(body:
-            "  1325       44.60        90.90/n" + # point within WI
-            "  1267       10.00        90.80/n" + # point outside WI
-            "-99999       44.60        90.70") # point within WI, but invalid data
+            "  1325       44.60        90.90/n" + # point within land extent
+            "  1267       10.00        90.80/n" + # point outside land extent
+            "-99999       44.60        90.70") # point within land extent, but invalid data
       end
 
       it "adds only good insolation data to the DB" do
@@ -30,7 +28,8 @@ RSpec.describe InsolationImporter, type: :model do
       end
 
       it "marks the data import as unsuccessful on caught exception" do
-        expect(HTTParty).to receive(:get).and_raise(StandardError)
+        allow(HTTParty).to receive(:get).and_raise(StandardError)
+
         expect { InsolationImporter.fetch_day(date) }.to change(InsolationDataImport.unsuccessful, :count).by(1)
       end
     end

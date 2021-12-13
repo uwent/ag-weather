@@ -75,7 +75,7 @@ class EvapotranspirationsController < ApplicationController
     end
 
     image_name = Evapotranspiration.image_name(date)
-    image_filename = File.join(ImageCreator.file_path, image_name)
+    image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)

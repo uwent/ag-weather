@@ -31,7 +31,7 @@ every :day, at: "7:30am" do
   runner "DataImport.send_status_email"
 end
 
-every :month do
+every :day do
   runner "RunTasks.purge_old_images(delete: true)"
 end
 

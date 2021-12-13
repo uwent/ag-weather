@@ -48,6 +48,11 @@ class LandGrid
     @min_longitude..@max_longitude
   end
 
+  # xmin, xmax, ymin, ymax
+  def extents
+    [@min_longitude, @max_longitude, @min_latitude, @max_latitude]
+  end
+
   def inside?(lat, long)
     (latitudes === lat) && (longitudes === long)
   end

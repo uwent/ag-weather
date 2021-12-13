@@ -94,7 +94,7 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
-    { count: count, message: message }
+    {count: count, message: message}
   end
 
   # sends status email if data loads have failed recently

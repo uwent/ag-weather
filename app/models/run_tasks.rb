@@ -1,19 +1,14 @@
-module RunTasks
+class RunTasks
   def self.all
-    # fetch insolation data from SSEC server
+    # fetch remote data
     InsolationImporter.fetch
-
-    # fetch precip data from NOAA server
     PrecipImporter.fetch
-
-    # fetch weather data from NOAA server
     WeatherImporter.fetch
 
-    # generate ETs from WeatherDatum and Insolation databases
+    # generate new data
     EvapotranspirationImporter.create_et_data
-
-    # generate pest forecasts for VDIFN from WeatherDatum
     PestForecastImporter.create_forecast_data
+    PestForecast.create_dd_map("dd_50_none")
 
     # display status of import attempts
     DataImport.check_statuses
@@ -77,20 +72,23 @@ module RunTasks
     (start_date..end_date).each { |date| Evapotranspiration.create_image(date) }
   end
 
-  def self.purge_old_images(delete: false, age: 1.year)
-    image_dir = ImageCreator.file_path
-    files = Dir[image_dir + "/*"]
+  def self.purge_old_images(delete: false)
+    purge_images(ImageCreator.file_dir, 1.year, delete)
+    purge_images(File.join(ImageCreator.file_dir, PestForecast.pest_map_dir), 1.week, delete)
+  end
+
+  def self.purge_images(dir, age, delete)
+    files = Dir[dir + "/**/*"]
     del_count = keep_count = 0
     files.each do |file|
       modified = File.mtime(file)
-      del = (Time.current - modified) > age
-      if del
+      if (Time.current - modified) > age
         del_count += 1
         puts file + " << DELETE"
         FileUtils.rm(file) if delete
       else
         keep_count += 1
-        puts file + " -- keep"
+        puts file + " << keep"
       end
     end
     puts "Keep: #{keep_count}, Delete: #{del_count}"
@@ -115,7 +113,7 @@ module RunTasks
 
   # re-generates pest forecast for date
   def self.redo_forecast(date)
-    ActiveRecord::Base.logger.level = 1 
+    ActiveRecord::Base.logger.level = 1
 
     if WeatherDatum.where(date: date).size > 0
       puts date.strftime + " - ready - recalculating..."
@@ -141,7 +139,7 @@ module RunTasks
 
   def self.calc_frost(start_date = WeatherDatum.earliest_date, end_date = WeatherDatum.latest_date)
     puts "Calculating freeze and frost data..."
-    ActiveRecord::Base.logger.level = 1 
+    ActiveRecord::Base.logger.level = 1
     dates = start_date..end_date
     day = 0
     days = (start_date..end_date).count
@@ -161,9 +159,9 @@ module RunTasks
         end
         PestForecast.where(id: frost_ids.sort).update_all(frost: true)
         PestForecast.where(id: freeze_ids.sort).update_all(freeze: true)
-        puts "Day #{day}/#{days}: #{date.to_s} ==> OK (frost #{sprintf('%.0f', frosts.size.to_f / weather.size * 100)}%, freeze #{sprintf('%.0f', freezes.size.to_f / weather.size * 100)}%)"
+        puts "Day #{day}/#{days}: #{date} ==> OK (frost #{sprintf("%.0f", frosts.size.to_f / weather.size * 100)}%, freeze #{sprintf("%.0f", freezes.size.to_f / weather.size * 100)}%)"
       else
-        puts "Day #{day}/#{days}: #{date.to_s} ==> No data"
+        puts "Day #{day}/#{days}: #{date} ==> No data"
       end
     end
   end

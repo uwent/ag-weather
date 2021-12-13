@@ -11,8 +11,10 @@ set palette defined ( 0 '#a100c7', 1 '#6e00dc', 2 '#1f3dfa', 3 '#00c7c7', 4 '#00
 
 # Map
 set view map
-set xrange [-98:-82]
-set yrange [38:50]
+# set xrange [-98:-82]
+# set yrange [38:50]
+set xrange [x_min:x_max]
+set yrange [y_min:y_max]
 set tmargin at screen 0.95
 set bmargin at screen 0.09
 set lmargin at screen 0.05

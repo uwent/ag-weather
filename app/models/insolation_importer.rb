@@ -2,7 +2,9 @@ class InsolationImporter
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
 
   def self.fetch
-    InsolationDataImport.days_to_load.each { |day| fetch_day(day) }
+    InsolationDataImport.days_to_load.each do |date|
+      fetch_day(date)
+    end
   end
 
   def self.formatted_date(date)
@@ -18,8 +20,6 @@ class InsolationImporter
       Rails.logger.info "GET #{url}"
       response = HTTParty.get(url)
       import_insolation_data(response, date)
-      InsolationDataImport.succeed(date)
-      Insolation.create_image(date)
     rescue => e
       msg = "Unable to retrieve insolation data: #{e.message}"
       Rails.logger.warn "InsolationImporter :: #{msg}"
@@ -53,5 +53,8 @@ class InsolationImporter
       Insolation.where(date: date).delete_all
       Insolation.import(insolations)
     end
+
+    InsolationDataImport.succeed(date)
+    Insolation.create_image(date)
   end
 end
