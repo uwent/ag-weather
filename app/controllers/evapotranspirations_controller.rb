@@ -68,27 +68,34 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: create map and return url to it
   def show
-    date = begin
-      params[:id] ? Date.parse(params[:id]) : default_et_date
-    rescue
-      default_et_date
-    end
+    start_time = Time.current
+    @date = date_from_id
+    @start_date = params[:start_date].present? ? start_date : nil
+    @units = units
 
-    image_name = Evapotranspiration.image_name(date)
+    image_name = Evapotranspiration.image_name(@date, @start_date, @units)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)
       url = image_url
     else
-      image_name = Evapotranspiration.create_image(date)
+      image_name = Evapotranspiration.create_image(@date, start_date: @start_date, units: @units)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
     if request.format.png?
       render html: "<img src=#{url} height=100%>".html_safe
     else
-      render json: {map: url}
+      render json: {
+        params: {
+          start_date: @start_date,
+          end_date: @date,
+          units: @units
+        },
+        compute_time: Time.current - start_time,
+        map: url
+      }
     end
   end
 
@@ -180,22 +187,6 @@ end
 
 private
 
-def default_et_date
-  Evapotranspiration.latest_date || Date.yesterday
-end
-
-def start_date
-  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
-end
-
-def end_date
-  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
-end
-
-def lat
-  params[:lat].to_d.round(1)
-end
-
-def long
-  params[:long].to_d.round(1)
+def units
+  params[:units].presence || "in"
 end

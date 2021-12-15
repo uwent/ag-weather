@@ -38,6 +38,7 @@ class ImageCreator
     grid_max = max_value_for_gnuplot(grid.min, grid.max)
     min = min_value || grid_min
     max = max_value || grid_max
+    max += 1 if min == max
     Rails.logger.debug "ImageCreator :: Gunplot data range: #{grid_min} -> #{grid_max} = #{grid_max - grid_min} (#{(grid_max - grid_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
     datafile_name = create_data_file(grid)

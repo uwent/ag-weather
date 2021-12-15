@@ -66,18 +66,18 @@ class PrecipsController < ApplicationController
   # GET: create map and return url to it
   def show
     start_time = Time.current
-    @date = date
-    @start_date = start_date if params[:start_date].present?
+    @date = date_from_id
+    @start_date = params[:start_date].present? ? start_date : nil
     @units = units
 
-    image_name = @start_date ? Precip.cumulative_image_name(@start_date, @date, units: @units) : image_name = Precip.image_name(@date, units: @units)
+    image_name = Precip.image_name(@date, @start_date, @units)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)
       url = image_url
     else
-      image_name = @start_date ? Precip.create_cumulative_image(@start_date, @date, units: @units) : Precip.create_image(@date, units: @units)
+      image_name = Precip.create_image(@date, start_date: @start_date, units: @units)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
@@ -105,13 +105,9 @@ class PrecipsController < ApplicationController
     info = {}
     data = []
 
-    date = begin
-      params[:date] ? Date.parse(params[:date]) : default_precip_date
-    rescue
-      default_precip_date
-    end
+    @date = date
 
-    precips = Precip.where(date: date).order(:latitude, :longitude)
+    precips = Precip.where(date: @date).order(:latitude, :longitude)
 
     if precips.size > 0
       data = precips.collect do |precip|
@@ -131,7 +127,7 @@ class PrecipsController < ApplicationController
     values = data.map { |d| d[:value] }
 
     info = {
-      date: date,
+      date: @date,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
       points: lats.count * longs.count,
@@ -152,7 +148,7 @@ class PrecipsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
-        filename = "precip data grid for #{date}.csv"
+        filename = "precip data grid for #{@date}.csv"
         send_data to_csv(response[:data], headers), filename: filename
       end
     end
@@ -174,36 +170,6 @@ class PrecipsController < ApplicationController
 end
 
 private
-
-def default_precip_date
-  Precip.latest_date || Date.yesterday
-end
-
-def date
-  Date.parse(params[:date])
-rescue
-  default_precip_date
-end
-
-def start_date
-  Date.parse(params[:start_date])
-rescue
-  Date.current.beginning_of_year
-end
-
-def end_date
-  Date.parse(params[:end_date])
-rescue
-  default_precip_date
-end
-
-def lat
-  params[:lat].to_d.round(1)
-end
-
-def long
-  params[:long].to_d.round(1)
-end
 
 def units
   params[:units].presence || "mm"
