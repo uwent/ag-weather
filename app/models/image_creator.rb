@@ -1,5 +1,4 @@
 class ImageCreator
-  IMAGE_STEP = 0.1
 
   def self.url_path
     Rails.configuration.x.image.url_path
@@ -19,6 +18,7 @@ class ImageCreator
 
   def self.max_value_for_gnuplot(min, max)
     return 0 if max.nil?
+    return 1 if max.zero?
     range = max - min
     return (max + 0.005).round(2) if range <= 1
     return (max + 0.05).round(1) if range <= 10
@@ -26,7 +26,7 @@ class ImageCreator
   end
 
   def self.min_value_for_gnuplot(min, max)
-    return 0 if min.nil?
+    return 0 if min.nil? || min.zero?
     range = max - min
     return (min - 0.005).round(2) if range <= 1
     return (min - 0.05).round(1) if range <= 10
@@ -64,7 +64,6 @@ class ImageCreator
     temp_image = temp_filename("png")
     image_dir = File.join(file_dir, subdir)
     FileUtils.mkdir_p(image_dir)
-    Rails.logger.debug "ImageCreator :: Placing image in #{image_dir}"
     image_path = File.join(image_dir, image_name)
 
     overlay_image = "lib/map_overlay.png"
@@ -89,5 +88,4 @@ class ImageCreator
     Rails.logger.error "ImageCreator :: Failed to create image: #{e.message}"
     "no_data.png"
   end
-
 end

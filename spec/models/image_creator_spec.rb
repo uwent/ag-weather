@@ -93,7 +93,7 @@ RSpec.describe ImageCreator, type: :module do
       # allow(Kernel).to receive(:`).and_return(0)
       expect(ImageCreator).to receive(:`).exactly(2).times
 
-      ImageCreator.generate_image_file("foo.dat", "bar.png", "baz", "some title", 0, 100, [1,2,3,4])
+      ImageCreator.generate_image_file("foo.dat", "bar.png", "baz", "some title", 0, 100, [1, 2, 3, 4])
     end
   end
 end

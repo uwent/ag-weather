@@ -496,7 +496,7 @@ class PestForecastsController < ApplicationController
 
   def show
     start_time = Time.current
-    parse_map_params()
+    parse_map_params
 
     status = "OK"
     dd_params = {}
@@ -604,7 +604,7 @@ class PestForecastsController < ApplicationController
   end
 
   def parse_number(s)
-    s !~ /\D/ ? s.to_i : nil
+    !/\D/.match?(s) ? s.to_i : nil
   end
 
   def lat

@@ -13,7 +13,7 @@ class EvapotranspirationsController < ApplicationController
 
     ets = Evapotranspiration.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
-      .order(:date)
+      .order(date: :desc)
 
     if ets.size > 0
       cum_value = 0

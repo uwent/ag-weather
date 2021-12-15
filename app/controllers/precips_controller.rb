@@ -12,7 +12,7 @@ class PrecipsController < ApplicationController
 
     precips = Precip.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
-      .order(:date)
+      .order(date: :desc)
 
     if precips.size > 0
       cum_value = 0
@@ -65,27 +65,34 @@ class PrecipsController < ApplicationController
 
   # GET: create map and return url to it
   def show
-    date = begin
-      params[:id] ? Date.parse(params[:id]) : default_precip_date
-    rescue
-      default_precip_date
-    end
+    start_time = Time.current
+    @date = date
+    @start_date = start_date if params[:start_date].present?
+    @units = units
 
-    image_name = Precip.image_name(date)
+    image_name = @start_date ? Precip.cumulative_image_name(@start_date, @date, units: @units) : image_name = Precip.image_name(@date, units: @units)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)
       url = image_url
     else
-      image_name = Precip.create_image(date)
+      image_name = @start_date ? Precip.create_cumulative_image(@start_date, @date, units: @units) : Precip.create_image(@date, units: @units)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
     if request.format.png?
       render html: "<img src=#{url} height=100%>".html_safe
     else
-      render json: {map: url}
+      render json: {
+        params: {
+          start_date: @start_date,
+          end_date: @date,
+          units: @units
+        },
+        compute_time: Time.current - start_time,
+        map: url
+      }
     end
   end
 
@@ -172,12 +179,22 @@ def default_precip_date
   Precip.latest_date || Date.yesterday
 end
 
+def date
+  Date.parse(params[:date])
+rescue
+  default_precip_date
+end
+
 def start_date
-  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+  Date.parse(params[:start_date])
+rescue
+  Date.current.beginning_of_year
 end
 
 def end_date
-  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+  Date.parse(params[:end_date])
+rescue
+  default_precip_date
 end
 
 def lat
@@ -186,4 +203,8 @@ end
 
 def long
   params[:long].to_d.round(1)
+end
+
+def units
+  params[:units].presence || "mm"
 end
