@@ -107,9 +107,10 @@ class EvapotranspirationCalculator
     lwnet = lwnet(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
     # calculates R_n in paper
     net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
-    # Evapotranspiration. Unsure why 1.28, not 1.26
-    ret1 = 1.28 * sfactor(avg_temp) * net_radiation
+    # Evapotranspiration
+    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
     # Assume the 62.3 is a conversion factor, but unable to determine.
-    ret1 / 62.3
+    [pot_et / 62.3, 0].max
+    # In winter, at high latitudes, et was coming out as a small negative number
   end
 end
