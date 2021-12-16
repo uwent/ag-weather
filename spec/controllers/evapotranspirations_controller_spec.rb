@@ -2,28 +2,27 @@ require "rails_helper"
 
 RSpec.describe EvapotranspirationsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
+  let(:lat) { 42.0 }
+  let(:long) { -98.0 }
+  let(:earliest_date) { Date.current - 1.weeks }
+  let(:latest_date) { Date.current }
+  let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
-    let(:lat) { 42.0 }
-    let(:long) { -98.0 }
     before(:each) do
-      (start_date..end_date).each do |date|
+      earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end
 
     context "when request is valid" do
-      let(:params) {
-        {
-          lat: lat,
-          long: long,
-          start_date: start_date,
-          end_date: end_date
-        }
-      }
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: earliest_date,
+        end_date: latest_date
+      }}
 
       it "is okay" do
         get :index, params: params
@@ -39,19 +38,19 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
       it "has the correct number of elements" do
         get :index, params: params
-        expect(json[:data].length).to eq((start_date..end_date).count)
+        expect(json[:data].length).to eq((earliest_date..latest_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :index, params: params
-        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(json[:info][:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :index, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(json[:info][:end_date]).to eq(latest_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -74,14 +73,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {
-        {
-          lat: lat,
-          long: long,
-          start_date: start_date,
-          end_date: end_date
-        }
-      }
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: earliest_date,
+        end_date: latest_date
+      }}
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -100,11 +97,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#show" do
-    let(:date) { Date.yesterday }
-    let(:filename) { "/evapo_#{date.to_s(:number)}.png" }
+    let(:date) { latest_date }
+    let(:filename) { "/evapo-in-#{date.to_s(:number)}.png" }
+
     before(:each) do
-      FactoryBot.create(:evapotranspiration, date: date)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
@@ -115,7 +115,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
       it "has the correct response structure" do
         get :show, params: {id: date}
-        expect(json.keys).to eq([:map])
+        expect(json.keys).to eq([:params, :compute_time, :map])
       end
 
       it "responds with the correct map name if data loaded" do
@@ -125,7 +125,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: {id: date}
+        get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
@@ -146,14 +146,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#all_for_date" do
-    let(:date) { Date.current - 1.month }
-    let(:date2) { Date.current - 1.week }
-    let(:empty_date) { Date.current - 1.year }
+    let(:date) { latest_date }
     before(:each) do
-      FactoryBot.create(:evapotranspiration, date: date)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
-      FactoryBot.create(:evapotranspiration, date: date2)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date2)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
@@ -193,7 +191,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json[:info][:date]).to eq(date2.to_s)
+        expect(json[:info][:date]).to eq(latest_date.to_s)
       end
     end
   end

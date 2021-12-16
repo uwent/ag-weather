@@ -496,7 +496,7 @@ class PestForecastsController < ApplicationController
 
   def show
     start_time = Time.current
-    parse_map_params()
+    parse_map_params
 
     status = "OK"
     dd_params = {}
@@ -585,14 +585,6 @@ class PestForecastsController < ApplicationController
   #   degree_days.sum
   # end
 
-  def start_date
-    parse_date(params[:start_date], Date.current.beginning_of_year)
-  end
-
-  def end_date
-    parse_date(params[:end_date], Date.current)
-  end
-
   def parse_map_params
     @model = params[:id]
     @end_date = [end_date, Date.current].min
@@ -604,7 +596,35 @@ class PestForecastsController < ApplicationController
   end
 
   def parse_number(s)
-    s !~ /\D/ ? s.to_i : nil
+    !/\D/.match?(s) ? s.to_i : nil
+  end
+
+  def default_date
+    PestForecast.latest_date || Date.yesterday
+  end
+  
+  def date
+    Date.parse(params[:date])
+  rescue
+    default_date
+  end
+  
+  def date_from_id
+    Date.parse(params[:id])
+  rescue
+    default_date
+  end
+  
+  def start_date
+    Date.parse(params[:start_date])
+  rescue
+    default_date.beginning_of_year
+  end
+  
+  def end_date
+    Date.parse(params[:end_date])
+  rescue
+    default_date
   end
 
   def lat
@@ -634,13 +654,7 @@ class PestForecastsController < ApplicationController
   def t_upper
     params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
   end
-
-  def parse_date(param, default)
-    param ? Date.parse(param) : default
-  rescue
-    default
-  end
-
+  
   def parse_coord(param, default)
     param.present? ? param.to_f.round(1) : default
   rescue

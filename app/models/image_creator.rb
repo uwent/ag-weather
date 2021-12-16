@@ -1,5 +1,4 @@
 class ImageCreator
-  IMAGE_STEP = 0.1
 
   def self.url_path
     Rails.configuration.x.image.url_path
@@ -17,28 +16,33 @@ class ImageCreator
     File.join(temp_dir, "#{SecureRandom.urlsafe_base64(8)}.#{suffix}")
   end
 
-  def self.max_value_for_gnuplot(min, max)
-    return 0 if max.nil?
+  def self.min_max(min, max)
+    min ||= 0
+    max ||= min
     range = max - min
-    return (max + 0.005).round(2) if range <= 1
-    return (max + 0.05).round(1) if range <= 10
-    max.ceil
-  end
-
-  def self.min_value_for_gnuplot(min, max)
-    return 0 if min.nil?
-    range = max - min
-    return (min - 0.005).round(2) if range <= 1
-    return (min - 0.05).round(1) if range <= 10
-    min.floor
+    tick = range / 10.0
+    # puts "#{min}, #{max} (#{tick}/tick) ==>"
+    if range <= 1
+      d = 2
+    elsif range <= 10
+      d = 1
+    else
+      d = 0
+    end
+    tick = tick.ceil(d)
+    min = min.floor(d - 1)
+    max = (min + tick * 10.0).ceil(d - 1)
+    # puts "#{min}, #{max} (#{tick}/tick)"
+    [min, max]
   end
 
   def self.create_image(grid, title, image_name, subdir: "", min_value: nil, max_value: nil)
-    grid_min = min_value_for_gnuplot(grid.min, grid.max)
-    grid_max = max_value_for_gnuplot(grid.min, grid.max)
-    min = min_value || grid_min
-    max = max_value || grid_max
-    Rails.logger.debug "ImageCreator :: Gunplot data range: #{grid_min} -> #{grid_max} = #{grid_max - grid_min} (#{(grid_max - grid_min) / 10.0}/tick)"
+    auto_min, auto_max = min_max(grid.min, grid.max)
+    min = min_value || auto_min
+    max = max_value || auto_max
+    max += 1 if min == max
+    # Rails.logger.debug "ImageCreator :: Gunplot data range: #{grid.min} -> #{grid.max} = #{grid.min - grid.min} (#{(grid.max - grid.min) / 10.0}/tick)"
+    Rails.logger.debug "ImageCreator :: Gunplot auto range: #{auto_min} -> #{auto_max} = #{auto_max - auto_min} (#{(auto_max - auto_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
     datafile_name = create_data_file(grid)
     image_name = generate_image_file(datafile_name, image_name, subdir, title, min, max, grid.extents)
@@ -64,7 +68,6 @@ class ImageCreator
     temp_image = temp_filename("png")
     image_dir = File.join(file_dir, subdir)
     FileUtils.mkdir_p(image_dir)
-    Rails.logger.debug "ImageCreator :: Placing image in #{image_dir}"
     image_path = File.join(image_dir, image_name)
 
     overlay_image = "lib/map_overlay.png"
@@ -89,5 +92,4 @@ class ImageCreator
     Rails.logger.error "ImageCreator :: Failed to create image: #{e.message}"
     "no_data.png"
   end
-
 end

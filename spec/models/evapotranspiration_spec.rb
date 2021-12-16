@@ -82,7 +82,7 @@ RSpec.describe Evapotranspiration, type: :model do
       )
 
       grid = Evapotranspiration.land_grid_for_date(date)
-      expect(grid[lat, long]).to eq 23.4
+      expect(grid[lat, long]).to eq(23.4)
     end
 
     it "should store nil in grid for points without values" do
@@ -92,20 +92,33 @@ RSpec.describe Evapotranspiration, type: :model do
   end
 
   describe "create image for date" do
-    let(:date) { Date.yesterday }
+    let(:earliest_date) { Date.current - 1.weeks }
+    let(:latest_date) { Date.current }
+    let(:empty_date) { earliest_date - 1.week }
+    let(:lat) { 45.0 }
+    let(:long) { -89.0 }
 
     before(:each) do
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, date: date, latitude: lat, longitude: long)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      end
     end
 
-    it "should call ImageCreator when data sources loaded" do
-      expect(Evapotranspiration).to receive(:land_grid_for_date).exactly(1).times
+    it "should call ImageCreator when data present" do
+      expect(Evapotranspiration).to receive(:create_image_data).exactly(1).times
       expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Evapotranspiration.create_image(date)
+      Evapotranspiration.create_image(latest_date)
+    end
+
+    it "should create a cumulative data grid when given a date range" do
+      expect(Evapotranspiration).to receive(:create_image_data).exactly(1).times
+      expect(ImageCreator).to receive(:create_image).exactly(1).times
+      Evapotranspiration.create_image(latest_date, start_date: earliest_date)
     end
 
     it "should return 'no_data.png' when data sources not loaded" do
-      expect(Evapotranspiration.create_image(date - 1.day)).to eq("no_data.png")
+      expect(Evapotranspiration.create_image(empty_date)).to eq("no_data.png")
     end
   end
 end

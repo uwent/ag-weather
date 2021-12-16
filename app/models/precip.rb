@@ -42,34 +42,61 @@ class Precip < ApplicationRecord
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    Precip.where(date: date).each do |precip|
-      lat = precip.latitude
-      long = precip.longitude
+    self.where(date: date).each do |point|
+      lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = precip.precip.round(2)
+      grid[lat, long] = point.precip
     end
     grid
   end
 
-  def self.create_image(date)
-    if PrecipDataImport.successful.where(readings_on: date).exists?
-      begin
-        Rails.logger.info "Precip :: Creating image for #{date}"
-        data = land_grid_for_date(date)
-        title = "Total daily precip (mm) for #{date.strftime("%b %-d, %Y")}"
-        file = image_name(date)
-        ImageCreator.create_image(data, title, file, min_value: 0.0)
-      rescue => e
-        Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
-        "no_data.png"
-      end
+  def self.image_name(date, start_date = nil, units = "mm")
+    if start_date.nil?
+      "precip-#{units}-#{date.to_s(:number)}.png"
     else
-      Rails.logger.warn "Precip :: Failed to create image for #{date}: Precip data missing."
-      "no_data.png"
+      "precip-#{units}-#{date.to_s(:number)}-#{start_date.to_s(:number)}.png"
     end
   end
 
-  def self.image_name(date)
-    "precip_#{date.to_s(:number)}.png"
+  def self.image_title(date, start_date = nil, units = "mm")
+    if start_date.nil?
+      "Total daily precip (#{units}) for #{date.strftime("%b %-d, %Y")}"
+    else
+      fmt = start_date.year != date.year ? "%b %d, %Y" : "%b %d"
+      "Total cumulative precip (#{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
+    end
+  end
+
+  def self.create_image_data(grid, query, units = "mm")
+    query.each do |precip|
+      lat, long = precip.latitude, precip.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = units == "in" ? (precip.precip / 25.4) : precip.precip
+    end
+    grid
+  end
+
+  def self.create_image(date, start_date: nil, units: "mm")
+    if start_date.nil?
+      precips = Precip.where(date: date)
+      raise StandardError.new("No data") if precips.size == 0
+      date = precips.distinct.pluck(:date).max
+    else
+      precips = Precip.where(date: start_date..date)
+      raise StandardError.new("No data") if precips.size == 0
+      start_date = precips.distinct.pluck(:date).min
+      date = precips.distinct.pluck(:date).max
+      precips = precips.group(:latitude, :longitude)
+        .order(:latitude, :longitude)
+        .select(:latitude, :longitude, "sum(precip) as precip")
+    end
+    title = image_title(date, start_date, units)
+    file = image_name(date, start_date, units)
+    Rails.logger.info "Precip :: Creating image ==> #{file}"
+    grid = create_image_data(LandGrid.new, precips, units)
+    ImageCreator.create_image(grid, title, file, min_value: 0.0)
+  rescue => e
+    Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
+    "no_data.png"
   end
 end

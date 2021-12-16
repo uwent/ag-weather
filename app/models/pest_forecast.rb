@@ -109,10 +109,13 @@ class PestForecast < ApplicationRecord
 
   def self.create_pest_map(pest, start_date = latest_date - 1.week, end_date = latest_date, min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid pest!") unless pest_models.include? pest
-    Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
-
+  
     forecasts = PestForecast.where(date: start_date..end_date)
+
     if forecasts.size > 0
+      dates = forecasts.distinct.pluck(:date)
+      start_date, end_date = dates.min, dates.max
+
       grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
         .order(:latitude, :longitude)
@@ -125,7 +128,6 @@ class PestForecast < ApplicationRecord
       end
 
       tick = (grid.max / 10.0).ceil
-
       if min_value || max_value
         min_value ||= 0
         max_value ||= tick * 10
@@ -136,6 +138,7 @@ class PestForecast < ApplicationRecord
         max_value = tick * 10
       end
 
+      Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
       ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
@@ -158,10 +161,12 @@ class PestForecast < ApplicationRecord
   def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F", min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid model!") unless dd_models.include? model
     raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
-    Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
-
+    
     forecasts = PestForecast.where(date: start_date..end_date)
     if forecasts.size > 0
+      dates = forecasts.distinct.pluck(:date)
+      start_date, end_date = dates.min, dates.max
+
       grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
         .order(:latitude, :longitude)
@@ -175,7 +180,6 @@ class PestForecast < ApplicationRecord
 
       # define map scale by rounding the interval up to divisible by 5
       tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
-
       if min_value || max_value
         min_value ||= 0
         max_value ||= tick * 10
@@ -185,6 +189,8 @@ class PestForecast < ApplicationRecord
         min_value = 0
         max_value = tick * 10
       end
+
+      Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
       ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"

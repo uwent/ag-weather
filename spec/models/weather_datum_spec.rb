@@ -131,21 +131,34 @@ RSpec.describe WeatherDatum, type: :model do
   end
 
   describe "create image for date" do
-    let(:date) { Date.yesterday }
+    let(:earliest_date) { Date.current - 1.weeks }
+    let(:latest_date) { Date.current }
+    let(:empty_date) { earliest_date - 1.week }
+    let(:lat) { 45.0 }
+    let(:long) { -89.0 }
 
     before(:each) do
-      FactoryBot.create(:weather_data_import, readings_on: date)
-      FactoryBot.create(:weather_datum, date: date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:weather_datum, date: date, latitude: lat, longitude: long, avg_temperature: 42.0)
+        FactoryBot.create(:weather_data_import, readings_on: date)
+      end
     end
 
-    it "should call ImageCreator when data sources loaded" do
-      expect(WeatherDatum).to receive(:image_data_grid).exactly(1).times
+    it "should call ImageCreator when data present" do
+      expect(WeatherDatum).to receive(:create_image_data).exactly(1).times
       expect(ImageCreator).to receive(:create_image).exactly(1).times
-      WeatherDatum.create_image(date)
+      WeatherDatum.create_image(latest_date)
+    end
+
+    it "should construct a data grid and convert units" do
+      weather = WeatherDatum.where(date: latest_date)
+      grid_f = WeatherDatum.create_image_data(LandGrid.new, weather) # default units = F
+      grid_c = WeatherDatum.create_image_data(LandGrid.new, weather, "C")
+      expect(grid_f[lat, long].round(3)).to eq((UnitConverter.c_to_f(grid_c[lat, long])).round(3))
     end
 
     it "should return 'no_data.png' when data sources not loaded" do
-      expect(WeatherDatum.create_image(date - 1.day)).to eq("no_data.png")
+      expect(WeatherDatum.create_image(empty_date)).to eq("no_data.png")
     end
   end
 end

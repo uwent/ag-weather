@@ -1,8 +1,7 @@
 class StationObservationsController < ApplicationController
   def index
     station = find_station(params[:name])
-    start_date = params[:start_date].blank? ? Date.today.beginning_of_year :
-                   Date.parse(params[:start_date])
+    start_date = params[:start_date].blank? ? Date.today.beginning_of_year : Date.parse(params[:start_date])
     end_date = params[:end_date].blank? ? Date.today : Date.parse(params[:end_date])
     # check if null
     readings = (start_date..end_date).map do |date|
