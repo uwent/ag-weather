@@ -13,7 +13,7 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
-      .order(:date)
+      .order(date: :desc)
 
     if insols.size > 0
       data = insols.collect do |insol|
@@ -63,27 +63,32 @@ class InsolationsController < ApplicationController
   # GET: create map and return url to it
 
   def show
-    date = begin
-      params[:id] ? Date.parse(params[:id]) : default_insol_date
-    rescue
-      default_insol_date
-    end
+    start_time = Time.current
+    @date = date_from_id
+    @start_date = params[:start_date].present? ? start_date : nil
 
-    image_name = Insolation.image_name(date)
+    image_name = Insolation.image_name(@date, @start_date)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)
       url = image_url
     else
-      image_name = Insolation.create_image(date)
+      image_name = Insolation.create_image(@date, start_date: @start_date)
       url = image_name == "no_data.png" ? "/no_data.png" : image_url
     end
 
     if request.format.png?
       render html: "<img src=#{url} height=100%>".html_safe
     else
-      render json: {map: url}
+      render json: {
+        params: {
+          start_date: @start_date,
+          end_date: @date
+        },
+        compute_time: Time.current - start_time,
+        map: url
+      }
     end
   end
 

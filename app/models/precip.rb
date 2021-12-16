@@ -83,9 +83,8 @@ class Precip < ApplicationRecord
     title = image_title(date, start_date, units)
     file = image_name(date, start_date, units)
     Rails.logger.info "Precip :: Creating image ==> #{file}"
-    grid = create_image_data(LandGrid.new, precips, units: units)
-    max = (grid.max / 10.0).ceil * 10
-    ImageCreator.create_image(grid, title, file, min_value: 0.0, max_value: max )
+    grid = create_image_data(LandGrid.new, precips, units)
+    ImageCreator.create_image(grid, title, file, min_value: 0.0)
   rescue => e
     Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
     "no_data.png"

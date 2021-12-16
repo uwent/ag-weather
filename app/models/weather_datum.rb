@@ -80,40 +80,35 @@ class WeatherDatum < ApplicationRecord
     grid
   end
 
-  def self.image_data_grid(date)
-    grid = LandGrid.new
-    WeatherDatum.where(date: date).each do |w|
-      lat, long = w.latitude, w.longitude
+  def self.image_name(date, units = "F")
+    "mean-air-temp-#{units.downcase}-#{date.to_s(:number)}.png"
+  end
+
+  def self.image_title(date, units = "F")
+    "Mean air temperature (°#{units}) for #{date.strftime("%b %d, %Y")}"
+  end
+
+  def self.create_image_data(grid, query, units = "F")
+    query.each do |point|
+      lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = UnitConverter.c_to_f(w.avg_temperature).round(2)
+      grid[lat, long] = units == "C" ? point.avg_temperature : UnitConverter.c_to_f(point.avg_temperature)
     end
     grid
   end
 
-  # Image creator
-  def self.create_image(date)
-    if WeatherDataImport.successful.where(readings_on: date).exists?
-      Rails.logger.info "WeatherDatum :: Creating image for #{date}"
-      begin
-        data = image_data_grid(date)
-        title = "Mean air temperature (°F) for #{date.strftime("%-d %B %Y")}"
-        file = image_name(date)
-        if data
-          min = (data.min / 10.0).floor * 10
-          max = (data.max / 10.0).ceil * 10
-        end
-        ImageCreator.create_image(data, title, file, min_value: min || 0, max_value: max || 100)
-      rescue => e
-        Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
-        "no_data.png"
-      end
-    else
-      Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: Weather data missing."
-      "no_data.png"
-    end
-  end
-
-  def self.image_name(date)
-    "mean_temp_#{date.to_s(:number)}.png"
+  def self.create_image(date, units: "F")
+    weather = WeatherDatum.where(date: date)
+    raise StandardError.new("No data") if weather.size == 0
+    title = image_title(date, units)
+    file = image_name(date, units)
+    Rails.logger.info "WeatherDatum :: Creating image ==> #{file}"
+    grid = create_image_data(LandGrid.new, weather, units)
+    min = (grid.min / 10.0).floor * 10
+    max = (grid.max / 10.0).ceil * 10
+    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
+  rescue => e
+    Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
+    "no_data.png"
   end
 end

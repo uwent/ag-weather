@@ -6,8 +6,28 @@ class ApplicationController < ActionController::Base
   def index
   end
 
+  private
+
+  def to_csv(data, headers = nil)
+    CSV.generate do |csv|
+      if headers
+        headers.each { |h| csv << [h[0], h[1]] }
+        csv << []
+      end
+      csv << data.first.keys
+      data.each { |h| csv << h.values }
+    rescue
+    end
+  end
+
   def default_date
     DataImport.latest_date
+  end
+
+  def date
+    Date.parse(params[:date])
+  rescue
+    default_date
   end
   
   def date_from_id
@@ -34,19 +54,5 @@ class ApplicationController < ActionController::Base
   
   def long
     params[:long].to_d.round(1)
-  end
-
-  private
-
-  def to_csv(data, headers = nil)
-    CSV.generate do |csv|
-      if headers
-        headers.each { |h| csv << [h[0], h[1]] }
-        csv << []
-      end
-      csv << data.first.keys
-      data.each { |h| csv << h.values }
-    rescue
-    end
   end
 end

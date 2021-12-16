@@ -38,6 +38,7 @@ class Evapotranspiration < ApplicationRecord
       ets = Evapotranspiration.where(date: date)
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
+      min = 0
       max = 0.25
     else
       ets = Evapotranspiration.where(date: start_date..date)
@@ -47,13 +48,13 @@ class Evapotranspiration < ApplicationRecord
       ets = ets.group(:latitude, :longitude)
         .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(potential_et) as potential_et")
+      min = max = nil
     end
     title = image_title(date, start_date, units)
     file = image_name(date, start_date, units)
     Rails.logger.info "Evapotranspiration :: Creating image ==> #{file}"
     grid = create_image_data(LandGrid.new, ets, units)
-    max ||= grid.max.ceil(1)
-    ImageCreator.create_image(grid, title, file, min_value: 0, max_value: max)
+    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
   rescue => e
     Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
     "no_data.png"
@@ -69,10 +70,10 @@ class Evapotranspiration < ApplicationRecord
 
   def self.image_title(date, start_date = nil, units = "in")
     if start_date.nil?
-      "Estimated ET (#{units}/day) for #{date.strftime("%b %-d, %Y")}"
+      "Potential evapotranspiration (#{units}/day) for #{date.strftime("%b %-d, %Y")}"
     else
       fmt = start_date.year != date.year ? "%b %d, %Y" : "%b %d"
-      "Estimated ET (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
+      "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
     end
   end
 
