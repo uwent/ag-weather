@@ -6,14 +6,15 @@ RSpec.describe PestForecastsController, type: :controller do
   let(:data) { json[:data] }
 
   describe "#index" do
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
+    let(:earliest_date) { Date.current - 2.weeks }
+    let(:latest_date) { Date.current - 1.week }
     let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
+
     before(:each) do
       lats.each do |lat|
         longs.each do |long|
-          (start_date..end_date).each do |date|
+          (earliest_date..latest_date).each do |date|
             FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
           end
         end
@@ -24,8 +25,8 @@ RSpec.describe PestForecastsController, type: :controller do
       let(:params) {
         {
           pest: "potato_blight_dsv",
-          start_date: start_date,
-          end_date: end_date
+          start_date: earliest_date,
+          end_date: latest_date
         }
       }
 
@@ -70,13 +71,13 @@ RSpec.describe PestForecastsController, type: :controller do
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :index, params: params
-        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
-      it "defaults end_date to today" do
+      it "defaults end_date to most recent data" do
         params.delete(:end_date)
         get :index, params: params
-        expect(info[:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(latest_date.to_s)
       end
 
       it "can restrict lat range" do
@@ -104,8 +105,8 @@ RSpec.describe PestForecastsController, type: :controller do
       let(:params) {
         {
           pest: "potato_blight_dsv",
-          start_date: start_date,
-          end_date: end_date
+          start_date: earliest_date,
+          end_date: latest_date
         }
       }
 
@@ -127,28 +128,28 @@ RSpec.describe PestForecastsController, type: :controller do
       it "rescues start_date to defaults" do
         params[:start_date] = "foo"
         get :index, params: params
-        expect(info[:start_date]).to eq(Date.current.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
       it "rescues invalid end_date to default" do
         params[:end_date] = "foo"
         get :index, params: params
-        expect(info[:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(latest_date.to_s)
       end
     end
   end
 
   describe "#custom" do
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
     let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
+    let(:earliest_date) { Date.current - 2.weeks }
+    let(:latest_date) { Date.current - 1.week }
 
     context "if pest name given" do
       before(:each) do
         lats.each do |lat|
           longs.each do |long|
-            start_date.upto(end_date) do |date|
+            earliest_date.upto(latest_date) do |date|
               FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
             end
           end
@@ -159,8 +160,8 @@ RSpec.describe PestForecastsController, type: :controller do
         let(:params) {
           {
             pest: "potato_blight_dsv",
-            start_date: start_date,
-            end_date: end_date
+            start_date: earliest_date,
+            end_date: latest_date
           }
         }
 
@@ -211,13 +212,13 @@ RSpec.describe PestForecastsController, type: :controller do
         it "defaults start_date to beginning of year" do
           params.delete(:start_date)
           get :custom, params: params
-          expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
+          expect(info[:start_date]).to eq(latest_date.beginning_of_year.to_s)
         end
 
         it "defaults end_date to today" do
           params.delete(:end_date)
           get :custom, params: params
-          expect(info[:end_date]).to eq(Date.current.to_s)
+          expect(info[:end_date]).to eq(latest_date.to_s)
         end
 
         it "can restrict lat range" do
@@ -246,7 +247,7 @@ RSpec.describe PestForecastsController, type: :controller do
       before(:each) do
         lats.each do |lat|
           longs.each do |long|
-            (start_date..end_date).each do |date|
+            earliest_date.upto(latest_date) do |date|
               FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
             end
           end
@@ -256,8 +257,8 @@ RSpec.describe PestForecastsController, type: :controller do
       context "when request is valid" do
         let(:params) {
           {
-            start_date: start_date,
-            end_date: end_date
+            start_date: earliest_date,
+            end_date: latest_date
           }
         }
 
@@ -310,11 +311,11 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#point_details" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
+    let(:earliest_date) { Date.current - 2.weeks }
+    let(:latest_date) { Date.current - 1.week }
 
     before(:each) do
-      (start_date..end_date).each do |date|
+      earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
       end
@@ -325,8 +326,8 @@ RSpec.describe PestForecastsController, type: :controller do
         {
           lat: lat,
           long: long,
-          start_date: start_date,
-          end_date: end_date,
+          start_date: earliest_date,
+          end_date: latest_date,
           pest: "dd_50_86"
         }
       }
@@ -369,19 +370,19 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "has the correct number of elements" do
         get :point_details, params: params
-        expect(data.size).to eq((start_date..end_date).count)
+        expect(data.size).to eq((earliest_date..latest_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :point_details, params: params
-        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to today" do
         params.delete(:end_date)
         get :point_details, params: params
-        expect(info[:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(latest_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -408,8 +409,8 @@ RSpec.describe PestForecastsController, type: :controller do
         {
           lat: lat,
           long: long,
-          start_date: start_date,
-          end_date: end_date,
+          start_date: earliest_date,
+          end_date: latest_date,
           pest: "dd_50_86"
         }
       }
@@ -433,12 +434,13 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#custom_point_details" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
+    let(:earliest_date) { Date.current - 2.weeks }
+    let(:latest_date) { Date.current - 1.week }
 
     before(:each) do
-      (start_date..end_date).each do |date|
+      (earliest_date..latest_date).each do |date|
         FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
       end
     end
 
@@ -447,8 +449,8 @@ RSpec.describe PestForecastsController, type: :controller do
         {
           lat: lat,
           long: long,
-          start_date: start_date,
-          end_date: end_date
+          start_date: earliest_date,
+          end_date: latest_date
         }
       }
 
@@ -474,19 +476,19 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "has the correct number of elements" do
         get :custom_point_details, params: params
-        expect(data.length).to eq((start_date..end_date).count)
+        expect(data.length).to eq((earliest_date..latest_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :custom_point_details, params: params
-        expect(info[:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(info[:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
-      it "defaults end_date to today" do
+      it "defaults end_date to most recent data date" do
         params.delete(:end_date)
         get :custom_point_details, params: params
-        expect(info[:end_date]).to eq(Date.current.to_s)
+        expect(info[:end_date]).to eq(latest_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -513,8 +515,8 @@ RSpec.describe PestForecastsController, type: :controller do
         {
           lat: lat,
           long: long,
-          start_date: start_date,
-          end_date: end_date
+          start_date: earliest_date,
+          end_date: latest_date
         }
       }
 
@@ -537,12 +539,11 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#pvy" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:params) {
-      {
-        lat: lat,
-        long: long
-      }
-    }
+    let(:params) { { lat: lat, long: long } }
+
+    before(:each) do
+      FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: Date.yesterday, dd_39p2_86: 1)
+    end
 
     it "is okay" do
       get :pvy, params: params

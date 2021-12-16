@@ -67,6 +67,7 @@ class InsolationsController < ApplicationController
     @date = date_from_id
     @start_date = params[:start_date].present? ? start_date : nil
 
+    puts @date
     image_name = Insolation.image_name(@date, @start_date)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
@@ -102,13 +103,9 @@ class InsolationsController < ApplicationController
     info = {}
     data = []
 
-    date = begin
-      params[:date] ? Date.parse(params[:date]) : default_insol_date
-    rescue
-      default_insol_date
-    end
+    @date = date
 
-    insols = Insolation.where(date: date).order(:latitude, :longitude)
+    insols = Insolation.where(date: @date).order(:latitude, :longitude)
 
     if insols.size > 0
       data = insols.collect do |insol|
@@ -128,7 +125,7 @@ class InsolationsController < ApplicationController
     values = data.map { |d| d[:value] }
 
     info = {
-      date: date,
+      date: @date,
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
       points: lats.count * longs.count,
@@ -149,7 +146,7 @@ class InsolationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
-        filename = "insol data grid for #{date}.csv"
+        filename = "insol data grid for #{@date}.csv"
         send_data to_csv(response[:data], headers), filename: filename
       end
     end
@@ -172,16 +169,32 @@ end
 
 private
 
-def default_insol_date
-  Insolation.latest_date || Date.yesterday
+def default_date
+  Insolation.latest_date
+end
+
+def date
+  Date.parse(params[:date])
+rescue
+  default_date
+end
+
+def date_from_id
+  Date.parse(params[:id])
+rescue
+  default_date
 end
 
 def start_date
-  params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
+  Date.parse(params[:start_date])
+rescue
+  default_date.beginning_of_year
 end
 
 def end_date
-  params[:end_date] ? Date.parse(params[:end_date]) : Date.current
+  Date.parse(params[:end_date])
+rescue
+  default_date
 end
 
 def lat

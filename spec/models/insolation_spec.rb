@@ -30,12 +30,13 @@ RSpec.describe Insolation, type: :model do
   describe "create image for date" do
     let(:date) { Date.yesterday }
 
-    before(:each) do
+    before do
       FactoryBot.create(:insolation_data_import, readings_on: date)
+      FactoryBot.create(:insolation, date: date)
     end
 
     it "should call ImageCreator when data sources loaded" do
-      expect(Insolation).to receive(:land_grid_for_date).exactly(1).times
+      expect(Insolation).to receive(:create_image_data).exactly(1).times
       expect(ImageCreator).to receive(:create_image).exactly(1).times
       Insolation.create_image(date)
     end

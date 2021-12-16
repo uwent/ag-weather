@@ -8,7 +8,8 @@ RSpec.describe InsolationsController, type: :controller do
     let(:end_date) { Date.current - 1.week }
     let(:lat) { 42.0 }
     let(:long) { -98.0 }
-    before(:each) do
+
+    before do
       (start_date..end_date).each do |date|
         FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:insolation_data_import, readings_on: date)
@@ -48,10 +49,10 @@ RSpec.describe InsolationsController, type: :controller do
         expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
       end
 
-      it "defaults end_date to today" do
+      it "defaults end_date to most recent data" do
         params.delete(:end_date)
         get :index, params: params
-        expect(json[:info][:end_date]).to eq(Date.current.to_s)
+        expect(json[:info][:end_date]).to eq(end_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -101,7 +102,8 @@ RSpec.describe InsolationsController, type: :controller do
 
   describe "#show" do
     let(:date) { Date.yesterday }
-    let(:filename) { "/insolation_#{date.to_s(:number)}.png" }
+    let(:filename) { "/insolation-#{date.to_s(:number)}.png" }
+
     before(:each) do
       FactoryBot.create(:insolation, date: date)
       FactoryBot.create(:insolation_data_import, readings_on: date)
@@ -115,7 +117,7 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "has the correct response structure" do
         get :show, params: {id: date}
-        expect(json.keys).to eq([:map])
+        expect(json.keys).to eq([:params, :compute_time, :map])
       end
 
       it "responds with the correct map name if data loaded" do
@@ -146,15 +148,16 @@ RSpec.describe InsolationsController, type: :controller do
   end
 
   describe "#all_for_date" do
-    let(:date) { Date.current - 1.month }
-    let(:date2) { Date.current - 1.week }
+    let(:earliest_date) { Date.current - 1.month }
+    let(:latest_date) { Date.current - 1.week }
     let(:empty_date) { Date.current - 1.year }
-    let(:params) { {date: date} }
+    let(:params) { {date: earliest_date} }
+
     before(:each) do
-      FactoryBot.create(:insolation, date: date)
-      FactoryBot.create(:insolation_data_import, readings_on: date)
-      FactoryBot.create(:insolation, date: date2)
-      FactoryBot.create(:insolation_data_import, readings_on: date2)
+      FactoryBot.create(:insolation, date: earliest_date)
+      FactoryBot.create(:insolation_data_import, readings_on: earliest_date)
+      FactoryBot.create(:insolation, date: latest_date)
+      FactoryBot.create(:insolation_data_import, readings_on: latest_date)
     end
 
     context "when the request is valid" do
@@ -194,7 +197,7 @@ RSpec.describe InsolationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json[:info][:date]).to eq(date2.to_s)
+        expect(json[:info][:date]).to eq(latest_date.to_s)
       end
     end
   end
@@ -204,6 +207,7 @@ RSpec.describe InsolationsController, type: :controller do
     let(:lats) { [50.0, 55.0] }
     let(:longs) { [50.0, 55.0] }
     let(:insols) { [1, 100] }
+
     before(:each) do
       0.upto(1) do |i|
         FactoryBot.create(

@@ -109,13 +109,9 @@ class EvapotranspirationsController < ApplicationController
     info = {}
     data = []
 
-    date = begin
-      params[:date] ? Date.parse(params[:date]) : default_et_date
-    rescue
-      default_et_date
-    end
+    @date = date
 
-    ets = Evapotranspiration.where(date: date).order(:latitude, :longitude)
+    ets = Evapotranspiration.where(date: @date).order(:latitude, :longitude)
 
     if ets.size > 0
       data = ets.collect do |et|
@@ -156,7 +152,7 @@ class EvapotranspirationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = {status: status}.merge(info) unless params[:headers] == "false"
-        filename = "et data grid for #{date}.csv"
+        filename = "et data grid for #{@date}.csv"
         send_data to_csv(response[:data], headers), filename: filename
       end
     end
@@ -186,6 +182,43 @@ class EvapotranspirationsController < ApplicationController
 end
 
 private
+
+
+def default_date
+  Evapotranspiration.latest_date
+end
+
+def date
+  Date.parse(params[:date])
+rescue
+  default_date
+end
+
+def date_from_id
+  Date.parse(params[:id])
+rescue
+  default_date
+end
+
+def start_date
+  Date.parse(params[:start_date])
+rescue
+  default_date.beginning_of_year
+end
+
+def end_date
+  Date.parse(params[:end_date])
+rescue
+  default_date
+end
+
+def lat
+  params[:lat].to_d.round(1)
+end
+
+def long
+  params[:long].to_d.round(1)
+end
 
 def units
   params[:units].presence || "in"

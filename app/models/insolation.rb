@@ -53,8 +53,9 @@ class Insolation < ApplicationRecord
     else
       data = Insolation.where(date: start_date..date)
       raise StandardError.new("No data") if data.size == 0
-      start_date = data.distinct.pluck(:date).min
-      date = data.distinct.pluck(:date).max
+      dates = data.distinct.pluck(:date)
+      start_date = dates.min
+      date = dates.max
       data = data.group(:latitude, :longitude)
         .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(insolation) as insolation")
