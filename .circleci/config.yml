@@ -19,12 +19,16 @@ jobs:
     executor: ruby/default
     steps:
       - checkout
+      - ruby/install-deps
       - run:
           name: Install Dredd
           command: npm install dredd
       - run:
-          name: Set up database
-          command: bin/rails db:setup
+          command: 'dockerize -wait tcp://localhost:5432 -timeout 1m'
+          name: Wait for DB
+      - run:
+          command: 'bundle exec rails db:schema:load --trace'
+          name: Database setup
       - run:
           name: Run specs
           command: bundle exec rspec
