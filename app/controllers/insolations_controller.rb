@@ -167,7 +167,7 @@ class InsolationsController < ApplicationController
   private
 
   def default_date
-    Insolation.latest_date
+    Insolation.latest_date || Date.yesterday
   end
   
   def date

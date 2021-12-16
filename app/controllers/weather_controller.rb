@@ -166,7 +166,7 @@ class WeatherController < ApplicationController
   private
 
   def default_date
-    WeatherDatum.latest_date
+    WeatherDatum.latest_date || Date.yesterday
   end
   
   def date

@@ -120,6 +120,22 @@ class DegreeDaysController < ApplicationController
     end
   end
 
+  def default_date
+    WeatherDatum.latest_date || Date.yesterday
+  end
+
+  def start_date
+    Date.parse(params[:start_date])
+  rescue
+    default_date.beginning_of_year
+  end
+
+  def end_date
+    Date.parse(params[:end_date])
+  rescue
+    default_date
+  end
+
   def units_text
     in_f ? "Fahrenheit degree days" : "Celcius degree days"
   end
@@ -138,18 +154,6 @@ class DegreeDaysController < ApplicationController
 
   def long
     params[:long] ? params[:long].to_d.round(1) : nil
-  end
-
-  def start_date
-    params[:start_date] ? Date.parse(params[:start_date]) : Date.current.beginning_of_year
-  rescue
-    Date.current.beginning_of_year
-  end
-
-  def end_date
-    params[:end_date] ? Date.parse(params[:end_date]) : Date.current
-  rescue
-    Date.current
   end
 
   def base

@@ -171,7 +171,7 @@ class PrecipsController < ApplicationController
   private
 
   def default_date
-    Precip.latest_date
+    Precip.latest_date || Date.yesterday
   end
 
   def date

@@ -600,7 +600,7 @@ class PestForecastsController < ApplicationController
   end
 
   def default_date
-    PestForecast.latest_date
+    PestForecast.latest_date || Date.yesterday
   end
   
   def date
