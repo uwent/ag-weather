@@ -2,13 +2,13 @@ require "rails_helper"
 
 RSpec.describe EvapotranspirationsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
+  let(:lat) { 42.0 }
+  let(:long) { -98.0 }
+  let(:earliest_date) { Date.current - 1.weeks }
+  let(:latest_date) { Date.current }
+  let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
-    let(:lat) { 42.0 }
-    let(:long) { -98.0 }
-    let(:earliest_date) { Date.current - 2.weeks }
-    let(:latest_date) { Date.current - 1.week }
-
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
@@ -17,14 +17,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {
-        {
-          lat: lat,
-          long: long,
-          start_date: earliest_date,
-          end_date: latest_date
-        }
-      }
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: earliest_date,
+        end_date: latest_date
+      }}
 
       it "is okay" do
         get :index, params: params
@@ -75,14 +73,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {
-        {
-          lat: lat,
-          long: long,
-          start_date: earliest_date,
-          end_date: latest_date
-        }
-      }
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: earliest_date,
+        end_date: latest_date
+      }}
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -101,11 +97,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#show" do
-    let(:date) { Date.yesterday }
+    let(:date) { latest_date }
     let(:filename) { "/evapo-in-#{date.to_s(:number)}.png" }
+
     before(:each) do
-      FactoryBot.create(:evapotranspiration, date: date)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
@@ -126,7 +125,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: {id: date}
+        get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
@@ -147,14 +146,12 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#all_for_date" do
-    let(:date) { Date.current - 1.month }
-    let(:date2) { Date.current - 1.week }
-    let(:empty_date) { Date.current - 1.year }
+    let(:date) { latest_date }
     before(:each) do
-      FactoryBot.create(:evapotranspiration, date: date)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
-      FactoryBot.create(:evapotranspiration, date: date2)
-      FactoryBot.create(:evapotranspiration_data_import, readings_on: date2)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
@@ -194,7 +191,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent data" do
         get :all_for_date
-        expect(json[:info][:date]).to eq(date2.to_s)
+        expect(json[:info][:date]).to eq(latest_date.to_s)
       end
     end
   end

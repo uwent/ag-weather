@@ -2,29 +2,28 @@ require "rails_helper"
 
 RSpec.describe InsolationsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
+  let(:lat) { 42.0 }
+  let(:long) { -98.0 }
+  let(:earliest_date) { Date.current - 1.weeks }
+  let(:latest_date) { Date.current }
+  let(:empty_date) { earliest_date - 1.week }
+
 
   describe "#index" do
-    let(:start_date) { Date.current - 2.weeks }
-    let(:end_date) { Date.current - 1.week }
-    let(:lat) { 42.0 }
-    let(:long) { -98.0 }
-
-    before do
-      (start_date..end_date).each do |date|
+    before(:each) do
+      earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:insolation_data_import, readings_on: date)
       end
     end
 
     context "when request is valid" do
-      let(:params) {
-        {
-          lat: lat,
-          long: long,
-          start_date: start_date,
-          end_date: end_date
-        }
-      }
+      let(:params) {{
+        lat: lat,
+        long: long,
+        start_date: earliest_date,
+        end_date: latest_date
+      }}
 
       it "is okay" do
         get :index, params: params
@@ -40,19 +39,19 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "has the correct number of elements" do
         get :index, params: params
-        expect(json[:data].length).to eq((start_date..end_date).count)
+        expect(json[:data].length).to eq((earliest_date..latest_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get :index, params: params
-        expect(json[:info][:start_date]).to eq(start_date.beginning_of_year.to_s)
+        expect(json[:info][:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to most recent data" do
         params.delete(:end_date)
         get :index, params: params
-        expect(json[:info][:end_date]).to eq(end_date.to_s)
+        expect(json[:info][:end_date]).to eq(latest_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -75,14 +74,12 @@ RSpec.describe InsolationsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {
-        {
+      let(:params) {{
           lat: lat,
           long: long,
-          start_date: start_date,
-          end_date: end_date
-        }
-      }
+          start_date: earliest_date,
+          end_date: latest_date
+      }}
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -101,33 +98,43 @@ RSpec.describe InsolationsController, type: :controller do
   end
 
   describe "#show" do
-    let(:date) { Date.yesterday }
+    let(:date) { latest_date }
     let(:filename) { "/insolation-#{date.to_s(:number)}.png" }
 
     before(:each) do
-      FactoryBot.create(:insolation, date: date)
-      FactoryBot.create(:insolation_data_import, readings_on: date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:insolation_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
       it "is okay" do
-        get :show, params: {id: date}
+        get :show, params: { id: date }
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :show, params: {id: date}
+        get :show, params: { id: date }
         expect(json.keys).to eq([:params, :compute_time, :map])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: {id: date}
+        get :show, params: { id: date }
         expect(json[:map]).to eq(filename)
       end
 
+      it "returns the correct image when given starting date" do
+        start_date = Date.current - 1.month
+        file = Insolation.image_name(date, start_date)
+        allow(ImageCreator).to receive(:create_image).and_return(file)
+        get :show, params: { id: date, start_date: start_date }
+        expect(json[:map]).to eq("/#{file}")
+      end
+
       it "has the correct response of no map for date not loaded" do
-        get :show, params: {id: date}
+        get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
@@ -148,31 +155,28 @@ RSpec.describe InsolationsController, type: :controller do
   end
 
   describe "#all_for_date" do
-    let(:earliest_date) { Date.current - 1.month }
-    let(:latest_date) { Date.current - 1.week }
-    let(:empty_date) { Date.current - 1.year }
-    let(:params) { {date: earliest_date} }
+    let(:date) { latest_date }
 
     before(:each) do
-      FactoryBot.create(:insolation, date: earliest_date)
-      FactoryBot.create(:insolation_data_import, readings_on: earliest_date)
-      FactoryBot.create(:insolation, date: latest_date)
-      FactoryBot.create(:insolation_data_import, readings_on: latest_date)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:insolation_data_import, readings_on: date)
+      end
     end
 
     context "when the request is valid" do
       it "is okay" do
-        get :all_for_date, params: params
+        get :all_for_date, params: {date: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :all_for_date, params: params
+        get :all_for_date, params: {date: date}
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
-        get :all_for_date, params: params
+        get :all_for_date, params: {date: date}
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -180,7 +184,7 @@ RSpec.describe InsolationsController, type: :controller do
       end
 
       it "can return a csv" do
-        get :all_for_date, params: params, as: :csv
+        get :all_for_date, params: {date: date}, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end

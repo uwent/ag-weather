@@ -9,8 +9,8 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Image generation and service configuration
-  config.x.image.temp_directory = "test"
-  config.x.image.file_dir = "test"
+  config.x.image.temp_directory = "tmp"
+  config.x.image.file_dir = "tmp"
 
   config.cache_classes = false
 

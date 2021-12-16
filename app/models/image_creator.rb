@@ -17,6 +17,8 @@ class ImageCreator
   end
 
   def self.min_max(min, max)
+    min ||= 0
+    max ||= min
     range = max - min
     tick = range / 10.0
     # puts "#{min}, #{max} (#{tick}/tick) ==>"
@@ -28,8 +30,8 @@ class ImageCreator
       d = 0
     end
     tick = tick.ceil(d)
-    min = min.floor(d)
-    max = min + tick * 10.0
+    min = min.floor(d - 1)
+    max = (min + tick * 10.0).ceil(d - 1)
     # puts "#{min}, #{max} (#{tick}/tick)"
     [min, max]
   end

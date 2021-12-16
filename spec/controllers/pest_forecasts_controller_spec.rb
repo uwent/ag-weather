@@ -573,12 +573,10 @@ RSpec.describe PestForecastsController, type: :controller do
         FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
       end
     end
-    let(:params) {
-      {
-        start_date: start_date,
-        end_date: end_date
-      }
-    }
+    let(:params) {{
+      start_date: start_date,
+      end_date: end_date
+    }}
 
     it "is okay" do
       get :freeze, params: params

@@ -40,6 +40,16 @@ class Precip < ApplicationRecord
     end
   end
 
+  def self.land_grid_for_date(date)
+    grid = LandGrid.new
+    self.where(date: date).each do |point|
+      lat, long = point.latitude, point.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = point.precip
+    end
+    grid
+  end
+
   def self.image_name(date, start_date = nil, units = "mm")
     if start_date.nil?
       "precip-#{units}-#{date.to_s(:number)}.png"

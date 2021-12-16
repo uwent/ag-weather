@@ -104,9 +104,7 @@ class WeatherDatum < ApplicationRecord
     file = image_name(date, units)
     Rails.logger.info "WeatherDatum :: Creating image ==> #{file}"
     grid = create_image_data(LandGrid.new, weather, units)
-    min = (grid.min / 10.0).floor * 10
-    max = (grid.max / 10.0).ceil * 10
-    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
+    ImageCreator.create_image(grid, title, file)
   rescue => e
     Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
     "no_data.png"

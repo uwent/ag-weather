@@ -66,8 +66,6 @@ class InsolationsController < ApplicationController
     start_time = Time.current
     @date = date_from_id
     @start_date = params[:start_date].present? ? start_date : nil
-
-    puts @date
     image_name = Insolation.image_name(@date, @start_date)
     image_filename = File.join(ImageCreator.file_dir, image_name)
     image_url = File.join(ImageCreator.url_path, image_name)
@@ -165,42 +163,42 @@ class InsolationsController < ApplicationController
     }
     render json: response
   end
-end
 
-private
+  private
 
-def default_date
-  Insolation.latest_date
-end
-
-def date
-  Date.parse(params[:date])
-rescue
-  default_date
-end
-
-def date_from_id
-  Date.parse(params[:id])
-rescue
-  default_date
-end
-
-def start_date
-  Date.parse(params[:start_date])
-rescue
-  default_date.beginning_of_year
-end
-
-def end_date
-  Date.parse(params[:end_date])
-rescue
-  default_date
-end
-
-def lat
-  params[:lat].to_d.round(1)
-end
-
-def long
-  params[:long].to_d.round(1)
+  def default_date
+    Insolation.latest_date
+  end
+  
+  def date
+    Date.parse(params[:date])
+  rescue
+    default_date
+  end
+  
+  def date_from_id
+    Date.parse(params[:id])
+  rescue
+    default_date
+  end
+  
+  def start_date
+    Date.parse(params[:start_date])
+  rescue
+    default_date.beginning_of_year
+  end
+  
+  def end_date
+    Date.parse(params[:end_date])
+  rescue
+    default_date
+  end
+  
+  def lat
+    params[:lat].to_d.round(1)
+  end
+  
+  def long
+    params[:long].to_d.round(1)
+  end
 end

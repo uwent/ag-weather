@@ -33,6 +33,16 @@ class Evapotranspiration < ApplicationRecord
     Evapotranspiration.minimum(:date)
   end
 
+  def self.land_grid_for_date(date)
+    grid = LandGrid.new
+    self.where(date: date).each do |point|
+      lat, long = point.latitude, point.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = point.potential_et
+    end
+    grid
+  end
+
   def self.create_image(date, start_date: nil, units: "in")
     if start_date.nil?
       ets = Evapotranspiration.where(date: date)
