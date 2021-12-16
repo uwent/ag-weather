@@ -16,12 +16,14 @@ RSpec.describe PrecipsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) { {
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      } }
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "is okay" do
         get :index, params: params
@@ -60,12 +62,14 @@ RSpec.describe PrecipsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) { {
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      } }
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -87,7 +91,7 @@ RSpec.describe PrecipsController, type: :controller do
     let(:date) { latest_date }
     let(:empty_date) { earliest_date - 1.week }
     let(:url) { "/#{Precip.image_name(date)}" }
-  
+
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
@@ -116,7 +120,7 @@ RSpec.describe PrecipsController, type: :controller do
         units = "in"
         file = Precip.image_name(date, nil, units)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: { id: date, units: units }
+        get :show, params: {id: date, units: units}
         expect(json[:map]).to eq("/#{file}")
       end
 
@@ -124,18 +128,18 @@ RSpec.describe PrecipsController, type: :controller do
         start_date = Date.current - 1.month
         file = Precip.image_name(date, start_date)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: { id: date, start_date: start_date }
+        get :show, params: {id: date, start_date: start_date}
         expect(json[:map]).to eq("/#{file}")
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: { id: empty_date }
+        get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(url)
-        get :show, params: { id: date, format: :png }
+        get :show, params: {id: date, format: :png}
         expect(response.body).to include("<img src=#{url}")
       end
     end
@@ -151,7 +155,7 @@ RSpec.describe PrecipsController, type: :controller do
 
   describe "#all_for_date" do
     let(:empty_date) { earliest_date - 1.year }
-  
+
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
@@ -161,17 +165,17 @@ RSpec.describe PrecipsController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :all_for_date, params: { date: latest_date }
+        get :all_for_date, params: {date: latest_date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :all_for_date, params: { date: latest_date }
+        get :all_for_date, params: {date: latest_date}
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
-        get :all_for_date, params: { date: latest_date }
+        get :all_for_date, params: {date: latest_date}
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -179,7 +183,7 @@ RSpec.describe PrecipsController, type: :controller do
       end
 
       it "can return a csv" do
-        get :all_for_date, params: { date: latest_date }, as: :csv
+        get :all_for_date, params: {date: latest_date}, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -187,7 +191,7 @@ RSpec.describe PrecipsController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get :all_for_date, params: { date: empty_date }
+        get :all_for_date, params: {date: empty_date}
         expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
       end
@@ -213,8 +217,7 @@ RSpec.describe PrecipsController, type: :controller do
           latitude: lats[i],
           longitude: longs[i],
           date: dates[i],
-          precip: precips[i]
-        )
+          precip: precips[i])
       end
     end
 

@@ -1,23 +1,15 @@
 class Precip < ApplicationRecord
   # precip units are in mm
 
-  def self.latest_date
-    Precip.maximum(:date)
-  end
-
-  def self.earliest_date
-    Precip.minimum(:date)
-  end
-
   def self.stats(date)
-    precips = Precip.where(date: date)
+    precips = where(date: date)
 
     if precips.size > 0
-      data = precips.collect do |precip|
+      data = precips.collect do |point|
         {
-          lat: precip.latitude,
-          long: precip.longitude,
-          precip: precip.precip
+          lat: point.latitude,
+          long: point.longitude,
+          precip: point.precip
         }
       end
 
@@ -42,7 +34,7 @@ class Precip < ApplicationRecord
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    self.where(date: date).each do |point|
+    where(date: date).each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = point.precip
@@ -78,11 +70,11 @@ class Precip < ApplicationRecord
 
   def self.create_image(date, start_date: nil, units: "mm")
     if start_date.nil?
-      precips = Precip.where(date: date)
+      precips = where(date: date)
       raise StandardError.new("No data") if precips.size == 0
       date = precips.distinct.pluck(:date).max
     else
-      precips = Precip.where(date: start_date..date)
+      precips = where(date: start_date..date)
       raise StandardError.new("No data") if precips.size == 0
       start_date = precips.distinct.pluck(:date).min
       date = precips.distinct.pluck(:date).max

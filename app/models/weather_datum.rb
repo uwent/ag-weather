@@ -1,12 +1,4 @@
 class WeatherDatum < ApplicationRecord
-  def self.latest_date
-    WeatherDatum.maximum(:date)
-  end
-
-  def self.earliest_date
-    WeatherDatum.minimum(:date)
-  end
-
   def self.calculate_all_degree_days_for_date_range(
     lat_range: LandExtent.latitudes,
     long_range: LandExtent.longitudes,
@@ -18,7 +10,7 @@ class WeatherDatum < ApplicationRecord
     in_f: true
   )
 
-    WeatherDatum.where(date: start_date..end_date)
+    where(date: start_date..end_date)
       .where(latitude: lat_range, longitude: long_range)
       .each_with_object(Hash.new(0)) do |weather, hash|
       coord = [weather.latitude, weather.longitude]
@@ -33,7 +25,7 @@ class WeatherDatum < ApplicationRecord
 
   def self.land_grid_since(date)
     grid = LandGrid.new
-    WeatherDatum.where("date >= ?", date).each do |w|
+    where("date >= ?", date).each do |w|
       lat, long = w.latitude, w.longitude
       if grid[lat, long].nil?
         grid[lat, long] = [w]
@@ -72,7 +64,7 @@ class WeatherDatum < ApplicationRecord
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    WeatherDatum.where(date: date).each do |w|
+    where(date: date).each do |w|
       lat, long = w.latitude, w.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = w
@@ -98,7 +90,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.create_image(date, units: "F")
-    weather = WeatherDatum.where(date: date)
+    weather = where(date: date)
     raise StandardError.new("No data") if weather.size == 0
     title = image_title(date, units)
     file = image_name(date, units)

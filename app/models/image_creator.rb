@@ -1,5 +1,4 @@
 class ImageCreator
-
   def self.url_path
     Rails.configuration.x.image.url_path
   end
@@ -22,12 +21,12 @@ class ImageCreator
     range = max - min
     tick = range / 10.0
     # puts "#{min}, #{max} (#{tick}/tick) ==>"
-    if range <= 1
-      d = 2
+    d = if range <= 1
+      2
     elsif range <= 10
-      d = 1
+      1
     else
-      d = 0
+      0
     end
     tick = tick.ceil(d)
     min = min.floor(d - 1)

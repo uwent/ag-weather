@@ -1,15 +1,7 @@
 class Insolation < ApplicationRecord
-  def self.latest_date
-    Insolation.maximum(:date)
-  end
-
-  def self.earliest_date
-    Insolation.minimum(:date)
-  end
-
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    Insolation.where(date: date).each do |insol|
+    where(date: date).each do |insol|
       lat, long = insol.latitude, insol.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = insol.insolation
@@ -45,13 +37,13 @@ class Insolation < ApplicationRecord
 
   def self.create_image(date, start_date: nil)
     if start_date.nil?
-      data = Insolation.where(date: date)
+      data = where(date: date)
       raise StandardError.new("No data") if data.size == 0
       date = data.distinct.pluck(:date).max
       min = 0
       max = 30
     else
-      data = Insolation.where(date: start_date..date)
+      data = where(date: start_date..date)
       raise StandardError.new("No data") if data.size == 0
       dates = data.distinct.pluck(:date)
       start_date = dates.min
@@ -66,7 +58,7 @@ class Insolation < ApplicationRecord
     file = image_name(date, start_date)
     Rails.logger.info "Insolation :: Creating image ==> #{file}"
     grid = create_image_data(LandGrid.new, data)
-    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max )
+    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
   rescue => e
     Rails.logger.warn "Insolation :: Failed to create image for #{date}: #{e.message}"
     "no_data.png"

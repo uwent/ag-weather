@@ -17,12 +17,14 @@ RSpec.describe WeatherController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) { {
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      } }
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "is okay" do
         get :index
@@ -82,12 +84,14 @@ RSpec.describe WeatherController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
@@ -118,18 +122,18 @@ RSpec.describe WeatherController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json.keys).to eq([:params, :compute_time, :map])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date }
+        get :show, params: {id: date}
         expect(json[:map]).to eq("/#{filename}")
       end
 
@@ -137,18 +141,18 @@ RSpec.describe WeatherController, type: :controller do
         units = "C"
         file = WeatherDatum.image_name(date, units)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: { id: date, units: units }
+        get :show, params: {id: date, units: units}
         expect(json[:map]).to eq("/#{file}")
       end
 
       it "has the correct response of no map for date not loaded" do
-        get :show, params: { id: empty_date }
+        get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: date, format: :png }
+        get :show, params: {id: date, format: :png}
         expect(response.body).to include("<img src=/#{filename}")
       end
     end
@@ -156,7 +160,7 @@ RSpec.describe WeatherController, type: :controller do
     context "when the request is invalid" do
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
-        get :show, params: { id: "foo" }
+        get :show, params: {id: "foo"}
         expect(json[:map]).to eq("/#{filename}")
       end
     end
@@ -173,17 +177,17 @@ RSpec.describe WeatherController, type: :controller do
 
     context "when the request is valid" do
       it "is okay" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
-        get :all_for_date, params: { date: date }
+        get :all_for_date, params: {date: date}
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -191,7 +195,7 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it "can return a csv" do
-        get :all_for_date, params: { date: date }, as: :csv
+        get :all_for_date, params: {date: date}, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -199,7 +203,7 @@ RSpec.describe WeatherController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get :all_for_date, params: { date: empty_date }
+        get :all_for_date, params: {date: empty_date}
         expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
       end

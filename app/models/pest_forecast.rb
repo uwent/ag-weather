@@ -3,14 +3,6 @@ class PestForecast < ApplicationRecord
 
   NO_MAX = 150
 
-  def self.latest_date
-    PestForecast.maximum(:date)
-  end
-
-  def self.earliest_date
-    PestForecast.minimum(:date)
-  end
-
   def self.pest_map_dir
     "pest_maps"
   end
@@ -28,7 +20,7 @@ class PestForecast < ApplicationRecord
 
   # degree days in F
   def self.new_from_weather(weather)
-    PestForecast.new(
+    new(
       date: weather.date,
       latitude: weather.latitude,
       longitude: weather.longitude,
@@ -109,8 +101,8 @@ class PestForecast < ApplicationRecord
 
   def self.create_pest_map(pest, start_date = latest_date - 1.week, end_date = latest_date, min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid pest!") unless pest_models.include? pest
-  
-    forecasts = PestForecast.where(date: start_date..end_date)
+
+    forecasts = where(date: start_date..end_date)
 
     if forecasts.size > 0
       dates = forecasts.distinct.pluck(:date)
@@ -161,8 +153,8 @@ class PestForecast < ApplicationRecord
   def self.create_dd_map(model, start_date = latest_date.beginning_of_year, end_date = latest_date, units = "F", min_value = nil, max_value = nil, wi_only = false)
     raise ArgumentError.new("Invalid model!") unless dd_models.include? model
     raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
-    
-    forecasts = PestForecast.where(date: start_date..end_date)
+
+    forecasts = where(date: start_date..end_date)
     if forecasts.size > 0
       dates = forecasts.distinct.pluck(:date)
       start_date, end_date = dates.min, dates.max

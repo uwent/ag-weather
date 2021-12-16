@@ -602,25 +602,25 @@ class PestForecastsController < ApplicationController
   def default_date
     PestForecast.latest_date || Date.yesterday
   end
-  
+
   def date
     Date.parse(params[:date])
   rescue
     default_date
   end
-  
+
   def date_from_id
     Date.parse(params[:id])
   rescue
     default_date
   end
-  
+
   def start_date
     Date.parse(params[:start_date])
   rescue
     default_date.beginning_of_year
   end
-  
+
   def end_date
     Date.parse(params[:end_date])
   rescue
@@ -654,7 +654,7 @@ class PestForecastsController < ApplicationController
   def t_upper
     params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
   end
-  
+
   def parse_coord(param, default)
     param.present? ? param.to_f.round(1) : default
   rescue

@@ -25,17 +25,9 @@ class Evapotranspiration < ApplicationRecord
     )
   end
 
-  def self.latest_date
-    Evapotranspiration.maximum(:date)
-  end
-
-  def self.earliest_date
-    Evapotranspiration.minimum(:date)
-  end
-
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    self.where(date: date).each do |point|
+    where(date: date).each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = point.potential_et
@@ -45,13 +37,13 @@ class Evapotranspiration < ApplicationRecord
 
   def self.create_image(date, start_date: nil, units: "in")
     if start_date.nil?
-      ets = Evapotranspiration.where(date: date)
+      ets = where(date: date)
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
       min = 0
       max = 0.25
     else
-      ets = Evapotranspiration.where(date: start_date..date)
+      ets = where(date: start_date..date)
       raise StandardError.new("No data") if ets.size == 0
       start_date = ets.distinct.pluck(:date).min
       date = ets.distinct.pluck(:date).max
@@ -95,5 +87,4 @@ class Evapotranspiration < ApplicationRecord
     end
     grid
   end
-
 end

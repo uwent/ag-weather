@@ -183,7 +183,6 @@ end
 
 private
 
-
 def default_date
   Evapotranspiration.latest_date || Date.yesterday
 end

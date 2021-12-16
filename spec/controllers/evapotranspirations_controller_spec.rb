@@ -17,12 +17,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when request is valid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "is okay" do
         get :index, params: params
@@ -73,12 +75,14 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
 
     context "when the request is invalid" do
-      let(:params) {{
-        lat: lat,
-        long: long,
-        start_date: earliest_date,
-        end_date: latest_date
-      }}
+      let(:params) {
+        {
+          lat: lat,
+          long: long,
+          start_date: earliest_date,
+          end_date: latest_date
+        }
+      }
 
       it "and has no latitude return no data" do
         params.delete(:lat)
