@@ -20,25 +20,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Get Bundler
-          command: gem install bundler
-      - run:
-          name: Configure Bundler
-          command: bundle config set --local path './vendor/bundle'
-      - restore_cache:
-          name: Restore Gem Cache
-          keys:
-            - bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
-            - bundle-{{ checksum ".ruby-version" }}
-      - run:
-          name: Bundle Install
-          command: bundle check || bundle install
-      - save_cache:
-          name: Save Gem Cache
-          key: bundle-{{ checksum ".ruby-version" }}-{{ checksum "Gemfile.lock" }}
-          paths:
-            - ./vendor/bundle
-      - run:
           name: Install Dredd
           command: npm install dredd
       - run:
