@@ -72,13 +72,12 @@ class PrecipsController < ApplicationController
 
     image_name = Precip.image_name(@date, @start_date, @units)
     image_filename = File.join(ImageCreator.file_dir, image_name)
-    image_url = File.join(ImageCreator.url_path, image_name)
 
     if File.exist?(image_filename)
-      url = image_url
+      url = File.join(ImageCreator.url_path, image_name)
     else
       image_name = Precip.create_image(@date, start_date: @start_date, units: @units)
-      url = image_name == "no_data.png" ? "/no_data.png" : image_url
+      url = image_name == "no_data.png" ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
     end
 
     if request.format.png?

@@ -524,7 +524,7 @@ class PestForecastsController < ApplicationController
         status = "ERR: No data"
         url = "/no_data.png"
       else
-        puts url = "#{url_prefix}/#{image_name}"
+        url = "#{url_prefix}/#{image_name}"
       end
     else
       status = "ERR: Model '#{@model}' not found, must be one of: #{PestForecast.all_models.join(", ")}"

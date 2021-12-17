@@ -41,7 +41,7 @@ class Evapotranspiration < ApplicationRecord
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
       min = 0
-      max = 0.25
+      max = units == "mm" ? (0.25 * 25.4).round(1) : 0.25
     else
       ets = where(date: start_date..date)
       raise StandardError.new("No data") if ets.size == 0

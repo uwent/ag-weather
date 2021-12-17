@@ -18,29 +18,29 @@ class ImageCreator
   def self.min_max(min, max)
     min ||= 0
     max ||= min
-    range = max - min
-    tick = range / 10.0
     # puts "#{min}, #{max} (#{tick}/tick) ==>"
-    d = if range <= 1
+    d = if max - min <= 1
       2
-    elsif range <= 10
+    elsif max - min <= 10
       1
     else
       0
     end
-    tick = tick.ceil(d)
     min = min.floor(d - 1)
+    tick = ((max - min) / 10.0).ceil(d)
     max = (min + tick * 10.0).ceil(d - 1)
     # puts "#{min}, #{max} (#{tick}/tick)"
     [min, max]
   end
 
   def self.create_image(grid, title, image_name, subdir: "", min_value: nil, max_value: nil)
+    data_min = grid.min.round(3)
+    data_max = grid.max.round(3)
     auto_min, auto_max = min_max(grid.min, grid.max)
     min = min_value || auto_min
     max = max_value || auto_max
     max += 1 if min == max
-    # Rails.logger.debug "ImageCreator :: Gunplot data range: #{grid.min} -> #{grid.max} = #{grid.min - grid.min} (#{(grid.max - grid.min) / 10.0}/tick)"
+    Rails.logger.debug "ImageCreator :: Gunplot data range: #{data_min} -> #{data_max} = #{data_max - data_min} (#{(data_max - data_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot auto range: #{auto_min} -> #{auto_max} = #{auto_max - auto_min} (#{(auto_max - auto_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
     datafile_name = create_data_file(grid)
