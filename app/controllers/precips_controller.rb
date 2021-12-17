@@ -12,7 +12,7 @@ class PrecipsController < ApplicationController
 
     precips = Precip.where(latitude: lat, longitude: long)
       .where(date: start_date..end_date)
-      .order(date: :desc)
+      .order(:date)
 
     if precips.size > 0
       cum_value = 0
