@@ -24,11 +24,8 @@ jobs:
           name: Install Dredd
           command: npm install dredd
       - run:
-          command: 'dockerize -wait tcp://localhost:5432 -timeout 1m'
-          name: Wait for DB
-      - run:
-          command: 'bundle exec rails db:schema:load --trace'
-          name: Database setup
+          name: Set up database
+          command: bundle exec rails db:setup
       - run:
           name: Run specs
           command: bundle exec rspec
