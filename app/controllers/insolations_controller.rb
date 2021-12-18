@@ -64,8 +64,12 @@ class InsolationsController < ApplicationController
 
   def show
     start_time = Time.current
-    @date = date_from_id
-    @start_date = params[:start_date].present? ? start_date : nil
+
+    @date = [date_from_id, default_date].min
+    if params[:start_date].present?
+      @start_date = [[start_date, earliest_date].max, @date].min
+      @start_date = nil if @start_date == @date
+    end
 
     image_name = Insolation.image_name(@date, @start_date)
     image_filename = File.join(ImageCreator.file_dir, image_name)
@@ -168,6 +172,10 @@ class InsolationsController < ApplicationController
 
   def default_date
     Insolation.latest_date || Date.yesterday
+  end
+
+  def earliest_date
+    Insolation.earliest_date || Date.current.beginning_of_year
   end
 
   def date

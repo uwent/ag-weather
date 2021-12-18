@@ -34,6 +34,13 @@ class ImageCreator
   end
 
   def self.create_image(grid, title, image_name, subdir: "", min_value: nil, max_value: nil)
+    # image_name = File.join(subdir, image_name)
+    # image_path = File.join(file_dir, image_name)
+    # if File.exists?(image_path)
+    #   Rails.logger.info "ImageCreator :: Image already exists at #{image_path}"
+    #   return image_name
+    # end
+
     data_min = grid.min.round(3)
     data_max = grid.max.round(3)
     auto_min, auto_max = min_max(grid.min, grid.max)
@@ -43,6 +50,7 @@ class ImageCreator
     Rails.logger.debug "ImageCreator :: Gunplot data range: #{data_min} -> #{data_max} = #{data_max - data_min} (#{(data_max - data_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot auto range: #{auto_min} -> #{auto_max} = #{auto_max - auto_min} (#{(auto_max - auto_min) / 10.0}/tick)"
     Rails.logger.debug "ImageCreator :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
+
     datafile_name = create_data_file(grid)
     image_name = generate_image_file(datafile_name, image_name, subdir, title, min, max, grid.extents)
     File.delete(datafile_name)

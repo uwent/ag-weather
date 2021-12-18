@@ -66,8 +66,12 @@ class PrecipsController < ApplicationController
   # GET: create map and return url to it
   def show
     start_time = Time.current
-    @date = date_from_id
-    @start_date = params[:start_date].present? ? start_date : nil
+
+    @date = [date_from_id, default_date].min
+    if params[:start_date].present?
+      @start_date = [[start_date, earliest_date].max, @date].min
+      @start_date = nil if @start_date == @date
+    end
     @units = units
 
     image_name = Precip.image_name(@date, @start_date, @units)
@@ -171,6 +175,10 @@ class PrecipsController < ApplicationController
 
   def default_date
     Precip.latest_date || Date.yesterday
+  end
+
+  def earliest_date
+    Precip.earliest_date || Date.current.beginning_of_year
   end
 
   def date

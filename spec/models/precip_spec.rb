@@ -9,19 +9,18 @@ RSpec.describe Precip, type: :model do
     end
 
     it "should have precips stored" do
-      1.upto(5) do
-        lat, long = LandExtent.random_point
-        precip = rand.round(2)
-        FactoryBot.create(
-          :precip,
-          date: date,
-          latitude: lat,
-          longitude: long,
-          precip: precip
-        )
-        grid = Precip.land_grid_for_date(date)
-        expect(grid[lat, long]).to eq precip
-      end
+      lat = 45
+      long = -90
+      precip = rand.round(2)
+      FactoryBot.create(
+        :precip,
+        date: date,
+        latitude: lat,
+        longitude: long,
+        precip: precip
+      )
+      grid = Precip.land_grid_for_date(date)
+      expect(grid[lat, long]).to eq(precip)
     end
 
     it "should store nil in grid for points without values" do
