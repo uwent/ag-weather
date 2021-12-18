@@ -65,7 +65,7 @@ class WeatherController < ApplicationController
   # GET: create map and return url to it
   def show
     start_time = Time.current
-    @date = [date_from_id, WeatherDatum.latest_date].min
+    @date = [date_from_id, default_date].min
     @units = units
 
     image_name = WeatherDatum.image_name(@date, @units)
