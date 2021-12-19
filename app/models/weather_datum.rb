@@ -1,4 +1,6 @@
 class WeatherDatum < ApplicationRecord
+  UNITS = ["F", "C"]
+
   def self.calculate_all_degree_days_for_date_range(
     lat_range: LandExtent.latitudes,
     long_range: LandExtent.longitudes,
@@ -72,23 +74,6 @@ class WeatherDatum < ApplicationRecord
     grid
   end
 
-  def self.image_name(date, units = "F")
-    "mean-air-temp-#{units.downcase}-#{date.to_s(:number)}.png"
-  end
-
-  def self.image_title(date, units = "F")
-    "Mean air temperature (°#{units}) for #{date.strftime("%b %d, %Y")}"
-  end
-
-  def self.create_image_data(grid, query, units = "F")
-    query.each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "C" ? point.avg_temperature : UnitConverter.c_to_f(point.avg_temperature)
-    end
-    grid
-  end
-
   def self.create_image(date, units: "F")
     weather = where(date: date)
     raise StandardError.new("No data") if weather.size == 0
@@ -100,5 +85,22 @@ class WeatherDatum < ApplicationRecord
   rescue => e
     Rails.logger.warn "WeatherDatum :: Failed to create image for #{date}: #{e.message}"
     "no_data.png"
+  end
+
+  def self.create_image_data(grid, query, units = "F")
+    query.each do |point|
+      lat, long = point.latitude, point.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = units == "C" ? point.avg_temperature : UnitConverter.c_to_f(point.avg_temperature)
+    end
+    grid
+  end
+
+  def self.image_name(date, units = "F")
+    "mean-air-temp-#{units.downcase}-#{date.to_s(:number)}.png"
+  end
+
+  def self.image_title(date, units = "F")
+    "Mean air temperature (°#{units}) for #{date.strftime("%b %d, %Y")}"
   end
 end

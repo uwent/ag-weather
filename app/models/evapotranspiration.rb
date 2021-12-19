@@ -1,4 +1,8 @@
 class Evapotranspiration < ApplicationRecord
+  UNITS = ["in", "mm"]
+  DEFAULT_MAX_IN = 0.25
+  DEFAULT_MAX_MM = 6.5
+
   def has_required_data?
     weather && insolation
   end
@@ -41,7 +45,7 @@ class Evapotranspiration < ApplicationRecord
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
       min = 0
-      max = units == "mm" ? (0.25 * 25.4).round(1) : 0.25
+      max = units == "mm" ? DEFAULT_MAX_MM : DEFAULT_MAX_IN
     else
       ets = where(date: start_date..date)
       raise StandardError.new("No data") if ets.size == 0
@@ -63,11 +67,9 @@ class Evapotranspiration < ApplicationRecord
   end
 
   def self.image_name(date, start_date = nil, units = "in")
-    if start_date.nil?
-      "evapo-#{units}-#{date.to_s(:number)}.png"
-    else
-      "evapo-#{units}-#{date.to_s(:number)}-#{start_date.to_s(:number)}.png"
-    end
+    name = "evapo-#{units}-#{date.to_s(:number)}"
+    name += "-#{start_date.to_s(:number)}" unless start_date.nil?
+    name + ".png"
   end
 
   def self.image_title(date, start_date = nil, units = "in")
@@ -83,7 +85,7 @@ class Evapotranspiration < ApplicationRecord
     query.each do |et|
       lat, long = et.latitude, et.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "mm" ? et.potential_et * 25.4 : et.potential_et
+      grid[lat, long] = units == "mm" ? UnitConverter.in_to_mm(et.potential_et) : et.potential_et
     end
     grid
   end

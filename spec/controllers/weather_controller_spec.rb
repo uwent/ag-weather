@@ -4,8 +4,8 @@ RSpec.describe WeatherController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
   let(:lat) { 42.0 }
   let(:long) { -98.0 }
-  let(:earliest_date) { Date.current - 1.weeks }
-  let(:latest_date) { Date.current }
+  let(:latest_date) { DataImport.latest_date }
+  let(:earliest_date) { latest_date - 1.week }
   let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
@@ -162,6 +162,10 @@ RSpec.describe WeatherController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(filename)
         get :show, params: {id: "foo"}
         expect(json[:map]).to eq("/#{filename}")
+      end
+
+      it "throws error on bad units" do
+        expect { get :show, params: {id: date, units: "foo"} }.to raise_error ActionController::BadRequest
       end
     end
   end

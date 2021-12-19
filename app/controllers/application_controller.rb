@@ -19,4 +19,40 @@ class ApplicationController < ActionController::Base
     rescue
     end
   end
+
+  def default_date
+    DataImport.latest_date
+  end
+
+  def date
+    Date.parse(params[:date])
+  rescue
+    default_date
+  end
+
+  def date_from_id
+    Date.parse(params[:id])
+  rescue
+    default_date
+  end
+
+  def start_date
+    Date.parse(params[:start_date])
+  rescue
+    default_date.beginning_of_year
+  end
+
+  def end_date
+    Date.parse(params[:end_date])
+  rescue
+    default_date
+  end
+
+  def lat
+    params[:lat].to_d.round(1)
+  end
+
+  def long
+    params[:long].to_d.round(1)
+  end
 end

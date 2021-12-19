@@ -600,10 +600,6 @@ class PestForecastsController < ApplicationController
     !/\D/.match?(s) ? s.to_i : nil
   end
 
-  def default_date
-    PestForecast.latest_date || Date.yesterday
-  end
-
   def date
     Date.parse(params[:date])
   rescue

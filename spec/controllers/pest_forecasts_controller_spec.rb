@@ -4,10 +4,11 @@ RSpec.describe PestForecastsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
   let(:info) { json[:info] }
   let(:data) { json[:data] }
+  let(:latest_date) { DataImport.latest_date }
+  let(:earliest_date) { latest_date - 1.week }
+  let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
-    let(:earliest_date) { Date.current - 2.weeks }
-    let(:latest_date) { Date.current - 1.week }
     let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
 
@@ -142,8 +143,6 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#custom" do
     let(:lats) { 49..50 }
     let(:longs) { -90..-89 }
-    let(:earliest_date) { Date.current - 2.weeks }
-    let(:latest_date) { Date.current - 1.week }
 
     context "if pest name given" do
       before(:each) do
@@ -311,8 +310,6 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#point_details" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:earliest_date) { Date.current - 2.weeks }
-    let(:latest_date) { Date.current - 1.week }
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
@@ -434,8 +431,6 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#custom_point_details" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:earliest_date) { Date.current - 2.weeks }
-    let(:latest_date) { Date.current - 1.week }
 
     before(:each) do
       (earliest_date..latest_date).each do |date|

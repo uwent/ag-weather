@@ -18,4 +18,19 @@ class UnitConverter
   def self.fdd_to_cdd(fdd)
     fdd.to_f * 5.0 / 9.0
   end
+
+  # convert Megajoules to Kilowatt hours
+  def self.mj_to_kwh(mj)
+    mj.to_f * (1 / 3.6)
+  end
+
+  # inches to mm
+  def self.in_to_mm(inches)
+    inches.to_f * 25.4
+  end
+
+  # mm to inches
+  def self.mm_to_in(mm)
+    mm.to_f / 25.4
+  end
 end

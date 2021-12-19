@@ -4,8 +4,9 @@ RSpec.describe PrecipsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
   let(:lat) { 42.0 }
   let(:long) { -95.0 }
-  let(:earliest_date) { Date.current - 2.weeks }
-  let(:latest_date) { Date.current - 1.week }
+  let(:latest_date) { DataImport.latest_date }
+  let(:earliest_date) { latest_date - 1.week }
+  let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
     before(:each) do
@@ -89,13 +90,16 @@ RSpec.describe PrecipsController, type: :controller do
 
   describe "#show" do
     let(:date) { latest_date }
-    let(:empty_date) { earliest_date - 1.week }
-    let(:url) { "/#{Precip.image_name(date)}" }
+    let(:start_date) { nil }
+    let(:unit) { "mm" }
+    let(:image_name) { Precip.image_name(date, start_date, unit) }
+    let(:url) { "/#{image_name}" }
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:precip_data_import, readings_on: date)
+        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:precip, latitude: lat + 1, longitude: long + 1, date: date)
       end
     end
 
@@ -132,6 +136,14 @@ RSpec.describe PrecipsController, type: :controller do
         expect(json[:map]).to eq("/#{file}")
       end
 
+      it "responds to the units param" do
+        unit2 = "in"
+        image_name2 = Precip.image_name(date, start_date, unit2)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name2)
+        get :show, params: {id: date, units: unit2}
+        expect(json[:map]).to eq("/#{image_name2}")
+      end
+
       it "has the correct response of no map for date not loaded" do
         get :show, params: {id: empty_date}
         expect(json[:map]).to eq("/no_data.png")
@@ -150,16 +162,18 @@ RSpec.describe PrecipsController, type: :controller do
         get :show, params: {id: "foo"}
         expect(json[:map]).to eq(url)
       end
+
+      it "throws error on bad units" do
+        expect { get :show, params: {id: date, units: "foo"} }.to raise_error ActionController::BadRequest
+      end
     end
   end
 
   describe "#all_for_date" do
-    let(:empty_date) { earliest_date - 1.year }
-
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:precip_data_import, readings_on: date)
+        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
       end
     end
 
@@ -198,7 +212,7 @@ RSpec.describe PrecipsController, type: :controller do
     end
 
     context "when params are empty" do
-      it "defaults to most recent data" do
+      it "defaults to most recent date" do
         get :all_for_date
         expect(json[:info][:date]).to eq(latest_date.to_s)
       end

@@ -4,8 +4,8 @@ RSpec.describe InsolationsController, type: :controller do
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
   let(:lat) { 42.0 }
   let(:long) { -98.0 }
-  let(:earliest_date) { Date.current - 1.weeks }
-  let(:latest_date) { Date.current }
+  let(:latest_date) { DataImport.latest_date }
+  let(:earliest_date) { latest_date - 1.week }
   let(:empty_date) { earliest_date - 1.week }
 
   describe "#index" do
@@ -102,7 +102,10 @@ RSpec.describe InsolationsController, type: :controller do
 
   describe "#show" do
     let(:date) { latest_date }
-    let(:filename) { "/insolation-#{date.to_s(:number)}.png" }
+    let(:start_date) { nil }
+    let(:units) { "MJ" }
+    let(:image_name) { Insolation.image_name(date, start_date, units) }
+    let(:url) { "/#{image_name}" }
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
@@ -123,17 +126,24 @@ RSpec.describe InsolationsController, type: :controller do
       end
 
       it "responds with the correct map name if data loaded" do
-        allow(ImageCreator).to receive(:create_image).and_return(filename)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get :show, params: {id: date}
-        expect(json[:map]).to eq(filename)
+        expect(json[:map]).to eq(url)
       end
 
       it "returns the correct image when given starting date" do
         start_date = Date.current - 1.month
-        file = Insolation.image_name(date, start_date)
-        allow(ImageCreator).to receive(:create_image).and_return(file)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get :show, params: {id: date, start_date: start_date}
-        expect(json[:map]).to eq("/#{file}")
+        expect(json[:map]).to eq(url)
+      end
+
+      it "responds to the units param" do
+        unit2 = "KWh"
+        image_name2 = Insolation.image_name(date, start_date, unit2)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name2)
+        get :show, params: {id: date, units: unit2}
+        expect(json[:map]).to eq("/#{image_name2}")
       end
 
       it "has the correct response of no map for date not loaded" do
@@ -142,17 +152,21 @@ RSpec.describe InsolationsController, type: :controller do
       end
 
       it "shows the image in the browser when format=png" do
-        allow(ImageCreator).to receive(:create_image).and_return(filename)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get :show, params: {id: date, format: :png}
-        expect(response.body).to include("<img src=#{filename}")
+        expect(response.body).to include("<img src=#{url}")
       end
     end
 
     context "when the request is invalid" do
       it "returns the most recent map" do
-        allow(ImageCreator).to receive(:create_image).and_return(filename)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get :show, params: {id: "foo"}
-        expect(json[:map]).to eq(filename)
+        expect(json[:map]).to eq(url)
+      end
+
+      it "throws error on bad units" do
+        expect { get :show, params: {id: date, units: "foo"} }.to raise_error ActionController::BadRequest
       end
     end
   end
@@ -202,7 +216,7 @@ RSpec.describe InsolationsController, type: :controller do
     end
 
     context "when params are empty" do
-      it "defaults to most recent data" do
+      it "defaults to most recent date" do
         get :all_for_date
         expect(json[:info][:date]).to eq(latest_date.to_s)
       end

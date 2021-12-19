@@ -69,7 +69,7 @@ class EvapotranspirationsController < ApplicationController
   # GET: create map and return url to it
   def show
     start_time = Time.current
-    
+
     @date = [date_from_id, default_date].min
     if params[:start_date].present?
       @start_date = [[start_date, earliest_date].max, @date].min
@@ -182,50 +182,21 @@ class EvapotranspirationsController < ApplicationController
     }
     render json: response
   end
-end
 
-private
+  private
 
-def default_date
-  Evapotranspiration.latest_date || Date.yesterday
-end
+  def earliest_date
+    Evapotranspiration.earliest_date || Date.current.beginning_of_year
+  end
 
-def earliest_date
-  Evapotranspiration.earliest_date || Date.current.beginning_of_year
-end
-
-def date
-  Date.parse(params[:date])
-rescue
-  default_date
-end
-
-def date_from_id
-  Date.parse(params[:id])
-rescue
-  default_date
-end
-
-def start_date
-  Date.parse(params[:start_date])
-rescue
-  default_date.beginning_of_year
-end
-
-def end_date
-  Date.parse(params[:end_date])
-rescue
-  default_date
-end
-
-def lat
-  params[:lat].to_d.round(1)
-end
-
-def long
-  params[:long].to_d.round(1)
-end
-
-def units
-  params[:units].presence || "in"
+  def units
+    valid_units = Evapotranspiration::UNITS
+    if valid_units.include?(params[:units])
+      params[:units]
+    elsif !params[:units].present?
+      valid_units.first
+    else
+      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+    end
+  end
 end

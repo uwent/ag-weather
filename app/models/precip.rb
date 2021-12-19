@@ -1,6 +1,8 @@
 class Precip < ApplicationRecord
   # precip units are in mm
 
+  UNITS = ["mm", "in"]
+
   def self.stats(date)
     precips = where(date: date)
 
@@ -43,11 +45,9 @@ class Precip < ApplicationRecord
   end
 
   def self.image_name(date, start_date = nil, units = "mm")
-    if start_date.nil?
-      "precip-#{units}-#{date.to_s(:number)}.png"
-    else
-      "precip-#{units}-#{date.to_s(:number)}-#{start_date.to_s(:number)}.png"
-    end
+    name = "precip-#{units}-#{date.to_s(:number)}"
+    name += "-#{start_date.to_s(:number)}" unless start_date.nil?
+    name + ".png"
   end
 
   def self.image_title(date, start_date = nil, units = "mm")
@@ -59,11 +59,11 @@ class Precip < ApplicationRecord
     end
   end
 
-  def self.create_image_data(grid, query, units = "mm")
-    query.each do |precip|
-      lat, long = precip.latitude, precip.longitude
+  def self.create_image_data(grid, data, units = "mm")
+    data.each do |point|
+      lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "in" ? (precip.precip / 25.4) : precip.precip
+      grid[lat, long] = units == "in" ? UnitConverter.mm_to_in(point.precip) : point.precip
     end
     grid
   end
