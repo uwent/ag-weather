@@ -39,7 +39,7 @@ class WeatherHour
       store(type, lat, long, data) if LandExtent.inside?(lat, long)
     end
 
-    Rails.logger.debug ">> Grib file read in #{(Time.current - grib_start).to_i} seconds"
+    Rails.logger.debug "WeatherHour :: Grib file read in #{(Time.current - grib_start).to_i} seconds"
   end
 
   # averages all temperatures assigned to the lat/long cell
