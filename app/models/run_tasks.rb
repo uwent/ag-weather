@@ -1,21 +1,31 @@
 class RunTasks
   def self.all
+    start_time = Time.now
+
     # fetch remote data
-    InsolationImporter.fetch
-    PrecipImporter.fetch
-    WeatherImporter.fetch
+    precip = Thread.new {PrecipImporter.fetch}
+    insol = Thread.new {InsolationImporter.fetch}
+    weather = Thread.new {WeatherImporter.fetch}
+
+    insol.join
+    weather.join
 
     # generate new data
-    EvapotranspirationImporter.create_et_data
-    PestForecastImporter.create_forecast_data
-    PestForecast.create_dd_map("dd_50_86")
+    et = Thread.new {EvapotranspirationImporter.create_et_data}
+    pf = Thread.new {PestForecastImporter.create_forecast_data}
+
+    et.join
+    pf.join
+    precip.join
 
     # display status of import attempts
     DataImport.check_statuses
+    Rails.logger.info "Data tasks completed in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}"
   end
 
   def self.daily
     RunTasks.all
+    PestForecast.create_dd_map("dd_50_86")
     DataImport.send_status_email
   rescue => e
     status = ["ERROR: Daily tasks failed to run with message: #{e.message}"]
