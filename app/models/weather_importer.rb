@@ -62,7 +62,6 @@ class WeatherImporter
       end
     rescue => e
       Rails.logger.warn "WeatherImporter :: Unable to retrieve remote weather file. Reason: #{e.message}"
-      client.close
       if (retries += 1) < MAX_TRIES
         Rails.logger.info "WeatherImporter :: Retrying connection in 10 seconds (attempt #{retries} of #{MAX_TRIES})"
         sleep(10)
