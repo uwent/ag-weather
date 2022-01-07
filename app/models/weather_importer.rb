@@ -4,7 +4,7 @@ class WeatherImporter
   REMOTE_SERVER = "ftp.ncep.noaa.gov"
   REMOTE_BASE_DIR = "/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp/gribdata"
-  MAX_TRIES = 10
+  MAX_TRIES = 3
   KEEP_GRIB = ENV["KEEP_GRIB"] || false
 
   def self.fetch
@@ -27,7 +27,7 @@ class WeatherImporter
 
   def self.connect_to_server
     Rails.logger.info "WeatherImporter :: Connecting to #{REMOTE_SERVER}..."
-    client = Net::FTP.new(REMOTE_SERVER)
+    client = Net::FTP.new(REMOTE_SERVER, open_timeout: 10, read_timeout: 60)
     client.login
     client
   end
@@ -54,9 +54,7 @@ class WeatherImporter
         else
           Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{remote_dir}/#{remote_file}"
           client.chdir(remote_dir)
-          Timeout.timeout(60) do
-            client.get(remote_file, "#{local_file}_part")
-          end
+          client.get(remote_file, "#{local_file}_part")
           FileUtils.mv("#{local_file}_part", local_file)
         end
       end

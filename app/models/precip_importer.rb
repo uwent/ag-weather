@@ -15,8 +15,8 @@ class PrecipImporter
   end
 
   def self.connect_to_server
-    Rails.logger.debug "Connecting to #{REMOTE_SERVER}..."
-    client = Net::FTP.new(REMOTE_SERVER)
+    Rails.logger.debug "PrecipImporter :: Connecting to #{REMOTE_SERVER}..."
+    client = Net::FTP.new(REMOTE_SERVER, open_timeout: 10, read_timeout: 60)
     client.login
     client
   end
@@ -50,9 +50,7 @@ class PrecipImporter
         client = connect_to_server
         Rails.logger.debug "GET #{remote_dir}/#{remote_file} ==> #{local_file}"
         client.chdir(remote_dir)
-        Timeout.timeout(60) do
-          client.get(remote_file, "#{local_file}_part")
-        end
+        client.get(remote_file, "#{local_file}_part")
         FileUtils.mv("#{local_file}_part", local_file)
       rescue => e
         msg = "Unable to retrieve precip file: #{e.message}"

@@ -21,12 +21,14 @@ RSpec.describe PrecipImporter, type: :model do
       allow(client).to receive(:get)
       allow(client).to receive(:chdir)
       allow(client).to receive(:close)
-      allow(Net::FTP).to receive(:new).with(PrecipImporter::REMOTE_SERVER).and_return(client)
+      allow(Net::FTP).to receive(:new)
+        .with(PrecipImporter::REMOTE_SERVER, open_timeout: 10, read_timeout: 60)
+        .and_return(client)
     end
 
     describe ".connect_to_server" do
       it "should connect to the ftp server" do
-        expect(Net::FTP).to receive(:new).with(PrecipImporter::REMOTE_SERVER).and_return(client)
+        expect(Net::FTP).to receive(:new).and_return(client)
         PrecipImporter.connect_to_server
       end
 

@@ -29,7 +29,7 @@ RSpec.describe WeatherImporter, type: :model do
       allow(ftp_client_mock).to receive(:login)
       allow(ftp_client_mock).to receive(:get)
       allow(ftp_client_mock).to receive(:chdir)
-      allow(Net::FTP).to receive(:new).with(WeatherImporter::REMOTE_SERVER).and_return(ftp_client_mock)
+      allow(Net::FTP).to receive(:new).with(WeatherImporter::REMOTE_SERVER, open_timeout: 10, read_timeout: 60).and_return(ftp_client_mock)
       allow(ftp_client_mock).to receive(:close)
     end
 
@@ -48,7 +48,7 @@ RSpec.describe WeatherImporter, type: :model do
 
     describe "connect to remote FTP server" do
       it "should connect to the NOAA server" do
-        expect(Net::FTP).to receive(:new).with(WeatherImporter::REMOTE_SERVER).and_return(ftp_client_mock)
+        expect(Net::FTP).to receive(:new).and_return(ftp_client_mock)
         WeatherImporter.connect_to_server
       end
 
