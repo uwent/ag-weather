@@ -46,6 +46,7 @@ RSpec.describe PrecipImporter, type: :model do
   describe ".fetch_day" do
     it "should try to download the grib file" do
       allow(PrecipImporter).to receive(:download).and_return("file")
+      allow(PrecipImporter).to receive(:import_precip_data).and_return("data")
       expect(PrecipImporter).to receive(:download).with(/#{date.to_s(:number)}/, any_args).exactly(1).times
       PrecipImporter.fetch_day(date)
     end
