@@ -12,14 +12,16 @@ class InsolationImporter
   end
 
   def self.fetch_day(date)
+    start_time = Time.now
     InsolationDataImport.start(date)
     Rails.logger.info "InsolationImporter :: Fetching insolation data for #{date}"
 
     begin
       url = "#{URL_BASE}.#{formatted_date(date)}"
-      Rails.logger.info "GET #{url}"
+      Rails.logger.info "InsolationImporter :: GET #{url}"
       response = HTTParty.get(url)
       import_insolation_data(response, date)
+      Rails.logger.info "InsolationImporter :: Completed insolation load for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
     rescue => e
       msg = "Unable to retrieve insolation data: #{e.message}"
       Rails.logger.warn "InsolationImporter :: #{msg}"

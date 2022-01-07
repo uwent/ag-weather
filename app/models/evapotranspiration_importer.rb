@@ -11,6 +11,7 @@ class EvapotranspirationImporter
   end
 
   def self.calculate_et_for_date(date)
+    start_time = Time.now
     EvapotranspirationDataImport.start(date)
     Rails.logger.info "EvapotranspirationImporter :: Calculating ET for #{date}"
 
@@ -22,8 +23,8 @@ class EvapotranspirationImporter
 
     weather = WeatherDatum.land_grid_for_date(date)
     insols = Insolation.land_grid_for_date(date)
-
     ets = []
+
     LandExtent.each_point do |lat, long|
       next if weather[lat, long].nil? || insols[lat, long].nil?
 
@@ -39,6 +40,8 @@ class EvapotranspirationImporter
 
     EvapotranspirationDataImport.succeed(date)
     Evapotranspiration.create_image(date)
+
+    Rails.logger.info "EvapotranspirationImporter :: Completed ET calc & image creation for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
   rescue => e
     msg = "Failed to calculate ET for #{date}: #{e.message}"
     Rails.logger.error "EvapotranspirationImporter :: #{msg}"

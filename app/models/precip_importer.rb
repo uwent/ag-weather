@@ -1,24 +1,23 @@
-require "net/ftp"
+require "open-uri"
 require "open3"
 
 class PrecipImporter
-  REMOTE_SERVER = "ftp.ncep.noaa.gov"
-  REMOTE_DIR_BASE = "/pub/data/nccf/com/pcpanl/prod"
+
+  REMOTE_DIR_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
   LOCAL_DIR = "/tmp/gribdata/precip"
   KEEP_GRIB = ENV["KEEP_GRIB"] || false
 
   def self.fetch
-    days_to_load = PrecipDataImport.days_to_load
-    days_to_load.each do |day|
+    PrecipDataImport.days_to_load.each do |day|
       fetch_day(day)
     end
   end
 
-  def self.connect_to_server
-    Rails.logger.debug "PrecipImporter :: Connecting to #{REMOTE_SERVER}..."
-    client = Net::FTP.new(REMOTE_SERVER, open_timeout: 10, read_timeout: 60)
-    client.login
-    client
+  def self.download(url, path)
+    case io = OpenURI::open_uri(url, open_timeout: 10, read_timeout: 60)
+    when StringIO then File.open(path, 'w') { |f| f.write(io.read) }
+    when Tempfile then io.close; FileUtils.mv(io.path, path)
+    end
   end
 
   def self.local_file(date)
@@ -39,19 +38,16 @@ class PrecipImporter
     PrecipDataImport.start(date)
 
     Rails.logger.info "PrecipImporter :: Fetching precip data for #{date}..."
-    remote_dir = remote_dir(date)
-    remote_file = remote_file(date)
+    file_url = remote_dir(date) + "/" + remote_file(date)
     local_file = local_file(date)
+    temp_file = local_file + "_part"
 
     if File.exist?(local_file)
       Rails.logger.debug "File #{local_file} ==> Exists"
     else
       begin
-        client = connect_to_server
-        Rails.logger.debug "GET #{remote_dir}/#{remote_file} ==> #{local_file}"
-        client.chdir(remote_dir)
-        client.get(remote_file, "#{local_file}_part")
-        FileUtils.mv("#{local_file}_part", local_file)
+        Rails.logger.debug "GET #{file_url} ==> #{local_file}"
+        download(file_url, local_file)
       rescue => e
         msg = "Unable to retrieve precip file: #{e.message}"
         Rails.logger.warn "PrecipImporter :: #{msg}"
@@ -62,7 +58,7 @@ class PrecipImporter
 
     import_precip_data(date)
 
-    Rails.logger.info "PrecipImporter :: Completed precip load for #{date} in #{(Time.current - start_time).to_i} seconds."
+    Rails.logger.info "PrecipImporter :: Completed precip load for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
   end
 
   def self.import_precip_data(date)
