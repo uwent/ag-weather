@@ -1,5 +1,4 @@
 require "rails_helper"
-require "net/ftp"
 
 RSpec.describe PrecipImporter, type: :model do
   let(:date) { Date.current }
@@ -13,70 +12,43 @@ RSpec.describe PrecipImporter, type: :model do
     end
   end
 
+  describe ".local_file" do
+    it "should create the local directory if it doesn't exist" do
+      expect(FileUtils).to receive(:mkdir_p).with(PrecipImporter::LOCAL_DIR.to_s).once
+      PrecipImporter.local_file(date)
+    end
+
+    it "should specify local filename" do
+      expect(PrecipImporter.local_file(date)).to eq("#{PrecipImporter::LOCAL_DIR}/#{date.to_s(:number)}.grb2")
+    end
+
+    it "should create the file directory if it doesn't exist" do
+      allow(Dir).to receive(:exists?).and_return(false)
+      expect(FileUtils).to receive(:mkdir_p).with(PrecipImporter::LOCAL_DIR).once
+      PrecipImporter.local_file(date)
+    end
+  end
+
+  describe ".remote_dir" do
+    it "should specify the correct remote directory" do
+      dir = PrecipImporter::REMOTE_DIR_BASE + "/pcpanl.#{date.to_s(:number)}"
+      expect(PrecipImporter.remote_dir(date)).to eq(dir)
+    end
+  end
+
+  describe ".remote_file" do
+    it "should create the correct remote filename" do
+      file = "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+      expect(PrecipImporter.remote_file(date)).to eq(file)
+    end
+  end
+
   describe ".fetch_day" do
-    let(:client) { instance_double("Net::FTP") }
-
-    before(:each) do
-      allow(client).to receive(:login)
-      allow(client).to receive(:get)
-      allow(client).to receive(:chdir)
-      allow(client).to receive(:close)
-      allow(Net::FTP).to receive(:new)
-        .with(PrecipImporter::REMOTE_SERVER, open_timeout: 10, read_timeout: 60)
-        .and_return(client)
-    end
-
-    describe ".connect_to_server" do
-      it "should connect to the ftp server" do
-        expect(Net::FTP).to receive(:new).and_return(client)
-        PrecipImporter.connect_to_server
-      end
-
-      it "should return the ftp client" do
-        expect(PrecipImporter.connect_to_server).to be client
-      end
-    end
-
-    describe ".local_file" do
-      it "should create the local directory if it doesn't exist" do
-        expect(FileUtils).to receive(:mkdir_p).with(PrecipImporter::LOCAL_DIR.to_s).once
-        PrecipImporter.local_file(date)
-      end
-
-      it "should specify local filename" do
-        expect(PrecipImporter.local_file(date)).to eq("#{PrecipImporter::LOCAL_DIR}/#{date.to_s(:number)}.grb2")
-      end
-    end
-
-    describe ".remote_dir" do
-      it "should specify the correct remote directory" do
-        dir = PrecipImporter::REMOTE_DIR_BASE + "/pcpanl.#{date.to_s(:number)}"
-        expect(PrecipImporter.remote_dir(date)).to eq(dir)
-      end
-    end
-
-    describe ".remote_file" do
-      it "should create the correct remote filename" do
-        file = "st4_conus.#{date.to_s(:number)}12.24h.grb2"
-        expect(PrecipImporter.remote_file(date)).to eq(file)
-      end
-    end
-
-    describe "get precip data" do
-      it "should connect to the server" do
-        expect(PrecipImporter).to receive(:connect_to_server).exactly(1).times
-        PrecipImporter.fetch_day(date)
-      end
-
-      it "should change to the appropriate directory on the remote server" do
-        expect(client).to receive(:chdir).with(PrecipImporter.remote_dir(date)).exactly(1).times
-        PrecipImporter.fetch_day(date)
-      end
-
-      it "should try to get a file" do
-        expect(client).to receive(:get).exactly(1).times
-        PrecipImporter.fetch_day(date)
-      end
+    it "should try to download the grib file" do
+      allow(PrecipImporter).to receive(:download).and_return("file")
+      allow(PrecipImporter).to receive(:import_precip_data).and_return("data")
+      expect(PrecipImporter).to receive(:download).with(/#{date.to_s(:number)}/, any_args).exactly(1).times
+      PrecipImporter.fetch_day(date)
     end
   end
 
