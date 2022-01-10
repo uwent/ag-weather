@@ -21,6 +21,6 @@ class StationObservationsController < ApplicationController
 
   def find_station(name)
     name.delete!(" ")
-    Station.where(name: name).first
+    Station.where(name:).first
   end
 end

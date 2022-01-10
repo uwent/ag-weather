@@ -12,7 +12,7 @@ RSpec.describe Insolation, type: :model do
       long = LandExtent.min_long
       FactoryBot.create(
         :insolation,
-        date: date,
+        date:,
         latitude: lat,
         longitude: long,
         insolation: 14.0
@@ -32,7 +32,7 @@ RSpec.describe Insolation, type: :model do
 
     before do
       FactoryBot.create(:insolation_data_import, readings_on: date)
-      FactoryBot.create(:insolation, date: date)
+      FactoryBot.create(:insolation, date:)
     end
 
     it "should call ImageCreator when data sources loaded" do

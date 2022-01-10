@@ -14,10 +14,10 @@ RSpec.describe Precip, type: :model do
       precip = rand.round(2)
       FactoryBot.create(
         :precip,
-        date: date,
+        date:,
         latitude: lat,
         longitude: long,
-        precip: precip
+        precip:
       )
       grid = Precip.land_grid_for_date(date)
       expect(grid[lat, long]).to eq(precip)
@@ -39,7 +39,7 @@ RSpec.describe Precip, type: :model do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:precip, date: date, latitude: lat, longitude: long, precip: 1)
+        FactoryBot.create(:precip, date:, latitude: lat, longitude: long, precip: 1)
         FactoryBot.create(:precip_data_import, readings_on: date)
       end
     end

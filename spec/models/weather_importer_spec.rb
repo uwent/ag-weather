@@ -66,7 +66,7 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe "load the database for a date" do
     let(:weather_day) { instance_double("WeatherDay") }
-    
+
     before(:each) do
       allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(date))
       allow(weather_day).to receive(:temperatures_at)

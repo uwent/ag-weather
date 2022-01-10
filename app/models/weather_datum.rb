@@ -61,13 +61,13 @@ class WeatherDatum < ApplicationRecord
   def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
     min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
     max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
-    dd = DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
+    dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)
     [0, dd].max unless dd.nil?
   end
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    where(date: date).each do |w|
+    where(date:).each do |w|
       lat, long = w.latitude, w.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = w
@@ -76,7 +76,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.create_image(date, units: "F")
-    weather = where(date: date)
+    weather = where(date:)
     raise StandardError.new("No data") if weather.size == 0
     title = image_title(date, units)
     file = image_name(date, units)

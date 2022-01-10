@@ -5,7 +5,7 @@ class Insolation < ApplicationRecord
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    where(date: date).each do |insol|
+    where(date:).each do |insol|
       lat, long = insol.latitude, insol.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = insol.insolation
@@ -15,7 +15,7 @@ class Insolation < ApplicationRecord
 
   def self.create_image(date, start_date: nil, units: "MJ")
     if start_date.nil?
-      data = where(date: date)
+      data = where(date:)
       raise StandardError.new("No data") if data.size == 0
       date = data.distinct.pluck(:date).max
       min = 0

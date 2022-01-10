@@ -131,7 +131,7 @@ class PestForecast < ApplicationRecord
       end
 
       Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value:, max_value:)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
       "no_data.png"
@@ -183,7 +183,7 @@ class PestForecast < ApplicationRecord
       end
 
       Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value:, max_value:)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
       "no_data.png"

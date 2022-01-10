@@ -10,8 +10,8 @@ RSpec.describe WeatherDatum, type: :model do
         FactoryBot.create(
           :weather_datum,
           date: Date.current - i.days,
-          latitude: latitude,
-          longitude: longitude
+          latitude:,
+          longitude:
         )
       }
 
@@ -37,9 +37,9 @@ RSpec.describe WeatherDatum, type: :model do
       longitude = Wisconsin.min_long
       FactoryBot.create(
         :weather_datum,
-        date: date,
-        latitude: latitude,
-        longitude: longitude
+        date:,
+        latitude:,
+        longitude:
       )
       land_grid = WeatherDatum.land_grid_for_date(date)
       expect(land_grid[latitude, longitude]).to be_kind_of(WeatherDatum)
@@ -59,8 +59,8 @@ RSpec.describe WeatherDatum, type: :model do
         FactoryBot.create(
           :weather_datum,
           date: Date.current - i.days,
-          latitude: latitude,
-          longitude: longitude
+          latitude:,
+          longitude:
         )
       end
       land_grid = WeatherDatum.land_grid_since(Date.current - 12.days)
@@ -139,7 +139,7 @@ RSpec.describe WeatherDatum, type: :model do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:weather_datum, date: date, latitude: lat, longitude: long, avg_temperature: 42.0)
+        FactoryBot.create(:weather_datum, date:, latitude: lat, longitude: long, avg_temperature: 42.0)
         FactoryBot.create(:weather_data_import, readings_on: date)
       end
     end

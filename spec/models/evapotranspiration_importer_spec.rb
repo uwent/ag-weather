@@ -30,12 +30,12 @@ RSpec.describe EvapotranspirationImporter, type: :model do
           latitude: Wisconsin.min_lat,
           longitude: Wisconsin.min_long,
           insolation: 1257.0,
-          date: date
+          date:
         )
         WeatherDatum.create(
           latitude: Wisconsin.min_lat,
           longitude: Wisconsin.min_long,
-          date: date,
+          date:,
           max_temperature: 15.0,
           min_temperature: 5.0,
           avg_temperature: 10.0,

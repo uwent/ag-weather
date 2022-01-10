@@ -3,16 +3,16 @@ class RunTasks
     start_time = Time.now
 
     # fetch remote data
-    precip = Thread.new {PrecipImporter.fetch}
-    insol = Thread.new {InsolationImporter.fetch}
-    weather = Thread.new {WeatherImporter.fetch}
+    precip = Thread.new { PrecipImporter.fetch }
+    insol = Thread.new { InsolationImporter.fetch }
+    weather = Thread.new { WeatherImporter.fetch }
 
     insol.join
     weather.join
 
     # generate new data
-    et = Thread.new {EvapotranspirationImporter.create_et_data}
-    pf = Thread.new {PestForecastImporter.create_forecast_data}
+    et = Thread.new { EvapotranspirationImporter.create_et_data }
+    pf = Thread.new { PestForecastImporter.create_forecast_data }
 
     et.join
     pf.join
@@ -47,7 +47,7 @@ class RunTasks
     end_date = [Date.new(year, 12, 31), Date.today].min
     dates = start_date..end_date
     dates.each do |date|
-      if WeatherDatum.where(date: date).exists?
+      if WeatherDatum.where(date:).exists?
         puts date.strftime + " - ready"
       else
         puts date.strftime + " - no data"
@@ -125,7 +125,7 @@ class RunTasks
   def self.redo_forecast(date)
     ActiveRecord::Base.logger.level = 1
 
-    if WeatherDatum.where(date: date).size > 0
+    if WeatherDatum.where(date:).size > 0
       puts date.strftime + " - ready - recalculating..."
 
       weather = WeatherDatum.land_grid_for_date(date)
@@ -138,7 +138,7 @@ class RunTasks
       end
 
       PestForecast.transaction do
-        PestForecast.where(date: date).delete_all
+        PestForecast.where(date:).delete_all
         PestForecast.import(forecasts)
       end
       PestForecastDataImport.succeed(date)
@@ -155,7 +155,7 @@ class RunTasks
     days = (start_date..end_date).count
     dates.each do |date|
       day += 1
-      weather = WeatherDatum.where(date: date).select(:latitude, :longitude)
+      weather = WeatherDatum.where(date:).select(:latitude, :longitude)
       if weather.size > 0
         frosts = {}
         freezes = {}
@@ -163,7 +163,7 @@ class RunTasks
         weather.where("min_temperature < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
         frost_ids = []
         freeze_ids = []
-        PestForecast.where(date: date).each do |pf|
+        PestForecast.where(date:).each do |pf|
           frost_ids << pf.id if frosts[[pf.latitude, pf.longitude]]
           freeze_ids << pf.id if freezes[[pf.latitude, pf.longitude]]
         end

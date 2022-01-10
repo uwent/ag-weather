@@ -36,7 +36,7 @@ class DataImport < ApplicationRecord
   def self.start(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "started", message: message)
+      status.update(status: "started", message:)
     else
       started.on(date).create!
     end
@@ -45,7 +45,7 @@ class DataImport < ApplicationRecord
   def self.succeed(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "successful", message: message)
+      status.update(status: "successful", message:)
     else
       successful.on(date).create!
     end
@@ -54,7 +54,7 @@ class DataImport < ApplicationRecord
   def self.fail(date, message = nil)
     status = on(date)
     if status.exists?
-      status.update(status: "unsuccessful", message: message)
+      status.update(status: "unsuccessful", message:)
     else
       unsuccessful.on(date).create!
     end
@@ -94,7 +94,7 @@ class DataImport < ApplicationRecord
     end
 
     message.each { |m| Rails.logger.info m }
-    {count: count, message: message}
+    {count:, message:}
   end
 
   # sends status email if data loads have failed recently

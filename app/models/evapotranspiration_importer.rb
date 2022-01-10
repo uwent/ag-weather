@@ -28,13 +28,13 @@ class EvapotranspirationImporter
     LandExtent.each_point do |lat, long|
       next if weather[lat, long].nil? || insols[lat, long].nil?
 
-      et = Evapotranspiration.new(latitude: lat, longitude: long, date: date)
+      et = Evapotranspiration.new(latitude: lat, longitude: long, date:)
       et.potential_et = et.calculate_et(insols[lat, long], weather[lat, long])
       ets << et
     end
 
     Evapotranspiration.transaction do
-      Evapotranspiration.where(date: date).delete_all
+      Evapotranspiration.where(date:).delete_all
       Evapotranspiration.import(ets)
     end
 

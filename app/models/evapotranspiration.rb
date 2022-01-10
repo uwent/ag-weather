@@ -8,15 +8,15 @@ class Evapotranspiration < ApplicationRecord
   end
 
   def weather
-    @weather ||= WeatherDatum.find_by(latitude: latitude, longitude: longitude, date: date)
+    @weather ||= WeatherDatum.find_by(latitude:, longitude:, date:)
   end
 
   def insolation
-    @insolation ||= Insolation.find_by(latitude: latitude, longitude: longitude, date: date)
+    @insolation ||= Insolation.find_by(latitude:, longitude:, date:)
   end
 
   def already_calculated?
-    Evapotranspiration.find_by(latitude: latitude, longitude: longitude, date: date)
+    Evapotranspiration.find_by(latitude:, longitude:, date:)
   end
 
   def calculate_et(insolation, weather)
@@ -31,7 +31,7 @@ class Evapotranspiration < ApplicationRecord
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    where(date: date).each do |point|
+    where(date:).each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = point.potential_et
@@ -41,7 +41,7 @@ class Evapotranspiration < ApplicationRecord
 
   def self.create_image(date, start_date: nil, units: "in")
     if start_date.nil?
-      ets = where(date: date)
+      ets = where(date:)
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
       min = 0

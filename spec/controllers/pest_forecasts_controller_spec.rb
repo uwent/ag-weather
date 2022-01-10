@@ -16,7 +16,7 @@ RSpec.describe PestForecastsController, type: :controller do
       lats.each do |lat|
         longs.each do |long|
           (earliest_date..latest_date).each do |date|
-            FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+            FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date:)
           end
         end
       end
@@ -149,7 +149,7 @@ RSpec.describe PestForecastsController, type: :controller do
         lats.each do |lat|
           longs.each do |long|
             earliest_date.upto(latest_date) do |date|
-              FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+              FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date:)
             end
           end
         end
@@ -247,7 +247,7 @@ RSpec.describe PestForecastsController, type: :controller do
         lats.each do |lat|
           longs.each do |long|
             earliest_date.upto(latest_date) do |date|
-              FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
+              FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date:)
             end
           end
         end
@@ -313,16 +313,16 @@ RSpec.describe PestForecastsController, type: :controller do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
-        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date:)
+        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date:)
       end
     end
 
     context "when request is valid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date,
           pest: "dd_50_86"
@@ -386,8 +386,8 @@ RSpec.describe PestForecastsController, type: :controller do
         lat = 43.015
         long = -89.49
         params.update({
-          lat: lat,
-          long: long
+          lat:,
+          long:
         })
         get :point_details, params: params
         expect(info[:lat]).to eq(lat.round(1))
@@ -404,8 +404,8 @@ RSpec.describe PestForecastsController, type: :controller do
     context "when the request is invalid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date,
           pest: "dd_50_86"
@@ -434,16 +434,16 @@ RSpec.describe PestForecastsController, type: :controller do
 
     before(:each) do
       (earliest_date..latest_date).each do |date|
-        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
-        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date:)
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date:)
       end
     end
 
     context "when request is valid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -490,8 +490,8 @@ RSpec.describe PestForecastsController, type: :controller do
         lat = 43.015
         long = -89.49
         params.update({
-          lat: lat,
-          long: long
+          lat:,
+          long:
         })
         get :custom_point_details, params: params
         expect(info[:lat]).to eq(lat.round(1))
@@ -508,8 +508,8 @@ RSpec.describe PestForecastsController, type: :controller do
     context "when the request is invalid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -534,7 +534,7 @@ RSpec.describe PestForecastsController, type: :controller do
   describe "#pvy" do
     let(:lat) { 42.0 }
     let(:long) { -89.0 }
-    let(:params) { {lat: lat, long: long} }
+    let(:params) { {lat:, long:} }
 
     before(:each) do
       FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: Date.yesterday, dd_39p2_86: 1)
@@ -565,13 +565,13 @@ RSpec.describe PestForecastsController, type: :controller do
 
     before(:each) do
       start_date.upto(end_date) do |date|
-        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date:)
       end
     end
     let(:params) {
       {
-        start_date: start_date,
-        end_date: end_date
+        start_date:,
+        end_date:
       }
     }
 

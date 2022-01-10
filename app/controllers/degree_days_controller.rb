@@ -65,13 +65,13 @@ class DegreeDaysController < ApplicationController
     info = {
       lat: lat.to_f,
       long: long.to_f,
-      start_date: start_date,
-      end_date: end_date,
-      days_requested: days_requested,
-      days_returned: days_returned,
-      base: base,
-      upper: upper,
-      method: method,
+      start_date:,
+      end_date:,
+      days_requested:,
+      days_returned:,
+      base:,
+      upper:,
+      method:,
       units: units_text,
       min_value: values.min,
       max_value: values.max,
@@ -80,18 +80,18 @@ class DegreeDaysController < ApplicationController
     }
 
     response = {
-      status: status,
-      info: info,
-      data: data
+      status:,
+      info:,
+      data:
     }
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status: status}.merge(info) unless params[:headers] == "false"
+        headers = {status:}.merge(info) unless params[:headers] == "false"
         filename = "degree day data for #{lat}, #{long}.csv"
-        send_data to_csv(response[:data], headers), filename: filename
+        send_data to_csv(response[:data], headers), filename:
       end
     end
   end
