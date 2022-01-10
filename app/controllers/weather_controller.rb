@@ -37,8 +37,8 @@ class WeatherController < ApplicationController
     info = {
       lat: lat.to_f,
       long: long.to_f,
-      start_date: start_date,
-      end_date: end_date,
+      start_date:,
+      end_date:,
       days_requested: (end_date - start_date).to_i,
       days_returned: values.count,
       compute_time: Time.current - start_time
@@ -47,9 +47,9 @@ class WeatherController < ApplicationController
     status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
 
     response = {
-      status: status,
-      info: info,
-      data: data
+      status:,
+      info:,
+      data:
     }
 
     respond_to do |format|
@@ -57,7 +57,7 @@ class WeatherController < ApplicationController
       format.json { render json: response }
       format.csv do
         filename = "weather data for #{lat}, #{long} for #{end_date}.csv"
-        send_data to_csv(response[:data], headers), filename: filename
+        send_data(to_csv(response[:data], headers), filename:)
       end
     end
   end
@@ -133,18 +133,18 @@ class WeatherController < ApplicationController
     }
 
     response = {
-      status: status,
-      info: info,
-      data: data
+      status:,
+      info:,
+      data:
     }
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status: status}.merge(info) unless params[:headers] == "false"
+        headers = {status:}.merge(info) unless params[:headers] == "false"
         filename = "weather data grid for #{@date}.csv"
-        send_data to_csv(response[:data], headers), filename: filename
+        send_data(to_csv(response[:data], headers), filename:)
       end
     end
   end

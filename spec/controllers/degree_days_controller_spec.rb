@@ -32,13 +32,13 @@ RSpec.describe DegreeDaysController, type: :controller do
     end
 
     it "is okay" do
-      get :index
+      get(:index)
       expect(response).to have_http_status(:ok)
     end
 
     context "when the request is valid" do
       it "has the correct response structure" do
-        get :index, params: params
+        get(:index, params:)
         expect(json.keys).to eq([:status, :info, :data])
         expect(json[:status]).to be_an(String)
         expect(json[:info]).to be_an(Hash)
@@ -47,7 +47,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it "returns valid data when units are C" do
-        get :index, params: params
+        get(:index, params:)
         data = json[:data].first
         expect(json[:info][:units]).to include("Celcius")
         expect(data[:min_temp]).to eq(8.9)
@@ -58,7 +58,7 @@ RSpec.describe DegreeDaysController, type: :controller do
 
       it "returns valid data when units are F" do
         params.delete(:units)
-        get :index, params: params
+        get(:index, params:)
         data = json[:data].first
         expect(json[:info][:units]).to include("Fahrenheit")
         expect(data[:min_temp]).to eq(48.0)
@@ -71,16 +71,16 @@ RSpec.describe DegreeDaysController, type: :controller do
         lat = 43.015
         long = -89.49
         params.update({
-          lat: lat,
-          long: long
+          lat:,
+          long:
         })
-        get :index, params: params
+        get(:index, params:)
         expect(json[:info][:lat]).to eq(lat.round(1))
         expect(json[:info][:long]).to eq(long.round(1))
       end
 
       it "can return a csv" do
-        get :index, params: params, as: :csv
+        get(:index, params:, as: :csv)
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -89,21 +89,21 @@ RSpec.describe DegreeDaysController, type: :controller do
     context "when the request is not valid" do
       it "and has no latitude return no content" do
         params.delete(:lat)
-        get :index, params: params
+        get(:index, params:)
         expect(json[:status]).to eq("no data")
         expect(json[:data]).to be_empty
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
-        get :index, params: params
+        get(:index, params:)
         expect(json[:status]).to eq("no data")
         expect(json[:data]).to be_empty
       end
 
       it "and has no method uses default method" do
         params.delete(:method)
-        get :index, params: params
+        get(:index, params:)
         expect(json[:info][:method]).to eq(DegreeDaysCalculator::METHOD)
       end
     end

@@ -44,7 +44,7 @@ class InsolationImporter
       next if val < 0
       next unless LandExtent.inside?(lat, long)
       insolations << Insolation.new(
-        date: date,
+        date:,
         latitude: lat,
         longitude: long,
         insolation: val
@@ -52,7 +52,7 @@ class InsolationImporter
     end
 
     Insolation.transaction do
-      Insolation.where(date: date).delete_all
+      Insolation.where(date:).delete_all
       Insolation.import(insolations)
     end
 

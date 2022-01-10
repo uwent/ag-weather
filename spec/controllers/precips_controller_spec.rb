@@ -11,7 +11,7 @@ RSpec.describe PrecipsController, type: :controller do
   describe "#index" do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:precip, latitude: lat, longitude: long, date:)
         FactoryBot.create(:precip_data_import, readings_on: date)
       end
     end
@@ -19,8 +19,8 @@ RSpec.describe PrecipsController, type: :controller do
     context "when request is valid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -65,8 +65,8 @@ RSpec.describe PrecipsController, type: :controller do
     context "when the request is invalid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -98,8 +98,8 @@ RSpec.describe PrecipsController, type: :controller do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:precip_data_import, readings_on: date)
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
-        FactoryBot.create(:precip, latitude: lat + 1, longitude: long + 1, date: date)
+        FactoryBot.create(:precip, latitude: lat, longitude: long, date:)
+        FactoryBot.create(:precip, latitude: lat + 1, longitude: long + 1, date:)
       end
     end
 
@@ -124,7 +124,7 @@ RSpec.describe PrecipsController, type: :controller do
         units = "in"
         file = Precip.image_name(date, nil, units)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: {id: date, units: units}
+        get :show, params: {id: date, units:}
         expect(json[:map]).to eq("/#{file}")
       end
 
@@ -132,7 +132,7 @@ RSpec.describe PrecipsController, type: :controller do
         start_date = Date.current - 1.month
         file = Precip.image_name(date, start_date)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: {id: date, start_date: start_date}
+        get :show, params: {id: date, start_date:}
         expect(json[:map]).to eq("/#{file}")
       end
 
@@ -173,7 +173,7 @@ RSpec.describe PrecipsController, type: :controller do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:precip_data_import, readings_on: date)
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:precip, latitude: lat, longitude: long, date:)
       end
     end
 

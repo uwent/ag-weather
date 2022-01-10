@@ -75,7 +75,7 @@ RSpec.describe Evapotranspiration, type: :model do
 
       FactoryBot.create(
         :evapotranspiration,
-        date: date,
+        date:,
         latitude: lat,
         longitude: long,
         potential_et: 23.4
@@ -100,7 +100,7 @@ RSpec.describe Evapotranspiration, type: :model do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, date: date, latitude: lat, longitude: long)
+        FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
         FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end

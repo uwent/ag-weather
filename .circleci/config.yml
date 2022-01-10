@@ -1,11 +1,11 @@
 version: 2.1
 orbs:
-  ruby: circleci/ruby@1.2.0
+  ruby: circleci/ruby@1.3.0
 
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.0.3-node
+      - image: cimg/ruby:3.1.0-node
         environment:
           PG_HOST: localhost
           PG_USER: postgres
@@ -19,7 +19,8 @@ jobs:
     executor: ruby/default
     steps:
       - checkout
-      - ruby/install-deps
+      - ruby/install-deps:
+          key: gems-v1
       - run:
           name: Install Dredd
           command: npm install dredd

@@ -15,26 +15,26 @@ class Station < ApplicationRecord
     avg_temp = (min_temp + max_temp) / 2.0
     wet_hours = hours.count { |h| h.wet_hour? }
     {
-      date: date,
+      date:,
       potato_late_blight_dsv: potato_late_blight_dsv_for(hours),
       min_temperature: min_temp.round(1),
       max_temperature: max_temp.round(1),
       avg_temperature: avg_temp.round(1),
-      wet_hours: wet_hours,
+      wet_hours:,
       p_days: PestForecast.potato_p_days(min_temp, max_temp).round(2)
     }
   end
 
   def add_or_update_observation(reading_on, hour, max_temp, min_temp, rh)
     observation = station_hourly_observations.where(
-      reading_on: reading_on,
-      hour: hour
+      reading_on:,
+      hour:
     ).first
     if observation.nil?
       station_hourly_observations <<
         StationHourlyObservation.create(
-          reading_on: reading_on,
-          hour: hour,
+          reading_on:,
+          hour:,
           max_temperature: max_temp,
           min_temperature: min_temp,
           relative_humidity: rh
@@ -49,14 +49,14 @@ class Station < ApplicationRecord
 
   def add_observation(reading_on, hour, max_temp, min_temp, rh)
     observation = station_hourly_observations.where(
-      reading_on: reading_on,
-      hour: hour
+      reading_on:,
+      hour:
     ).first
     return unless observation.nil?
     station_hourly_observations <<
       StationHourlyObservation.create(
-        reading_on: reading_on,
-        hour: hour,
+        reading_on:,
+        hour:,
         max_temperature: max_temp,
         min_temperature: min_temp,
         relative_humidity: rh

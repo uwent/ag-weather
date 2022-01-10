@@ -64,4 +64,11 @@ RSpec.describe DegreeDaysCalculator, type: :module do
       expect { DegreeDaysCalculator.calculate(10, 20, method: "foo") }.to raise_error(ArgumentError)
     end
   end
+
+  describe ".calculate_f" do
+    it "should convert F to C and send values to .calculate" do
+      expect(DegreeDaysCalculator).to receive(:calculate).exactly(1).times
+      DegreeDaysCalculator.calculate_f(38, 52, base: 50, upper: 86, method: "sine")
+    end
+  end
 end

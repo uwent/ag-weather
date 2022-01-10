@@ -3,7 +3,7 @@ require "open-uri"
 class WeatherImporter
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/urma/prod"
   LOCAL_BASE_DIR = "/tmp/gribdata"
-  KEEP_GRIB = ENV["KEEP_GRIB"] || false
+  KEEP_GRIB = ENV["KEEP_GRIB"] == "true" || false
   MAX_TRIES = 3
 
   def self.fetch
@@ -13,20 +13,23 @@ class WeatherImporter
   end
 
   def self.download(url, path)
-    case io = OpenURI::open_uri(url, open_timeout: 10, read_timeout: 60)
-    when StringIO then File.open(path, 'w') { |f| f.write(io.read) }
-    when Tempfile then io.close; FileUtils.mv(io.path, path)
+    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
+    when StringIO
+      File.write(path, io.read)
+    when Tempfile
+      io.close
+      FileUtils.mv(io.path, path)
     end
   end
 
   def self.local_dir(date)
-    savedir = "#{LOCAL_BASE_DIR}/#{date.to_s(:number)}"
+    savedir = "#{LOCAL_BASE_DIR}/#{date.to_formatted_s(:number)}"
     FileUtils.mkdir_p(savedir)
     savedir
   end
 
   def self.remote_url(date)
-    "#{REMOTE_URL_BASE}/urma2p5.#{date.to_s(:number)}"
+    "#{REMOTE_URL_BASE}/urma2p5.#{date.to_formatted_s(:number)}"
   end
 
   def self.remote_file_name(hour)
@@ -101,7 +104,7 @@ class WeatherImporter
         max_temperature: temperatures.max,
         min_temperature: temperatures.min,
         avg_temperature: weather_average(temperatures),
-        dew_point: dew_point,
+        dew_point:,
         vapor_pressure: dew_point_to_vapor_pressure(dew_point),
         hours_rh_over_85: relative_humidity_over(observations, 85.0),
         avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
@@ -137,6 +140,4 @@ class WeatherImporter
     return 0.0 if array.empty?
     (array.max + array.min) / 2.0
   end
-
-
 end

@@ -19,7 +19,7 @@ RSpec.describe PrecipImporter, type: :model do
     end
 
     it "should specify local filename" do
-      expect(PrecipImporter.local_file(date)).to eq("#{PrecipImporter::LOCAL_DIR}/#{date.to_s(:number)}.grb2")
+      expect(PrecipImporter.local_file(date)).to eq("#{PrecipImporter::LOCAL_DIR}/#{date.to_formatted_s(:number)}.grb2")
     end
 
     it "should create the file directory if it doesn't exist" do
@@ -31,14 +31,14 @@ RSpec.describe PrecipImporter, type: :model do
 
   describe ".remote_dir" do
     it "should specify the correct remote directory" do
-      dir = PrecipImporter::REMOTE_DIR_BASE + "/pcpanl.#{date.to_s(:number)}"
+      dir = PrecipImporter::REMOTE_DIR_BASE + "/pcpanl.#{date.to_formatted_s(:number)}"
       expect(PrecipImporter.remote_dir(date)).to eq(dir)
     end
   end
 
   describe ".remote_file" do
     it "should create the correct remote filename" do
-      file = "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+      file = "st4_conus.#{date.to_formatted_s(:number)}12.24h.grb2"
       expect(PrecipImporter.remote_file(date)).to eq(file)
     end
   end
@@ -47,7 +47,7 @@ RSpec.describe PrecipImporter, type: :model do
     it "should try to download the grib file" do
       allow(PrecipImporter).to receive(:download).and_return("file")
       allow(PrecipImporter).to receive(:import_precip_data).and_return("data")
-      expect(PrecipImporter).to receive(:download).with(/#{date.to_s(:number)}/, any_args).exactly(1).times
+      expect(PrecipImporter).to receive(:download).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(1).times
       PrecipImporter.fetch_day(date)
     end
   end

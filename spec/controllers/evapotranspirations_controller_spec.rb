@@ -11,7 +11,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   describe "#index" do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
         FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end
@@ -19,8 +19,8 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when request is valid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -59,8 +59,8 @@ RSpec.describe EvapotranspirationsController, type: :controller do
         lat = 43.015
         long = -89.49
         params.update({
-          lat: lat,
-          long: long
+          lat:,
+          long:
         })
         get :index, params: params
         expect(json[:info][:lat]).to eq(lat.round(1))
@@ -77,8 +77,8 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     context "when the request is invalid" do
       let(:params) {
         {
-          lat: lat,
-          long: long,
+          lat:,
+          long:,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -109,7 +109,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
         FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end
@@ -134,7 +134,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       it "returns the correct image when given starting date" do
         start_date = Date.current - 1.month
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
-        get :show, params: {id: date, start_date: start_date}
+        get :show, params: {id: date, start_date:}
         expect(json[:map]).to eq(url)
       end
 
@@ -175,24 +175,24 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     let(:date) { latest_date }
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date: date)
+        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
         FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
       end
     end
 
     context "when the request is valid" do
       it "is okay" do
-        get :all_for_date, params: {date: date}
+        get :all_for_date, params: {date:}
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get :all_for_date, params: {date: date}
+        get :all_for_date, params: {date:}
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
-        get :all_for_date, params: {date: date}
+        get :all_for_date, params: {date:}
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -200,7 +200,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       end
 
       it "can return a csv" do
-        get :all_for_date, params: {date: date}, as: :csv
+        get :all_for_date, params: {date:}, as: :csv
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end

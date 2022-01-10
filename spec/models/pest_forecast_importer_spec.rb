@@ -26,7 +26,7 @@ RSpec.describe PestForecastImporter, type: :model do
       end
 
       it "adds a new pest forecast record" do
-        FactoryBot.create(:weather_datum, date: date)
+        FactoryBot.create(:weather_datum, date:)
         expect { action }.to change(PestForecast, :count)
       end
     end

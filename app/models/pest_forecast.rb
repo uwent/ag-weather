@@ -131,7 +131,7 @@ class PestForecast < ApplicationRecord
       end
 
       Rails.logger.info "PestForecast :: Creating #{pest} image for #{start_date} - #{end_date}"
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value:, max_value:)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{pest}: No data"
       "no_data.png"
@@ -143,7 +143,7 @@ class PestForecast < ApplicationRecord
     fmt2 = "%b %d, %Y"
     fmt1 = start_date.year != end_date.year ? fmt2 : "%b %d"
     title = pest_title + " accumulation from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
-    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
     file += "-wi" if wi_only
     file += ".png"
@@ -183,7 +183,7 @@ class PestForecast < ApplicationRecord
       end
 
       Rails.logger.info "PestForecast :: Creating #{model} image for #{start_date} - #{end_date}"
-      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value: min_value, max_value: max_value)
+      ImageCreator.create_image(grid, title, file, subdir: pest_map_dir, min_value:, max_value:)
     else
       Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
       "no_data.png"
@@ -201,7 +201,7 @@ class PestForecast < ApplicationRecord
     fmt2 = "%b %d, %Y"
     fmt1 = start_date.year != end_date.year ? fmt2 : "%b %d"
     title = "Degree day totals for #{model_name} from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
-    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
     file += "-wi" if wi_only
     file += ".png"

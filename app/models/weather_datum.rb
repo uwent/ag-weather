@@ -38,6 +38,7 @@ class WeatherDatum < ApplicationRecord
     grid
   end
 
+  # Calculates degree days for land grid since date
   def self.calculate_all_degree_days(
     date,
     base: DegreeDaysCalculator::BASE_F,
@@ -48,9 +49,9 @@ class WeatherDatum < ApplicationRecord
     dd_grid = LandGrid.new
     LandExtent.each_point do |lat, long|
       next if temp_grid[lat, long].nil?
-      dd = temp_grid[lat, long].collect do |weather_day|
-        weather_day.degree_days(method, base, upper)
-      end.sum
+      dd = temp_grid[lat, long].collect do |w|
+        w.degree_days(base, upper, method)
+      end.sum(0)
       dd_grid[lat, long] = dd
     end
     dd_grid
@@ -60,13 +61,13 @@ class WeatherDatum < ApplicationRecord
   def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
     min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
     max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
-    dd = DegreeDaysCalculator.calculate(min, max, base: base, upper: upper, method: method)
+    dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)
     [0, dd].max unless dd.nil?
   end
 
   def self.land_grid_for_date(date)
     grid = LandGrid.new
-    where(date: date).each do |w|
+    where(date:).each do |w|
       lat, long = w.latitude, w.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = w
@@ -75,7 +76,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.create_image(date, units: "F")
-    weather = where(date: date)
+    weather = where(date:)
     raise StandardError.new("No data") if weather.size == 0
     title = image_title(date, units)
     file = image_name(date, units)
@@ -97,7 +98,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.image_name(date, units = "F")
-    "mean-air-temp-#{units.downcase}-#{date.to_s(:number)}.png"
+    "mean-air-temp-#{units.downcase}-#{date.to_formatted_s(:number)}.png"
   end
 
   def self.image_title(date, units = "F")

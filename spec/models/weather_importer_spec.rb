@@ -58,15 +58,15 @@ RSpec.describe WeatherImporter, type: :model do
 
     # folder changes due to NOAA server storing files in UTC time and we are in CST
     it "should set the appropriate base URL on the remote server" do
-      expect(WeatherImporter).to receive(:download).with(/#{date.to_s(:number)}/, any_args).exactly(18).times
-      expect(WeatherImporter).to receive(:download).with(/#{(date + 1.day).to_s(:number)}/, any_args).exactly(6).times
+      expect(WeatherImporter).to receive(:download).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
+      expect(WeatherImporter).to receive(:download).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
       WeatherImporter.fetch_day(date)
     end
   end
 
   describe "load the database for a date" do
     let(:weather_day) { instance_double("WeatherDay") }
-    
+
     before(:each) do
       allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(date))
       allow(weather_day).to receive(:temperatures_at)

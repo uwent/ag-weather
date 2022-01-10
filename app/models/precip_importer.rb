@@ -2,10 +2,9 @@ require "open-uri"
 require "open3"
 
 class PrecipImporter
-
   REMOTE_DIR_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
   LOCAL_DIR = "/tmp/gribdata/precip"
-  KEEP_GRIB = ENV["KEEP_GRIB"] || false
+  KEEP_GRIB = ENV["KEEP_GRIB"] == "true" || false
 
   def self.fetch
     PrecipDataImport.days_to_load.each do |day|
@@ -14,23 +13,26 @@ class PrecipImporter
   end
 
   def self.download(url, path)
-    case io = OpenURI::open_uri(url, open_timeout: 10, read_timeout: 60)
-    when StringIO then File.open(path, 'w') { |f| f.write(io.read) }
-    when Tempfile then io.close; FileUtils.mv(io.path, path)
+    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
+    when StringIO
+      File.write(path, io.read)
+    when Tempfile
+      io.close
+      FileUtils.mv(io.path, path)
     end
   end
 
   def self.local_file(date)
     FileUtils.mkdir_p(LOCAL_DIR)
-    "#{LOCAL_DIR}/#{date.to_s(:number)}.grb2"
+    "#{LOCAL_DIR}/#{date.to_formatted_s(:number)}.grb2"
   end
 
   def self.remote_dir(date)
-    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_s(:number)}"
+    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
   end
 
   def self.remote_file(date)
-    "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+    "st4_conus.#{date.to_formatted_s(:number)}12.24h.grb2"
   end
 
   def self.fetch_day(date)
@@ -40,7 +42,6 @@ class PrecipImporter
     Rails.logger.info "PrecipImporter :: Fetching precip data for #{date}..."
     file_url = remote_dir(date) + "/" + remote_file(date)
     local_file = local_file(date)
-    temp_file = local_file + "_part"
 
     if File.exist?(local_file)
       Rails.logger.debug "File #{local_file} ==> Exists"
@@ -106,7 +107,7 @@ class PrecipImporter
     precip_data = []
     data.each_point do |lat, long|
       precip_data << Precip.new(
-        date: date,
+        date:,
         latitude: lat,
         longitude: long,
         precip: data[lat, long]
@@ -114,7 +115,7 @@ class PrecipImporter
     end
 
     Precip.transaction do
-      Precip.where(date: date).delete_all
+      Precip.where(date:).delete_all
       Precip.import(precip_data)
     end
   end

@@ -27,7 +27,7 @@ class PestForecastImporter
     end
 
     PestForecast.transaction do
-      PestForecast.where(date: date).delete_all
+      PestForecast.where(date:).delete_all
       PestForecast.import(forecasts)
     end
 
