@@ -5,7 +5,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.0.3-node
+      - image: cimg/ruby:3.1.0-node
         environment:
           PG_HOST: localhost
           PG_USER: postgres
@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps:
-          key: gems-v2
+          key: gems-v1
       - run:
           name: Install Dredd
           command: npm install dredd
