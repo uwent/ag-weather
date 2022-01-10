@@ -11,6 +11,7 @@ jobs:
           PG_USER: postgres
           RAILS_ENV: test
           RACK_ENV: test
+          CACHE_VERSION: v2
       - image: circleci/postgres:12.8
         environment:
           POSTGRES_USER: postgres
