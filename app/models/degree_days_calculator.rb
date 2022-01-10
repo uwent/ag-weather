@@ -9,7 +9,7 @@ class DegreeDaysCalculator
 
   # Min, max in Fahrenheit
   def self.calculate_f(min, max, base: BASE_F, upper: UPPER_F, method: METHOD)
-    calculate(f_to_c(min), f_to_c(max), base: base, upper: upper, method: method)
+    calculate(UnitConverter.f_to_c(min), UnitConverter.f_to_c(max), base: base, upper: upper, method: method)
   end
 
   # Min, max in Fahrenheit

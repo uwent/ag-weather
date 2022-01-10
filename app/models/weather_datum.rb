@@ -38,6 +38,7 @@ class WeatherDatum < ApplicationRecord
     grid
   end
 
+  # Calculates degree days for land grid since date
   def self.calculate_all_degree_days(
     date,
     base: DegreeDaysCalculator::BASE_F,
@@ -48,9 +49,9 @@ class WeatherDatum < ApplicationRecord
     dd_grid = LandGrid.new
     LandExtent.each_point do |lat, long|
       next if temp_grid[lat, long].nil?
-      dd = temp_grid[lat, long].collect do |weather_day|
-        weather_day.degree_days(method, base, upper)
-      end.sum
+      dd = temp_grid[lat, long].collect do |w|
+        w.degree_days(base, upper, method)
+      end.sum(0)
       dd_grid[lat, long] = dd
     end
     dd_grid
@@ -97,7 +98,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.image_name(date, units = "F")
-    "mean-air-temp-#{units.downcase}-#{date.to_s(:number)}.png"
+    "mean-air-temp-#{units.downcase}-#{date.to_formatted_s(:number)}.png"
   end
 
   def self.image_title(date, units = "F")

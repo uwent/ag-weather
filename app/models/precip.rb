@@ -45,8 +45,8 @@ class Precip < ApplicationRecord
   end
 
   def self.image_name(date, start_date = nil, units = "mm")
-    name = "precip-#{units}-#{date.to_s(:number)}"
-    name += "-#{start_date.to_s(:number)}" unless start_date.nil?
+    name = "precip-#{units}-#{date.to_formatted_s(:number)}"
+    name += "-#{start_date.to_formatted_s(:number)}" unless start_date.nil?
     name + ".png"
   end
 

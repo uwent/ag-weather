@@ -143,7 +143,7 @@ class PestForecast < ApplicationRecord
     fmt2 = "%b %d, %Y"
     fmt1 = start_date.year != end_date.year ? fmt2 : "%b %d"
     title = pest_title + " accumulation from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
-    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
     file += "-wi" if wi_only
     file += ".png"
@@ -201,7 +201,7 @@ class PestForecast < ApplicationRecord
     fmt2 = "%b %d, %Y"
     fmt1 = start_date.year != end_date.year ? fmt2 : "%b %d"
     title = "Degree day totals for #{model_name} from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
-    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_s(:number)}-#{end_date.to_s(:number)}"
+    file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
     file += "-wi" if wi_only
     file += ".png"

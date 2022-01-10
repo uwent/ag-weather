@@ -20,13 +20,13 @@ class WeatherImporter
   end
 
   def self.local_dir(date)
-    savedir = "#{LOCAL_BASE_DIR}/#{date.to_s(:number)}"
+    savedir = "#{LOCAL_BASE_DIR}/#{date.to_formatted_s(:number)}"
     FileUtils.mkdir_p(savedir)
     savedir
   end
 
   def self.remote_url(date)
-    "#{REMOTE_URL_BASE}/urma2p5.#{date.to_s(:number)}"
+    "#{REMOTE_URL_BASE}/urma2p5.#{date.to_formatted_s(:number)}"
   end
 
   def self.remote_file_name(hour)

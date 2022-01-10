@@ -114,10 +114,10 @@ RSpec.describe WeatherDatum, type: :model do
     end
 
     it "should call degree days for each point with data" do
-      FactoryBot.create(:weather_datum, latitude: 42, longitude: -93)
-      FactoryBot.create(:weather_datum, latitude: 43, longitude: -93)
+      FactoryBot.create(:weather_datum, latitude: 42, longitude: -93, date: Date.yesterday)
+      FactoryBot.create(:weather_datum, latitude: 45, longitude: -90, date: Date.yesterday)
 
-      expect(DegreeDaysCalculator).to receive(:calculate).exactly(2).times
+      expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
       WeatherDatum.calculate_all_degree_days(10.days.ago)
     end
 

@@ -22,15 +22,15 @@ class PrecipImporter
 
   def self.local_file(date)
     FileUtils.mkdir_p(LOCAL_DIR)
-    "#{LOCAL_DIR}/#{date.to_s(:number)}.grb2"
+    "#{LOCAL_DIR}/#{date.to_formatted_s(:number)}.grb2"
   end
 
   def self.remote_dir(date)
-    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_s(:number)}"
+    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
   end
 
   def self.remote_file(date)
-    "st4_conus.#{date.to_s(:number)}12.24h.grb2"
+    "st4_conus.#{date.to_formatted_s(:number)}12.24h.grb2"
   end
 
   def self.fetch_day(date)
