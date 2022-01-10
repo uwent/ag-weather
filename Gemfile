@@ -6,15 +6,10 @@ gem "activesupport", "~> 7.0"
 gem "pg", "~> 1.2"
 gem "activerecord-import", "~> 1.2"
 gem "agwx_biophys", "0.0.4"
-gem "coffee-rails", "~> 5.0"
 gem "httparty", "~> 0.20"
 gem "jbuilder", "~> 2.11"
-gem "jquery-rails", "~> 4.4"
 gem "json", "~> 2.6"
-gem "nokogiri", ">= 1.12.5" # per security vulnerability
 gem "sassc-rails", "~> 2.1"
-gem "turbolinks", "~> 5.2"
-gem "uglifier", "~> 4.2"
 gem "whenever", "~> 1.0"
 
 group :development do
