@@ -4,9 +4,9 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Image generation and service configuration
-  config.x.image.temp_directory = "tmp"
-  config.x.image.file_dir = "public/dev"
-  config.x.image.url_path = "/dev"
+  config.x.image.temp_directory = "tmp/dev_image_dir"
+  config.x.image.file_dir = "public/dev_image_dir"
+  config.x.image.url_path = "/dev_image_dir"
 
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
