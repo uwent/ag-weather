@@ -22,12 +22,12 @@ RSpec.describe ImageCreator, type: :module do
 
   describe "generate a random filename" do
     it "should start with the rail configured directory" do
-      Rails.configuration.x.image.temp_directory = "/foo/bar"
-      expect(ImageCreator.temp_filename("baz")).to start_with("/foo/bar")
+      Rails.configuration.x.image.temp_directory = "/tmp/foo"
+      expect(ImageCreator.temp_filename("bar")).to start_with("/tmp/foo")
     end
 
     it "should end with the value passed in" do
-      expect(ImageCreator.temp_filename("baz")).to end_with(".baz")
+      expect(ImageCreator.temp_filename("foo")).to end_with(".foo")
     end
   end
 
