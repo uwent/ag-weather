@@ -35,6 +35,8 @@ class ImageCreator
   end
 
   def self.create_image(grid, title, image_name, subdir: "", min_value: nil, max_value: nil)
+    return "no_data.png" if grid.empty?
+
     data_min = grid.min.round(3)
     data_max = grid.max.round(3)
     auto_min, auto_max = min_max(grid.min, grid.max)
@@ -47,7 +49,6 @@ class ImageCreator
 
     datafile_name = create_data_file(grid)
     image_name = generate_image_file(datafile_name, image_name, subdir, title, min, max, grid.extents)
-    File.delete(datafile_name)
     image_name
   end
 
@@ -65,6 +66,7 @@ class ImageCreator
     data_filename
   end
 
+  # TODO: Maybe split the gnuplot and imagemagick calls into separate functions.
   def self.generate_image_file(datafile_name, image_name, subdir, title, min_value, max_value, extents)
     temp_image = temp_filename("png")
     image_dir = File.join(file_dir, subdir)
@@ -92,7 +94,9 @@ class ImageCreator
     image_name
   rescue => e
     FileUtils.rm_f([datafile_name, temp_image])
-    Rails.logger.error "ImageCreator :: Failed to create image: #{e.message}"
+    Rails.logger.error "ImageCreator :: Failed to create image: #{e.message}\n" +
+      "Gnuplot cmd: #{gnuplot_cmd}\n" +
+      "ImageMagick cmd: #{image_cmd}"
     "no_data.png"
   end
 end

@@ -9,8 +9,8 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Image generation and service configuration
-  config.x.image.temp_directory = "tmp"
-  config.x.image.file_dir = "public/test_image_dir"
+  config.x.image.temp_directory = "tmp/image_creator"
+  config.x.image.file_dir = "tmp/test_image_dir"
 
   # Turn false under Spring and add config.action_view.cache_template_loading = true.
   config.cache_classes = false

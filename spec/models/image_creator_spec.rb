@@ -55,10 +55,16 @@ RSpec.describe ImageCreator, type: :module do
     it "should call gnuplot and imagemagick" do
       allow(File).to receive(:delete)
       allow(ImageCreator).to receive(:temp_filename).and_return("/foo.png")
-      # allow(Kernel).to receive(:`).and_return(0)
       expect(ImageCreator).to receive(:`).exactly(2).times
-
       ImageCreator.generate_image_file("foo.dat", "bar.png", "", "some title", 0, 100, [1, 2, 3, 4])
+    end
+
+    it "should rescue on error" do
+      allow(ImageCreator).to receive(:`).and_raise(StandardError.new)
+      expect(ImageCreator).to receive(:`).exactly(1).times
+      expect(
+        ImageCreator.generate_image_file("foo.dat", "bar.png", "", "some title", 0, 100, [1, 2, 3, 4])
+      ).to eq("no_data.png")
     end
   end
 end
