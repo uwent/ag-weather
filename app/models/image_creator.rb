@@ -78,18 +78,20 @@ class ImageCreator
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min_value}; max_val=#{max_value}; x_min=#{extents[0]}; x_max=#{extents[1]}; y_min=#{extents[2]}; y_max=#{extents[3]}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
     Rails.logger.debug ">> gnuplot cmd: #{gnuplot_cmd}"
     `#{gnuplot_cmd}`
+    FileUtils.rm_f(datafile_name)
     raise StandardError.new("ImageCreator :: Gnuplot execution failed!") if $?.exitstatus == 1
 
     # Image Magick
     image_cmd = "composite '#{overlay_image}' '#{temp_image}' '#{image_path}'"
     Rails.logger.debug ">> imagemagick cmd: #{image_cmd}"
     `#{image_cmd}`
-
+    FileUtils.rm_f(temp_image)
     raise StandardError.new("ImageCreator :: ImageMagick execution failed!") if $?.exitstatus == 1
     Rails.logger.debug "ImageCreator :: Created image #{image_path}"
-    File.delete(temp_image)
+    
     image_name
   rescue => e
+    FileUtils.rm_f([datafile_name, temp_image])
     Rails.logger.error "ImageCreator :: Failed to create image: #{e.message}"
     "no_data.png"
   end
