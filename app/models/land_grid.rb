@@ -57,6 +57,10 @@ class LandGrid
     (latitudes === lat) && (longitudes === long)
   end
 
+  def empty?
+    self.min.nil? && self.max.nil?
+  end
+
   def each_point
     latitudes.step(@step).each do |lat|
       longitudes.step(@step).each do |long|
