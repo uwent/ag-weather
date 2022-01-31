@@ -12,6 +12,7 @@ class ImageCreator
   end
 
   def self.temp_filename(suffix)
+    FileUtils.mkdir_p(temp_dir)
     File.join(temp_dir, "#{SecureRandom.urlsafe_base64(8)}.#{suffix}")
   end
 
