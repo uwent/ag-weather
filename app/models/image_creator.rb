@@ -86,7 +86,7 @@ class ImageCreator
     `#{gnuplot_cmd}`
 
     FileUtils.rm_f(datafile_name)
-    raise StandardError.new("ImageCreator :: Gnuplot execution failed!") if $?.exitstatus != 0
+    raise StandardError.new("Gnuplot execution failed with status: #{$?.exitstatus}") if $?.exitstatus != 0
     temp_image
   end
 
@@ -101,7 +101,7 @@ class ImageCreator
     `#{image_cmd}`
 
     FileUtils.rm_f(gnuplot_image)
-    raise StandardError.new("ImageCreator :: ImageMagick execution failed!") if $?.exitstatus != 0
+    raise StandardError.new("ImageMagick execution failed with status: #{$?.exitstatus}") if $?.exitstatus != 0
     image_name
   end
 end

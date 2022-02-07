@@ -34,8 +34,8 @@ RSpec.describe ImageCreator, type: :module do
   describe "create data file" do
     let(:file_mock) { instance_double("File") }
     before(:each) do
-      @land_grid = LandGrid.wi_mn_grid
-      WiMn.each_point { |lat, long| @land_grid[lat, long] = 0.0 }
+      @land_grid = LandGrid.wisconsin_grid
+      @land_grid.each_point { |lat, long| @land_grid[lat, long] = 0.0 }
     end
 
     it "should write to a datafile" do
