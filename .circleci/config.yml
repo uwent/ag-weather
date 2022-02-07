@@ -4,8 +4,8 @@ orbs:
 
 dependencies:
   pre:
-    - gnuplot () { :; }
-    - composite () { :; }
+    - sudo apt install gnuplot
+    - sudo apt install imagemagick
 
 jobs:
   build:
