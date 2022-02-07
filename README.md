@@ -49,12 +49,12 @@ pip install ecCodes
 grib_get_data # confirm it works
 ```
 
-`gnuplot` and `imagemagicks` for Insolation and Evapotranspiration map creation
+`gnuplot` and `imagemagick` for map image creation
 ```bash
-sudo apt -y install gnuplot
+sudo apt -y install gnuplot-qt
 gnuplot # confirm it works
 
-sudo apt -y install imagemagick
+sudo apt -y install imagemagick-6.q16
 composite # confirm it works
 ```
 

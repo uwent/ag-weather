@@ -25,6 +25,11 @@ jobs:
           name: Install Dredd
           command: npm install dredd
       - run:
+          name: Install gnuplot and imagemagick
+          command: |
+            sudo apt update
+            sudo apt -y install gnuplot-qt imagemagick-6.q16
+      - run:
           name: Set up database
           command: bundle exec rails db:setup
       - run:

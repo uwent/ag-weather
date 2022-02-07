@@ -61,6 +61,22 @@ class LandGrid
     self.min.nil? && self.max.nil?
   end
 
+  def num_latitudes
+    latitudes.step(@step).count
+  end
+
+  def num_longitudes
+    longitudes.step(@step).count
+  end
+
+  def num_points
+    num_latitudes * num_longitudes
+  end
+
+  def size
+    num_points
+  end
+
   def each_point
     latitudes.step(@step).each do |lat|
       longitudes.step(@step).each do |long|
