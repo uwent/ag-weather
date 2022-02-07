@@ -2,11 +2,6 @@ version: 2.1
 orbs:
   ruby: circleci/ruby@1.3.0
 
-dependencies:
-  pre:
-    - sudo apt install gnuplot
-    - sudo apt install imagemagick
-
 jobs:
   build:
     docker:
@@ -29,6 +24,11 @@ jobs:
       - run:
           name: Install Dredd
           command: npm install dredd
+      - run:
+          name: Install gnuplot and imagemagick
+          command: |
+            sudo apt install gnuplot
+            sudo apt install imagemagick
       - run:
           name: Set up database
           command: bundle exec rails db:setup
