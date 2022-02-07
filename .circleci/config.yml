@@ -27,8 +27,8 @@ jobs:
       - run:
           name: Install gnuplot and imagemagick
           command: |
-            sudo apt install gnuplot
-            sudo apt install imagemagick
+            sudo apt -y install gnuplot-qt
+            sudo apt -y install imagemagick-6.q16
       - run:
           name: Set up database
           command: bundle exec rails db:setup
