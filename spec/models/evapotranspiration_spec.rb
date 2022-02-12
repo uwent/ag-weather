@@ -92,7 +92,7 @@ RSpec.describe Evapotranspiration, type: :model do
   end
 
   describe "create image for date" do
-    let(:earliest_date) { Date.current - 1.weeks }
+    let(:earliest_date) { Date.current - 1.week }
     let(:latest_date) { Date.current }
     let(:empty_date) { earliest_date - 1.week }
     let(:lat) { 45.0 }

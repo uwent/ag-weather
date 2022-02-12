@@ -61,7 +61,7 @@ class DataImport < ApplicationRecord
   end
 
   # run this from console
-  def self.check_statuses(start_date = earliest_date(), end_date = Date.yesterday)
+  def self.check_statuses(start_date = earliest_date, end_date = latest_date)
     message = []
     count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"

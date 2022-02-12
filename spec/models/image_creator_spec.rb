@@ -35,7 +35,7 @@ RSpec.describe ImageCreator, type: :module do
     let(:file_mock) { instance_double("File") }
     before(:each) do
       @land_grid = LandGrid.wisconsin_grid
-      @land_grid.each_point { |lat, long| @land_grid[lat, long] = 0.0 }
+      @land_grid.each_point { |lat, long| @land_grid[lat, long] = rand(0..10) }
     end
 
     it "should write to a datafile" do

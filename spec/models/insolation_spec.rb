@@ -28,21 +28,31 @@ RSpec.describe Insolation, type: :model do
   end
 
   describe "create image for date" do
-    let(:date) { Date.yesterday }
+    let(:earliest_date) { Date.current - 1.week }
+    let(:latest_date) { Date.current }
+    let(:empty_date) { earliest_date - 1.week }
 
-    before do
-      FactoryBot.create(:insolation_data_import, readings_on: date)
-      FactoryBot.create(:insolation, date:)
+    before(:each) do
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:insolation_data_import, readings_on: date)
+        FactoryBot.create(:insolation, date: date)
+      end
     end
 
     it "should call ImageCreator when data sources loaded" do
       expect(Insolation).to receive(:create_image_data).exactly(1).times
       expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Insolation.create_image(date)
+      Insolation.create_image(latest_date)
+    end
+
+    it "should create a cumulative data grid when given a date range" do
+      expect(Insolation).to receive(:create_image_data).exactly(1).times
+      expect(ImageCreator).to receive(:create_image).exactly(1).times
+      Insolation.create_image(latest_date, start_date: earliest_date)
     end
 
     it "should return 'no_data.png' when data sources not loaded" do
-      expect(Insolation.create_image(date - 1.day)).to eq("no_data.png")
+      expect(Insolation.create_image(empty_date)).to eq("no_data.png")
     end
   end
 end
