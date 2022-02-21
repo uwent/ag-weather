@@ -220,4 +220,25 @@ module PestModels
       7
     end
   end
+
+  # implementation of equations in Carisse 2012
+  # lw is the number of hours over the past 96 hours where rh > 90%
+  # t is the average temperature over that time period
+  def compute_botrytis_pmi(lw, t)
+    # puts lw = weather.hours_rh_over_90
+    # puts t = weather.avg_temp_rh_over_90 || 0
+    c = 8.0
+    return 0 if lw <= c
+    e = 1.001 # maximum response
+    f = 21.045 # location parameter proportional to the optimum temperature
+    g = 0.4954 # intrinsic rate of decline from the maximum as the temperature departs from the optimum
+    h = 2.1529 # degree of asymmetry of the curve
+    b = 0.026
+    d = 1.999
+    puts e_prime = e * ((h + 1) / h) * (h ** (1 / (h + 1)))
+    puts a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
+    puts pmi = a * (1 - Math.exp(-1 * ((b * (lw - c)) ** d)))
+    pmi
+  end
+
 end
