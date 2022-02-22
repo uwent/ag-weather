@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_10_164857) do
-
+ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -47,8 +46,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.string "type"
     t.date "readings_on", null: false
     t.string "status", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "message"
   end
 
@@ -57,8 +56,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["date"], name: "index_evapotranspirations_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_evapotranspirations_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude"
@@ -69,8 +68,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["date"], name: "index_insolations_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_insolations_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude"
@@ -82,8 +81,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.decimal "longitude", precision: 10, scale: 6
     t.integer "potato_blight_dsv"
     t.integer "carrot_foliar_dsv"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.float "dd_48_none"
     t.float "dd_50_86"
     t.float "dd_54_92"
@@ -104,6 +103,7 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.boolean "frost", default: false
     t.boolean "freeze", default: false
     t.float "dd_32_none"
+    t.integer "botcast_dsi", default: 0
     t.index ["date"], name: "index_pest_forecasts_on_date"
     t.index ["latitude", "longitude", "date"], name: "index_pest_forecasts_on_latitude_and_longitude_and_date", unique: true
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
@@ -140,8 +140,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.string "name"
     t.string "email"
     t.boolean "admin"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "weather_data", force: :cascade do |t|
@@ -152,8 +152,8 @@ ActiveRecord::Schema.define(version: 2022_01_10_164857) do
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
     t.date "date"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "hours_rh_over_85"
     t.float "avg_temp_rh_over_85"
     t.float "avg_temp_rh_over_90"
