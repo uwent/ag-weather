@@ -1,11 +1,11 @@
 require "rails_helper"
 
 RSpec.describe PestForecastImporter, type: :model do
-  let(:date) { Date.current }
+  let(:date) { Date.yesterday }
 
   describe ".create_forecast_data" do
     it "calls pest forecasts for every day returned by DataImport" do
-      unloaded_days = [Date.yesterday, Date.current - 2.days]
+      unloaded_days = [date, date - 2.days]
       allow(PestForecastDataImport).to receive(:days_to_load).and_return(unloaded_days)
       expect(PestForecastImporter).to receive(:calculate_forecast_for_date).exactly(unloaded_days.count).times
 
@@ -26,7 +26,7 @@ RSpec.describe PestForecastImporter, type: :model do
       end
 
       it "adds a new pest forecast record" do
-        FactoryBot.create(:weather_datum, date:)
+        FactoryBot.create(:weather_datum, date: date)
         expect { action }.to change(PestForecast, :count)
       end
     end

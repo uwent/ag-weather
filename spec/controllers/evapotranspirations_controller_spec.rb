@@ -6,7 +6,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   let(:long) { -98.0 }
   let(:latest_date) { DataImport.latest_date }
   let(:earliest_date) { latest_date - 1.week }
-  let(:empty_date) { earliest_date - 1.week }
+  let(:empty_date) { earliest_date - 1.month }
 
   describe "#index" do
     before(:each) do
@@ -108,9 +108,9 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     let(:url) { "/#{image_name}" }
 
     before(:each) do
-      earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
-        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+      earliest_date.upto(latest_date) do |day|
+        FactoryBot.create(:evapotranspiration, date: day, latitude: lat, longitude: long)
+        FactoryBot.create(:evapotranspiration_data_import, readings_on: day)
       end
     end
 

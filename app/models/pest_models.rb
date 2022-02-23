@@ -281,12 +281,12 @@ module PestModels
   end
 
   def compute_botcast_dsi(weather)
-    lw = weather.hours_rh_over_90
+    lw = weather.hours_rh_over_90 || 0
     t = weather.avg_temp_rh_over_90 || 0
     dinov = compute_botcast_dinov(lw, t)
     dinfv = compute_botcast_dinfv(lw, t)
     dsi = dinov * dinfv
-    Rails.logger.debug "Botcast: lw=#{lw}, t=#{t}, dinov=#{dinov}, dinfv=#{dinfv}, dsi=#{dsi}"
+    # Rails.logger.debug "Botcast: lw=#{lw}, t=#{t}, dinov=#{dinov}, dinfv=#{dinfv}, dsi=#{dsi}"
     return dsi
   end
 end

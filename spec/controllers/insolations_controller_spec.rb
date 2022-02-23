@@ -6,7 +6,7 @@ RSpec.describe InsolationsController, type: :controller do
   let(:long) { -98.0 }
   let(:latest_date) { DataImport.latest_date }
   let(:earliest_date) { latest_date - 1.week }
-  let(:empty_date) { earliest_date - 1.week }
+  let(:empty_date) { earliest_date - 1.month }
 
   describe "#index" do
     before(:each) do
