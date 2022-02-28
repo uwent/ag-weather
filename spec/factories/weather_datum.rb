@@ -7,5 +7,7 @@ FactoryBot.define do
     min_temperature { 8.9 }
     avg_temperature { 10.7 }
     vapor_pressure { 1.6 }
+    hours_rh_over_90 { 4 }
+    avg_temp_rh_over_90 { 15 }
   end
 end

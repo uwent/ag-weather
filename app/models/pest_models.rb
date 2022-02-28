@@ -220,4 +220,73 @@ module PestModels
       7
     end
   end
+
+  # implementation of equations in Carisse 2012
+  # lw is the number of hours over the past 96 hours where rh > 90%
+  # t is the average temperature over that time period
+  def compute_botrytis_pmi(lw, t)
+    # puts lw = weather.hours_rh_over_90
+    # puts t = weather.avg_temp_rh_over_90 || 0
+    c = 8.0
+    return 0 if lw <= c
+    e = 1.001 # maximum response
+    f = 21.045 # location parameter proportional to the optimum temperature
+    g = 0.4954 # intrinsic rate of decline from the maximum as the temperature departs from the optimum
+    h = 2.1529 # degree of asymmetry of the curve
+    b = 0.026
+    d = 1.999
+    puts e_prime = e * ((h + 1) / h) * (h ** (1 / (h + 1)))
+    puts a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
+    puts pmi = a * (1 - Math.exp(-1 * ((b * (lw - c)) ** d)))
+    pmi
+  end
+
+  # implementation of botcast in Sutton et al 1986
+  # temp in celcius
+  # these conditions were read from the chart in the paper
+  def compute_botcast_dinfv(lw, t)
+    return 0 if lw <= 6
+    return 0 if t <= 6 || t >= 28
+
+    # dinfv = 2
+    if (lw >= 22 && t <= 7) ||
+      (lw >= 15 && t <= 25) ||
+      (lw >= 15 && t >= 11 && t <= 16.5) ||
+      (lw >= 10 && t >= 13.5 && t <= 16.5)
+      return 2
+    end
+
+    # dinfv = 0
+    if (lw <= 12 && t <= 9) ||
+      (lw <= 15 && t >= 26) ||
+      (
+        ((6 <= lw) && (lw <= 12)) &&
+        ((9 <= t) && (t <= 15)) &&
+        ((lw - 12) < (9 - t))
+      ) ||
+      (lw <= 7 && t >= 24)
+      return 0
+    end
+
+    return 1
+  end
+
+  def compute_botcast_dinov(lw, t)
+    return 0 if t >= 30
+    return 0 if lw < 5
+    return 1 if lw > 12
+
+    # the final condition requires previous day humidity and precipitation which would add a lot of complexity
+    return 1
+  end
+
+  def compute_botcast_dsi(weather)
+    lw = weather.hours_rh_over_90 || 0
+    t = weather.avg_temp_rh_over_90 || 0
+    dinov = compute_botcast_dinov(lw, t)
+    dinfv = compute_botcast_dinfv(lw, t)
+    dsi = dinov * dinfv
+    # Rails.logger.debug "Botcast: lw=#{lw}, t=#{t}, dinov=#{dinov}, dinfv=#{dinfv}, dsi=#{dsi}"
+    return dsi
+  end
 end
