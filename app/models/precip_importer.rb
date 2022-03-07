@@ -93,11 +93,7 @@ class PrecipImporter
       hourly_precips[i] = load_grib(file)
     end
 
-    precip_totals = LandGrid.new
-    precip_totals.each_point do |lat, long|
-      precip_totals[lat, long] = 0.0
-    end
-
+    precip_totals = LandGrid.new(default: 0.0)
     hourly_precips.each do |grid|
       grid.each_point do |lat, long|
         precip_totals[lat, long] += grid[lat, long]
@@ -111,6 +107,7 @@ class PrecipImporter
 
   def self.load_grib(grib)
     data = LandGrid.new
+    # can't use LandGrid's default because all the arrays would be the same object
     data.each_point do |lat, long|
       data[lat, long] = []
     end
@@ -145,7 +142,7 @@ class PrecipImporter
     precip_data = []
     data.each_point do |lat, long|
       precip_data << Precip.new(
-        date:,
+        date: date,
         latitude: lat,
         longitude: long,
         precip: data[lat, long]

@@ -24,7 +24,8 @@ class LandGrid
     max_lat = LandExtent.max_lat,
     min_long = LandExtent.min_long,
     max_long = LandExtent.max_long,
-    step = LandExtent.step
+    step = LandExtent.step,
+    default: nil
   )
 
     raise TypeError, "minimum latitude must be less than maximum latitude" if min_lat >= max_lat
@@ -37,7 +38,7 @@ class LandGrid
     @min_longitude = min_long
     @max_longitude = max_long
     @step = step
-    @data = create_grid
+    @data = create_grid(default)
   end
 
   def latitudes
@@ -100,10 +101,10 @@ class LandGrid
 
   private
 
-  def create_grid
+  def create_grid(default)
     data = RangeArray.new(@min_latitude, @max_latitude, @step)
     (@min_latitude..@max_latitude).step(@step) do |lat|
-      data[lat] = RangeArray.new(@min_longitude, @max_longitude, @step)
+      data[lat] = RangeArray.new(@min_longitude, @max_longitude, @step, default: default)
     end
     data
   end

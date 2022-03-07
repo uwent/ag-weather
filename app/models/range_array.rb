@@ -9,7 +9,7 @@ class RangeArray
     raise TypeError, "step must be less than the difference of max and min" if step > max - min
     @range = min..max
     @step = step
-    @data = Array.new(number_of_points)
+    @data = Array.new(number_of_points, default)
   end
 
   def each(&block)
