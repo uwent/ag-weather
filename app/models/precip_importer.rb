@@ -2,9 +2,10 @@ require "open-uri"
 require "open3"
 
 class PrecipImporter
-  REMOTE_DIR_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
+  REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
   LOCAL_DIR = "/tmp/gribdata/precip"
   KEEP_GRIB = ENV["KEEP_GRIB"] == "true" || false
+  MAX_TRIES = 3
 
   def self.fetch
     PrecipDataImport.days_to_load.each do |day|
@@ -22,39 +23,56 @@ class PrecipImporter
     end
   end
 
-  def self.local_file(date)
-    FileUtils.mkdir_p(LOCAL_DIR)
-    "#{LOCAL_DIR}/#{date.to_formatted_s(:number)}.grb2"
+  def self.local_dir(date)
+    dir = "#{LOCAL_DIR}/#{date.to_formatted_s(:number)}"
+    FileUtils.mkdir_p(dir)
+    dir
   end
 
-  def self.remote_dir(date)
-    "#{REMOTE_DIR_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
+  def self.remote_url(date)
+    "#{REMOTE_URL_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
   end
 
-  def self.remote_file(date)
-    "st4_conus.#{date.to_formatted_s(:number)}12.24h.grb2"
+  def self.remote_file(date, hour)
+    "st4_conus.#{date.to_formatted_s(:number)}#{hour}.01h.grb2"
+  end
+
+  def self.central_time(date, hour)
+    Time.use_zone("Central Time (US & Canada)") do
+      Time.zone.local(date.year, date.month, date.day, hour)
+    end
   end
 
   def self.fetch_day(date)
     start_time = Time.current
     PrecipDataImport.start(date)
-
+    retries = 0
     Rails.logger.info "PrecipImporter :: Fetching precip data for #{date}..."
-    file_url = remote_dir(date) + "/" + remote_file(date)
-    local_file = local_file(date)
 
-    if File.exist?(local_file)
-      Rails.logger.debug "File #{local_file} ==> Exists"
-    else
-      begin
-        Rails.logger.debug "GET #{file_url} ==> #{local_file}"
-        download(file_url, local_file)
-      rescue => e
-        msg = "Unable to retrieve precip file: #{e.message}"
-        Rails.logger.warn "PrecipImporter :: #{msg}"
-        PrecipDataImport.fail(date, msg)
-        return msg
+    begin
+      (central_time(date, 0).to_i..central_time(date, 23).to_i).step(1.hour) do |time_in_central|
+        hour = Time.at(time_in_central).strftime("%H")
+        time = Time.at(time_in_central).utc
+        file_name = remote_file(time.to_date, time.strftime("%H"))
+        file_url = remote_url(time.to_date) + "/" + file_name
+        local_file = "#{local_dir(date)}/#{hour}_#{file_name}"
+
+        if File.exist?(local_file)
+          Rails.logger.debug "Hour #{hour} ==> Exists"
+        else
+          Rails.logger.debug "Hour #{hour} ==> GET #{file_url}"
+          download(file_url, local_file)
+        end
       end
+    rescue => e
+      Rails.logger.warn "PrecipImporter :: Unable to retrieve remote file: #{e.message}"
+      if (retries += 1) < MAX_TRIES
+        Rails.logger.info "PrecipImporter :: Retrying connection in 10 seconds (attempt #{retries} of #{MAX_TRIES})"
+        sleep(10)
+        retry
+      end
+      PrecipDataImport.fail(date, "Unable to retrieve precip data: #{e.message}")
+      return "Unable to retrieve precip data for #{date}."
     end
 
     import_precip_data(date)
@@ -63,13 +81,35 @@ class PrecipImporter
   end
 
   def self.import_precip_data(date)
-    precips = load_from(local_file(date))
+    precips = load_from(local_dir(date))
     write_to_db(precips, date)
     PrecipDataImport.succeed(date)
     Precip.create_image(date)
   end
 
-  def self.load_from(grib)
+  def self.load_from(dirname)
+    hourly_precips = []
+    Dir["#{dirname}/*.grb2"].each_with_index do |file, i|
+      hourly_precips[i] = load_grib(file)
+    end
+
+    precip_totals = LandGrid.new
+    precip_totals.each_point do |lat, long|
+      precip_totals[lat, long] = 0.0
+    end
+
+    hourly_precips.each do |grid|
+      grid.each_point do |lat, long|
+        precip_totals[lat, long] += grid[lat, long]
+      end
+    end
+
+    FileUtils.rm_r(dirname) unless KEEP_GRIB
+
+    precip_totals
+  end
+
+  def self.load_grib(grib)
     data = LandGrid.new
     data.each_point do |lat, long|
       data[lat, long] = []
@@ -90,8 +130,6 @@ class PrecipImporter
         data[lat, long] << precip
       end
     end
-
-    FileUtils.rm_r grib unless KEEP_GRIB
 
     # average all pts in a cell
     data.each_point do |lat, long|

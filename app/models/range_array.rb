@@ -3,7 +3,7 @@ class RangeArray
 
   EPSILON = 0.00001
 
-  def initialize(min, max, step)
+  def initialize(min, max, step, default: nil)
     raise TypeError, "minimum must be less than maximum" if min >= max
     raise TypeError, "step must be greater than 0" if step <= 0
     raise TypeError, "step must be less than the difference of max and min" if step > max - min

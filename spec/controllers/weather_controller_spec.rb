@@ -115,8 +115,12 @@ RSpec.describe WeatherController, type: :controller do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date:)
         FactoryBot.create(:weather_data_import, readings_on: date)
+        10.upto(15) do |lat|
+          10.upto(15) do |long|
+            FactoryBot.create(:weather_datum, latitude: lat, longitude: long, date: date)
+          end
+        end
       end
     end
 

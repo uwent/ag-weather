@@ -98,8 +98,11 @@ RSpec.describe PrecipsController, type: :controller do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:precip_data_import, readings_on: date)
-        FactoryBot.create(:precip, latitude: lat, longitude: long, date:)
-        FactoryBot.create(:precip, latitude: lat + 1, longitude: long + 1, date:)
+        10.upto(15) do |lat|
+          10.upto(15) do |long|
+            FactoryBot.create(:precip, latitude: lat, longitude: long, date: date)
+          end
+        end
       end
     end
 
@@ -124,7 +127,7 @@ RSpec.describe PrecipsController, type: :controller do
         units = "in"
         file = Precip.image_name(date, nil, units)
         allow(ImageCreator).to receive(:create_image).and_return(file)
-        get :show, params: {id: date, units:}
+        get :show, params: {id: date, units: units}
         expect(json[:map]).to eq("/#{file}")
       end
 

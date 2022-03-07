@@ -58,7 +58,7 @@ class LandGrid
   end
 
   def empty?
-    self.min.nil? && self.max.nil?
+    min.nil? && max.nil?
   end
 
   def num_latitudes

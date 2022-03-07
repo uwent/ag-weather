@@ -11,7 +11,7 @@ RSpec.describe InsolationsController, type: :controller do
   describe "#index" do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:insolation, latitude: lat, longitude: long, date:)
+        FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
         FactoryBot.create(:insolation_data_import, readings_on: date)
       end
     end
@@ -19,8 +19,8 @@ RSpec.describe InsolationsController, type: :controller do
     context "when request is valid" do
       let(:params) {
         {
-          lat:,
-          long:,
+          lat: lat,
+          long: long,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -59,8 +59,8 @@ RSpec.describe InsolationsController, type: :controller do
         lat = 43.015
         long = -89.49
         params.update({
-          lat:,
-          long:
+          lat: lat,
+          long: long
         })
         get :index, params: params
         expect(json[:info][:lat]).to eq(lat.round(1))
@@ -77,8 +77,8 @@ RSpec.describe InsolationsController, type: :controller do
     context "when the request is invalid" do
       let(:params) {
         {
-          lat:,
-          long:,
+          lat: lat,
+          long: long,
           start_date: earliest_date,
           end_date: latest_date
         }
@@ -109,8 +109,12 @@ RSpec.describe InsolationsController, type: :controller do
 
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:insolation, latitude: lat, longitude: long, date:)
         FactoryBot.create(:insolation_data_import, readings_on: date)
+        10.upto(15) do |lat|
+          10.upto(15) do |long|
+            FactoryBot.create(:insolation, latitude: lat, longitude: long, date: date)
+          end
+        end
       end
     end
 
@@ -166,7 +170,7 @@ RSpec.describe InsolationsController, type: :controller do
       end
 
       it "throws error on bad units" do
-        expect { get :show, params: {id: date, units: "foo"} }.to raise_error ActionController::BadRequest
+        expect { get(:show, params: {id: date, units: "foo"}) }.to raise_error ActionController::BadRequest
       end
     end
   end

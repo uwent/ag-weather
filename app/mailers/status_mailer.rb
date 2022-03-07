@@ -1,5 +1,4 @@
 class StatusMailer < ActionMailer::Base
-
   def default_email
     "agweather@cals.wisc.edu"
   end

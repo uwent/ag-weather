@@ -235,9 +235,9 @@ module PestModels
     h = 2.1529 # degree of asymmetry of the curve
     b = 0.026
     d = 1.999
-    puts e_prime = e * ((h + 1) / h) * (h ** (1 / (h + 1)))
+    puts e_prime = e * ((h + 1) / h) * (h**(1 / (h + 1)))
     puts a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
-    puts pmi = a * (1 - Math.exp(-1 * ((b * (lw - c)) ** d)))
+    puts pmi = a * (1 - Math.exp(-1 * ((b * (lw - c))**d)))
     pmi
   end
 
@@ -250,25 +250,25 @@ module PestModels
 
     # dinfv = 2
     if (lw >= 22 && t <= 7) ||
-      (lw >= 15 && t <= 25) ||
-      (lw >= 15 && t >= 11 && t <= 16.5) ||
-      (lw >= 10 && t >= 13.5 && t <= 16.5)
+        (lw >= 15 && t <= 25) ||
+        (lw >= 15 && t >= 11 && t <= 16.5) ||
+        (lw >= 10 && t >= 13.5 && t <= 16.5)
       return 2
     end
 
     # dinfv = 0
     if (lw <= 12 && t <= 9) ||
-      (lw <= 15 && t >= 26) ||
-      (
-        ((6 <= lw) && (lw <= 12)) &&
-        ((9 <= t) && (t <= 15)) &&
-        ((lw - 12) < (9 - t))
-      ) ||
-      (lw <= 7 && t >= 24)
+        (lw <= 15 && t >= 26) ||
+        (
+          ((lw >= 6) && (lw <= 12)) &&
+          ((t >= 9) && (t <= 15)) &&
+          ((lw - 12) < (9 - t))
+        ) ||
+        (lw <= 7 && t >= 24)
       return 0
     end
 
-    return 1
+    1
   end
 
   def compute_botcast_dinov(lw, t)
@@ -277,7 +277,7 @@ module PestModels
     return 1 if lw > 12
 
     # the final condition requires previous day humidity and precipitation which would add a lot of complexity
-    return 1
+    1
   end
 
   def compute_botcast_dsi(weather)
@@ -287,6 +287,6 @@ module PestModels
     dinfv = compute_botcast_dinfv(lw, t)
     dsi = dinov * dinfv
     # Rails.logger.debug "Botcast: lw=#{lw}, t=#{t}, dinov=#{dinov}, dinfv=#{dinfv}, dsi=#{dsi}"
-    return dsi
+    dsi
   end
 end
