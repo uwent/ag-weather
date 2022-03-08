@@ -173,8 +173,8 @@ class EvapotranspirationsController < ApplicationController
   def info
     start_time = Time.current
     t = Evapotranspiration
-    min_date = t.minimum(:date)
-    max_date = t.maximum(:date)
+    min_date = t.minimum(:date) || 0
+    max_date = t.maximum(:date) || 0
     all_dates = (min_date..max_date).to_a
     actual_dates = t.distinct.pluck(:date).to_a
     response = {

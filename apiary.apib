@@ -59,11 +59,14 @@ FORMAT: 1A
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date_range (array)
-        + total_days (number)
+        + dd_methods (array)
         + lat_range (array)
         + long_range (array)
-        + dd_methods (array)
+        + date_range (array)
+        + expected_days (number)
+        + actual_days (number)
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Group Evapotranspirations
@@ -140,12 +143,14 @@ Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date_range (array) - min, max
-        + total_days (number) - days in database
+        + table_cols (array) - column names in database
         + lat_range (array) - min, max
         + long_range (array) - min, max
         + value_range (array) - min, max
-        + table_cols (array) - column names in database
+        + date_range (array) - min, max
+        + actual_days (number) - days in database
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Group Insolations
@@ -217,12 +222,14 @@ Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date_range (array) - min, max
-        + total_days (number) - days in database
+        + table_cols (array) - column names in database
         + lat_range (array) - min, max
         + long_range (array) - min, max
         + value_range (array) - min, max
-        + table_cols (array) - column names in database
+        + date_range (array) - min, max
+        + actual_days (number) - days in database
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Group Precipitations
@@ -294,12 +301,14 @@ Get parameter ranges available in the database
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date_range (array) - min, max
-        + total_days (number) - days in database
+        + table_cols (array) - column names in database
         + lat_range (array) - min, max
         + long_range (array) - min, max
         + value_range (array) - min, max
-        + table_cols (array) - column names in database
+        + date_range (array) - min, max
+        + actual_days (number) - days in database
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Group Weather
@@ -408,11 +417,13 @@ Returns weather data for location and date range
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
-        + date_range (array) - min, max
-        + total_days (number) - days in database
+        + table_cols (array) - column names in database
         + lat_range (array) - min, max
         + long_range (array) - min, max
-        + table_cols (array) - column names in database
+        + date_range (array) - min, max
+        + actual_days (number) - days in database
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Group Pest Forecasts
@@ -741,46 +752,48 @@ If pest param is given, returns total degree days from existing degree day model
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
         + pest_names (array) - list available pest names
-        + date_range (array) - min, max
-        + total_days (number) - days of data in db
         + lat_range (array) - min, max
         + long_range (array) - min, max
+        + date_range (array) - min, max
+        + actual_days (number) - days in database
+        + missing_days (array)
+        + compute_time (number)
 
 
 # Data Structures
 
 ## `et/insol/precip index data` (object)
-+ status (string)
-+ info (object)
-    + lat (number)
-    + long (number)
-    + start_date (string)
-    + end_date (string)
-    + days_requested (number)
-    + days_returned (number)
-    + min_value (number, nullable)
-    + max_value (number, nullable)
-    + units (string)
-    + compute_time (number)
-+ data (array)
-    + (object, optional)
-        + date (string)
-        + value (number)
-
-## `et/insol/precip all_for_date data` (object)
-+ date (string)
-+ status (string)
-+ info (object, optional)
-    + date (string)
-    + lat_range (array)
-    + long_range (array)
-    + points (number)
-    + min_value (number, nullable)
-    + max_value (number, nullable)
-    + unit (string)
-    + compute_time (number)
-+ data (array)
-    + (object, optional)
+    + status (string)
+    + info (object)
         + lat (number)
         + long (number)
-        + value (number)
+        + start_date (string)
+        + end_date (string)
+        + days_requested (number)
+        + days_returned (number)
+        + min_value (number, nullable)
+        + max_value (number, nullable)
+        + units (string)
+        + compute_time (number)
+    + data (array)
+        + (object, optional)
+            + date (string)
+            + value (number)
+
+## `et/insol/precip all_for_date data` (object)
+    + date (string)
+    + status (string)
+    + info (object, optional)
+        + date (string)
+        + lat_range (array)
+        + long_range (array)
+        + points (number)
+        + min_value (number, nullable)
+        + max_value (number, nullable)
+        + unit (string)
+        + compute_time (number)
+    + data (array)
+        + (object, optional)
+            + lat (number)
+            + long (number)
+            + value (number)

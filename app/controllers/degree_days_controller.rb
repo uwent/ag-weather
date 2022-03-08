@@ -99,14 +99,18 @@ class DegreeDaysController < ApplicationController
   def info
     start_time = Time.current
     t = WeatherDatum
-    min_date = t.minimum(:date)
-    max_date = t.maximum(:date)
+    min_date = t.minimum(:date) || 0
+    max_date = t.maximum(:date) || 0
+    all_dates = (min_date..max_date).to_a
+    actual_dates = t.distinct.pluck(:date).to_a
     response = {
-      date_range: [min_date.to_s, max_date.to_s],
-      total_days: (min_date..max_date).count,
+      dd_methods: DegreeDaysCalculator::METHODS,
       lat_range: [t.minimum(:latitude).to_f, t.maximum(:latitude).to_f],
       long_range: [t.minimum(:longitude).to_f, t.maximum(:longitude).to_f],
-      dd_methods: DegreeDaysCalculator::METHODS,
+      date_range: [min_date.to_s, max_date.to_s],
+      expected_days: all_dates.size,
+      actual_days: actual_dates.size,
+      missing_days: all_dates - actual_dates,
       compute_time: Time.current - start_time
     }
     render json: response

@@ -160,15 +160,18 @@ class InsolationsController < ApplicationController
   def info
     start_time = Time.current
     t = Insolation
-    min_date = t.minimum(:date)
-    max_date = t.maximum(:date)
+    min_date = t.minimum(:date) || 0
+    max_date = t.maximum(:date) || 0
+    all_dates = (min_date..max_date).to_a
+    actual_dates = t.distinct.pluck(:date).to_a
     response = {
-      date_range: [min_date.to_s, max_date.to_s],
-      total_days: (min_date..max_date).count,
+      table_cols: t.column_names,
       lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
       long_range: [t.minimum(:longitude), t.maximum(:longitude)],
       value_range: [t.minimum(:insolation), t.maximum(:insolation)],
-      table_cols: t.column_names,
+      date_range: [min_date.to_s, max_date.to_s],
+      expected_days: all_dates.size,
+      actual_days: actual_dates.size,
       compute_time: Time.current - start_time
     }
     render json: response
