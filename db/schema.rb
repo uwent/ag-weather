@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
+ActiveRecord::Schema[7.0].define(version: 2022_03_07_230636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -19,7 +19,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.string "record_type", null: false
     t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
@@ -32,7 +32,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum"
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -49,6 +49,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "message"
+    t.index ["readings_on"], name: "index_data_imports_on_readings_on"
   end
 
   create_table "evapotranspirations", force: :cascade do |t|
@@ -58,9 +59,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.date "date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["date"], name: "index_evapotranspirations_on_date"
-    t.index ["latitude", "longitude", "date"], name: "index_evapotranspirations_on_latitude_and_longitude_and_date", unique: true
+    t.index ["date", "latitude", "longitude"], name: "index_evapotranspirations_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude"
+    t.index ["longitude"], name: "index_evapotranspirations_on_longitude"
   end
 
   create_table "insolations", force: :cascade do |t|
@@ -70,9 +71,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.date "date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["date"], name: "index_insolations_on_date"
-    t.index ["latitude", "longitude", "date"], name: "index_insolations_on_latitude_and_longitude_and_date", unique: true
+    t.index ["date", "latitude", "longitude"], name: "index_insolations_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude"
+    t.index ["longitude"], name: "index_insolations_on_longitude"
   end
 
   create_table "pest_forecasts", force: :cascade do |t|
@@ -104,9 +105,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.boolean "freeze", default: false
     t.float "dd_32_none"
     t.integer "botcast_dsi", default: 0
-    t.index ["date"], name: "index_pest_forecasts_on_date"
-    t.index ["latitude", "longitude", "date"], name: "index_pest_forecasts_on_latitude_and_longitude_and_date", unique: true
+    t.index ["date", "latitude", "longitude"], name: "index_pest_forecasts_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
+    t.index ["longitude"], name: "index_pest_forecasts_on_longitude"
   end
 
   create_table "precips", force: :cascade do |t|
@@ -115,8 +116,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.decimal "longitude", precision: 10, scale: 6
     t.float "precip"
     t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_and_latitude_and_longitude", unique: true
-    t.index ["date"], name: "index_precips_on_date"
     t.index ["latitude", "longitude"], name: "index_precips_on_latitude_and_longitude"
+    t.index ["longitude"], name: "index_precips_on_longitude"
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|
@@ -126,8 +127,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.float "max_temperature"
     t.float "min_temperature"
     t.float "relative_humidity"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
   end
 
   create_table "stations", force: :cascade do |t|
@@ -159,9 +160,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_22_165851) do
     t.float "avg_temp_rh_over_90"
     t.integer "hours_rh_over_90"
     t.float "dew_point"
-    t.index ["date"], name: "index_weather_data_on_date"
-    t.index ["latitude", "longitude", "date"], name: "index_weather_data_on_latitude_and_longitude_and_date", unique: true
+    t.index ["date", "latitude", "longitude"], name: "index_weather_data_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_weather_data_on_latitude_and_longitude"
+    t.index ["longitude"], name: "index_weather_data_on_longitude"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

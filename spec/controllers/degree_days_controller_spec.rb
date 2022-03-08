@@ -108,4 +108,12 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
     end
   end
+
+  describe "#info" do
+    it "is ok" do
+      FactoryBot.create(:weather_datum)
+      get(:info)
+      expect(response).to have_http_status(:ok)
+    end
+  end
 end

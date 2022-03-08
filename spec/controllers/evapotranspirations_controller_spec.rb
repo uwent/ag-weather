@@ -223,39 +223,10 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   end
 
   describe "#info" do
-    let(:dates) { [(Date.yesterday - 1.month).to_s, Date.yesterday.to_s] }
-    let(:lats) { [50.0, 55.0] }
-    let(:longs) { [50.0, 55.0] }
-    let(:ets) { [0.1, 0.2] }
-    before(:each) do
-      0.upto(1) do |i|
-        FactoryBot.create(
-          :evapotranspiration,
-          latitude: lats[i],
-          longitude: longs[i],
-          date: dates[i],
-          potential_et: ets[i]
-        )
-      end
-    end
-
     it "is ok" do
+      FactoryBot.create(:evapotranspiration)
       get(:info)
       expect(response).to have_http_status(:ok)
-    end
-
-    it "has the correct structure" do
-      get(:info)
-      expect(json.keys).to match([:date_range, :total_days, :lat_range, :long_range, :value_range, :table_cols])
-    end
-
-    it "returns data ranges for evapotranspiration" do
-      get(:info)
-      expect(json[:date_range]).to eq(dates)
-      expect(json[:total_days]).to eq(dates.count)
-      expect(json[:lat_range].map(&:to_i)).to eq(lats)
-      expect(json[:long_range].map(&:to_i)).to eq(longs)
-      expect(json[:value_range]).to eq(ets)
     end
   end
 

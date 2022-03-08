@@ -158,14 +158,18 @@ class InsolationsController < ApplicationController
 
   # GET: valid params for api
   def info
+    start_time = Time.current
     t = Insolation
+    min_date = t.minimum(:date)
+    max_date = t.maximum(:date)
     response = {
-      date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
-      total_days: t.distinct.pluck(:date).size,
+      date_range: [min_date.to_s, max_date.to_s],
+      total_days: (min_date..max_date).count,
       lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
       long_range: [t.minimum(:longitude), t.maximum(:longitude)],
       value_range: [t.minimum(:insolation), t.maximum(:insolation)],
-      table_cols: t.column_names
+      table_cols: t.column_names,
+      compute_time: Time.current - start_time
     }
     render json: response
   end

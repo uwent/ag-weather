@@ -537,7 +537,13 @@ RSpec.describe PestForecastsController, type: :controller do
     let(:params) { {lat:, long:} }
 
     before(:each) do
-      FactoryBot.create(:pest_forecast, latitude: lat, longitude: long, date: Date.yesterday, dd_39p2_86: 1)
+      FactoryBot.create(
+        :pest_forecast,
+        latitude: lat,
+        longitude: long,
+        date: Date.yesterday,
+        dd_39p2_86: 1
+      )
     end
 
     it "is okay" do
@@ -603,45 +609,10 @@ RSpec.describe PestForecastsController, type: :controller do
   end
 
   describe "#info" do
-    let(:dates) { [1.week.ago.to_date.to_s, Date.yesterday.to_s] }
-    let(:lats) { [50.0, 55.0] }
-    let(:longs) { [50.0, 55.0] }
-    let(:potato_blight_dsvs) { [1, 4] }
-    before(:each) do
-      0.upto(1) do |i|
-        FactoryBot.create(
-          :pest_forecast,
-          latitude: lats[i],
-          longitude: longs[i],
-          date: dates[i],
-          potato_blight_dsv: potato_blight_dsvs[i]
-        )
-      end
-    end
-
     it "is ok" do
+      FactoryBot.create(:pest_forecast)
       get :info
       expect(response).to have_http_status(:ok)
-    end
-
-    it "has the correct structure" do
-      get :info
-      expect(json.keys).to match([
-        :pest_names,
-        :date_range,
-        :total_days,
-        :lat_range,
-        :long_range
-      ])
-    end
-
-    it "returns data ranges for pest forecasts" do
-      get :info
-      expect(json[:pest_names]).to include("potato_blight_dsv")
-      expect(json[:date_range]).to eq(dates)
-      expect(json[:total_days]).to eq(dates.count)
-      expect(json[:lat_range].map(&:to_i)).to eq(lats)
-      expect(json[:long_range].map(&:to_i)).to eq(longs)
     end
   end
 end

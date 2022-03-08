@@ -549,15 +549,22 @@ class PestForecastsController < ApplicationController
 
   # Pest forecasts database info. No params.
   def info
-    pf = PestForecast
+    start_time = Time.current
+    t = PestForecast
+    min_date = t.minimum(:date)
+    max_date = t.maximum(:date)
+    all_dates = (min_date..max_date).to_a
+    actual_dates = t.distinct.pluck(:date).to_a
     response = {
-      pest_names: pf.all_models,
-      date_range: [pf.minimum(:date).to_s, pf.maximum(:date).to_s],
-      total_days: pf.distinct.pluck(:date).count,
-      lat_range: [pf.minimum(:latitude).to_f, pf.maximum(:latitude).to_f],
-      long_range: [pf.minimum(:longitude).to_f, pf.maximum(:longitude).to_f]
+      pest_names: t.all_models,
+      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
+      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
+      date_range: [min_date.to_s, max_date.to_s],
+      expected_days: all_dates.size,
+      actual_days: actual_dates.size,
+      missing_days: all_dates - actual_dates,
+      compute_time: Time.current - start_time
     }
-
     render json: response
   end
 

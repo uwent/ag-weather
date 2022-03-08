@@ -159,14 +159,22 @@ class PrecipsController < ApplicationController
 
   # GET: returns valid params for api
   def info
+    start_time = Time.current
     t = Precip
+    min_date = t.minimum(:date)
+    max_date = t.maximum(:date)
+    all_dates = (min_date..max_date).to_a
+    actual_dates = t.distinct.pluck(:date).to_a
     response = {
-      date_range: [t.minimum(:date).to_s, t.maximum(:date).to_s],
-      total_days: t.distinct.pluck(:date).size,
+      table_cols: t.column_names,
       lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
       long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:Precip), t.maximum(:Precip)],
-      table_cols: t.column_names
+      value_range: [t.minimum(:precip), t.maximum(:precip)],
+      date_range: [min_date.to_s, max_date.to_s],
+      expected_days: all_dates.size,
+      actual_days: actual_dates.size,
+      missing_days: all_dates - actual_dates,
+      compute_time: Time.current - start_time
     }
     render json: response
   end
