@@ -12,8 +12,8 @@ RSpec.describe Wisconsin do
     end
 
     it "is smaller than the maximum extent" do
-      expect(LandExtent.latitudes === Wisconsin.latitudes).to be true
-      expect(LandExtent.longitudes === Wisconsin.longitudes).to be true
+      expect(LandExtent.latitudes == Wisconsin.latitudes).to be true
+      expect(LandExtent.longitudes == Wisconsin.longitudes).to be true
     end
   end
 end

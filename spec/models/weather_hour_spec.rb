@@ -21,20 +21,19 @@ RSpec.describe WeatherHour do
   end
 
   context "store" do
+    let(:lat) { Wisconsin.min_lat }
+    let(:long) { Wisconsin.min_long }
+
     it "should add an element to the temperatures" do
-      expect {
-        weather_hour.store(temp_key, Wisconsin.min_lat, Wisconsin.min_long, 17)
-      }.to change {
-        weather_hour.data[Wisconsin.min_lat, Wisconsin.min_long][:temperatures].length
-      }.by(1)
+      expect { weather_hour.store(temp_key, lat, long, 17) }
+        .to change { weather_hour.data[lat, long][:temperatures].length }
+        .by(1)
     end
 
     it "should add an element to the dew points" do
-      expect {
-        weather_hour.store(dew_point_key, Wisconsin.min_lat, Wisconsin.min_long, 17)
-      }.to change {
-        weather_hour.data[Wisconsin.min_lat, Wisconsin.min_long][:dew_points].length
-      }.by(1)
+      expect { weather_hour.store(dew_point_key, lat, long, 17) }
+        .to change { weather_hour.data[lat, long][:dew_points].length }
+        .by(1)
     end
   end
 
