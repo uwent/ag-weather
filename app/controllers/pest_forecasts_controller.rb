@@ -130,8 +130,7 @@ class PestForecastsController < ApplicationController
         status = "no data"
       end
     else
-      weather = WeatherDatum.where(date: start_date..end_date)
-        .where(latitude: lat_range, longitude: long_range)
+      weather = WeatherDatum.where(date: start_date..end_date, latitude: lat_range, longitude: long_range)
 
       dates = weather.distinct.pluck(:date)
       days_returned = dates.size
