@@ -6,7 +6,7 @@ RSpec.describe PrecipsController, type: :controller do
   let(:long) { -95.0 }
   let(:latest_date) { DataImport.latest_date }
   let(:earliest_date) { latest_date - 1.week }
-  let(:empty_date) { earliest_date - 1.week }
+  let(:empty_date) { "2000-01-01" }
 
   describe "#index" do
     before(:each) do
