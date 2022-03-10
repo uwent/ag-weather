@@ -15,8 +15,11 @@ class PestForecastsController < ApplicationController
     data = []
 
     if PestForecast.column_names.include?(pest)
-      forecasts = PestForecast.where(latitude: lat_range, longitude: long_range)
-        .where(date: start_date..end_date)
+      forecasts = PestForecast.where(
+        date: start_date..end_date,
+        latitude: lat_range,
+        longitude: long_range
+      )
 
       days_returned = forecasts.distinct.count(:date)
       status = "missing data" if days_returned < days_requested - 2
@@ -100,8 +103,11 @@ class PestForecastsController < ApplicationController
 
     if pest
       if PestForecast.column_names.include?(pest)
-        pest_data = PestForecast.where(date: start_date..end_date)
-          .where(latitude: lat_range, longitude: long_range)
+        pest_data = PestForecast.where(
+          date: start_date..end_date,
+          latitude: lat_range,
+          longitude: long_range
+        )
 
         days_returned = pest_data.distinct.count(:date)
         status = "missing data" if days_returned < days_requested - 2
@@ -444,7 +450,10 @@ class PestForecastsController < ApplicationController
     info = {}
     data = []
 
-    forecasts = PestForecast.where(date: start_date..end_date)
+    forecasts = PestForecast.where(
+      date: start_date..end_date,
+      latitude: lat_range,
+      longitude: long_range)
 
     if forecasts.size > 0
       data = forecasts.where(freeze: true)
