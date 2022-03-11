@@ -70,8 +70,21 @@ class EvapotranspirationCalculator
   # A clear-sky emissivity (dimensionless) calculated using the method of
   # Idso (1981)
   def self.sky_emiss(avg_v_press, avg_temp)
+    a1 = 0.7
+    a2 = 5.95e-4
     if avg_v_press > 0.5
-      0.7 + 5.95e-4 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
+      a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
+    else
+      (1 - 0.261 * Math.exp(-0.000777 * avg_temp * avg_temp))
+    end
+  end
+
+  # Clear-sky emissivity using adjusted coefficients per Desai & Talib, 2022 (unpublished)
+  def self.sky_emiss_adj(avg_v_press, avg_temp)
+    a1 = 0.544
+    a2 = 6.4e-5
+    if avg_v_press > 0.5
+      a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
     else
       (1 - 0.261 * Math.exp(-0.000777 * avg_temp * avg_temp))
     end
@@ -80,6 +93,11 @@ class EvapotranspirationCalculator
   # This calculates (1 minus clear-sky emissivity) factor of L_nc in paper.
   def self.angstrom(avg_v_press, avg_temp)
     1.0 - sky_emiss(avg_v_press, avg_temp) / SFCEMISS
+  end
+
+  # uses adjusted emissivity
+  def self.angstrom_adj(avg_v_press, avg_temp)
+    1.0 - sky_emiss_adj(avg_v_press, avg_temp) / SFCEMISS
   end
 
   # The ratio of the measured insolation divided by the theoretical value
@@ -98,6 +116,13 @@ class EvapotranspirationCalculator
       clr_ratio(d_to_sol, day_of_year, lat)
   end
 
+  # used adjusted emissivity
+  def self.lwnet_adj(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
+    angstrom_adj(avg_v_press, avg_temp) *
+      lwu(avg_temp) *
+      clr_ratio(d_to_sol, day_of_year, lat)
+  end
+
   # temperatures are in Celsius
   # avg_v_pressure is in kPa (kilopascals)
   # d_to_sol is insolation reading in MJ/day (Megajoules/day)
@@ -108,9 +133,17 @@ class EvapotranspirationCalculator
     # calculates R_n in paper
     net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
     # Evapotranspiration. Unsure why 1.28, not 1.26 as written in the paper
-    pot_et = 1.28 * sfactor(avg_temp) * net_radiation
+    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
     # Assume the 62.3 is a conversion factor, but unable to determine.
     [pot_et / 62.3, 0].max
     # In winter, at high latitudes, et was coming out as a small negative number
+  end
+
+  # using the adjusted emissivity coefficients
+  def self.et_adj(avg_temp, avg_v_press, d_to_sol, day_of_year, lat)
+    lwnet = lwnet_adj(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
+    net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
+    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
+    [pot_et / 62.3, 0].max
   end
 end
