@@ -448,7 +448,8 @@ class PestForecastsController < ApplicationController
     forecasts = PestForecast.where(
       date: start_date..end_date,
       latitude: lat_range,
-      longitude: long_range)
+      longitude: long_range
+    )
 
     if forecasts.size > 0
       data = forecasts.where(freeze: true)

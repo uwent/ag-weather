@@ -102,7 +102,6 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
     expect(et.et(17.0, 1.0, 23.0, 120, 30.0)).to be_within(EPSILON).of(0.173987)
   end
 
-
   describe "compare internal et with agwx_biophys", skip: "Potential ET coefficient changed to match value in paper." do
     let(:min_temp) { 13.0 }
     let(:max_temp) { 20.0 }

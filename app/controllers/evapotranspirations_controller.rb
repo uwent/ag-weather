@@ -11,23 +11,45 @@ class EvapotranspirationsController < ApplicationController
     status = "OK"
     data = []
 
-    ets = Evapotranspiration.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
-      .order(:date)
+    conditions = {date: start_date..end_date, latitude: lat, longitude: long}
 
-    if ets.size > 0
-      cum_value = 0
-      data = ets.collect do |et|
-        value = et.potential_et
-        cum_value += value
-        {
-          date: et.date.to_s,
-          value: value.round(3),
-          cumulative_value: cum_value.round(3)
-        }
+    if params[:method] == "adjusted"
+      weather = {}
+      insols = {}
+      WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
+      Insolation.where(conditions).each { |i| insols[i.date] = i }
+
+      if weather.size > 0 && insols.size > 0
+        data = []
+        cumulative_value = 0
+        start_date.upto(end_date) do |date|
+          next if weather[date].nil? || insols[date].nil?
+          t = weather[date].avg_temperature
+          vp = weather[date].vapor_pressure
+          i = insols[date].insolation
+          d = date.yday
+          l = lat
+          value = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+          cumulative_value += value
+          data << {date:, value:, cumulative_value:}
+        end
+      else
+        status = "no data"
       end
     else
-      status = "no data"
+      ets = Evapotranspiration.where(conditions).order(:date)
+
+      if ets.size > 0
+        cumulative_value = 0
+        data = ets.collect do |et|
+          date = et.date.to_formatted_s
+          value = et.potential_et
+          cumulative_value += value
+          {date:, value:, cumulative_value:}
+        end
+      else
+        status = "no data"
+      end
     end
 
     values = data.map { |day| day[:value] }
@@ -49,11 +71,7 @@ class EvapotranspirationsController < ApplicationController
 
     status = "missing days" if status == "OK" && days_requested != days_returned
 
-    response = {
-      status:,
-      info:,
-      data:
-    }
+    response = {status:, info:, data:}
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }

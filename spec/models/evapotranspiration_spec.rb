@@ -59,7 +59,8 @@ RSpec.describe Evapotranspiration, type: :model do
     let(:weather) { FactoryBot.create(:weather_datum) }
 
     it "should calculate a value for give insolation and weather" do
-      expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.8552734)
+      # expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.8552734)
+      expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.77941)
     end
   end
 
