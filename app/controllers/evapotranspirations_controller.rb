@@ -13,8 +13,7 @@ class EvapotranspirationsController < ApplicationController
 
     conditions = {date: start_date..end_date, latitude: lat, longitude: long}
 
-    # for now I'm just computing all et fresh from weather data
-    if true #params[:method] == "adjusted"
+    if params[:method] == "adjusted"
       weather = {}
       insols = {}
       WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
