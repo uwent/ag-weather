@@ -64,7 +64,7 @@ class EvapotranspirationCalculator
   # with respect to temperature of the air and gamma, the psychrometric constant
   # In the paper this is (S/(S + gamma)).
   def self.sfactor(avg_temp)
-    0.398 + (0.0171 * avg_temp) - (0.000142 * avg_temp * avg_temp)
+    0.398 + (0.0171 * avg_temp) - (0.000142 * avg_temp**2)
   end
 
   # A clear-sky emissivity (dimensionless) calculated using the method of
@@ -75,18 +75,20 @@ class EvapotranspirationCalculator
     if avg_v_press > 0.5
       a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
     else
-      (1 - 0.261 * Math.exp(-0.000777 * avg_temp * avg_temp))
+      (1 - 0.261 * Math.exp(-0.000777 * avg_temp**2))
     end
   end
 
   # Clear-sky emissivity using adjusted coefficients per Desai & Talib, 2022 (unpublished)
   def self.sky_emiss_adj(avg_v_press, avg_temp)
     a1 = 0.544
-    a2 = 6.4e-5
+    a2 = 6.4e-4
+    # a1 = 0.7
+    # a2 = 5.95e-4
     if avg_v_press > 0.5
       a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
     else
-      (1 - 0.261 * Math.exp(-0.000777 * avg_temp * avg_temp))
+      (1 - 0.261 * Math.exp(-0.000777 * avg_temp**2))
     end
   end
 
@@ -144,6 +146,7 @@ class EvapotranspirationCalculator
     lwnet = lwnet_adj(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
     net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
     pot_et = 1.26 * sfactor(avg_temp) * net_radiation
+    # pot_et / 62.3
     [pot_et / 62.3, 0].max
   end
 end

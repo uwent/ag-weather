@@ -13,7 +13,8 @@ class EvapotranspirationsController < ApplicationController
 
     conditions = {date: start_date..end_date, latitude: lat, longitude: long}
 
-    if params[:method] == "adjusted"
+    # for now I'm just computing all et fresh from weather data
+    if true #params[:method] == "adjusted"
       weather = {}
       insols = {}
       WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
@@ -23,13 +24,19 @@ class EvapotranspirationsController < ApplicationController
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
+          Rails.logger.debug "\n#{date}"
           next if weather[date].nil? || insols[date].nil?
           t = weather[date].avg_temperature
           vp = weather[date].vapor_pressure
           i = insols[date].insolation
           d = date.yday
           l = lat
-          value = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+
+          reg = EvapotranspirationCalculator.et(t, vp, i, d, l)
+          adj = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+          Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
+
+          value = params[:method] == "adjusted" ? adj : reg
           cumulative_value += value
           data << {date:, value:, cumulative_value:}
         end
