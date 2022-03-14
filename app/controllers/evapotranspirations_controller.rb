@@ -33,7 +33,7 @@ class EvapotranspirationsController < ApplicationController
 
           reg = EvapotranspirationCalculator.et(t, vp, i, d, l)
           adj = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
-          Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
+          # Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
 
           value = params[:method] == "adjusted" ? adj : reg
           cumulative_value += value
