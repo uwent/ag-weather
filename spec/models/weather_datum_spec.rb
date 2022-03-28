@@ -91,7 +91,7 @@ RSpec.describe WeatherDatum, type: :model do
       expect(weather.degree_days(50, 86, "sine")).to eq 7.834757752132984
     end
 
-    it "should get degree days with its base/upper in Celcius" do
+    it "should get degree days with its base/upper in Celsius" do
       weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
       expect(DegreeDaysCalculator).to receive(:calculate)
         .with(
@@ -102,7 +102,7 @@ RSpec.describe WeatherDatum, type: :model do
       weather.degree_days(10, 30, "sine", false)
     end
 
-    it "should get degree days with its base/upper in Celcius" do
+    it "should get degree days with its base/upper in Celsius" do
       weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
       expect(weather.degree_days(10, 30, "sine", false)).to eq(4.352643195629435)
     end

@@ -49,7 +49,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       it "returns valid data when units are C" do
         get(:index, params:)
         data = json[:data].first
-        expect(json[:info][:units]).to include("Celcius")
+        expect(json[:info][:units]).to include("Celsius")
         expect(data[:min_temp]).to eq(8.9)
         expect(data[:max_temp]).to eq(12.5)
         expect(data[:value]).to eq(0.7)

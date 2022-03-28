@@ -18,11 +18,11 @@ RSpec.describe WeatherObservation do
       expect(observation.dew_point).to eq 0.0
     end
 
-    it "will set temperature passed to celcius" do
+    it "will set temperature passed to celsius" do
       expect(weather_observation.temperature).to eq 27.0
     end
 
-    it "will set dew point passed to celcius" do
+    it "will set dew point passed to celsius" do
       expect(weather_observation.dew_point).to eq 17.0
     end
   end
@@ -44,7 +44,7 @@ RSpec.describe WeatherObservation do
   end
 
   describe ".k_to_c" do
-    it "should return the proper value in Celcius" do
+    it "should return the proper value in Celsius" do
       expect(weather_observation.k_to_c(283.0)).to be_within(0.001).of(9.85)
     end
   end

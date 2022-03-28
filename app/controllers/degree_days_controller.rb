@@ -146,7 +146,7 @@ class DegreeDaysController < ApplicationController
   end
 
   def units_text
-    in_f ? "Fahrenheit degree days" : "Celcius degree days"
+    in_f ? "Fahrenheit degree days" : "Celsius degree days"
   end
 
   def default_base

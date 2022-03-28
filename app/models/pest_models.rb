@@ -15,7 +15,7 @@ module PestModels
     0
   end
 
-  # temps in celcius
+  # temps in celsius
   def compute_potato_p_days(weather)
     min = weather.min_temperature || 0
     max = weather.max_temperature || 0
@@ -23,7 +23,7 @@ module PestModels
     calculate_p_day(min, max)
   end
 
-  # temp in celcius
+  # temp in celsius
   def compute_late_blight_dsv(weather)
     hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
     return 0 if hours.nil? || hours == 0
@@ -242,7 +242,7 @@ module PestModels
   end
 
   # implementation of botcast in Sutton et al 1986
-  # temp in celcius
+  # temp in celsius
   # these conditions were read from the chart in the paper
   def compute_botcast_dinfv(lw, t)
     return 0 if lw <= 6

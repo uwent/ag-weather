@@ -293,7 +293,7 @@ class PestForecastsController < ApplicationController
   #   t_upper - degrees F, default 86
   #   start_date - default 1st of year
   #   end_date - default today
-  #   in_f - default true (fahrenheit or celcius units)
+  #   in_f - default true (fahrenheit or celsius units)
 
   def custom_point_details
     start_time = Time.current
