@@ -1,10 +1,11 @@
 class WeatherController < ApplicationController
-  # GET: returns insols for lat, long, date range
+  # GET: returns weather data for lat, long, date range
   # params:
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
   #   end_date - default today
+  #   units - default C
 
   def index
     start_time = Time.current
@@ -19,13 +20,13 @@ class WeatherController < ApplicationController
       data = weather.collect do |w|
         {
           date: w.date.to_s,
-          min_temp: w.min_temperature,
-          max_temp: w.max_temperature,
-          avg_temp: w.avg_temperature,
-          dew_point: w.dew_point,
+          min_temp: convert(w.min_temperature),
+          max_temp: convert(w.max_temperature),
+          avg_temp: convert(w.avg_temperature),
+          dew_point: convert(w.dew_point),
           pressure: w.vapor_pressure,
           hours_rh_over_90: w.hours_rh_over_90,
-          avg_temp_rh_over_90: w.avg_temp_rh_over_90
+          avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)
         }
       end
     else
@@ -39,6 +40,7 @@ class WeatherController < ApplicationController
       long: long.to_f,
       start_date:,
       end_date:,
+      units:,
       days_requested: (end_date - start_date).to_i,
       days_returned: values.count,
       compute_time: Time.current - start_time
@@ -92,6 +94,10 @@ class WeatherController < ApplicationController
     end
   end
 
+  # GET: returns weather grid for date
+  # params:
+  #   date (required)
+  #   units - default C
   def all_for_date
     start_time = Time.current
     status = "OK"
@@ -107,13 +113,13 @@ class WeatherController < ApplicationController
         {
           lat: w.latitude.round(1),
           long: w.longitude.round(1),
-          min_temp: w.min_temperature,
-          max_temp: w.max_temperature,
-          avg_temp: w.avg_temperature,
-          dew_point: w.dew_point,
+          min_temp: convert(w.min_temperature),
+          max_temp: convert(w.max_temperature),
+          avg_temp: convert(w.avg_temperature),
+          dew_point: convert(w.dew_point),
           pressure: w.vapor_pressure,
           hours_rh_over_90: w.hours_rh_over_90,
-          avg_temp_rh_over_90: w.avg_temp_rh_over_90
+          avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)
         }
       end
       status = "OK"
@@ -129,6 +135,7 @@ class WeatherController < ApplicationController
       lat_range: [lats.min, lats.max],
       long_range: [longs.min, longs.max],
       points: lats.size * longs.size,
+      units:,
       compute_time: Time.current - start_time
     }
 
@@ -174,12 +181,25 @@ class WeatherController < ApplicationController
 
   def units
     valid_units = WeatherDatum::UNITS
-    if valid_units.include?(params[:units])
-      params[:units]
-    elsif !params[:units].present?
-      valid_units.first
+    if params[:units].present?
+      unit = params[:units].upcase
+      if valid_units.include?(unit)
+        unit
+      else
+        raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      end
     else
-      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      valid_units[0]
     end
   end
+
+  # weather temps are in C
+  def convert(temp)
+    if units == "F"
+      UnitConverter::c_to_f(temp)
+    else
+      temp
+    end
+  end
+
 end

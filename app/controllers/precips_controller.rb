@@ -10,19 +10,18 @@ class PrecipsController < ApplicationController
     status = "OK"
     data = []
 
-    precips = Precip.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
+    precips = Precip.where(latitude: lat, longitude: long, date: start_date..end_date)
       .order(:date)
 
     if precips.size > 0
       cum_value = 0
       data = precips.collect do |precip|
-        value = precip.precip
+        value = convert(precip.precip)
         cum_value += value
         {
-          date: precip.date.to_s,
-          value: value.round(2),
-          cumulative_value: cum_value.round(2)
+          date: precip.date.to_formatted_s,
+          value: value,
+          cumulative_value: cum_value
         }
       end
     else
@@ -34,22 +33,22 @@ class PrecipsController < ApplicationController
     info = {
       lat: lat.to_f,
       long: long.to_f,
-      start_date:,
-      end_date:,
+      start_date: start_date,
+      end_date: end_date,
       days_requested: (end_date - start_date).to_i,
       days_returned: values.count,
       min_value: values.min,
       max_value: values.max,
-      units: "Total daily precipitation (mm)",
+      units: units,
       compute_time: Time.current - start_time
     }
 
     status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
 
     response = {
-      status:,
-      info:,
-      data:
+      status: status,
+      info: info,
+      data: data
     }
 
     respond_to do |format|
@@ -117,7 +116,7 @@ class PrecipsController < ApplicationController
         {
           lat: precip.latitude.round(1),
           long: precip.longitude.round(1),
-          value: precip.precip.round(3)
+          value: convert(precip.precip)
         }
       end
       status = "OK"
@@ -136,14 +135,14 @@ class PrecipsController < ApplicationController
       points: lats.count * longs.count,
       min_value: values.min,
       max_value: values.max,
-      units: "Total daily precipitation (mm)",
+      units: units,
       compute_time: Time.current - start_time
     }
 
     response = {
-      status:,
-      info:,
-      data:
+      status: status,
+      info: info,
+      data: data
     }
 
     respond_to do |format|
@@ -187,12 +186,24 @@ class PrecipsController < ApplicationController
 
   def units
     valid_units = Precip::UNITS
-    if valid_units.include?(params[:units])
-      params[:units]
-    elsif !params[:units].present?
-      valid_units.first
+    if params[:units].present?
+      unit = params[:units].downcase
+      if valid_units.include?(unit)
+        unit
+      else
+        raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      end
     else
-      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      valid_units[0]
+    end
+  end
+
+  # precips stored in mm
+  def convert(precip)
+    if units == "in"
+      precip / 25.4
+    else
+      precip
     end
   end
 end

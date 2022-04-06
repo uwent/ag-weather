@@ -315,7 +315,7 @@ Get parameter ranges available in the database
 
 ## index [/weather]
 
-### Get weather data [GET /weather{?lat,long,start_date,end_date}]
+### Get weather data [GET /weather{?lat,long,start_date,end_date,units}]
 
 Returns weather data for location and date range
 
@@ -324,6 +324,7 @@ Returns weather data for location and date range
     + long: `-90.0` (number) - west longitude
     + start_date: `2020-01-01` (string) - start date
     + end_date: `2020-10-10` (string) - end date
+    + units: `C` (string) - C or F
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -333,6 +334,7 @@ Returns weather data for location and date range
             + long (number)
             + start_date (string)
             + end_date (string)
+            + units (string)
             + days_requested (number)
             + days_returned (number)
             + compute_time (number)
@@ -380,10 +382,11 @@ Returns weather data for location and date range
 
 ## all_for_date [/weather/all_for_date]
 
-### Get all insolations for date [GET /weather/all_for_date{?date}]
+### Get all insolations for date [GET /weather/all_for_date{?date,units}]
 
 + Parameters
     + date: `2020-01-01` (string)
+    + units: `C` (string) - C or F
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (object)
@@ -393,6 +396,7 @@ Returns weather data for location and date range
             + lat_range (array)
             + long_range (array)
             + points (number)
+            + units (string)
             + compute_time (number)
         + data (array)
             + (object, optional)

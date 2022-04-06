@@ -1,5 +1,5 @@
 class WeatherDatum < ApplicationRecord
-  UNITS = ["F", "C"]
+  UNITS = ["C", "F"]
 
   def self.calculate_all_degree_days_for_date_range(
     lat_range: LandExtent.latitudes,
@@ -57,14 +57,6 @@ class WeatherDatum < ApplicationRecord
     dd_grid
   end
 
-  # fahrenheit min/max. base/upper must be F
-  def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
-    min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
-    max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
-    dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)
-    [0, dd].max unless dd.nil?
-  end
-
   def self.land_grid_for_date(date)
     grid = LandGrid.new
     where(date:).each do |w|
@@ -103,5 +95,15 @@ class WeatherDatum < ApplicationRecord
 
   def self.image_title(date, units = "F")
     "Mean air temperature (°#{units}) for #{date.strftime("%b %d, %Y")}"
+  end
+
+  # INSTANCE METHODS
+
+  # fahrenheit min/max. base/upper must be F
+  def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
+    min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
+    max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
+    dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)
+    [0, dd].max unless dd.nil?
   end
 end
