@@ -27,7 +27,7 @@ every :day, at: "6:00am" do
   runner "RunTasks.daily"
 end
 
-every :day, at: "7:30am" do
+every :day, at: "7:00am" do
   runner "DataImport.send_status_email"
 end
 
