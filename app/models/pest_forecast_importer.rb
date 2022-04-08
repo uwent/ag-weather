@@ -32,7 +32,8 @@ class PestForecastImporter
     end
 
     PestForecastDataImport.succeed(date)
-    Rails.logger.info "PestForecastImporter :: Completed pest forecast calc for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
+    PestForecast.create_dd_map("dd_50_86")
+    Rails.logger.info "PestForecastImporter :: Completed pest forecast calc & image creation for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
   rescue => e
     msg = "Failed to calculate pest forecasts for #{date}: #{e.message}"
     Rails.logger.error "PestForecastImporter :: #{msg}"

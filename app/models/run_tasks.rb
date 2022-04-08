@@ -25,7 +25,6 @@ class RunTasks
 
   def self.daily
     RunTasks.all
-    PestForecast.create_dd_map("dd_50_86")
     DataImport.send_status_email
   rescue => e
     status = ["ERROR: Daily tasks failed to run with message: #{e.message}"]

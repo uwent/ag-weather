@@ -23,18 +23,17 @@ set :output, "/tmp/whenever.log"
 set :env_path, '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, ' cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ":task" :output '
 
-every :day, at: "6:00am" do
+# Daily data import task
+every :day, at: ["6:00am", "8:00am"] do
   runner "RunTasks.daily"
 end
 
-every :day, at: "7:00am" do
-  runner "DataImport.send_status_email"
-end
-
+# Clean up old (>1 month) map images
 every :day do
   runner "RunTasks.purge_old_images(delete: true)"
 end
 
+# Station data is deprecated
 # every "*/5 * * * *" do
 #   runner "StationHourlyObservationImporter.check_for_file_and_load"
 # end
