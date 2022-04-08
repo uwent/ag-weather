@@ -21,6 +21,7 @@ class InsolationImporter
       Rails.logger.info "InsolationImporter :: GET #{url}"
       response = HTTParty.get(url)
       import_insolation_data(response, date)
+      Insolation.create_image(date) unless Rails.env.test?
       Rails.logger.info "InsolationImporter :: Completed insolation load for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
     rescue => e
       msg = "Unable to retrieve insolation data: #{e.message}"
@@ -35,6 +36,7 @@ class InsolationImporter
     if response.lines[0..5].to_s.include?("404")
       raise StandardError.new "404 Not Found"
     end
+    
     insolations = []
     response.body.each_line do |line|
       val, lat, long = line.split
@@ -54,9 +56,7 @@ class InsolationImporter
     Insolation.transaction do
       Insolation.where(date:).delete_all
       Insolation.import(insolations)
+      InsolationDataImport.succeed(date)
     end
-
-    InsolationDataImport.succeed(date)
-    Insolation.create_image(date)
   end
 end

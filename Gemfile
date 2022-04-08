@@ -11,6 +11,7 @@ gem "jbuilder", "~> 2.11"
 gem "json", "~> 2.6"
 gem "sassc-rails", "~> 2.1"
 gem "whenever", "~> 1.0"
+gem "tzinfo", "~> 2.0"
 
 group :development do
   gem "puma"

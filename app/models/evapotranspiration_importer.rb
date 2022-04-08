@@ -36,10 +36,10 @@ class EvapotranspirationImporter
     Evapotranspiration.transaction do
       Evapotranspiration.where(date:).delete_all
       Evapotranspiration.import(ets)
+      EvapotranspirationDataImport.succeed(date)
     end
 
-    EvapotranspirationDataImport.succeed(date)
-    Evapotranspiration.create_image(date)
+    Evapotranspiration.create_image(date) unless Rails.env.test?
 
     Rails.logger.info "EvapotranspirationImporter :: Completed ET calc & image creation for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
   rescue => e

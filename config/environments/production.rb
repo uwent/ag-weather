@@ -74,7 +74,10 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
   # While sendmail is less configurable than the default smtp, it works on our server
   config.action_mailer.delivery_method = :sendmail
-  config.action_mailer.default_url_options = {host: "agweather.cals.wisc.edu"}
+  config.action_mailer.default_url_options = {
+    host: ENV["AG_WEATHER_HOST"] || "agweather.cals.wisc.edu",
+    protocol: "https"
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

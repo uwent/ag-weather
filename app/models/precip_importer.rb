@@ -83,8 +83,9 @@ class PrecipImporter
   def self.import_precip_data(date)
     precips = load_from(local_dir(date))
     write_to_db(precips, date)
-    PrecipDataImport.succeed(date)
-    Precip.create_image(date)
+    Precip.create_image(date) unless Rails.env.test?
+  rescue => e
+    Rails.logger.warn "PrecipImporter :: Failed to import precip data for #{date}: #{e.message}"
   end
 
   def self.load_from(dirname)
@@ -152,6 +153,7 @@ class PrecipImporter
     Precip.transaction do
       Precip.where(date:).delete_all
       Precip.import(precip_data)
+      PrecipDataImport.succeed(date)
     end
   end
 end

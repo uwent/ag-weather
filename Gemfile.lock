@@ -373,6 +373,7 @@ DEPENDENCIES
   spring
   spring-commands-rspec
   standard
+  tzinfo (~> 2.0)
   web-console
   webmock
   whenever (~> 1.0)

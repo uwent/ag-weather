@@ -17,6 +17,8 @@ RSpec.describe EvapotranspirationImporter, type: :model do
 
     context "when insolation and weather data are present" do
       before do
+        FactoryBot.create(:weather_datum, date:)
+        FactoryBot.create(:insolation, date:)
         WeatherDataImport.succeed(date)
         InsolationDataImport.succeed(date)
       end
@@ -26,21 +28,6 @@ RSpec.describe EvapotranspirationImporter, type: :model do
       end
 
       it "adds a new evapotranspiration record" do
-        Insolation.create(
-          latitude: Wisconsin.min_lat,
-          longitude: Wisconsin.min_long,
-          insolation: 1257.0,
-          date:
-        )
-        WeatherDatum.create(
-          latitude: Wisconsin.min_lat,
-          longitude: Wisconsin.min_long,
-          date:,
-          max_temperature: 15.0,
-          min_temperature: 5.0,
-          avg_temperature: 10.0,
-          vapor_pressure: 0.70
-        )
         expect { action }.to change(Evapotranspiration, :count)
       end
     end

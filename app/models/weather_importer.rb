@@ -83,9 +83,10 @@ class WeatherImporter
     weather_day = WeatherDay.new(date)
     weather_day.load_from(grib_dir)
     persist_day_to_db(weather_day)
-    WeatherDataImport.succeed(date)
     FileUtils.rm_r grib_dir unless KEEP_GRIB
-    WeatherDatum.create_image(date)
+    WeatherDatum.create_image(date) unless Rails.env.test?
+  rescue => e
+    Rails.logger.warn "WeatherImporter :: Failed to import weather data for #{date}: #{e.message}"
   end
 
   def self.persist_day_to_db(weather_day)
@@ -115,6 +116,7 @@ class WeatherImporter
     WeatherDatum.transaction do
       WeatherDatum.where(date: weather_day.date).delete_all
       WeatherDatum.import(weather_data)
+      WeatherDataImport.succeed(weather_day.date)
     end
   end
 

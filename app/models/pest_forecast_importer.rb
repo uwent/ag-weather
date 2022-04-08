@@ -29,10 +29,11 @@ class PestForecastImporter
     PestForecast.transaction do
       PestForecast.where(date:).delete_all
       PestForecast.import(forecasts)
+      PestForecastDataImport.succeed(date)
     end
 
-    PestForecastDataImport.succeed(date)
-    PestForecast.create_dd_map("dd_50_86")
+    PestForecast.create_dd_map("dd_50_86") unless Rails.env.test?
+    
     Rails.logger.info "PestForecastImporter :: Completed pest forecast calc & image creation for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
   rescue => e
     msg = "Failed to calculate pest forecasts for #{date}: #{e.message}"

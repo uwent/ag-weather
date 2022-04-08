@@ -1,3 +1,5 @@
+require "tzinfo"
+
 class StatusMailer < ActionMailer::Base
   def default_email
     "agweather@cals.wisc.edu"
@@ -18,7 +20,7 @@ class StatusMailer < ActionMailer::Base
     mail(
       to: status_recipients,
       from: default_email,
-      subject: "AgWeather status"
+      subject: "AgWeather data import problem"
     )
   end
 end

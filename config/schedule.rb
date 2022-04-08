@@ -28,6 +28,11 @@ every :day, at: ["6:00am", "8:00am"] do
   runner "RunTasks.daily"
 end
 
+# Send status email, in case daily task hangs and never sends mail
+every :day, at: "7:00am" do
+  runner "DataImport.send_status_email"
+end
+
 # Clean up old (>1 month) map images
 every :day do
   runner "RunTasks.purge_old_images(delete: true)"
