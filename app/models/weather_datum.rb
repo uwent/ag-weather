@@ -94,7 +94,7 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.image_title(date, units = "F")
-    "Mean air temperature (°#{units}) for #{date.strftime("%b %d, %Y")}"
+    "Mean air temperature (°#{units}) for #{date.strftime("%b %-d, %Y")}"
   end
 
   # INSTANCE METHODS

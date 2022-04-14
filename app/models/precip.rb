@@ -54,8 +54,8 @@ class Precip < ApplicationRecord
     if start_date.nil?
       "Total daily precip (#{units}) for #{date.strftime("%b %-d, %Y")}"
     else
-      fmt = start_date.year != date.year ? "%b %d, %Y" : "%b %d"
-      "Total cumulative precip (#{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
+      fmt = start_date.year != date.year ? "%b %-d, %Y" : "%b %-d"
+      "Total cumulative precip (#{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
     end
   end
 

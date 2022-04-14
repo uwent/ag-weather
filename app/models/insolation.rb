@@ -51,8 +51,8 @@ class Insolation < ApplicationRecord
     if start_date.nil?
       "Daily insolation (#{units}/m2/day) for #{date.strftime("%-d %B %Y")}"
     else
-      fmt = start_date.year != date.year ? "%b %d, %Y" : "%b %d"
-      "Total insolation (#{units}/m2) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
+      fmt = start_date.year != date.year ? "%b %-d, %Y" : "%b %-d"
+      "Total insolation (#{units}/m2) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
     end
   end
 

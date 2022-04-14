@@ -76,8 +76,8 @@ class Evapotranspiration < ApplicationRecord
     if start_date.nil?
       "Potential evapotranspiration (#{units}/day) for #{date.strftime("%b %-d, %Y")}"
     else
-      fmt = start_date.year != date.year ? "%b %d, %Y" : "%b %d"
-      "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %d, %Y")}"
+      fmt = start_date.year != date.year ? "%b %-d, %Y" : "%b %-d"
+      "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
     end
   end
 
