@@ -391,7 +391,7 @@ class PestForecastsController < ApplicationController
       max_value = data.map { |day| day[:cum_dd] }.max
 
       # 7-day forecast using last 7 day average
-      last_7 = data.last(7).map { |day| day[:dd] }
+      last_7 = data.last(7).map { |day| day[:dd] }.compact
       last_7_avg = last_7.sum / last_7.count
 
       cum_dd = max_value
