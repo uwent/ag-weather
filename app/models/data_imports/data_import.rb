@@ -52,6 +52,7 @@ class DataImport < ApplicationRecord
   end
 
   def self.fail(date, message = nil)
+    Rails.logger.warn "#{self.name} :: Imports failed for #{date}: #{message || 'No reason given'}"
     status = on(date)
     if status.exists?
       status.update(status: "unsuccessful", message:)
@@ -73,7 +74,7 @@ class DataImport < ApplicationRecord
         message << "  #{date}: Data load not attempted."
       elsif statuses.unsuccessful.count > 0 || statuses.started.count > 0
         message << "  #{date}: PROBLEM"
-        statuses.each do |status|
+        statuses.order(:updated_at).each do |status|
           case status.status
           when "unsuccessful"
             count += 1

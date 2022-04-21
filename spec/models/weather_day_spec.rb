@@ -41,29 +41,31 @@ RSpec.describe WeatherDay do
   end
 
   context "can access day's weather data" do
+    let(:lat) { Wisconsin.min_lat }
+    let(:long) { Wisconsin.min_long }
     let(:wh1) { WeatherHour.new }
     let(:wh2) { WeatherHour.new }
 
     it "gets all temperatures at a latitude/longitude pair" do
-      wh1.store("2t", Wisconsin.min_lat, Wisconsin.min_long, 290.15) # should find
-      wh1.store("2t", Wisconsin.max_lat, Wisconsin.min_long, 291.15) # should not find
-      wh2.store("2t", Wisconsin.min_lat, Wisconsin.min_long, 292.15) # should find
-      wh2.store("2d", Wisconsin.min_lat, Wisconsin.min_long, 293.15) # should not find
-
+      wh1.store(lat, long, 290.15, "2t") # should find
+      wh1.store(lat + 1, long, 291.15, "2t") # should not find, wrong lat
+      wh2.store(lat, long, 292.15, "2t") # should find
+      wh2.store(lat, long, 293.15, "2d") # should not find, wrong key
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
-      expect(weather_day.temperatures_at(Wisconsin.min_lat, Wisconsin.min_long)).to contain_exactly(17.0, 19.0)
+      puts weather_day
+      expect(weather_day.temperatures_at(lat, long)).to contain_exactly(17.0, 19.0)
     end
 
     it "gets all dew points at a latitude/longitude pair" do
-      wh1.store("2d", Wisconsin.min_lat, Wisconsin.min_long, 274.15) # should find
-      wh1.store("2d", Wisconsin.max_lat, Wisconsin.min_long, 276.15) # should not find
-      wh2.store("2t", Wisconsin.min_lat, Wisconsin.min_long, 277.15) # should not find
-      wh2.store("2d", Wisconsin.min_lat, Wisconsin.min_long, 275.15) # should find
-
+      wh1.store(lat, long, 274.15, "2d") # should find
+      wh1.store(lat + 1, long, 276.15, "2d") # should not find, wrong lat
+      wh2.store(lat, long, 275.15, "2d") # should find
+      wh2.store(lat, long, 277.15, "2t") # should not find, wrong key
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
-      expect(weather_day.dew_points_at(Wisconsin.min_lat, Wisconsin.min_long)).to contain_exactly(1.0, 2.0)
+
+      expect(weather_day.dew_points_at(lat, long)).to contain_exactly(1.0, 2.0)
     end
   end
 end

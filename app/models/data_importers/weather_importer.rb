@@ -1,81 +1,58 @@
-require "open-uri"
+class WeatherImporter < GribImporter
+  REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/rtma/prod"
+  LOCAL_DIR = "#{GRIB_DIR}/rtma"
 
-class WeatherImporter
-  REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/urma/prod"
-  LOCAL_BASE_DIR = "/tmp/gribdata"
-  KEEP_GRIB = ENV["KEEP_GRIB"] == "true" || false
-  MAX_TRIES = 3
-
-  def self.fetch
-    WeatherDataImport.days_to_load.each do |day|
-      fetch_day(day)
-    end
-  end
-
-  def self.download(url, path)
-    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
-    when StringIO
-      File.write(path, io.read)
-    when Tempfile
-      io.close
-      FileUtils.mv(io.path, path)
-    end
+  def self.import
+    WeatherDataImport
   end
 
   def self.local_dir(date)
-    savedir = "#{LOCAL_BASE_DIR}/#{date.to_formatted_s(:number)}"
+    savedir = "#{LOCAL_DIR}/#{date.to_formatted_s(:number)}"
     FileUtils.mkdir_p(savedir)
     savedir
   end
 
   def self.remote_url(date)
-    "#{REMOTE_URL_BASE}/urma2p5.#{date.to_formatted_s(:number)}"
+    "#{REMOTE_URL_BASE}/rtma2p5.#{date.to_formatted_s(:number)}"
   end
 
   def self.remote_file_name(hour)
-    "urma2p5.t%02dz.2dvaranl_ndfd.grb2_wexp" % hour
+    "rtma2p5.t%02dz.2dvaranl_ndfd.grb2_wexp" % hour
   end
 
-  def self.central_time(date, hour)
-    Time.use_zone("Central Time (US & Canada)") do
-      Time.zone.local(date.year, date.month, date.day, hour)
-    end
-  end
-
-  def self.fetch_day(date)
+  def self.fetch_day(date, force: false)
     start_time = Time.current
-    retries = 0
-    WeatherDataImport.start(date)
+
     Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
+    import.start(date)
+    hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
+    gribs = 0
 
-    begin
-      (central_time(date, 0).to_i..central_time(date, 23).to_i).step(1.hour) do |time_in_central|
-        time = Time.at(time_in_central).utc
-        remote_file = remote_file_name(time.hour)
-        file_url = remote_url(time.to_date) + "/" + remote_file
-        local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
+    # try to get a grib for each hour
+    hours.step(1.hour) do |time_in_central|
+      time = Time.at(time_in_central).utc
+      hour = Time.at(time_in_central).strftime("%H")
+      remote_file = remote_file_name(time.hour)
+      file_url = remote_url(time.to_date) + "/" + remote_file
+      local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
+      gribs += fetch_grib(file_url, local_file, "RTMA #{hour}")
+    end
 
-        if File.exist?(local_file)
-          Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> Exists"
-        else
-          Rails.logger.info "Hour #{Time.at(time_in_central).strftime("%H")} ==> GET #{file_url}"
-          download(file_url, local_file)
-        end
+    if gribs == 0
+      import.fail("Failed to retrieve any grib files for #{date}")
+      return
+    end
+
+    if gribs < 24
+      unless force
+        import.fail(date, "Failed to retrieve all grib files for #{date}")
+        return
       end
-    rescue => e
-      Rails.logger.warn "WeatherImporter :: Unable to retrieve remote weather file: #{e.message}"
-      if (retries += 1) < MAX_TRIES
-        Rails.logger.info "WeatherImporter :: Retrying connection in 10 seconds (attempt #{retries} of #{MAX_TRIES})"
-        sleep(10)
-        retry
-      end
-      WeatherDataImport.fail(date, "Unable to retrieve weather data: #{e.message}")
-      return "Unable to retrieve weather data for #{date}."
     end
 
     import_weather_data(date)
 
-    Rails.logger.info "WeatherImporter :: Completed weather load for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
+    Rails.logger.info "WeatherImporter :: Completed weather load for #{date} in #{elapsed(start_time)}."
   end
 
   def self.import_weather_data(date)
@@ -116,7 +93,7 @@ class WeatherImporter
     WeatherDatum.transaction do
       WeatherDatum.where(date: weather_day.date).delete_all
       WeatherDatum.import(weather_data)
-      WeatherDataImport.succeed(weather_day.date)
+      import.succeed(weather_day.date)
     end
   end
 

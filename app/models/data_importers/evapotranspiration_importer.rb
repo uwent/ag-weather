@@ -1,8 +1,6 @@
-class EvapotranspirationImporter
-  def self.create_et_data
-    EvapotranspirationDataImport.days_to_load.each do |date|
-      calculate_et_for_date(date)
-    end
+class EvapotranspirationImporter < DataImporter
+  def self.import
+    EvapotranspirationDataImport
   end
 
   def self.data_sources_loaded?(date)
@@ -10,14 +8,22 @@ class EvapotranspirationImporter
       InsolationDataImport.successful.find_by(readings_on: date)
   end
 
+  def self.create_et_data
+    dates = import.days_to_load
+    if dates.size > 0
+      dates.each { |date| calculate_et_for_date(date) }
+    else
+      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to load!"
+    end
+  end
+
   def self.calculate_et_for_date(date)
+    Rails.logger.info "#{self.name} :: Calculating ET for #{date}"
     start_time = Time.now
-    EvapotranspirationDataImport.start(date)
-    Rails.logger.info "EvapotranspirationImporter :: Calculating ET for #{date}"
+    import.start(date)
 
     unless data_sources_loaded?(date)
-      Rails.logger.warn "EvapotranspirationImporter :: FAIL: Data sources not loaded"
-      EvapotranspirationDataImport.fail(date, "Data sources not loaded")
+      import.fail(date, "Data sources not loaded for #{date}")
       return
     end
 
@@ -36,15 +42,13 @@ class EvapotranspirationImporter
     Evapotranspiration.transaction do
       Evapotranspiration.where(date:).delete_all
       Evapotranspiration.import(ets)
-      EvapotranspirationDataImport.succeed(date)
+      import.succeed(date)
     end
 
     Evapotranspiration.create_image(date) unless Rails.env.test?
 
-    Rails.logger.info "EvapotranspirationImporter :: Completed ET calc & image creation for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
+    Rails.logger.info "#{self.name} :: Completed ET calc & image creation for #{date} in #{elapsed(start_time)}."
   rescue => e
-    msg = "Failed to calculate ET for #{date}: #{e.message}"
-    Rails.logger.error "EvapotranspirationImporter :: #{msg}"
-    EvapotranspirationDataImport.fail(date, msg)
+    import.fail(date, "Failed to calculate ET for #{date}: #{e.message}")
   end
 end

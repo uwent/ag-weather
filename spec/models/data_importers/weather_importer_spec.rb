@@ -5,33 +5,19 @@ RSpec.describe WeatherImporter, type: :model do
 
   describe ".remote_url" do
     it "should get the proper remote directory given a date" do
-      expect(WeatherImporter.remote_url(date)).to eq("#{WeatherImporter::REMOTE_URL_BASE}/urma2p5.#{date.strftime("%Y%m%d")}")
+      expect(WeatherImporter.remote_url(date)).to eq("#{WeatherImporter::REMOTE_URL_BASE}/rtma2p5.#{date.strftime("%Y%m%d")}")
     end
   end
 
   describe ".local_dir" do
     it "should return the local directory to store the weather files" do
-      expect(WeatherImporter.local_dir(date)).to eq("#{WeatherImporter::LOCAL_BASE_DIR}/#{date.strftime("%Y%m%d")}")
+      expect(WeatherImporter.local_dir(date)).to eq("#{WeatherImporter::LOCAL_DIR}/#{date.strftime("%Y%m%d")}")
     end
 
     it "should create local directories if they don't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_BASE_DIR}/#{date.strftime("%Y%m%d")}").once
+      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_DIR}/#{date.strftime("%Y%m%d")}").once
       WeatherImporter.local_dir(date)
-    end
-  end
-
-  describe ".central_time" do
-    it "should return a time for a given date and hour in Central Time" do
-      expect(WeatherImporter.central_time(date, 0).zone).to eq("CST")
-    end
-
-    it "should set the hour as given" do
-      expect(WeatherImporter.central_time(date, 0).hour).to eq(0)
-    end
-
-    it "should set the date as given" do
-      expect(WeatherImporter.central_time(date, 0).to_date).to eq(date)
     end
   end
 

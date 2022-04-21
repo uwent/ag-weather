@@ -3,25 +3,7 @@ require "rails_helper"
 RSpec.describe PrecipImporter, type: :model do
   let(:date) { Date.current }
 
-  describe ".fetch" do
-    it "should fetch precips for each day required" do
-      unloaded_days = [Date.current - 3.days, Date.current - 1.day]
-      allow(PrecipDataImport).to receive(:days_to_load).and_return(unloaded_days)
-      expect(PrecipImporter).to receive(:fetch_day).exactly(unloaded_days.size).times
-      PrecipImporter.fetch
-    end
-  end
-
   describe ".local_dir" do
-    # it "should create the local directory if it doesn't exist" do
-    #   expect(FileUtils).to receive(:mkdir_p).with(PrecipImporter::LOCAL_DIR.to_s).once
-    #   PrecipImporter.local_dir(date)
-    # end
-
-    # it "should specify local filename" do
-    #   expect(PrecipImporter.local_dir(date)).to eq("#{PrecipImporter::LOCAL_DIR}/#{date.to_formatted_s(:number)}.grb2")
-    # end
-
     it "should create the file directory if it doesn't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
       expect(FileUtils).to receive(:mkdir_p).with("#{PrecipImporter::LOCAL_DIR}/#{date.to_formatted_s(:number)}").once
@@ -40,6 +22,15 @@ RSpec.describe PrecipImporter, type: :model do
     it "should create the correct remote filename" do
       file = "st4_conus.#{date.to_formatted_s(:number)}01.01h.grb2"
       expect(PrecipImporter.remote_file(date, "01")).to eq(file)
+    end
+  end
+
+  describe ".fetch" do
+    it "should fetch precips for each day required" do
+      unloaded_days = [Date.current - 3.days, Date.current - 1.day]
+      allow(PrecipDataImport).to receive(:days_to_load).and_return(unloaded_days)
+      expect(PrecipImporter).to receive(:fetch_day).exactly(unloaded_days.size).times
+      PrecipImporter.fetch
     end
   end
 

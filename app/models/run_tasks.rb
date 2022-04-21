@@ -3,24 +3,15 @@ class RunTasks
     start_time = Time.now
 
     # fetch remote data
-    precip = Thread.new { PrecipImporter.fetch }
-    insol = Thread.new { InsolationImporter.fetch }
-    weather = Thread.new { WeatherImporter.fetch }
-
-    insol.join
-    weather.join
-
-    # generate new data
-    et = Thread.new { EvapotranspirationImporter.create_et_data }
-    pf = Thread.new { PestForecastImporter.create_forecast_data }
-
-    et.join
-    pf.join
-    precip.join
+    InsolationImporter.fetch
+    PrecipImporter.fetch
+    WeatherImporter.fetch
+    EvapotranspirationImporter.create_et_data
+    PestForecastImporter.create_forecast_data
 
     # display status of import attempts
     DataImport.check_statuses
-    Rails.logger.info "Data tasks completed in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}"
+    Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
   end
 
   def self.daily
@@ -41,17 +32,22 @@ class RunTasks
 
   ## Command-line tools ##
   # reports if WeatherDatum exists for each day in year
-  def self.check_weather(year)
+  def self.check_weather(year = Date.current.year)
     start_date = Date.new(year, 1, 1)
     end_date = [Date.new(year, 12, 31), Date.today].min
     dates = start_date..end_date
+    msg = []
+    missing = 0
     dates.each do |date|
       if WeatherDatum.where(date:).exists?
-        puts date.strftime + " - ready"
+        msg << "#{date.to_s} - ok"
       else
-        puts date.strftime + " - no data"
+        msg << "#{date.to_s} - missing"
+        missing += 1
       end
     end
+    puts msg.join("\n")
+    "Missing days: #{missing}"
   end
 
   # re-generates map images for specific dates
@@ -82,7 +78,9 @@ class RunTasks
   end
 
   def self.purge_old_images(delete: false)
+    puts "\n### DAILY MAPS ###"
     purge_images(ImageCreator.file_dir, 1.year, delete)
+    puts "\n### PEST MAPS ###"
     purge_images(File.join(ImageCreator.file_dir, PestForecast.pest_map_dir), 1.week, delete)
   end
 
@@ -107,7 +105,7 @@ class RunTasks
 
   # re-generates pest forecasts for year from WeatherDatum
   # can be run if new models are added
-  def self.redo_forecasts(year)
+  def self.redo_forecasts(year = Date.current.year)
     start_date = Date.new(year, 1, 1)
     end_date = [Date.new(year, 12, 31), Date.today].min
     dates = start_date..end_date
@@ -115,7 +113,7 @@ class RunTasks
   end
 
   # re-generates pest forecasts for specific date range
-  def self.redo_forecasts_for_range(start_date, end_date)
+  def self.redo_forecasts_for_range(start_date = Date.current.beginning_of_year, end_date = Date.current)
     dates = Date.parse(start_date)..Date.parse(end_date)
     dates.each { |date| redo_forecast(date) }
   end
@@ -146,6 +144,7 @@ class RunTasks
     end
   end
 
+  # computed frost and freeze data for past weather when they were added to the db
   def self.calc_frost(start_date = WeatherDatum.earliest_date, end_date = WeatherDatum.latest_date)
     puts "Calculating freeze and frost data..."
     ActiveRecord::Base.logger.level = 1

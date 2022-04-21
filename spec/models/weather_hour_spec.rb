@@ -25,15 +25,15 @@ RSpec.describe WeatherHour do
     let(:long) { Wisconsin.min_long }
 
     it "should add an element to the temperatures" do
-      expect { weather_hour.store(temp_key, lat, long, 17) }
+      expect { weather_hour.store(lat, long, 17, temp_key) }
         .to change { weather_hour.data[lat, long][:temperatures].length }
-        .by(1)
+        .by 1
     end
 
     it "should add an element to the dew points" do
-      expect { weather_hour.store(dew_point_key, lat, long, 17) }
+      expect { weather_hour.store(lat, long, 17, dew_point_key) }
         .to change { weather_hour.data[lat, long][:dew_points].length }
-        .by(1)
+        .by 1
     end
   end
 
@@ -76,11 +76,11 @@ RSpec.describe WeatherHour do
     end
 
     it "should return average temperature at points within lat/long cell" do
-      weather_hour.store(temp_key, lat + 0.02, long, 1)
-      weather_hour.store(temp_key, lat, long + 0.03, 2)
-      weather_hour.store(temp_key, lat, long + 0.01, 3)
-      weather_hour.store(temp_key, lat + 0.1, long + 0.1, 100) # outside cell
-      expect(weather_hour.temperature_at(lat, long)).to eq(2.0)
+      weather_hour.store(lat + 0.02, long, 1, temp_key)
+      weather_hour.store(lat, long + 0.03, 2, temp_key)
+      weather_hour.store(lat, long + 0.01, 3, temp_key)
+      weather_hour.store(lat + 0.1, long + 0.1, 100, temp_key) # outside cell
+      expect(weather_hour.temperature_at(lat, long)).to eq 2.0
     end
   end
 
@@ -93,11 +93,11 @@ RSpec.describe WeatherHour do
     end
 
     it "should return average dew_point at points within lat/long cell" do
-      weather_hour.store(dew_point_key, lat + 0.03, long, 1)
-      weather_hour.store(dew_point_key, lat, long - 0.04, 2)
-      weather_hour.store(dew_point_key, lat + 0.01, long - 0.01, 3)
-      weather_hour.store(dew_point_key, lat + 0.05, long - 0.1, 100) # outside cell
-      expect(weather_hour.dew_point_at(lat, long)).to eq(2.0)
+      weather_hour.store(lat + 0.03, long, 1, dew_point_key)
+      weather_hour.store(lat, long - 0.04, 2, dew_point_key)
+      weather_hour.store(lat + 0.01, long - 0.01, 3, dew_point_key)
+      weather_hour.store(lat + 0.05, long - 0.1, 100, dew_point_key) # outside cell
+      expect(weather_hour.dew_point_at(lat, long)).to eq 2.0
     end
   end
 end

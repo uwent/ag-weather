@@ -1,20 +1,27 @@
-class InsolationImporter
+class InsolationImporter < DataImporter
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
 
-  def self.fetch
-    InsolationDataImport.days_to_load.each do |date|
-      fetch_day(date)
-    end
+  def self.import
+    InsolationDataImport
   end
 
   def self.formatted_date(date)
     "#{date.year}#{date.yday.to_s.rjust(3, "0")}"
   end
 
+  def self.fetch
+    dates = import.days_to_load
+    if dates.size > 0
+      dates.each { |date| fetch_day(date) }
+    else
+      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to do!"
+    end
+  end
+
   def self.fetch_day(date)
+    Rails.logger.info "#{self.name} :: Fetching insolation data for #{date}"
     start_time = Time.now
-    InsolationDataImport.start(date)
-    Rails.logger.info "InsolationImporter :: Fetching insolation data for #{date}"
+    import.start(date)
 
     begin
       url = "#{URL_BASE}.#{formatted_date(date)}"
@@ -22,12 +29,9 @@ class InsolationImporter
       response = HTTParty.get(url)
       import_insolation_data(response, date)
       Insolation.create_image(date) unless Rails.env.test?
-      Rails.logger.info "InsolationImporter :: Completed insolation load for #{date} in #{ActiveSupport::Duration.build((Time.now - start_time).round).inspect}."
+      Rails.logger.info "#{self.name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
     rescue => e
-      msg = "Unable to retrieve insolation data: #{e.message}"
-      Rails.logger.warn "InsolationImporter :: #{msg}"
-      InsolationDataImport.fail(date, msg)
-      msg
+      import.fail(date, "Unable to retrieve insolation data: #{e.message}")
     end
   end
 
@@ -36,7 +40,7 @@ class InsolationImporter
     if response.lines[0..5].to_s.include?("404")
       raise StandardError.new "404 Not Found"
     end
-    
+
     insolations = []
     response.body.each_line do |line|
       val, lat, long = line.split
@@ -56,7 +60,7 @@ class InsolationImporter
     Insolation.transaction do
       Insolation.where(date:).delete_all
       Insolation.import(insolations)
-      InsolationDataImport.succeed(date)
+      import.succeed(date)
     end
   end
 end
