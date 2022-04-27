@@ -52,7 +52,7 @@ class DataImport < ApplicationRecord
   end
 
   def self.fail(date, message = nil)
-    Rails.logger.warn "#{self.name} :: Imports failed for #{date}: #{message || 'No reason given'}"
+    Rails.logger.warn "#{name} :: Imports failed for #{date}: #{message || "No reason given"}"
     status = on(date)
     if status.exists?
       status.update(status: "unsuccessful", message:)

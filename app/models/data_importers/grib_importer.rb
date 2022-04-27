@@ -11,7 +11,7 @@ class GribImporter < DataImporter
     if dates.size > 0
       dates.each { |date| fetch_day(date, force: date < 2.days.ago) }
     else
-      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to do!"
+      Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
     end
   end
 

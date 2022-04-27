@@ -22,7 +22,7 @@ class PrecipImporter < GribImporter
 
   def self.fetch_day(date, force: false)
     start_time = Time.current
-    Rails.logger.info "#{self.name} :: Fetching precip data for #{date}..."
+    Rails.logger.info "#{name} :: Fetching precip data for #{date}..."
     import.start(date)
     hours = central_time(date, 0).to_i..central_time(date, 23).to_i
     gribs = 0
@@ -51,7 +51,7 @@ class PrecipImporter < GribImporter
 
     import_precip_data(date)
 
-    Rails.logger.info "#{self.name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
+    Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
   end
 
   def self.import_precip_data(date)

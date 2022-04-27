@@ -14,12 +14,12 @@ class InsolationImporter < DataImporter
     if dates.size > 0
       dates.each { |date| fetch_day(date) }
     else
-      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to do!"
+      Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
     end
   end
 
   def self.fetch_day(date)
-    Rails.logger.info "#{self.name} :: Fetching insolation data for #{date}"
+    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     start_time = Time.now
     import.start(date)
 
@@ -29,7 +29,7 @@ class InsolationImporter < DataImporter
       response = HTTParty.get(url)
       import_insolation_data(response, date)
       Insolation.create_image(date) unless Rails.env.test?
-      Rails.logger.info "#{self.name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
+      Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
     rescue => e
       import.fail(date, "Unable to retrieve insolation data: #{e.message}")
     end

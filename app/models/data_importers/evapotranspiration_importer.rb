@@ -13,12 +13,12 @@ class EvapotranspirationImporter < DataImporter
     if dates.size > 0
       dates.each { |date| calculate_et_for_date(date) }
     else
-      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to load!"
+      Rails.logger.info "#{name} :: Everything's up to date, nothing to load!"
     end
   end
 
   def self.calculate_et_for_date(date)
-    Rails.logger.info "#{self.name} :: Calculating ET for #{date}"
+    Rails.logger.info "#{name} :: Calculating ET for #{date}"
     start_time = Time.now
     import.start(date)
 
@@ -47,7 +47,7 @@ class EvapotranspirationImporter < DataImporter
 
     Evapotranspiration.create_image(date) unless Rails.env.test?
 
-    Rails.logger.info "#{self.name} :: Completed ET calc & image creation for #{date} in #{elapsed(start_time)}."
+    Rails.logger.info "#{name} :: Completed ET calc & image creation for #{date} in #{elapsed(start_time)}."
   rescue => e
     import.fail(date, "Failed to calculate ET for #{date}: #{e.message}")
   end

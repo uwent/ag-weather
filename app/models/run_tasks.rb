@@ -40,9 +40,9 @@ class RunTasks
     missing = 0
     dates.each do |date|
       if WeatherDatum.where(date:).exists?
-        msg << "#{date.to_s} - ok"
+        msg << "#{date} - ok"
       else
-        msg << "#{date.to_s} - missing"
+        msg << "#{date} - missing"
         missing += 1
       end
     end

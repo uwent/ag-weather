@@ -18,8 +18,8 @@ RSpec.describe GribImporter, type: :model do
   end
 
   describe ".fetch_grib" do
-    let(:url) {"https://example.com/foo.grib2"}
-    let(:file) {"local.file"}
+    let(:url) { "https://example.com/foo.grib2" }
+    let(:file) { "local.file" }
 
     it "should return 1 if file already exists" do
       allow(File).to receive(:exists?).and_return(true)

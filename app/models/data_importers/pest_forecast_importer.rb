@@ -12,14 +12,14 @@ class PestForecastImporter < DataImporter
     if dates.size > 0
       dates.each { |date| calculate_forecast_for_date(date) }
     else
-      Rails.logger.info "#{self.name} :: Everything's up to date, nothing to do!"
+      Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
     end
   end
 
   def self.calculate_forecast_for_date(date)
-    Rails.logger.info "#{self.name} :: Fetching insolation data for #{date}"
+    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     start_time = Time.now
-    
+
     unless data_sources_loaded?(date)
       import.fail(date, "Weather data not found for #{date}")
       return
@@ -45,6 +45,6 @@ class PestForecastImporter < DataImporter
     Rails.logger.info "PestForecastImporter :: Completed pest forecast calc & image creation for #{date} in #{elapsed(start_time)}."
   rescue => e
     PestForecastDataImport.fail(date, "Failed to calculate pest forecasts for #{date}: #{e.message}")
-    return
+    nil
   end
 end
