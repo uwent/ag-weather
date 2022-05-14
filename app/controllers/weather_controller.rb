@@ -164,7 +164,7 @@ class WeatherController < ApplicationController
   #   long (required)
   # units:
   #   temp: C
-  #   rain: mm  
+  #   rain: mm
   def forecast
     lat = params[:lat]
     lon = params[:long]
@@ -172,7 +172,7 @@ class WeatherController < ApplicationController
     query = {lat:, lon:, units: "imperial", appid: OW_KEY}
 
     response = HTTParty.get(url, query:)
-    
+
     forecasts = response["list"]
 
     if forecasts.nil?
@@ -192,14 +192,14 @@ class WeatherController < ApplicationController
       date = time.to_date
       w = fc["main"].symbolize_keys
       wind = fc["wind"].symbolize_keys
-      rain = fc.keys.include?("rain") ? fc["rain"]["3h"] : 0.0
+      rain = fc.key?("rain") ? fc["rain"]["3h"] : 0.0
       weather = {
         date:,
         time:,
         temp: [w[:temp_min], w[:temp_max]],
         humidity: w[:humidity],
         wind:,
-        rain:,
+        rain:
       }
       days[date] ||= []
       days[date] << weather
@@ -213,10 +213,10 @@ class WeatherController < ApplicationController
         next
       end
 
-      temps = fcs.map {|h| h[:temp]}.flatten
-      hums = fcs.map {|h| h[:humidity]}
-      wind = fcs.map {|h| h[:wind][:speed]}
-      wind_degs = fcs.map {|h| h[:wind][:deg]}
+      temps = fcs.map { |h| h[:temp] }.flatten
+      hums = fcs.map { |h| h[:humidity] }
+      wind = fcs.map { |h| h[:wind][:speed] }
+      wind_degs = fcs.map { |h| h[:wind][:deg] }
       wind_deg = wind_degs.sort[wind_degs.size / 2] # median
 
       days[date] = {
@@ -236,9 +236,9 @@ class WeatherController < ApplicationController
           max: wind.max,
           avg: (wind.sum / wind.size).round(2),
           deg: wind_deg,
-          bearing: deg_to_dir(wind_deg),
+          bearing: deg_to_dir(wind_deg)
         },
-        rain: fcs.map {|h| h[:rain]}.sum.round(2),
+        rain: fcs.map { |h| h[:rain] }.sum.round(2),
         hours: fcs.size * 3
       }
     end
@@ -253,9 +253,9 @@ class WeatherController < ApplicationController
         temp: "F",
         humidity: "%",
         wind: "mph",
-        rain: "mm",
+        rain: "mm"
       },
-      forecasts: days.values,
+      forecasts: days.values
     }
   end
 
