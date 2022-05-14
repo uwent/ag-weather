@@ -158,7 +158,7 @@ class WeatherController < ApplicationController
     end
   end
 
-  # GET: 5-day forecast
+  # GET: 5-day forecast from openweather
   # params:
   #   lat (required)
   #   long (required)
@@ -166,8 +166,6 @@ class WeatherController < ApplicationController
   #   temp: C
   #   rain: mm  
   def forecast
-    start_time = Time.current
-    
     lat = params[:lat]
     lon = params[:long]
     url = "https://api.openweathermap.org/data/2.5/forecast"
