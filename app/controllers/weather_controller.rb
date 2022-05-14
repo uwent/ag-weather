@@ -243,7 +243,7 @@ class WeatherController < ApplicationController
       }
     end
 
-    sleep(1) # the openweather API is rate limited to 60/min
+    sleep(1) unless Rails.env.development? # the openweather API is rate limited to 60/min
 
     render json: {
       lat: lat,
