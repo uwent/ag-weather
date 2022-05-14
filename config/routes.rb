@@ -44,6 +44,7 @@ Rails.application.routes.draw do
     collection do
       get "info"
       get "all_for_date"
+      get "forecast"
     end
   end
 

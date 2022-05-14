@@ -1,4 +1,6 @@
 class WeatherController < ApplicationController
+  OW_KEY = ENV["OPENWEATHER_API_KEY"]
+
   # GET: returns weather data for lat, long, date range
   # params:
   #   lat (required)
@@ -156,6 +158,107 @@ class WeatherController < ApplicationController
     end
   end
 
+  # GET: 5-day forecast from openweather
+  # params:
+  #   lat (required)
+  #   long (required)
+  # units:
+  #   temp: C
+  #   rain: mm  
+  def forecast
+    lat = params[:lat]
+    lon = params[:long]
+    url = "https://api.openweathermap.org/data/2.5/forecast"
+    query = {lat:, lon:, units: "imperial", appid: OW_KEY}
+
+    response = HTTParty.get(url, query:)
+    
+    forecasts = response["list"]
+
+    if forecasts.nil?
+      return render json: {
+        status: response["cod"],
+        message: response["message"]
+      }
+    end
+
+    if params[:raw] == "true"
+      return render json: response
+    end
+
+    days = {}
+    forecasts.each do |fc|
+      time = Time.at(fc["dt"])
+      date = time.to_date
+      w = fc["main"].symbolize_keys
+      wind = fc["wind"].symbolize_keys
+      rain = fc.keys.include?("rain") ? fc["rain"]["3h"] : 0.0
+      weather = {
+        date:,
+        time:,
+        temp: [w[:temp_min], w[:temp_max]],
+        humidity: w[:humidity],
+        wind:,
+        rain:,
+      }
+      days[date] ||= []
+      days[date] << weather
+    end
+
+    days.keys.each do |date|
+      fcs = days[date]
+
+      if date > Date.current && fcs.size < 8
+        days.delete(date)
+        next
+      end
+
+      temps = fcs.map {|h| h[:temp]}.flatten
+      hums = fcs.map {|h| h[:humidity]}
+      wind = fcs.map {|h| h[:wind][:speed]}
+      wind_degs = fcs.map {|h| h[:wind][:deg]}
+      wind_deg = wind_degs.sort[wind_degs.size / 2] # median
+
+      days[date] = {
+        date: date,
+        temp: {
+          min: temps.min,
+          max: temps.max,
+          avg: (temps.sum / temps.size).round(2)
+        },
+        humidity: {
+          min: hums.min,
+          max: hums.max,
+          avg: hums.sum / hums.size
+        },
+        wind: {
+          min: wind.min,
+          max: wind.max,
+          avg: (wind.sum / wind.size).round(2),
+          deg: wind_deg,
+          bearing: deg_to_dir(wind_deg),
+        },
+        rain: fcs.map {|h| h[:rain]}.sum.round(2),
+        hours: fcs.size * 3
+      }
+    end
+
+    sleep(1) # the openweather API is rate limited to 60/min
+
+    render json: {
+      lat: lat,
+      long: long,
+      status: "OK",
+      units: {
+        temp: "F",
+        humidity: "%",
+        wind: "mph",
+        rain: "mm",
+      },
+      forecasts: days.values,
+    }
+  end
+
   # GET: valid params for api
   def info
     start_time = Time.current
@@ -199,6 +302,23 @@ class WeatherController < ApplicationController
       UnitConverter.c_to_f(temp)
     else
       temp
+    end
+  end
+
+  def deg_to_dir(deg)
+    deg = (deg + 22.5) % 360
+    bearings = {
+      N: 0,
+      NE: 45,
+      E: 90,
+      SE: 135,
+      S: 180,
+      SW: 225,
+      W: 270,
+      NW: 315
+    }.freeze
+    bearings.each do |k, v|
+      return k.to_s if deg.between?(v, v + 45)
     end
   end
 end

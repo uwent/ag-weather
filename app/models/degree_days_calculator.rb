@@ -12,7 +12,7 @@ class DegreeDaysCalculator
     calculate(UnitConverter.f_to_c(min), UnitConverter.f_to_c(max), base:, upper:, method:)
   end
 
-  # Min, max in Fahrenheit
+  # Min, max in Celcius
   def self.calculate(min, max, base: BASE_C, upper: UPPER_C, method: METHOD)
     case method.downcase
     when "average"
