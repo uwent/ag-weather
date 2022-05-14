@@ -305,20 +305,31 @@ class WeatherController < ApplicationController
     end
   end
 
-  def deg_to_dir(deg)
-    deg = (deg + 22.5) % 360
-    bearings = {
+  def bearings
+    {
       N: 0,
+      NNE: 22.5,
       NE: 45,
+      ENE: 67.5,
       E: 90,
+      ESE: 112.5,
       SE: 135,
+      SSE: 157.5,
       S: 180,
+      SSW: 202.5,
       SW: 225,
+      WSW: 247.5,
       W: 270,
-      NW: 315
+      WNW: 292.5,
+      NW: 315,
+      NNW: 337.5
     }.freeze
+  end
+
+  def deg_to_dir(deg)
+    deg = (deg - 180 + 11.25) % 360
     bearings.each do |k, v|
-      return k.to_s if deg.between?(v, v + 45)
+      return k.to_s if deg.between?(v, v + 22.5)
     end
   end
 end
