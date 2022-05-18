@@ -10,6 +10,8 @@ class WeatherController < ApplicationController
   #   units - default C
 
   def index
+    params.require([:lat, :long])
+
     start_time = Time.current
     status = "OK"
     data = []
@@ -98,16 +100,15 @@ class WeatherController < ApplicationController
 
   # GET: returns weather grid for date
   # params:
-  #   date (required)
+  #   date - default most recent data
   #   units - default C
+
   def all_for_date
     start_time = Time.current
     status = "OK"
     info = {}
     data = []
-
     @date = date
-
     weather = WeatherDatum.where(date: @date).order(:latitude, :longitude)
 
     if weather.size > 0
@@ -165,7 +166,11 @@ class WeatherController < ApplicationController
   # units:
   #   temp: C
   #   rain: mm
+
   def forecast
+    params.require([:lat, :long])
+
+    start_time = Time.now
     lat = params[:lat]
     lon = params[:long]
     url = "https://api.openweathermap.org/data/2.5/forecast"
@@ -255,11 +260,70 @@ class WeatherController < ApplicationController
         wind: "mph",
         rain: "mm"
       },
+      compute_time: Time.now - start_time,
       forecasts: days.values
     }
   end
 
-  # GET: valid params for api
+  # GET: 7-day hourly forecast from National Weather Service
+  # params:
+  #   lat (required)
+  #   long (required)
+
+  def forecast_nws
+    params.require([:lat, :long])
+
+    start_time = Time.current
+    lat = params[:lat]
+    lon = params[:long]
+
+    grid_url = "https://api.weather.gov/points/#{lat},#{long}"
+    grid_res = JSON.parse(HTTParty.get(grid_url), symbolize_names: true)
+
+    forecast_url = grid_res[:properties][:forecastHourly]
+    forecast_res = JSON.parse(HTTParty.get(forecast_url), symbolize_names: true)
+    forecasts = forecast_res[:properties][:periods]
+
+    if forecasts.nil?
+      return render json: {
+        status: 404,
+        message: "Unable to retrieve forecast."
+      }
+    end
+
+    if params[:raw] == "true"
+      return render json: forecast_res
+    end
+
+    days = {}
+    forecasts.each do |fc|
+      time = Time.parse(fc[:startTime])
+      date = time.to_date
+      weather = {
+        date:,
+        time:,
+        hour: time.hour,
+        temp: fc[:temperature],
+        wind: fc[:windSpeed].to_f,
+        wind_dir: fc[:windDirection]
+      }
+      days[date] ||= []
+      days[date] << weather
+    end
+
+    render json: {
+      lat:,
+      long:,
+      start_date: days.keys.first,
+      end_date: days.keys.last,
+      days: days.size,
+      compute_time: Time.now - start_time,
+      forecasts: days
+    }
+  end
+
+  # GET: Returns info about weather db
+
   def info
     start_time = Time.current
     t = WeatherDatum
@@ -319,7 +383,7 @@ class WeatherController < ApplicationController
   end
 
   def deg_to_dir(deg)
-    deg = (deg - 180 + 22.5) % 360
+    deg = (deg + 22.5) % 360
     bearings.each do |k, v|
       return k.to_s if deg.between?(v, v + 45)
     end

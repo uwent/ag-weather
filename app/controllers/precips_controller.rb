@@ -4,8 +4,11 @@ class PrecipsController < ApplicationController
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
-  #   end_date - default today
+  #   end_date - default yesterday
+
   def index
+    params.require([:lat, :long])
+
     start_time = Time.current
     status = "OK"
     data = []
@@ -63,6 +66,7 @@ class PrecipsController < ApplicationController
   end
 
   # GET: create map and return url to it
+
   def show
     start_time = Time.current
 
@@ -100,7 +104,8 @@ class PrecipsController < ApplicationController
 
   # GET: return grid of all values for date
   # params:
-  #   date
+  #   date - default to most recent data
+
   def all_for_date
     start_time = Time.current
     status = "OK"
@@ -156,7 +161,8 @@ class PrecipsController < ApplicationController
     end
   end
 
-  # GET: returns valid params for api
+  # GET: Returns info about precips db
+
   def info
     start_time = Time.current
     t = Precip

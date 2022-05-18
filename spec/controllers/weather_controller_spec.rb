@@ -27,7 +27,7 @@ RSpec.describe WeatherController, type: :controller do
       }
 
       it "is okay" do
-        get(:index)
+        get(:index, params: {lat:, long:})
         expect(response).to have_http_status(:ok)
       end
 
@@ -93,18 +93,20 @@ RSpec.describe WeatherController, type: :controller do
         }
       }
 
-      it "and has no latitude return no data" do
+      it "and has no latitude raise error" do
         params.delete(:lat)
         get(:index, params:)
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("lat")
       end
 
-      it "and has no longitude return no content" do
+      it "and has no longitude raise error" do
         params.delete(:long)
         get(:index, params:)
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("long")
       end
     end
   end

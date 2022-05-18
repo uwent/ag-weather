@@ -113,7 +113,16 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "returns no data if no pest" do
         params.delete(:pest)
-        get :index, params: params
+        get(:index, params:)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("pest")
+      end
+
+      it "returns pest not found if invalid pest" do
+        params.update({pest: "foo"})
+        get(:index, params:)
+
         expect(info[:status]).to eq("pest not found")
         expect(data).to be_empty
       end
@@ -414,16 +423,18 @@ RSpec.describe PestForecastsController, type: :controller do
 
       it "and has no latitude return no data" do
         params.delete(:lat)
-        get :point_details, params: params
-        expect(info[:status]).to eq("no data")
-        expect(data).to be_empty
+        get(:point_details, params:)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("lat")
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
-        get :point_details, params: params
-        expect(info[:status]).to eq("no data")
-        expect(data).to be_empty
+        get(:point_details, params:)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("long")
       end
     end
   end
@@ -515,18 +526,20 @@ RSpec.describe PestForecastsController, type: :controller do
         }
       }
 
-      it "and has no latitude return no data" do
+      it "and has no latitude raise error" do
         params.delete(:lat)
         get :custom_point_details, params: params
-        expect(info[:status]).to eq("no data")
-        expect(data).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("lat")
       end
 
       it "and has no longitude return no content" do
         params.delete(:long)
         get :custom_point_details, params: params
-        expect(info[:status]).to eq("no data")
-        expect(data).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("long")
       end
     end
   end

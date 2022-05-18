@@ -28,11 +28,13 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "is okay" do
         get(:index, params:)
+
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
         get(:index, params:)
+
         expect(json[:data]).to be_an(Array)
         expect(json[:info]).to be_an(Hash)
         expect(json[:data][0].keys).to match([:date, :value])
@@ -40,18 +42,21 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "has the correct number of elements" do
         get(:index, params:)
+
         expect(json[:data].length).to eq((earliest_date..latest_date).count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get(:index, params:)
+
         expect(json[:info][:start_date]).to eq(latest_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to most recent data" do
         params.delete(:end_date)
         get(:index, params:)
+
         expect(json[:info][:end_date]).to eq(latest_date.to_s)
       end
 
@@ -60,12 +65,14 @@ RSpec.describe InsolationsController, type: :controller do
         long = -89.49
         params.update({lat:, long:})
         get(:index, params:)
+
         expect(json[:info][:lat]).to eq(lat.round(1))
         expect(json[:info][:long]).to eq(long.round(1))
       end
 
       it "can return a csv" do
         get(:index, params:, as: :csv)
+
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -81,18 +88,20 @@ RSpec.describe InsolationsController, type: :controller do
         }
       }
 
-      it "and has no latitude return no data" do
+      it "and has no latitude raise error" do
         params.delete(:lat)
         get(:index, params:)
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("lat")
       end
 
-      it "and has no longitude return no content" do
+      it "and has no longitude raise error" do
         params.delete(:long)
         get(:index, params:)
-        expect(json[:status]).to eq("no data")
-        expect(json[:data]).to be_empty
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json[:error]).to match("long")
       end
     end
   end
@@ -118,17 +127,20 @@ RSpec.describe InsolationsController, type: :controller do
     context "when the request is valid" do
       it "is okay" do
         get(:show, params: {id: date})
+
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
         get(:show, params: {id: date})
+
         expect(json.keys).to eq([:params, :compute_time, :map])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:show, params: {id: date})
+
         expect(json[:map]).to eq(url)
       end
 
@@ -136,6 +148,7 @@ RSpec.describe InsolationsController, type: :controller do
         start_date = Date.current - 1.month
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:show, params: {id: date, start_date:})
+
         expect(json[:map]).to eq(url)
       end
 
@@ -144,17 +157,20 @@ RSpec.describe InsolationsController, type: :controller do
         image_name2 = Insolation.image_name(date, start_date, unit2)
         allow(ImageCreator).to receive(:create_image).and_return(image_name2)
         get(:show, params: {id: date, units: unit2})
+
         expect(json[:map]).to eq("/#{image_name2}")
       end
 
       it "has the correct response of no map for date not loaded" do
         get(:show, params: {id: empty_date})
+
         expect(json[:map]).to eq("/no_data.png")
       end
 
       it "shows the image in the browser when format=png" do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:show, params: {id: date, format: :png})
+
         expect(response.body).to include("<img src=#{url}")
       end
     end
@@ -163,6 +179,7 @@ RSpec.describe InsolationsController, type: :controller do
       it "returns the most recent map" do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:show, params: {id: "foo"})
+
         expect(json[:map]).to eq(url)
       end
 
@@ -185,16 +202,19 @@ RSpec.describe InsolationsController, type: :controller do
     context "when the request is valid" do
       it "is okay" do
         get(:all_for_date, params: {date:})
+
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
         get(:all_for_date, params: {date:})
+
         expect(json.keys).to match([:status, :info, :data])
       end
 
       it "returns valid data" do
         get(:all_for_date, params: {date:})
+
         expect(json[:status]).to eq("OK")
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Array)
@@ -203,6 +223,7 @@ RSpec.describe InsolationsController, type: :controller do
 
       it "can return a csv" do
         get(:all_for_date, params: {date:}, as: :csv)
+
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
       end
@@ -211,6 +232,7 @@ RSpec.describe InsolationsController, type: :controller do
     context "when date is valid but has no data" do
       it "returns empty data" do
         get(:all_for_date, params: {date: empty_date})
+
         expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
       end
@@ -219,6 +241,7 @@ RSpec.describe InsolationsController, type: :controller do
     context "when params are empty" do
       it "defaults to most recent date" do
         get(:all_for_date)
+
         expect(json[:info][:date]).to eq(latest_date.to_s)
       end
     end
@@ -228,6 +251,7 @@ RSpec.describe InsolationsController, type: :controller do
     it "is ok" do
       FactoryBot.create(:insolation)
       get(:info)
+      
       expect(response).to have_http_status(:ok)
     end
   end

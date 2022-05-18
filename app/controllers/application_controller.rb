@@ -3,6 +3,10 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery prepend: true, with: :null_session
 
+  rescue_from ActionController::ParameterMissing do |e|
+    render json: { error: e.message }, status: :bad_request
+  end
+
   def index
   end
 

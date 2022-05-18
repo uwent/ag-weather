@@ -1,4 +1,5 @@
 class EvapotranspirationsController < ApplicationController
+
   # GET: returns ets for lat, long, date range
   # params:
   #   lat (required)
@@ -7,6 +8,8 @@ class EvapotranspirationsController < ApplicationController
   #   end_date - default today
 
   def index
+    params.require([:lat, :long])
+
     start_time = Time.current
     status = "OK"
     data = []
@@ -91,6 +94,7 @@ class EvapotranspirationsController < ApplicationController
   end
 
   # GET: create map and return url to it
+
   def show
     start_time = Time.current
 
@@ -128,7 +132,7 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: return grid of all values for date
   # params:
-  #   date
+  #   date - default most recent date
 
   def all_for_date
     start_time = Time.current
@@ -186,6 +190,7 @@ class EvapotranspirationsController < ApplicationController
   end
 
   # GET: calculate et with arguments
+
   def calculate_et
     render json: {
       inputs: params,
@@ -193,7 +198,8 @@ class EvapotranspirationsController < ApplicationController
     }
   end
 
-  # GET: valid params for api
+  # GET: Returns info about et database
+
   def info
     start_time = Time.current
     t = Evapotranspiration

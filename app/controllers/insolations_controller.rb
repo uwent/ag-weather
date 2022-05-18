@@ -4,9 +4,11 @@ class InsolationsController < ApplicationController
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
-  #   end_date - default today
+  #   end_date - default yesterday
 
   def index
+    params.require([:lat, :long])
+
     start_time = Time.current
     status = "OK"
     data = []
@@ -99,7 +101,7 @@ class InsolationsController < ApplicationController
 
   # GET: return grid of all values for date
   # params:
-  #   date
+  #   date - defaults to most recent data
 
   def all_for_date
     start_time = Time.current
@@ -156,7 +158,8 @@ class InsolationsController < ApplicationController
     end
   end
 
-  # GET: valid params for api
+  # GET: Returns info about insolations db
+
   def info
     start_time = Time.current
     t = Insolation

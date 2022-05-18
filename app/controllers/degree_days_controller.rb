@@ -1,34 +1,19 @@
 class DegreeDaysController < ApplicationController
-  # This was never implemented and doesn't generate any map images.
-  # def show
-  #   @map = "path/to/degree_day/map.img"
-
-  #   degree_day_maps = [
-  #     { type: 'alfalfa_weevil', map: @map },
-  #     { type: 'corn_development', map: @map },
-  #     { type: 'corn_stalk_borer', map: @map },
-  #     { type: 'cranberry', map: @map },
-  #     { type: 'euro_corn_borer', map: @map },
-  #     { type: 'potato', map: @map },
-  #     { type: 'seedcorn_maggot', map: @map },
-  #     { type: 'tree_pests', map: @map }
-  #   ]
-
-  #   render json: degree_day_maps
-  # end
 
   # GET: returns weather and computed degree days for point
   # params:
   #   lat (required)
   #   long (required)
   #   start_date - default 1st of year
-  #   end_date - default today
+  #   end_date - default yesterday
   #   base - default 50 F
   #   upper - default 86 F
   #   method - default sine
   #   units - default F
 
   def index
+    params.require([:lat, :long])
+
     start_time = Time.current
     status = "OK"
     total = 0
@@ -95,6 +80,8 @@ class DegreeDaysController < ApplicationController
       end
     end
   end
+
+  # GET: Returns info about degree day data and methods. No params.
 
   def info
     start_time = Time.current

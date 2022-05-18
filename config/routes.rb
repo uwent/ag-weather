@@ -45,6 +45,7 @@ Rails.application.routes.draw do
       get "info"
       get "all_for_date"
       get "forecast"
+      get "forecast_nws"
     end
   end
 

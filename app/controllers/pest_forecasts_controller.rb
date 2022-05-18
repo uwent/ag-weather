@@ -1,13 +1,16 @@
 class PestForecastsController < ApplicationController
+  
   # GET: returns grid of pest data for dates
   # params:
   #   pest (required)
-  #   start_date
-  #   end_date
-  #   lat_range - min,max
-  #   long_range - min,max
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
+  #   lat_range - min,max - default whole grid
+  #   long_range - min,max - default whole grid
 
   def index
+    params.require(:pest)
+
     start_time = Time.current
     days_requested = (start_date..end_date).count
     status = "OK"
@@ -79,7 +82,7 @@ class PestForecastsController < ApplicationController
   # GET: degree-day grid for date range
 
   # params (if pest):
-  #   pest (required) - column name from pest_forecasts
+  #   pest - column name from pest_forecasts
   #   start_date - default 1st of year
   #   end_date - default today
   #   lat_range - min,max
@@ -209,10 +212,12 @@ class PestForecastsController < ApplicationController
   #   pest (required)
   #   lat (required)
   #   long (required)
-  #   start_date
-  #   end_date
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
 
   def point_details
+    params.require([:pest, :lat, :long])
+
     start_time = Time.current
     days_requested = (start_date..end_date).count
     status = "OK"
@@ -296,6 +301,8 @@ class PestForecastsController < ApplicationController
   #   in_f - default true (fahrenheit or celsius units)
 
   def custom_point_details
+    params.require([:lat, :long])
+
     start_time = Time.current
     days_requested = (start_date..end_date).count
     status = "OK"
@@ -363,6 +370,8 @@ class PestForecastsController < ApplicationController
   #   end_date (optional, default today)
 
   def pvy
+    params.require([:lat, :long])
+
     start_time = Time.current
     start_date = end_date.beginning_of_year
     days_requested = (start_date..end_date).count
@@ -434,10 +443,10 @@ class PestForecastsController < ApplicationController
 
   # GET: returns grid of pest data for dates
   # params:
-  #   start_date
-  #   end_date
-  #   lat_range - min,max
-  #   long_range - min,max
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
+  #   lat_range - min,max - default whole grid
+  #   long_range - min,max - default whole grid
 
   def freeze
     start_time = Time.current
@@ -495,8 +504,8 @@ class PestForecastsController < ApplicationController
 
   # GET: generates and returns a pest map
   # id: the column name from PestForecasts
-  # start_date
-  # end_date
+  # start_date - default 1st of year
+  # end_date - default most recent data
   # units (if dd map)
 
   def show
@@ -552,7 +561,8 @@ class PestForecastsController < ApplicationController
     end
   end
 
-  # Pest forecasts database info. No params.
+  # GET: Pest forecasts database info. No params.
+
   def info
     start_time = Time.current
     t = PestForecast
