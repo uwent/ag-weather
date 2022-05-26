@@ -177,7 +177,6 @@ class WeatherController < ApplicationController
     query = {lat:, lon:, units: "imperial", appid: OW_KEY}
 
     response = HTTParty.get(url, query:)
-
     forecasts = response["list"]
 
     if forecasts.nil?
@@ -248,7 +247,8 @@ class WeatherController < ApplicationController
       }
     end
 
-    sleep(1) unless Rails.env.development? # the openweather API is rate limited to 60/min
+    # the openweather API is rate limited to 60/min
+    sleep(1.05) unless Rails.env.development?
 
     render json: {
       lat: lat,
