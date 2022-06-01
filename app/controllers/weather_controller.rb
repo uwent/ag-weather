@@ -166,7 +166,7 @@ class WeatherController < ApplicationController
   #   lat (required)
   #   long (required)
   
-  def forecast
+  def forecast2
     params.require([:lat, :long])
 
     lat = params[:lat]
@@ -194,7 +194,7 @@ class WeatherController < ApplicationController
   #   temp: C
   #   rain: mm
 
-  def forecast_ow
+  def forecast
     params.require([:lat, :long])
 
     start_time = Time.now
