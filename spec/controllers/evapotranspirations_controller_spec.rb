@@ -249,7 +249,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     it "is ok" do
       FactoryBot.create(:evapotranspiration)
       get(:info)
-      
+
       expect(response).to have_http_status(:ok)
     end
   end

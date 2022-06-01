@@ -75,7 +75,7 @@ RSpec.describe PrecipsController, type: :controller do
       it "and has no latitude return no data" do
         params.delete(:lat)
         get(:index, params:)
-        
+
         expect(response).to have_http_status(:bad_request)
         expect(json[:error]).to match("lat")
       end

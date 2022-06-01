@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery prepend: true, with: :null_session
 
   rescue_from ActionController::ParameterMissing do |e|
-    render json: { error: e.message }, status: :bad_request
+    render json: {error: e.message}, status: :bad_request
   end
 
   def index

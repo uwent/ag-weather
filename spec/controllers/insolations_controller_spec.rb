@@ -251,7 +251,7 @@ RSpec.describe InsolationsController, type: :controller do
     it "is ok" do
       FactoryBot.create(:insolation)
       get(:info)
-      
+
       expect(response).to have_http_status(:ok)
     end
   end

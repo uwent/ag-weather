@@ -1,5 +1,4 @@
 class PestForecastsController < ApplicationController
-  
   # GET: returns grid of pest data for dates
   # params:
   #   pest (required)

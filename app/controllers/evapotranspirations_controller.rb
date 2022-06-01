@@ -1,5 +1,4 @@
 class EvapotranspirationsController < ApplicationController
-
   # GET: returns ets for lat, long, date range
   # params:
   #   lat (required)

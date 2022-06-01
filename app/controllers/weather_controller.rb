@@ -160,32 +160,6 @@ class WeatherController < ApplicationController
     end
   end
 
-  # GET: 3-day hourly forecast from weatherapi.com
-  # note: $4/mo paid account required for 5-day forecast
-  # params:
-  #   lat (required)
-  #   long (required)
-  
-  def forecast2
-    params.require([:lat, :long])
-
-    lat = params[:lat]
-    long = params[:long]
-    url = "https://api.weatherapi.com/v1/forecast.json"
-    query = {
-      key: WEATHERAPI_KEY,
-      q: "#{lat},#{long}",
-      days: 3,
-      aqi: "no",
-      alerts: "no"
-    }
-
-    response = HTTParty.get(url, query:)
-    forecasts = response["forecast"]["forecastday"]
-
-    render json: response
-  end
-
   # GET: 5-day forecast from openweather
   # params:
   #   lat (required)
@@ -302,7 +276,7 @@ class WeatherController < ApplicationController
 
     start_time = Time.current
     lat = params[:lat]
-    lon = params[:long]
+    long = params[:long]
 
     grid_url = "https://api.weather.gov/points/#{lat},#{long}"
     grid_res = JSON.parse(HTTParty.get(grid_url), symbolize_names: true)

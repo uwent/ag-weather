@@ -1,5 +1,4 @@
 class DegreeDaysController < ApplicationController
-
   # GET: returns weather and computed degree days for point
   # params:
   #   lat (required)
