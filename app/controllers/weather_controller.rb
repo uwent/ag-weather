@@ -1,5 +1,6 @@
 class WeatherController < ApplicationController
-  OW_KEY = ENV["OPENWEATHER_API_KEY"]
+  OPENWEATHER_KEY = ENV["OPENWEATHER_KEY"]
+  WEATHERAPI_KEY = ENV["WEATHERAPI_KEY"]
 
   # GET: returns weather data for lat, long, date range
   # params:
@@ -159,6 +160,32 @@ class WeatherController < ApplicationController
     end
   end
 
+  # GET: 3-day hourly forecast from weatherapi.com
+  # note: $4/mo paid account required for 5-day forecast
+  # params:
+  #   lat (required)
+  #   long (required)
+  
+  def forecast
+    params.require([:lat, :long])
+
+    lat = params[:lat]
+    long = params[:long]
+    url = "https://api.weatherapi.com/v1/forecast.json"
+    query = {
+      key: WEATHERAPI_KEY,
+      q: "#{lat},#{long}",
+      days: 3,
+      aqi: "no",
+      alerts: "no"
+    }
+
+    response = HTTParty.get(url, query:)
+    forecasts = response["forecast"]["forecastday"]
+
+    render json: response
+  end
+
   # GET: 5-day forecast from openweather
   # params:
   #   lat (required)
@@ -167,14 +194,14 @@ class WeatherController < ApplicationController
   #   temp: C
   #   rain: mm
 
-  def forecast
+  def forecast_ow
     params.require([:lat, :long])
 
     start_time = Time.now
     lat = params[:lat]
     lon = params[:long]
     url = "https://api.openweathermap.org/data/2.5/forecast"
-    query = {lat:, lon:, units: "imperial", appid: OW_KEY}
+    query = {lat:, lon:, units: "imperial", appid: OPENWEATHER_KEY}
 
     response = HTTParty.get(url, query:)
     forecasts = response["list"]
