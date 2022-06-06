@@ -1,7 +1,7 @@
 class Precip < ApplicationRecord
   # precip units are in mm
 
-  UNITS = ["mm", "in"]
+  UNITS = ["in", "mm"]
 
   def self.stats(date)
     precips = where(date:)
@@ -44,13 +44,13 @@ class Precip < ApplicationRecord
     grid
   end
 
-  def self.image_name(date, start_date = nil, units = "mm")
+  def self.image_name(date, start_date = nil, units = UNITS[0])
     name = "precip-#{units}-#{date.to_formatted_s(:number)}"
     name += "-#{start_date.to_formatted_s(:number)}" unless start_date.nil?
     name + ".png"
   end
 
-  def self.image_title(date, start_date = nil, units = "mm")
+  def self.image_title(date, start_date = nil, units = UNITS[0])
     if start_date.nil?
       "Total daily precip (#{units}) for #{date.strftime("%b %-d, %Y")}"
     else
@@ -59,7 +59,7 @@ class Precip < ApplicationRecord
     end
   end
 
-  def self.create_image_data(grid, data, units = "mm")
+  def self.create_image_data(grid, data, units = UNITS[0])
     data.each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
@@ -68,7 +68,7 @@ class Precip < ApplicationRecord
     grid
   end
 
-  def self.create_image(date, start_date: nil, units: "mm")
+  def self.create_image(date, start_date: nil, units: UNITS[0])
     if start_date.nil?
       precips = where(date:)
       raise StandardError.new("No data") if precips.size == 0

@@ -58,7 +58,7 @@ RSpec.describe Precip, type: :model do
 
     it "should construct a data grid and convert units" do
       precips = Precip.where(date: latest_date)
-      grid_mm = Precip.create_image_data(LandGrid.new, precips)
+      grid_mm = Precip.create_image_data(LandGrid.new, precips, "mm")
       grid_in = Precip.create_image_data(LandGrid.new, precips, "in")
       expect(grid_mm[lat, long].round(3)).to eq((grid_in[lat, long] * 25.4).round(3))
     end
