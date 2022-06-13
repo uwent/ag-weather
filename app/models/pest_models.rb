@@ -235,9 +235,9 @@ module PestModels
     h = 2.1529 # degree of asymmetry of the curve
     b = 0.026
     d = 1.999
-    puts e_prime = e * ((h + 1) / h) * (h**(1 / (h + 1)))
-    puts a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
-    puts pmi = a * (1 - Math.exp(-1 * ((b * (lw - c))**d)))
+    e_prime = e * ((h + 1) / h) * (h**(1 / (h + 1)))
+    a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
+    pmi = a * (1 - Math.exp(-1 * ((b * (lw - c))**d)))
     pmi
   end
 

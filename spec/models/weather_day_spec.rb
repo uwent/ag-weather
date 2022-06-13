@@ -53,7 +53,6 @@ RSpec.describe WeatherDay do
       wh2.store(lat, long, 293.15, "2d") # should not find, wrong key
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
-      puts weather_day
       expect(weather_day.temperatures_at(lat, long)).to contain_exactly(17.0, 19.0)
     end
 
