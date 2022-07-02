@@ -363,6 +363,7 @@ class WeatherController < ApplicationController
 
   # weather temps are in C
   def convert(temp)
+    return if temp.nil?
     if units == "F"
       UnitConverter.c_to_f(temp)
     else
