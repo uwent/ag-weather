@@ -2,6 +2,8 @@ class RunTasks
   def self.all
     start_time = Time.now
 
+    DataImport.check_statuses
+
     # fetch remote data
     InsolationImporter.fetch
     PrecipImporter.fetch
