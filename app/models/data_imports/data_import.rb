@@ -1,5 +1,5 @@
 class DataImport < ApplicationRecord
-  DAYS_BACK_WINDOW = ENV["DAYS_BACK_WINDOW"].to_i || 5
+  DAYS_BACK_WINDOW = (ENV["DAYS_BACK_WINDOW"] || 5).to_i
 
   def self.latest_date
     Time.now.in_time_zone("US/Central").yesterday.to_date

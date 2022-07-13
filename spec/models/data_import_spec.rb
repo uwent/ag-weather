@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe DataImport, type: :model do
   describe ".days_to_load" do
-    it "lists the days that have not successfully successful" do
+    it "lists the days that have not been loaded" do
       expect(DataImport.days_to_load.first).to be_a(Date)
     end
 
