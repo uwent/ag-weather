@@ -2,6 +2,9 @@ class RunTasks
   def self.all
     start_time = Time.now
 
+    loglevel = ActiveRecord::Base.logger.level
+    ActiveRecord::Base.logger.level = 1
+
     DataImport.check_statuses
 
     # fetch remote data
@@ -13,6 +16,7 @@ class RunTasks
 
     # display status of import attempts
     DataImport.check_statuses
+    ActiveRecord::Base.logger.level = loglevel
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
   end
 
