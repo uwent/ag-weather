@@ -237,8 +237,7 @@ module PestModels
     d = 1.999
     e_prime = e * ((h + 1) / h) * (h**(1 / (h + 1)))
     a = e_prime * Math.exp((t - f) * (g / (h + 1))) / (1 + Math.exp((t - g) * g))
-    pmi = a * (1 - Math.exp(-1 * ((b * (lw - c))**d)))
-    pmi
+    a * (1 - Math.exp(-1 * ((b * (lw - c))**d)))
   end
 
   # implementation of botcast in Sutton et al 1986

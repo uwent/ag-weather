@@ -154,7 +154,7 @@ RSpec.describe WeatherDatum, type: :model do
       weather = WeatherDatum.where(date: latest_date)
       grid_f = WeatherDatum.create_image_data(LandGrid.new, weather) # default units = F
       grid_c = WeatherDatum.create_image_data(LandGrid.new, weather, "C")
-      expect(grid_f[lat, long].round(3)).to eq((UnitConverter.c_to_f(grid_c[lat, long])).round(3))
+      expect(grid_f[lat, long].round(3)).to eq(UnitConverter.c_to_f(grid_c[lat, long]).round(3))
     end
 
     it "should return 'no_data.png' when data sources not loaded" do
