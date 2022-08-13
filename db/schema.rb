@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_03_07_230636) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_13_144341) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -105,6 +105,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_07_230636) do
     t.boolean "freeze", default: false
     t.float "dd_32_none"
     t.integer "botcast_dsi", default: 0
+    t.float "dd_38_75"
     t.index ["date", "latitude", "longitude"], name: "index_pest_forecasts_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
     t.index ["longitude"], name: "index_pest_forecasts_on_longitude"

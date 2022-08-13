@@ -179,4 +179,24 @@ class RunTasks
       end
     end
   end
+
+  # this was sooooo slow
+  # def self.fill_dd_38_75
+  #   ActiveRecord::Base.logger.level = 1
+  #   dates = PestForecast.select(:date).distinct.pluck(:date).to_a.sort
+  #   dates.each do |date|
+  #     puts date.to_s
+  #     weather = WeatherDatum.where(date:)
+  #     pfs = PestForecast.where(date: date)
+  #     pfs.each do |pf|
+  #       next unless pf.dd_38_75.nil?
+  #       latitude = pf.latitude
+  #       longitude = pf.longitude
+  #       w = weather.where(latitude:, longitude:).first
+  #       value = w.degree_days(38, 75)
+  #       puts "  #{latitude}, #{longitude}: #{value.round(2)}"
+  #       pf.update(dd_38_75: value)
+  #     end
+  #   end
+  # end
 end
