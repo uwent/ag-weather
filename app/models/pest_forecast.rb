@@ -30,6 +30,7 @@ class PestForecast < ApplicationRecord
       cercospora_div: compute_cercospora_div(weather),
       botcast_dsi: compute_botcast_dsi(weather),
       dd_32_none: weather.degree_days(32, NO_MAX), # 0 / none C
+      dd_38_75: weather.degree_days(38, 75), # 3.3 C / 23.9 C
       dd_39p2_86: weather.degree_days(39.2, 86), # 4 / 30 C
       dd_41_86: weather.degree_days(41, 86), # 5 / 30 C
       dd_41_88: weather.degree_days(41, 88), # 5 / 31 C
