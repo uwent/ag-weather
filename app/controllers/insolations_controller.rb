@@ -17,7 +17,7 @@ class InsolationsController < ApplicationController
       .where(date: start_date..end_date)
       .order(:date)
 
-    if insols.size > 0
+    unless insols.empty?
       data = insols.collect do |insol|
         {
           date: insol.date.to_s,
@@ -113,7 +113,7 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(date: @date).order(:latitude, :longitude)
 
-    if insols.size > 0
+    unless insols.empty?
       data = insols.collect do |insol|
         {
           lat: insol.latitude.round(1),

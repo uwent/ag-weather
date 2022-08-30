@@ -21,7 +21,7 @@ class WeatherController < ApplicationController
       .where(date: start_date..end_date)
       .order(:date)
 
-    if weather.size > 0
+    unless weather.empty?
       data = weather.collect do |w|
         {
           date: w.date.to_s,
@@ -110,9 +110,10 @@ class WeatherController < ApplicationController
     info = {}
     data = []
     @date = date
+    
     weather = WeatherDatum.where(date: @date).order(:latitude, :longitude)
 
-    if weather.size > 0
+    unless weather.empty?
       data = weather.collect do |w|
         {
           lat: w.latitude.round(1),

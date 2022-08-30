@@ -22,7 +22,7 @@ class DegreeDaysController < ApplicationController
       .where(date: start_date..end_date)
       .order(date: :asc)
 
-    if weather.size > 0
+    unless weather.empty?
       data = weather.collect do |w|
         dd = w.degree_days(base, upper, method, in_f)
         min = in_f ? UnitConverter.c_to_f(w.min_temperature) : w.min_temperature

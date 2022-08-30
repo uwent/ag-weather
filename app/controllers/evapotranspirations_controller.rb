@@ -21,7 +21,7 @@ class EvapotranspirationsController < ApplicationController
       WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
       Insolation.where(conditions).each { |i| insols[i.date] = i }
 
-      if weather.size > 0 && insols.size > 0
+      unless weather.empty? || insols.empty?
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
@@ -47,7 +47,7 @@ class EvapotranspirationsController < ApplicationController
     else
       ets = Evapotranspiration.where(conditions).order(:date)
 
-      if ets.size > 0
+      unless ets.empty?
         cumulative_value = 0
         data = ets.collect do |et|
           date = et.date.to_formatted_s
@@ -143,7 +143,7 @@ class EvapotranspirationsController < ApplicationController
 
     ets = Evapotranspiration.where(date: @date).order(:latitude, :longitude)
 
-    if ets.size > 0
+    unless ets.empty?
       data = ets.collect do |et|
         {
           lat: et.latitude.to_f.round(1),

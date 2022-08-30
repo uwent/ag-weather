@@ -381,6 +381,7 @@ class PestForecastsController < ApplicationController
     start_time = Time.current
     start_date = end_date.beginning_of_year
     days_requested = (start_date..end_date).count
+    days_returned = 0
     status = "OK"
     data = []
     forecast = []
@@ -388,20 +389,19 @@ class PestForecastsController < ApplicationController
     forecasts = PestForecast.where(date: start_date..end_date, latitude: lat, longitude: long)
       .order(:date)
 
-    days_returned = forecasts.size
-    status = "missing data" if days_returned < days_requested - 2
-
-    if forecasts.size > 0
+    unless forecasts.empty?
       cum_dd = 0
       data = forecasts.collect do |pf|
         dd = pf.dd_39p2_86
         cum_dd += dd
+        days_returned += 1
         {
           date: pf.date.to_s,
           dd: dd.round(1),
           cum_dd: cum_dd.round(1)
         }
       end
+      status = "missing data" if days_returned < days_requested - 2
 
       max_value = data.map { |day| day[:cum_dd] }.max
 
@@ -466,7 +466,7 @@ class PestForecastsController < ApplicationController
       longitude: long_range
     )
 
-    if forecasts.size > 0
+    unless forecasts.empty?
       data = forecasts.where(freeze: true)
         .group(:latitude, :longitude)
         .order(:latitude, :longitude)

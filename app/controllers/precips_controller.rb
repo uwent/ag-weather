@@ -16,7 +16,7 @@ class PrecipsController < ApplicationController
     precips = Precip.where(latitude: lat, longitude: long, date: start_date..end_date)
       .order(:date)
 
-    if precips.size > 0
+    unless precips.empty?
       cum_value = 0
       data = precips.collect do |precip|
         value = convert(precip.precip)
@@ -116,7 +116,7 @@ class PrecipsController < ApplicationController
 
     precips = Precip.where(date: @date).order(:latitude, :longitude)
 
-    if precips.size > 0
+    unless precips.empty?
       data = precips.collect do |precip|
         {
           lat: precip.latitude.round(1),
