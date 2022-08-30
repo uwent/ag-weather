@@ -1,7 +1,7 @@
 class UnitConverter
   # convert celsius to fahrenheit
   def self.c_to_f(c)
-    c.to_f * 9.0 / 5.0 + 32
+    c.to_f * 1.8 + 32
   end
 
   # convert fahrenheit to celsius
@@ -11,7 +11,7 @@ class UnitConverter
 
   # convert celsius degree days to fahrenheit degree days
   def self.cdd_to_fdd(cdd)
-    cdd.to_f * 9.0 / 5.0
+    cdd.to_f * 1.8
   end
 
   # convert fahrenheit degree days to celsius degree days

@@ -15,6 +15,7 @@ class PestForecastsController < ApplicationController
     status = "OK"
     info = {}
     data = []
+    days_returned = 0
 
     if PestForecast.column_names.include?(pest)
       forecasts = PestForecast.where(
@@ -23,21 +24,21 @@ class PestForecastsController < ApplicationController
         longitude: long_range
       )
 
-      days_returned = forecasts.distinct.count(:date)
-      status = "missing data" if days_returned < days_requested - 2
-
-      if forecasts.size > 0
+      unless forecasts.empty?
         data = forecasts.group(:latitude, :longitude)
           .order(:latitude, :longitude)
           .select(:latitude, :longitude, "sum(#{pest}) as total")
+          .select(:latitude, :longitude, "count(#{pest}) as count")
           .collect do |point|
-          {
-            lat: point.latitude.to_f.round(1),
-            long: point.longitude.to_f.round(1),
-            total: point.total.round(2),
-            avg: (point.total.to_f / days_returned).round(2)
-          }
+            days_returned = point.count
+            {
+              lat: point.latitude.to_f.round(1),
+              long: point.longitude.to_f.round(1),
+              total: point.total.round(2),
+              avg: (point.total.to_f / point.count).round(2)
+            }
         end
+        status = "missing data" if days_returned < days_requested - 2
       else
         status = "no data"
       end
@@ -57,7 +58,7 @@ class PestForecastsController < ApplicationController
       min_value: values.min,
       max_value: values.max,
       days_requested:,
-      days_returned: days_returned || 0,
+      days_returned:,
       status:,
       compute_time: Time.current - start_time
     }
@@ -98,11 +99,13 @@ class PestForecastsController < ApplicationController
   def custom
     start_time = Time.current
     days_requested = (start_date..end_date).count
+    days_returned = 0
     status = "OK"
     info = {}
     weather_info = {}
     data = []
 
+    # requested a column in PestForecasts
     if pest
       if PestForecast.column_names.include?(pest)
         pest_data = PestForecast.where(
@@ -111,20 +114,20 @@ class PestForecastsController < ApplicationController
           longitude: long_range
         )
 
-        days_returned = pest_data.distinct.count(:date)
-        status = "missing data" if days_returned < days_requested - 2
-
-        if pest_data.size > 0
+        unless pest_data.empty?
           data = pest_data.group(:latitude, :longitude)
             .order(:latitude, :longitude)
             .select(:latitude, :longitude, "sum(#{pest}) as total")
+            .select(:latitude, :longitude, "count(#{pest}) as count")
             .collect do |point|
-            {
-              lat: point.latitude.to_f.round(1),
-              long: point.longitude.to_f.round(1),
-              total: point.total.round(2)
-            }
+              days_returned = point.count
+              {
+                lat: point.latitude.to_f.round(1),
+                long: point.longitude.to_f.round(1),
+                total: point.total.round(2)
+              }
           end
+          status = "missing data" if days_returned < days_requested - 2
         else
           status = "pest not found"
         end
@@ -132,11 +135,12 @@ class PestForecastsController < ApplicationController
         status = "no data"
       end
     else
-      weather = WeatherDatum.where(date: start_date..end_date, latitude: lat_range, longitude: long_range)
-
-      dates = weather.distinct.pluck(:date)
-      days_returned = dates.size
-      status = "missing data" if days_returned < days_requested - 2
+      # need to run a custom degree day model
+      weather = WeatherDatum.where(
+        date: start_date..end_date,
+        latitude: lat_range,
+        longitude: long_range
+      )
 
       weather_info = {
         t_base:,
@@ -144,7 +148,8 @@ class PestForecastsController < ApplicationController
         units: "Fahrenheit degree days"
       }
 
-      if weather.size > 0
+      # TODO: This is incredibly intensive to compute, consider rethinking method
+      unless weather.empty?
         grid = weather.each_with_object(Hash.new(0)) do |w, h|
           coord = [w.latitude.to_f, w.longitude.to_f]
           if h[coord].nil?
@@ -219,6 +224,7 @@ class PestForecastsController < ApplicationController
 
     start_time = Time.current
     days_requested = (start_date..end_date).count
+    days_returned = 0
     status = "OK"
     info = {}
     data = []
@@ -229,16 +235,13 @@ class PestForecastsController < ApplicationController
         .map { |pf| [pf.date, pf.send(pest)] }.to_h
       forecasts.default = 0
 
-      days_returned = forecasts.size
-      status = "missing data" if days_returned < days_requested - 2
-
       cum_value = 0
-      if forecasts.size > 0
-        data = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
-          .order(:date)
-          .collect do |w|
+      unless forecasts.empty?
+        weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
+        data = weather.order(:date).collect do |w|
           value = forecasts[w.date]
           cum_value += value
+          days_returned += 1
           {
             date: w.date,
             min_temp: w.min_temperature.round(1),
@@ -250,6 +253,7 @@ class PestForecastsController < ApplicationController
             cumulative_value: cum_value.round(1)
           }
         end
+        status = "missing data" if days_returned < days_requested - 2
       else
         status = "no data"
       end
@@ -268,7 +272,7 @@ class PestForecastsController < ApplicationController
       units: {weather: "C", degree_days: "F"},
       cumulative_value: cum_value.round(1),
       days_requested:,
-      days_returned: days_returned || 0,
+      days_returned: days_returned,
       status:,
       compute_time: Time.current - start_time
     }
@@ -304,21 +308,23 @@ class PestForecastsController < ApplicationController
 
     start_time = Time.current
     days_requested = (start_date..end_date).count
+    days_returned = 0
     status = "OK"
     info = {}
     data = []
 
-    weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
-      .order(:date)
-
-    days_returned = weather.size
-    status = "missing data" if days_returned < days_requested - 2
+    weather = WeatherDatum.where(
+      date: start_date..end_date,
+      latitude: lat,
+      longitude: long
+    ).order(:date)
 
     cum_value = 0
-    if weather.size > 0
+    unless weather.empty?
       data = weather.collect do |w|
         value = w.degree_days(t_base, t_upper)
         cum_value += value
+        days_returned += 1
         {
           date: w.date,
           min_temp: w.min_temperature.round(1),
@@ -328,6 +334,7 @@ class PestForecastsController < ApplicationController
           cumulative_value: cum_value.round(1)
         }
       end
+      status = "missing data" if days_returned < days_requested - 2
     else
       status = "no data"
     end
@@ -341,7 +348,7 @@ class PestForecastsController < ApplicationController
       t_upper:,
       units: {weather: "C", degree_days: "F"},
       days_requested:,
-      days_returned: days_returned || 0,
+      days_returned: days_returned,
       status:,
       compute_time: Time.current - start_time
     }
