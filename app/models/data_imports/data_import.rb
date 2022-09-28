@@ -52,12 +52,13 @@ class DataImport < ApplicationRecord
   end
 
   def self.fail(date, message = nil)
-    Rails.logger.warn "#{name} :: Imports failed for #{date}: #{message || "No reason given"}"
+    message ||= "No reason given"
+    Rails.logger.warn "#{name} :: Import failed for #{date}: #{message}"
     status = on(date)
     if status.exists?
       status.update(status: "unsuccessful", message:)
     else
-      unsuccessful.on(date).create!
+      create!(readings_on: date, status: "unsuccessful", message:)
     end
   end
 
@@ -81,7 +82,7 @@ class DataImport < ApplicationRecord
             message << "    #{status.type} ==> FAIL: #{status.message}"
           when "started"
             count += 1
-            message << "    #{status.type} ==> STARTED"
+            message << "    #{status.type} ==> STARTED: #{DataImporter.elapsed(status.updated_at)} ago"
           when "successful"
             message << "    #{status.type} ==> OK"
           else
