@@ -64,6 +64,9 @@ class DataImport < ApplicationRecord
 
   # run this from console
   def self.check_statuses(start_date = earliest_date, end_date = latest_date)
+    initial_log_level = ActiveRecord::Base.logger.level
+    ActiveRecord::Base.logger.level = 1
+
     message = []
     count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"
@@ -94,6 +97,8 @@ class DataImport < ApplicationRecord
         message << "  #{date}: OK"
       end
     end
+
+    ActiveRecord::Base.logger.level = initial_log_level
 
     message.each { |m| Rails.logger.info m }
     {count:, message:}

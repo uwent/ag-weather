@@ -18,9 +18,9 @@ class WeatherDay
       wh = WeatherHour.new
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
-      Rails.logger.info "WeatherDay :: Processed hour #{i} in #{(Time.current - hour_start).to_i} seconds"
+      Rails.logger.info "WeatherDay :: Processed hour #{i} in #{DataImporter.elapsed(hour_start)}"
     end
-    Rails.logger.info "WeatherDay :: Loading weather hours completed in #{(Time.current - day_start).to_i} seconds"
+    Rails.logger.info "WeatherDay :: Loading weather hours completed in #{DataImporter.elapsed(day_start)}"
   end
 
   def observations_at(lat, long)
