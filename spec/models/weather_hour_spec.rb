@@ -35,6 +35,12 @@ RSpec.describe WeatherHour do
         .to change { weather_hour.data[lat, long][:dew_points].length }
         .by 1
     end
+
+    it "won't store a nil value" do
+      expect { weather_hour.store(lat, long, nil, temp_key) }
+        .to change { weather_hour.data[lat, long][:temperatures].length }
+        .by 0
+    end
   end
 
   context "load" do
@@ -47,6 +53,13 @@ RSpec.describe WeatherHour do
       expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{Wisconsin.min_lat} #{Wisconsin.min_long + 360.0} 17.0 2t"], []])
       weather_hour.load_from("file.name")
       expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.min_long)).to eq 17.0
+    end
+
+    it "can handle an invalid data line" do
+      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name")
+        .and_return([[], ["#{Wisconsin.min_lat} #{Wisconsin.min_long + 360.0}"], []]) # missing value and key
+      weather_hour.load_from("file.name")
+      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.min_long)).to be_nil
     end
   end
 
