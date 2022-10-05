@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -54,11 +54,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
 
   create_table "evapotranspirations", force: :cascade do |t|
     t.float "potential_et"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
-    t.date "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
+    t.date "date", null: false
     t.index ["date", "latitude", "longitude"], name: "index_evapotranspirations_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude"
     t.index ["longitude"], name: "index_evapotranspirations_on_longitude"
@@ -66,24 +64,20 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
 
   create_table "insolations", force: :cascade do |t|
     t.float "insolation"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
-    t.date "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
+    t.date "date", null: false
     t.index ["date", "latitude", "longitude"], name: "index_insolations_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude"
     t.index ["longitude"], name: "index_insolations_on_longitude"
   end
 
   create_table "pest_forecasts", force: :cascade do |t|
-    t.date "date"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
+    t.date "date", null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
     t.integer "potato_blight_dsv"
     t.integer "carrot_foliar_dsv"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.float "dd_48_none"
     t.float "dd_50_86"
     t.float "dd_54_92"
@@ -112,9 +106,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
   end
 
   create_table "precips", force: :cascade do |t|
-    t.date "date"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
+    t.date "date", null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
     t.float "precip"
     t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_and_latitude_and_longitude", unique: true
     t.index ["latitude", "longitude"], name: "index_precips_on_latitude_and_longitude"
@@ -128,14 +122,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
     t.float "max_temperature"
     t.float "min_temperature"
     t.float "relative_humidity"
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
   end
 
   create_table "stations", force: :cascade do |t|
     t.string "name", null: false
-    t.decimal "latitude", precision: 10, scale: 6, null: false
-    t.decimal "longitude", precision: 10, scale: 6, null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
+    t.datetime "created_at", default: -> { "now()" }, null: false
+    t.datetime "updated_at", default: -> { "now()" }, null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -151,11 +145,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_30_163530) do
     t.float "min_temperature"
     t.float "avg_temperature"
     t.float "vapor_pressure"
-    t.decimal "latitude", precision: 10, scale: 6
-    t.decimal "longitude", precision: 10, scale: 6
-    t.date "date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 5, scale: 2, null: false
+    t.decimal "longitude", precision: 5, scale: 2, null: false
+    t.date "date", null: false
     t.integer "hours_rh_over_85"
     t.float "avg_temp_rh_over_85"
     t.float "avg_temp_rh_over_90"
