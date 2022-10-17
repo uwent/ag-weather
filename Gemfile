@@ -14,7 +14,7 @@ gem "whenever", "~> 1.0"
 gem "tzinfo", "~> 2.0"
 
 group :development do
-  gem "puma"
+  gem "puma", "~> 5" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
   gem "capistrano"
   gem "capistrano-rbenv"
   gem "capistrano-rails"
