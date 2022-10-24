@@ -21,7 +21,9 @@ class EvapotranspirationsController < ApplicationController
       WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
       Insolation.where(conditions).each { |i| insols[i.date] = i }
 
-      unless weather.empty? || insols.empty?
+      if weather.empty? || insols.empty?
+        status = "no data"
+      else
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
@@ -41,13 +43,13 @@ class EvapotranspirationsController < ApplicationController
           cumulative_value += value
           data << {date:, value:, cumulative_value:}
         end
-      else
-        status = "no data"
       end
     else
       ets = Evapotranspiration.where(conditions).order(:date)
 
-      unless ets.empty?
+      if ets.empty?
+        status = "no data"
+      else
         cumulative_value = 0
         data = ets.collect do |et|
           date = et.date.to_formatted_s
@@ -55,8 +57,6 @@ class EvapotranspirationsController < ApplicationController
           cumulative_value += value
           {date:, value:, cumulative_value:}
         end
-      else
-        status = "no data"
       end
     end
 
@@ -143,7 +143,9 @@ class EvapotranspirationsController < ApplicationController
 
     ets = Evapotranspiration.where(date: @date).order(:latitude, :longitude)
 
-    unless ets.empty?
+    if ets.empty?
+      status = "no data"
+    else
       data = ets.collect do |et|
         {
           lat: et.latitude.to_f.round(1),
@@ -151,9 +153,6 @@ class EvapotranspirationsController < ApplicationController
           value: et.potential_et.round(3)
         }
       end
-      status = "OK"
-    else
-      status = "no data"
     end
 
     lats = data.map { |d| d[:lat] }.uniq

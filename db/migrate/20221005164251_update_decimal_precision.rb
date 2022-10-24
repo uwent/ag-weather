@@ -26,5 +26,4 @@ class UpdateDecimalPrecision < ActiveRecord::Migration[7.0]
 
   def down
   end
-  
 end

@@ -22,7 +22,9 @@ class DegreeDaysController < ApplicationController
       .where(date: start_date..end_date)
       .order(date: :asc)
 
-    unless weather.empty?
+    if weather.empty?
+      status = "no data"
+    else
       data = weather.collect do |w|
         dd = w.degree_days(base, upper, method, in_f)
         min = in_f ? UnitConverter.c_to_f(w.min_temperature) : w.min_temperature
@@ -36,8 +38,6 @@ class DegreeDaysController < ApplicationController
           cumulative_value: total.round(1)
         }
       end
-    else
-      status = "no data"
     end
 
     values = data.map { |day| day[:value] }

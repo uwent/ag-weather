@@ -1,6 +1,6 @@
 class ChangeTimestamps < ActiveRecord::Migration[7.0]
   def up
-    add_timestamps :stations, default: -> { 'now()' }, null: false
+    add_timestamps :stations, default: -> { "now()" }, null: false
     [
       :evapotranspirations,
       :insolations,

@@ -21,7 +21,9 @@ class WeatherController < ApplicationController
       .where(date: start_date..end_date)
       .order(:date)
 
-    unless weather.empty?
+    if weather.empty?
+      status = "no data"
+    else
       data = weather.collect do |w|
         {
           date: w.date.to_s,
@@ -34,8 +36,6 @@ class WeatherController < ApplicationController
           avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)
         }
       end
-    else
-      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
@@ -110,10 +110,12 @@ class WeatherController < ApplicationController
     info = {}
     data = []
     @date = date
-    
+
     weather = WeatherDatum.where(date: @date).order(:latitude, :longitude)
 
-    unless weather.empty?
+    if weather.empty?
+      status = "no data"
+    else
       data = weather.collect do |w|
         {
           lat: w.latitude.round(1),
@@ -128,8 +130,6 @@ class WeatherController < ApplicationController
         }
       end
       status = "OK"
-    else
-      status = "no data"
     end
 
     lats = data.map { |d| d[:lat] }.uniq

@@ -17,15 +17,15 @@ class InsolationsController < ApplicationController
       .where(date: start_date..end_date)
       .order(:date)
 
-    unless insols.empty?
+    if insols.empty?
+      status = "no data"
+    else
       data = insols.collect do |insol|
         {
           date: insol.date.to_s,
           value: insol.insolation.round(3)
         }
       end
-    else
-      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
@@ -113,7 +113,9 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(date: @date).order(:latitude, :longitude)
 
-    unless insols.empty?
+    if insols.empty?
+      status = "no data"
+    else
       data = insols.collect do |insol|
         {
           lat: insol.latitude.round(1),
@@ -121,9 +123,6 @@ class InsolationsController < ApplicationController
           value: insol.insolation.round(3)
         }
       end
-      status = "OK"
-    else
-      status = "no data"
     end
 
     lats = data.map { |d| d[:lat] }.uniq

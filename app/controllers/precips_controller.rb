@@ -16,7 +16,9 @@ class PrecipsController < ApplicationController
     precips = Precip.where(latitude: lat, longitude: long, date: start_date..end_date)
       .order(:date)
 
-    unless precips.empty?
+    if precips.empty?
+      status = "no data"
+    else
       cum_value = 0
       data = precips.collect do |precip|
         value = convert(precip.precip)
@@ -27,8 +29,6 @@ class PrecipsController < ApplicationController
           cumulative_value: cum_value
         }
       end
-    else
-      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
@@ -116,7 +116,9 @@ class PrecipsController < ApplicationController
 
     precips = Precip.where(date: @date).order(:latitude, :longitude)
 
-    unless precips.empty?
+    if precips.empty?
+      status = "no data"
+    else
       data = precips.collect do |precip|
         {
           lat: precip.latitude.round(1),
@@ -125,8 +127,6 @@ class PrecipsController < ApplicationController
         }
       end
       status = "OK"
-    else
-      status = "no data"
     end
 
     lats = data.map { |d| d[:lat] }.uniq
