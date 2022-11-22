@@ -47,12 +47,12 @@ class WeatherHour
   # averages all temperatures assigned to the lat/long cell
   def temperature_at(lat, long)
     temps = @data[lat, long][:temperatures]
-    temps.size > 0 ? temps.sum(0.0) / temps.size : nil
+    (temps.size > 0) ? temps.sum(0.0) / temps.size : nil
   end
 
   # averages all dewpoints assigned to the lat/long cell
   def dew_point_at(lat, long)
     dewpts = @data[lat, long][:dew_points]
-    dewpts.size > 0 ? dewpts.sum(0.0) / dewpts.size : nil
+    (dewpts.size > 0) ? dewpts.sum(0.0) / dewpts.size : nil
   end
 end

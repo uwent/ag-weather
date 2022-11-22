@@ -81,7 +81,7 @@ class InsolationsController < ApplicationController
       url = File.join(ImageCreator.url_path, image_name)
     else
       image_name = Insolation.create_image(@date, start_date: @start_date, units: @units)
-      url = image_name == "no_data.png" ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
+      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
     end
 
     if request.format.png?

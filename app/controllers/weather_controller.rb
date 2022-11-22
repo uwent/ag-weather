@@ -82,7 +82,7 @@ class WeatherController < ApplicationController
       url = File.join(ImageCreator.url_path, image_name)
     else
       image_name = WeatherDatum.create_image(@date, units: @units)
-      url = image_name == "no_data.png" ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
+      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
     end
 
     if request.format.png?

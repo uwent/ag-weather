@@ -84,7 +84,7 @@ class WeatherDatum < ApplicationRecord
     query.each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "C" ? point.avg_temperature : UnitConverter.c_to_f(point.avg_temperature)
+      grid[lat, long] = (units == "C") ? point.avg_temperature : UnitConverter.c_to_f(point.avg_temperature)
     end
     grid
   end

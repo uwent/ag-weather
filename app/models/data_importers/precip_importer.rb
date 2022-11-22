@@ -110,7 +110,7 @@ class PrecipImporter < GribImporter
     # average all pts in a cell
     data.each_point do |lat, long|
       precips = data[lat, long]
-      precip = precips.size > 0 ? precips.sum(0.0) / precips.size : 0.0
+      precip = (precips.size > 0) ? precips.sum(0.0) / precips.size : 0.0
       data[lat, long] = precip
     end
 

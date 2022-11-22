@@ -39,7 +39,7 @@ class EvapotranspirationsController < ApplicationController
           adj = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
           # Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
 
-          value = params[:method] == "adjusted" ? adj : reg
+          value = (params[:method] == "adjusted") ? adj : reg
           cumulative_value += value
           data << {date:, value:, cumulative_value:}
         end
@@ -111,7 +111,7 @@ class EvapotranspirationsController < ApplicationController
       url = File.join(ImageCreator.url_path, image_name)
     else
       image_name = Evapotranspiration.create_image(@date, start_date: @start_date, units: @units)
-      url = image_name == "no_data.png" ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
+      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
     end
 
     if request.format.png?

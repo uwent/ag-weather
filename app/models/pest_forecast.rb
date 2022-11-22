@@ -144,7 +144,7 @@ class PestForecast < ApplicationRecord
   def self.pest_map_attr(pest, start_date, end_date, min_value, max_value, wi_only)
     pest_title = pest_titles[pest.to_sym]
     fmt2 = "%b %-d, %Y"
-    fmt1 = start_date.year != end_date.year ? fmt2 : "%b %-d"
+    fmt1 = (start_date.year != end_date.year) ? fmt2 : "%b %-d"
     title = pest_title + " accumulation from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
     file = "dsv-totals-for-#{pest_title.tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
@@ -170,7 +170,7 @@ class PestForecast < ApplicationRecord
       totals.each do |pf|
         lat, long = pf.latitude, pf.longitude
         next unless grid.inside?(lat, long)
-        grid[lat, long] = units == "F" ? pf.total : UnitConverter.fdd_to_cdd(pf.total)
+        grid[lat, long] = (units == "F") ? pf.total : UnitConverter.fdd_to_cdd(pf.total)
       end
 
       # define map scale by rounding the interval up to divisible by 5
@@ -202,7 +202,7 @@ class PestForecast < ApplicationRecord
     model_name = "base #{base}°#{units}"
     model_name += ", upper #{upper}°#{units}" unless upper == "none"
     fmt2 = "%b %-d, %Y"
-    fmt1 = start_date.year != end_date.year ? fmt2 : "%b %-d"
+    fmt1 = (start_date.year != end_date.year) ? fmt2 : "%b %-d"
     title = "Degree day totals for #{model_name} from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
     file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?

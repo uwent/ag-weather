@@ -621,7 +621,7 @@ class PestForecastsController < ApplicationController
   end
 
   def parse_number(s)
-    !/\D/.match?(s) ? s.to_i : nil
+    (!/\D/.match?(s)) ? s.to_i : nil
   end
 
   def date

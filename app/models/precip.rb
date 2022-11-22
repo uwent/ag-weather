@@ -54,7 +54,7 @@ class Precip < ApplicationRecord
     if start_date.nil?
       "Total daily precip (#{units}) for #{date.strftime("%b %-d, %Y")}"
     else
-      fmt = start_date.year != date.year ? "%b %-d, %Y" : "%b %-d"
+      fmt = (start_date.year != date.year) ? "%b %-d, %Y" : "%b %-d"
       "Total cumulative precip (#{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
     end
   end
@@ -63,7 +63,7 @@ class Precip < ApplicationRecord
     data.each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "in" ? UnitConverter.mm_to_in(point.precip) : point.precip
+      grid[lat, long] = (units == "in") ? UnitConverter.mm_to_in(point.precip) : point.precip
     end
     grid
   end

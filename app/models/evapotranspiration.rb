@@ -45,7 +45,7 @@ class Evapotranspiration < ApplicationRecord
       raise StandardError.new("No data") if ets.size == 0
       date = ets.distinct.pluck(:date).max
       min = 0
-      max = units == "mm" ? DEFAULT_MAX_MM : DEFAULT_MAX_IN
+      max = (units == "mm") ? DEFAULT_MAX_MM : DEFAULT_MAX_IN
     else
       ets = where(date: start_date..date)
       raise StandardError.new("No data") if ets.size == 0
@@ -76,7 +76,7 @@ class Evapotranspiration < ApplicationRecord
     if start_date.nil?
       "Potential evapotranspiration (#{units}/day) for #{date.strftime("%b %-d, %Y")}"
     else
-      fmt = start_date.year != date.year ? "%b %-d, %Y" : "%b %-d"
+      fmt = (start_date.year != date.year) ? "%b %-d, %Y" : "%b %-d"
       "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
     end
   end
@@ -85,7 +85,7 @@ class Evapotranspiration < ApplicationRecord
     query.each do |et|
       lat, long = et.latitude, et.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = units == "mm" ? UnitConverter.in_to_mm(et.potential_et) : et.potential_et
+      grid[lat, long] = (units == "mm") ? UnitConverter.in_to_mm(et.potential_et) : et.potential_et
     end
     grid
   end
