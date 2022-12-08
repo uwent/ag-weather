@@ -38,7 +38,7 @@ class PrecipsController < ApplicationController
       long: long.to_f,
       start_date: start_date,
       end_date: end_date,
-      days_requested: (end_date - start_date).to_i,
+      days_requested: (start_date..end_date).count,
       days_returned: values.count,
       min_value: values.min,
       max_value: values.max,
@@ -72,6 +72,7 @@ class PrecipsController < ApplicationController
 
     @date = [date_from_id, default_date].min
     if params[:start_date].present?
+      @date = [@date, Precip.latest_date].min
       @start_date = [[start_date, earliest_date].max, @date].min
       @start_date = nil if @start_date == @date
     end

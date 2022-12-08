@@ -46,7 +46,7 @@ class WeatherController < ApplicationController
       start_date:,
       end_date:,
       units:,
-      days_requested: (end_date - start_date).to_i,
+      days_requested: (start_date..end_date).count,
       days_returned: values.count,
       compute_time: Time.current - start_time
     }

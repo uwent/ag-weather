@@ -35,7 +35,7 @@ class InsolationsController < ApplicationController
       long: long.to_f,
       start_date:,
       end_date:,
-      days_requested: (end_date - start_date).to_i,
+      days_requested: (start_date..end_date).count,
       days_returned: values.count,
       min_value: values.min,
       max_value: values.max,
