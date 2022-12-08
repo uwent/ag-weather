@@ -99,7 +99,8 @@ class EvapotranspirationsController < ApplicationController
 
     @date = [date_from_id, default_date].min
     if params[:start_date].present?
-      @date = [@date, Evapotranspiration.latest_date].min
+      latest_date = Evapotranspiration.latest_date || default_date
+      @date = [@date, latest_date].min
       @start_date = [[start_date, earliest_date].max, @date].min
       @start_date = nil if @start_date == @date
     end
