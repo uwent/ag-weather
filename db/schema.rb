@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
+ActiveRecord::Schema[7.0].define(version: 2022_12_13_180145) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -58,7 +58,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
     t.index ["date", "latitude", "longitude"], name: "index_evapotranspirations_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_evapotranspirations_on_date"
     t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude"
+    t.index ["latitude"], name: "index_evapotranspirations_on_latitude"
     t.index ["longitude"], name: "index_evapotranspirations_on_longitude"
   end
 
@@ -68,7 +70,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
     t.index ["date", "latitude", "longitude"], name: "index_insolations_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_insolations_on_date"
     t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude"
+    t.index ["latitude"], name: "index_insolations_on_latitude"
     t.index ["longitude"], name: "index_insolations_on_longitude"
   end
 
@@ -101,7 +105,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
     t.integer "botcast_dsi", default: 0
     t.float "dd_38_75"
     t.index ["date", "latitude", "longitude"], name: "index_pest_forecasts_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_pest_forecasts_on_date"
     t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude"
+    t.index ["latitude"], name: "index_pest_forecasts_on_latitude"
     t.index ["longitude"], name: "index_pest_forecasts_on_longitude"
   end
 
@@ -111,7 +117,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.float "precip"
     t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_precips_on_date"
     t.index ["latitude", "longitude"], name: "index_precips_on_latitude_and_longitude"
+    t.index ["latitude"], name: "index_precips_on_latitude"
     t.index ["longitude"], name: "index_precips_on_longitude"
   end
 
@@ -154,7 +162,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_172253) do
     t.integer "hours_rh_over_90"
     t.float "dew_point"
     t.index ["date", "latitude", "longitude"], name: "index_weather_data_on_date_and_latitude_and_longitude", unique: true
+    t.index ["date"], name: "index_weather_data_on_date"
     t.index ["latitude", "longitude"], name: "index_weather_data_on_latitude_and_longitude"
+    t.index ["latitude"], name: "index_weather_data_on_latitude"
     t.index ["longitude"], name: "index_weather_data_on_longitude"
   end
 
