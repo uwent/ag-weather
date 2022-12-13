@@ -12,6 +12,7 @@ gem "json", "~> 2.6"
 gem "sassc-rails", "~> 2.1"
 gem "whenever", "~> 1.0"
 gem "tzinfo", "~> 2.0"
+gem "activerecord-analyze" # query analysis
 
 group :development do
   gem "puma", "~> 5" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
