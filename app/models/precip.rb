@@ -79,7 +79,6 @@ class Precip < ApplicationRecord
       start_date = precips.distinct.pluck(:date).min
       date = precips.distinct.pluck(:date).max
       precips = precips.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(precip) as precip")
     end
     title = image_title(date, start_date, units)

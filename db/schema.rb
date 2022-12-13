@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_12_13_180145) do
+ActiveRecord::Schema[7.0].define(version: 2022_12_13_204301) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -50,6 +50,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_13_180145) do
     t.datetime "updated_at", null: false
     t.string "message"
     t.index ["readings_on"], name: "index_data_imports_on_readings_on"
+    t.index ["status"], name: "index_data_imports_on_status"
+    t.index ["updated_at"], name: "index_data_imports_on_updated_at"
   end
 
   create_table "evapotranspirations", force: :cascade do |t|

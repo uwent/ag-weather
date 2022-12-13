@@ -27,7 +27,6 @@ class Insolation < ApplicationRecord
       start_date = dates.min
       date = dates.max
       data = data.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(insolation) as insolation")
       min = max = nil
     end

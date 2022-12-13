@@ -226,17 +226,22 @@ class PestForecastsController < ApplicationController
     data = []
 
     if PestForecast.column_names.include?(pest)
-      forecasts = PestForecast.where(date: start_date..end_date, latitude: lat, longitude: long)
-        .order(:date)
-        .map { |pf| [pf.date, pf.send(pest)] }.to_h
-      forecasts.default = 0
+      forecasts = PestForecast.where(
+        date: start_date..end_date,
+        latitude: lat,
+        longitude: long
+      ).map do |pf|
+        [pf.date, pf.send(pest)]
+      end.to_h
 
+      forecasts.default = 0
       cum_value = 0
+
       if forecasts.empty?
         status = "no data"
       else
         weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
-        data = weather.order(:date).collect do |w|
+        data = weather.collect do |w|
           value = forecasts[w.date]
           cum_value += value
           days_returned += 1
@@ -313,7 +318,7 @@ class PestForecastsController < ApplicationController
       date: start_date..end_date,
       latitude: lat,
       longitude: long
-    ).order(:date)
+    )
 
     cum_value = 0
     if weather.empty?
@@ -383,7 +388,6 @@ class PestForecastsController < ApplicationController
     forecast = []
 
     forecasts = PestForecast.where(date: start_date..end_date, latitude: lat, longitude: long)
-      .order(:date)
 
     if forecasts.empty?
       status = "no data"
@@ -467,7 +471,6 @@ class PestForecastsController < ApplicationController
     else
       data = forecasts.where(freeze: true)
         .group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .count
         .map do |point|
         {

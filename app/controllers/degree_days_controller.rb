@@ -18,9 +18,11 @@ class DegreeDaysController < ApplicationController
     total = 0
     data = []
 
-    weather = WeatherDatum.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
-      .order(date: :asc)
+    weather = WeatherDatum.where(
+      date: start_date..end_date,
+      latitude: lat,
+      longitude: long
+    )
 
     if weather.empty?
       status = "no data"

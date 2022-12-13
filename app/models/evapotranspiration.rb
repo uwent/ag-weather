@@ -52,7 +52,6 @@ class Evapotranspiration < ApplicationRecord
       start_date = ets.distinct.pluck(:date).min
       date = ets.distinct.pluck(:date).max
       ets = ets.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(potential_et) as potential_et")
       min = max = nil
     end

@@ -17,9 +17,7 @@ class WeatherController < ApplicationController
     status = "OK"
     data = []
 
-    weather = WeatherDatum.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
-      .order(:date)
+    weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
 
     if weather.empty?
       status = "no data"
@@ -111,7 +109,7 @@ class WeatherController < ApplicationController
     data = []
     @date = date
 
-    weather = WeatherDatum.where(date: @date).order(:latitude, :longitude)
+    weather = WeatherDatum.where(date: @date)
 
     if weather.empty?
       status = "no data"

@@ -13,9 +13,11 @@ class InsolationsController < ApplicationController
     status = "OK"
     data = []
 
-    insols = Insolation.where(latitude: lat, longitude: long)
-      .where(date: start_date..end_date)
-      .order(:date)
+    insols = Insolation.where(
+      date: start_date..end_date,
+      latitude: lat,
+      longitude: long
+    )
 
     if insols.empty?
       status = "no data"
@@ -111,7 +113,7 @@ class InsolationsController < ApplicationController
 
     @date = date
 
-    insols = Insolation.where(date: @date).order(:latitude, :longitude)
+    insols = Insolation.where(date: @date)
 
     if insols.empty?
       status = "no data"

@@ -11,13 +11,6 @@ class PestForecast < ApplicationRecord
     "dd_maps"
   end
 
-  def self.for_lat_long_date_range(lat, long, start_date, end_date)
-    where(latitude: lat)
-      .where(longitude: long)
-      .where("date >= ? and date <= ?", start_date, end_date)
-      .order(date: :desc)
-  end
-
   # degree days in F
   def self.new_from_weather(weather)
     new(
@@ -113,7 +106,6 @@ class PestForecast < ApplicationRecord
 
       grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(#{pest}) as total")
 
       totals.each do |pf|
@@ -164,7 +156,6 @@ class PestForecast < ApplicationRecord
 
       grid = wi_only ? LandGrid.wisconsin_grid : LandGrid.new
       totals = forecasts.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
         .select(:latitude, :longitude, "sum(#{model}) as total")
 
       totals.each do |pf|

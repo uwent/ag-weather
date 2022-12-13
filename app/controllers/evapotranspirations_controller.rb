@@ -45,7 +45,7 @@ class EvapotranspirationsController < ApplicationController
         end
       end
     else
-      ets = Evapotranspiration.where(conditions).order(:date)
+      ets = Evapotranspiration.where(conditions)
 
       if ets.empty?
         status = "no data"
@@ -143,7 +143,7 @@ class EvapotranspirationsController < ApplicationController
 
     @date = date
 
-    ets = Evapotranspiration.where(date: @date).order(:latitude, :longitude)
+    ets = Evapotranspiration.where(date: @date)
 
     if ets.empty?
       status = "no data"
