@@ -25,11 +25,11 @@ module AgWeather
     # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
 
-    config.autoload_paths << Rails.root.join("app/models/data_imports")
-    config.autoload_paths << Rails.root.join("app/models/data_importers")
-    config.autoload_paths << Rails.root.join("app/models/land_extents")
+    config.eager_load = true
+    config.eager_load_paths << Rails.root.join("app/models/data_imports")
+    config.eager_load_paths << Rails.root.join("app/models/data_importers")
+    config.eager_load_paths << Rails.root.join("app/models/land_extents")
 
     # Image generation and service configuration
     config.x.image.temp_directory = "tmp"
