@@ -24,24 +24,23 @@ unset xtics
 unset ytics
 unset border
 
-# Countours
-set contour base
-set pm3d explicit at b
-set pm3d interpolate 16, 16
-set cntrparam bspline
-set cntrparam level incremental min_val, max_val / 10.0, max_val
-set cntrlabel start 1 interval 1
-set cntrlabel format "%0.1f"
-set cntrlabel font "Helvetica, 10"
+# Colorbox
 set colorbox horizontal user origin 0.1, 0.035 size 0.8, 0.02
 set cbrange [min_val:max_val]
 set cbtics min_val, (max_val - min_val) / 10.0, max_val
 set cbtics out nomirror scale 0.5
 
-# Plot the surface
+# Surface
+set pm3d explicit at b
+set pm3d interpolate 16, 16
 splot infile u 2:1:3 with pm3d nocontour
 
-# Plot contour lines
+# Contour lines
+set contour base
+set cntrparam bspline
+set cntrparam level 10
 set for [i=1:12] linetype i dt 4 lc rgb "#000000"
 set style increment user
-splot '' u 2:1:3 with lines lw 0.5 nosurface
+set cntrlabel start 1 interval 1000
+splot '' using 2:1:3 with lines lw 0.5 nosurface
+splot '' using 2:1:3 every :10 with labels
