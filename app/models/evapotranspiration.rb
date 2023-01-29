@@ -1,7 +1,7 @@
 class Evapotranspiration < ApplicationRecord
   UNITS = ["in", "mm"]
-  DEFAULT_MAX_IN = 0.25
-  DEFAULT_MAX_MM = 6.5
+  DEFAULT_MAX_IN = 0.3
+  DEFAULT_MAX_MM = 8
 
   def has_required_data?
     weather && insolation

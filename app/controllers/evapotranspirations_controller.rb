@@ -27,7 +27,6 @@ class EvapotranspirationsController < ApplicationController
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
-          Rails.logger.debug "\n#{date}"
           next if weather[date].nil? || insols[date].nil?
           t = weather[date].avg_temperature
           vp = weather[date].vapor_pressure
