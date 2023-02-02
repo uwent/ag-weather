@@ -82,6 +82,102 @@ class DegreeDaysController < ApplicationController
     end
   end
 
+  # GET: Returns weather and degree day accumulations since Jan 1 of present year
+  # params:
+  #   lat: latitude, decimal degrees (required)
+  #   long: longitude, decimal degrees (required)
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
+  #   models: comma-separated degree day model names from pest_forecasts table - default dd_50_86
+  def dd_table
+    params.require([:lat, :long])
+
+    start_time = Time.current
+    status = "OK"
+    total = 0
+    data = {}
+
+    dates = start_date..end_date
+
+    weather = WeatherDatum.where(
+      date: dates,
+      latitude: lat,
+      longitude: long
+    ).select(:date, :min_temperature, :max_temperature)
+
+    pest_forecasts = PestForecast.where(
+      date: dates,
+      latitude: lat,
+      longitude: long
+    )
+
+    if weather.empty?
+      status = "no data"
+    else
+      weather_data = {}
+      weather.each do |w|
+        min = convert_temp(w.min_temperature)
+        max = convert_temp(w.max_temperature)
+        weather_data[w.date] = {
+          min_temp: min.round(2),
+          max_temp: max.round(2)
+        }
+      end
+    end
+
+    valid_models = models & PestForecast.column_names || ["dd_50_86"]
+    valid_models = valid_models&.sort
+
+    dd_data = {}
+    valid_models.each do |m|
+      total = 0
+      dd_data[m] = {}
+      pest_forecasts.each do |pf|
+        value = convert_dds(pf.send(m)) || 0
+        total += value
+        dd_data[m][pf.date] = {
+          value: value.round(2),
+          total: total.round(2)
+        }
+      end
+    end
+
+    # arrange weather and dds by date
+    dates.each do |date|
+      data[date] = weather_data[date] || {min_temp: nil, max_temp: nil}
+      valid_models.each do |m|
+        data[date][m] = dd_data[m][date]
+      end
+    end
+
+    days_requested = dates.count
+    days_returned = data.size
+    status = "missing days" if status == "OK" && days_requested != days_returned
+
+    info = {
+      lat: lat.to_f,
+      long: long.to_f,
+      start_date:,
+      end_date:,
+      days_requested:,
+      days_returned:,
+      models: valid_models,
+      units: units_text,
+      compute_time: Time.current - start_time
+    }
+
+    response = {
+      status:,
+      info:,
+      data:
+    }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+    end
+  end
+
   # GET: Returns info about degree day data and methods. No params.
 
   def info
@@ -115,6 +211,16 @@ class DegreeDaysController < ApplicationController
     else
       true
     end
+  end
+
+  # temps in C by default
+  def convert_temp(temp)
+    in_f ? UnitConverter.c_to_f(temp) : temp
+  end
+
+  # degree days in F by default
+  def convert_dds(dd)
+    in_f ? dd : UnitConverter.fdd_to_cdd(dd)
   end
 
   def default_date
@@ -167,5 +273,11 @@ class DegreeDaysController < ApplicationController
 
   def pest
     params[:pest]
+  end
+
+  def models
+    params[:models]&.downcase&.split(",")
+  rescue
+    nil
   end
 end

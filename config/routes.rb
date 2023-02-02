@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   resources :degree_days, only: [:index] do
     collection do
       get "info"
+      get "dd_table"
     end
   end
 
