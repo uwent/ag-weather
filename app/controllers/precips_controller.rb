@@ -13,7 +13,11 @@ class PrecipsController < ApplicationController
     status = "OK"
     data = []
 
-    precips = Precip.where(date: start_date..end_date, latitude: lat, longitude: long)
+    precips = Precip.where(
+      date: start_date..end_date,
+      latitude: lat,
+      longitude: long
+    ).order(:date)
 
     if precips.empty?
       status = "no data"

@@ -18,8 +18,10 @@ class EvapotranspirationsController < ApplicationController
     if params[:method] == "adjusted"
       weather = {}
       insols = {}
-      WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
-      Insolation.where(conditions).each { |i| insols[i.date] = i }
+      WeatherDatum.where(conditions)
+        .order(:date).each { |w| weather[w.date] = w }
+      Insolation.where(conditions)
+        .order(:date).each { |i| insols[i.date] = i }
 
       if weather.empty? || insols.empty?
         status = "no data"
@@ -44,7 +46,7 @@ class EvapotranspirationsController < ApplicationController
         end
       end
     else
-      ets = Evapotranspiration.where(conditions)
+      ets = Evapotranspiration.where(conditions).order(:date)
 
       if ets.empty?
         status = "no data"

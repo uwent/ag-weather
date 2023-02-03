@@ -17,7 +17,7 @@ class InsolationsController < ApplicationController
       date: start_date..end_date,
       latitude: lat,
       longitude: long
-    )
+    ).order(:date)
 
     if insols.empty?
       status = "no data"
