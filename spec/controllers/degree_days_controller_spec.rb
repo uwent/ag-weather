@@ -114,7 +114,6 @@ RSpec.describe DegreeDaysController, type: :controller do
       }
     }
 
-
     before :each do
       latitude = lat.round(1)
       longitude = long.round(1)
@@ -133,7 +132,7 @@ RSpec.describe DegreeDaysController, type: :controller do
     context "when the request is valid" do
       it "has the correct response structure" do
         get(:dd_table, params:)
-        
+
         expect(json.keys).to eq([:status, :info, :data])
         expect(json[:status]).to be_an(String)
         expect(json[:info]).to be_an(Hash)

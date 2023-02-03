@@ -138,7 +138,7 @@ class DegreeDaysController < ApplicationController
           }
         end
       end
-  
+
       # arrange weather and dds by date
       dates.each do |date|
         data[date] = weather_data[date] || {min_temp: nil, max_temp: nil}
@@ -247,14 +247,6 @@ class DegreeDaysController < ApplicationController
 
   def default_upper
     in_f ? DegreeDaysCalculator::UPPER_F : DegreeDaysCalculator::UPPER_C
-  end
-
-  def lat
-    params[:lat] ? params[:lat].to_d.round(1) : nil
-  end
-
-  def long
-    params[:long] ? params[:long].to_d.round(1) : nil
   end
 
   def base

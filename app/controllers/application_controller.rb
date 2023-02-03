@@ -53,10 +53,10 @@ class ApplicationController < ActionController::Base
   end
 
   def lat
-    params[:lat].to_d.round(1)
+    params[:lat]&.to_d&.round(1)
   end
 
   def long
-    params[:long].to_d.round(1)
+    params[:long]&.to_d&.round(1)
   end
 end
