@@ -96,8 +96,11 @@ class DegreeDaysController < ApplicationController
     status = "OK"
     total = 0
     data = {}
-
+    weather_data = {}
+    dd_data = {}
     dates = start_date..end_date
+    valid_models = models & PestForecast.column_names || ["dd_50_86"]
+    valid_models = valid_models&.sort
 
     weather = WeatherDatum.where(
       date: dates,
@@ -111,10 +114,9 @@ class DegreeDaysController < ApplicationController
       longitude: long
     )
 
-    if weather.empty?
+    if weather.empty? || pest_forecasts.empty?
       status = "no data"
     else
-      weather_data = {}
       weather.each do |w|
         min = convert_temp(w.min_temperature)
         max = convert_temp(w.max_temperature)
@@ -123,30 +125,26 @@ class DegreeDaysController < ApplicationController
           max_temp: max.round(2)
         }
       end
-    end
 
-    valid_models = models & PestForecast.column_names || ["dd_50_86"]
-    valid_models = valid_models&.sort
-
-    dd_data = {}
-    valid_models.each do |m|
-      total = 0
-      dd_data[m] = {}
-      pest_forecasts.each do |pf|
-        value = convert_dds(pf.send(m)) || 0
-        total += value
-        dd_data[m][pf.date] = {
-          value: value.round(2),
-          total: total.round(2)
-        }
-      end
-    end
-
-    # arrange weather and dds by date
-    dates.each do |date|
-      data[date] = weather_data[date] || {min_temp: nil, max_temp: nil}
       valid_models.each do |m|
-        data[date][m] = dd_data[m][date]
+        total = 0
+        dd_data[m] = {}
+        pest_forecasts.each do |pf|
+          value = convert_dds(pf.send(m)) || 0
+          total += value
+          dd_data[m][pf.date] = {
+            value: value.round(2),
+            total: total.round(2)
+          }
+        end
+      end
+  
+      # arrange weather and dds by date
+      dates.each do |date|
+        data[date] = weather_data[date] || {min_temp: nil, max_temp: nil}
+        valid_models.each do |m|
+          data[date][m] = dd_data[m][date]
+        end
       end
     end
 

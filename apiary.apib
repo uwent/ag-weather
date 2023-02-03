@@ -55,6 +55,42 @@ FORMAT: 1A
 + Response 200 (text/csv)
 
 
+## dd_table [/degree_days/dd_table]
+
+### List multiple dd models for location [GET /degree_days/dd_table{?lat,long,start_date,end_date,units,models}]
+
++ Parameters
+    + lat: `45.0` (number) - north latitude
+    + long: `-90.0` (number) - west longitude
+    + start_date: `2020-01-01` (string, optional) - the start date (default: first of year)
+    + end_date: `2020-10-10` (string, optional) - end date (default: current date)
+    + models: `dd_32_none,dd_50_86` (string, optional) - degree day models separated by commas
+    + units: `F` (string, optional) - temperature units (f/F or c/C)
+
++ Response 200 (application/json; charset=utf-8)
+    + Attributes (object)
+        + status (string)
+        + info (object)
+            + lat (number) - latitude of the request
+            + long (number) - longitude of the request
+            + start_date (string) - start date of the request
+            + end_date (string) - end date of the request
+            + days_requested (number) - number of days requested
+            + days_returned (number) - number of days of data returned
+            + models (array) - degree days models returned
+            + units (string) - temperature units
+        + data (object)
+            + (object, optional)
+                + min_temp (number) - daily low temp
+                + max_temp (number) - daily high temp
+                + dd_32_none (object) - daily degree day accumulation
+                    + value (number) - daily dd accumulation for this model
+                    + total (number) - cumulative dds for this model
+                + dd_50_86 (object) - cumulative degree days
+                    + value (number) - daily dd accumulation for this model
+                    + total (number) - cumulative dds for this model
+
+
 ## Degree Day Info [GET /degree_days/info]
 
 + Response 200 (application/json; charset=utf-8)
