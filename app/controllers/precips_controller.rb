@@ -5,6 +5,7 @@ class PrecipsController < ApplicationController
   #   long (required)
   #   start_date - default 1st of year
   #   end_date - default yesterday
+  #   units - either "mm" (default) or "in"
 
   def index
     params.require([:lat, :long])

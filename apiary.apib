@@ -272,13 +272,14 @@ Get parameter ranges available in the database
 
 ## index [/precips]
 
-### Get precip data for point and date range [GET /precips{?lat,long,start_date,end_date}]
+### Get precip data for point and date range [GET /precips{?lat,long,start_date,end_date,units}]
 
 + Parameters
     + lat: `45.0` (number)
     + long: `-90.0` (number)
     + start_date: `2021-01-01`
     + end_date: `2021-10-10`
+    + units: `mm` (string, optional) - units
 
 + Response 200 (application/json; charset=utf-8)
     + Attributes (`et/insol/precip index data`)
