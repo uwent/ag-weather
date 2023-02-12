@@ -83,8 +83,6 @@ class WeatherImporter < GribImporter
         avg_temperature: weather_average(temperatures),
         dew_point:,
         vapor_pressure: dew_point_to_vapor_pressure(dew_point),
-        hours_rh_over_85: relative_humidity_over(observations, 85.0),
-        avg_temp_rh_over_85: avg_temp_rh_over(observations, 85.0),
         hours_rh_over_90: relative_humidity_over(observations, 90.0),
         avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
       )

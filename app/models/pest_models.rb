@@ -25,7 +25,7 @@ module PestModels
 
   # temp in celsius
   def compute_late_blight_dsv(weather)
-    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
     temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
@@ -56,7 +56,7 @@ module PestModels
   end
 
   def compute_carrot_foliar_dsv(weather)
-    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
     temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
 
@@ -93,7 +93,7 @@ module PestModels
   end
 
   def compute_cercospora_div(weather)
-    hours = weather.hours_rh_over_90 || weather.hours_rh_over_85
+    hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
     temp_c = weather.avg_temp_rh_over_90 || weather.avg_temperature
     temp = (temp_c * 9 / 5) + 32.0
