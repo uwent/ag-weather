@@ -1,7 +1,7 @@
 class Precip < ApplicationRecord
-  # precip units are in mm
+  # precips are stored in mm
 
-  UNITS = ["mm", "in"]
+  UNITS = ["in", "mm"] # default first
 
   def self.stats(date)
     precips = where(date:)
