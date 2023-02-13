@@ -15,7 +15,7 @@ gem "tzinfo", "~> 2.0"
 gem "activerecord-analyze" # query analysis
 
 group :development do
-  gem "puma", "~> 5" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
+  gem "puma", "~> 6" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
   gem "capistrano"
   gem "capistrano-rbenv"
   gem "capistrano-rails"
