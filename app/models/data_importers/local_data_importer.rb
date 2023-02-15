@@ -14,7 +14,7 @@ class LocalDataImporter < DataImporter
     dates.each do |d|
       missing_dates << d.to_s unless existing_dates.include?(d)
     end
-    Rails.logger.info "#{name} :: Missing #{missing_dates.size} dates: #{missing_dates.join(', ')}."
+    Rails.logger.info "#{name} :: Missing #{missing_dates.size} dates: #{missing_dates.join(", ")}."
     missing_dates
   end
 
@@ -27,7 +27,7 @@ class LocalDataImporter < DataImporter
       Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
       return true
     else
-      Rails.logger.info "#{name} :: Calculating data for #{dates.count} dates: #{dates.join(', ')}"
+      Rails.logger.info "#{name} :: Calculating data for #{dates.count} dates: #{dates.join(", ")}"
     end
 
     dates.each do |date|

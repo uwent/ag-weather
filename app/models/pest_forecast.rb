@@ -66,14 +66,14 @@ class PestForecast < ApplicationRecord
     if min_value || max_value
       min_value ||= 0
       max_value ||= tick * 10
-      title, file = image_attr(pest, start_date, end_date, min_value, max_value, extent)
+      title, file = image_attr(pest, min_date, max_date, min_value, max_value, extent)
     else
-      title, file = image_attr(pest, start_date, end_date, min_value, max_value, extent)
+      title, file = image_attr(pest, min_date, max_date, min_value, max_value, extent)
       min_value = 0
       max_value = tick * 10
     end
 
-    Rails.logger.info "#{name} :: Creating #{pest} image for #{start_date} - #{end_date}"
+    Rails.logger.info "#{name} :: Creating #{pest} image for #{min_date} - #{max_date}"
     ImageCreator.create_image(grid, title, file, subdir: MAP_DIR, min_value:, max_value:)
   rescue => e
     Rails.logger.warn "#{name} :: Failed to create image for #{pest}: #{e.message}"

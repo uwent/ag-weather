@@ -45,8 +45,7 @@ RSpec.describe PestForecast, type: :model do
       weather = FactoryBot.create(:weather_datum,
         hours_rh_over_90: nil,
         avg_temp_rh_over_90: nil,
-        avg_temperature: nil
-      )
+        avg_temperature: nil)
       expect(PestForecast.compute_carrot_foliar_dsv(weather)).to eq 0
     end
   end

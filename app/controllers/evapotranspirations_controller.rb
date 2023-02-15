@@ -102,7 +102,7 @@ class EvapotranspirationsController < ApplicationController
     if params[:start_date].present?
       latest_date = Evapotranspiration.latest_date || default_date
       @date = [@date, latest_date].min
-      @start_date = [[start_date, earliest_date].max, @date].min
+      @start_date = start_date.clamp(earliest_date, @date)
       @start_date = nil if @start_date == @date
     end
     @units = units

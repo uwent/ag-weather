@@ -617,7 +617,7 @@ class PestForecastsController < ApplicationController
     latest_date = PestForecast.latest_date || default_date
     @model = params[:id]
     @end_date = [end_date, latest_date].min
-    @start_date = [[start_date, earliest_date].max, @end_date].min
+    @start_date = start_date.clamp(earliest_date, @end_date)
     @units = %w[F C].include?(params[:units]) ? params[:units] : "F"
     @min_value = params[:min_value].present? ? parse_number(params[:min_value]) : nil
     @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil
