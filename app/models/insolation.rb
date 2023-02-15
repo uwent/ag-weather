@@ -13,31 +13,29 @@ class Insolation < ApplicationRecord
     grid
   end
 
-  def self.create_image(date, start_date: nil, units: "MJ")
+  def self.create_image(date = latest_date, start_date: nil, units: "MJ")
     if start_date.nil?
-      data = where(date:)
-      raise StandardError.new("No data") if data.size == 0
-      date = data.distinct.pluck(:date).max
+      insols = where(date:)
+      raise StandardError.new("No data") if insols.empty?
+      date = insols.maximum(:date)
       min = 0
       max = (units == "KWh") ? DEFAULT_MAX_KW : DEFAULT_MAX_MJ
     else
-      data = where(date: start_date..date)
-      raise StandardError.new("No data") if data.size == 0
-      dates = data.distinct.pluck(:date)
-      start_date = dates.min
-      date = dates.max
-      data = data.group(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(insolation) as insolation")
+      insols = where(date: start_date..date)
+      raise StandardError.new("No data") if insols.empty?
+      start_date = insols.minimum(:date)
+      date = insols.maximum(:date)
+      insols = insols.grid_summarize("sum(insolation) as insolation")
       min = max = nil
     end
     title = image_title(date, start_date, units)
     file = image_name(date, start_date, units)
     Rails.logger.info "Insolation :: Creating image ==> #{file}"
-    grid = create_image_data(LandGrid.new, data, units)
+    grid = create_image_data(LandGrid.new, insols, units)
     ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
   rescue => e
     Rails.logger.warn "Insolation :: Failed to create image for #{date}: #{e.message}"
-    "no_data.png"
+    nil
   end
 
   def self.image_name(date, start_date = nil, units = "MJ")

@@ -31,14 +31,6 @@ class DegreeDay < ApplicationRecord
     where(date:)
   end
 
-  def self.daily
-    where(cumulative: false)
-  end
-
-  def self.cumulative
-    where(cumulative: true)
-  end
-
   def self.new_from_weather(w)
     new(
       date: w.date,
@@ -111,67 +103,67 @@ class DegreeDay < ApplicationRecord
     )
   end
 
-  def self.create_maps
+  def self.create_images
     dd_models.each do |model|
-      create_map(model)
+      create_image(model)
     end
   end
 
-  def self.create_map(
-    model,
-    start_date = latest_date.beginning_of_year,
-    end_date = latest_date,
-    units = "F",
-    min_value = nil,
-    max_value = nil,
-    extent = "all"
+  def self.create_image(
+    model = "dd_50",
+    end_date: latest_date,
+    start_date: nil,
+    units: "F",
+    min_value: nil,
+    max_value: nil,
+    extent: "all"
   )
 
     raise ArgumentError.new("Invalid model!") unless model_names.include? model
     raise ArgumentError.new("Invalid units!") unless ["F", "C"].include? units
 
-    dds = where(date: start_date..end_date, cumulative: false)
+    end_date = end_date.to_date
+    start_date ||= end_date.beginning_of_year
 
-    unless dds.empty?
-      totals = dds.group(:latitude, :longitude)
-        .order(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(#{model}) as total")
-
-      grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
-      totals.each do |point|
-        lat, long = point.latitude, point.longitude
-        next unless grid.inside?(lat, long)
-        grid[lat, long] = (units == "F") ? point.total : UnitConverter.fdd_to_cdd(point.total)
-      end
-
-      # define map scale by rounding the interval up to divisible by 5
-      tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
-      if min_value || max_value
-        min_value ||= 0
-        max_value ||= tick * 10
-        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value, extent)
-      else
-        title, file = dd_map_attr(model, start_date, end_date, units, min_value, max_value, extent)
-        min_value = 0
-        max_value = tick * 10
-      end
-
-      Rails.logger.info "#{name} :: Creating #{model} image for #{start_date} - #{end_date}"
-      ImageCreator.create_image(grid, title, file, subdir: MAP_DIR, min_value:, max_value:)
-    else
-      Rails.logger.warn "PestForecast :: Failed to create image for #{model}: No data"
-      "no_data.png"
+    dds = where(date: start_date..end_date)
+    min_date = dds.minimum(:date)
+    max_date = dds.maximum(:date)
+    totals = dds.grid_summarize("sum(#{model}) as total")
+    grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
+    
+    totals.each do |point|
+      lat, long = point.latitude, point.longitude
+      next unless grid.inside?(lat, long)
+      grid[lat, long] = (units == "F") ? point.total : UnitConverter.fdd_to_cdd(point.total)
     end
+
+    # define map scale by rounding the interval up to divisible by 5
+    tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
+    if min_value || max_value
+      min_value ||= 0
+      max_value ||= tick * 10
+      title, file = dd_map_attr(model, min_date, max_date, units, min_value, max_value, extent)
+    else
+      title, file = dd_map_attr(model, min_date, max_date, units, min_value, max_value, extent)
+      min_value = 0
+      max_value = tick * 10
+    end
+
+    Rails.logger.info "#{name} :: Creating #{model} image for #{min_date} - #{max_date}"
+    ImageCreator.create_image(grid, title, file, subdir: MAP_DIR, min_value:, max_value:)
+  rescue => e
+    Rails.logger.warn "PestForecast :: Failed to create image for #{model}: #{e.message}"
+    nil
   end
 
   def self.dd_map_attr(model, start_date, end_date, units, min_value, max_value, extent)
     _, base, upper = model.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
-      upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) unless upper == "none"
+      upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) unless upper.nil?
     end
     model_name = "base #{base}°#{units}"
-    model_name += ", upper #{upper}°#{units}" unless upper == "none"
+    model_name += ", upper #{upper}°#{units}" unless upper.nil?
     fmt2 = "%b %-d, %Y"
     fmt1 = (start_date.year != end_date.year) ? fmt2 : "%b %-d"
     title = "Degree day totals for #{model_name} from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"

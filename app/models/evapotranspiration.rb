@@ -39,20 +39,19 @@ class Evapotranspiration < ApplicationRecord
     grid
   end
 
-  def self.create_image(date, start_date: nil, units: "in")
+  def self.create_image(date = latest_date, start_date: nil, units: "in")
     if start_date.nil?
       ets = where(date:)
-      raise StandardError.new("No data") if ets.size == 0
-      date = ets.distinct.pluck(:date).max
+      raise StandardError.new("No data") if ets.empty?
+      date = ets.maximum(:date)
       min = 0
       max = (units == "mm") ? DEFAULT_MAX_MM : DEFAULT_MAX_IN
     else
       ets = where(date: start_date..date)
-      raise StandardError.new("No data") if ets.size == 0
-      start_date = ets.distinct.pluck(:date).min
-      date = ets.distinct.pluck(:date).max
-      ets = ets.group(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(potential_et) as potential_et")
+      raise StandardError.new("No data") if ets.empty?
+      start_date = ets.minimum(:date)
+      date = ets.maximum(:date)
+      ets = ets.grid_summarize("sum(potential_et) as potential_et")
       min = max = nil
     end
     title = image_title(date, start_date, units)

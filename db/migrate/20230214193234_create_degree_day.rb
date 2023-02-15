@@ -24,14 +24,13 @@ class CreateDegreeDay < ActiveRecord::Migration[7.0]
       t.date :date, null: false
       t.decimal :latitude, precision: 5, scale: 2, null: false
       t.decimal :longitude, precision: 5, scale: 2, null: false
-      t.boolean :cumulative, null: false, default: false
       cols.each do |c|
         t.float c
       end
-      t.index [:cumulative, :date, :latitude, :longitude], unique: true, order: { date: :asc, latitude: :desc, longitude: :asc }, name: "unique_key"
-      t.index :date, order: :asc
-      t.index [:latitude, :longitude], order: { latitude: :desc, longitude: :asc }
-      t.index :longitude, order: :asc
+      t.index [:date, :latitude, :longitude], unique: true, name: "degree_days_unique_key"
+      t.index :date
+      t.index :latitude
+      t.index :longitude
     end
   end
 end

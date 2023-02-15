@@ -5,10 +5,7 @@ class DataImport < ApplicationRecord
     [
       WeatherDataImport,
       PrecipDataImport,
-      InsolationDataImport,
-      EvapotranspirationDataImport,
-      PestForecastDataImport,
-      DegreeDayDataImport
+      InsolationDataImport
     ].freeze
   end
 

@@ -1,2 +1,0 @@
-class DegreeDayDataImport < DataImport
-end

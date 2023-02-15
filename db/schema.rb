@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_15_182508) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -58,7 +58,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.date "date", null: false
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
-    t.boolean "cumulative", default: false, null: false
     t.float "dd_32"
     t.float "dd_38_75"
     t.float "dd_39p2_86"
@@ -76,9 +75,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.float "dd_52"
     t.float "dd_52_86"
     t.float "dd_55_92"
-    t.index ["cumulative", "date", "latitude", "longitude"], name: "unique_key", unique: true, order: { latitude: :desc }
+    t.index ["date", "latitude", "longitude"], name: "degree_days_unique_key", unique: true
     t.index ["date"], name: "index_degree_days_on_date"
-    t.index ["latitude", "longitude"], name: "index_degree_days_on_latitude_and_longitude", order: { latitude: :desc }
+    t.index ["latitude"], name: "index_degree_days_on_latitude"
     t.index ["longitude"], name: "index_degree_days_on_longitude"
   end
 
@@ -87,9 +86,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
-    t.index ["date", "latitude", "longitude"], name: "index_evapotranspirations_on_date_and_latitude_and_longitude", unique: true, order: { latitude: :desc }
-    t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_latitude_and_longitude", order: { longitude: :desc }
-    t.index ["longitude"], name: "index_evapotranspirations_on_longitude", order: :desc
+    t.index ["date", "latitude", "longitude"], name: "evapotranspirations_unique_key", unique: true
+    t.index ["date"], name: "index_evapotranspirations_on_date"
+    t.index ["latitude"], name: "index_evapotranspirations_on_latitude"
+    t.index ["longitude"], name: "index_evapotranspirations_on_longitude"
   end
 
   create_table "insolations", force: :cascade do |t|
@@ -97,9 +97,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
-    t.index ["date", "latitude", "longitude"], name: "index_insolations_on_date_and_latitude_and_longitude", unique: true, order: { latitude: :desc }
-    t.index ["latitude", "longitude"], name: "index_insolations_on_latitude_and_longitude", order: { longitude: :desc }
-    t.index ["longitude"], name: "index_insolations_on_longitude", order: :desc
+    t.index ["date", "latitude", "longitude"], name: "insolations_unique_key", unique: true
+    t.index ["date"], name: "index_insolations_on_date"
+    t.index ["latitude"], name: "index_insolations_on_latitude"
+    t.index ["longitude"], name: "index_insolations_on_longitude"
   end
 
   create_table "pest_forecasts", force: :cascade do |t|
@@ -111,9 +112,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.float "potato_p_days"
     t.integer "cercospora_div"
     t.integer "botcast_dsi", default: 0
-    t.index ["date", "latitude", "longitude"], name: "index_pest_forecasts_on_date_and_latitude_and_longitude", unique: true, order: { latitude: :desc }
-    t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_latitude_and_longitude", order: { longitude: :desc }
-    t.index ["longitude"], name: "index_pest_forecasts_on_longitude", order: :desc
+    t.index ["date", "latitude", "longitude"], name: "pest_forecasts_unique_key", unique: true
+    t.index ["date"], name: "index_pest_forecasts_on_date"
+    t.index ["latitude"], name: "index_pest_forecasts_on_latitude"
+    t.index ["longitude"], name: "index_pest_forecasts_on_longitude"
   end
 
   create_table "precips", force: :cascade do |t|
@@ -121,9 +123,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.float "precip"
-    t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_and_latitude_and_longitude", unique: true, order: { latitude: :desc }
-    t.index ["latitude", "longitude"], name: "index_precips_on_latitude_and_longitude", order: { longitude: :desc }
-    t.index ["longitude"], name: "index_precips_on_longitude", order: :desc
+    t.index ["date", "latitude", "longitude"], name: "precips_unique_key", unique: true
+    t.index ["date"], name: "index_precips_on_date"
+    t.index ["latitude"], name: "index_precips_on_latitude"
+    t.index ["longitude"], name: "index_precips_on_longitude"
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|
@@ -164,9 +167,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_030253) do
     t.float "dew_point"
     t.virtual "frost", type: :boolean, as: "(min_temperature <= (0)::double precision)", stored: true
     t.virtual "freeze", type: :boolean, as: "(min_temperature <= ('-2.22'::numeric)::double precision)", stored: true
-    t.index ["date", "latitude", "longitude"], name: "index_weather_data_on_date_and_latitude_and_longitude", unique: true, order: { latitude: :desc }
-    t.index ["latitude", "longitude"], name: "index_weather_data_on_latitude_and_longitude", order: { longitude: :desc }
-    t.index ["longitude"], name: "index_weather_data_on_longitude", order: :desc
+    t.index ["date", "latitude", "longitude"], name: "weather_data_unique_key", unique: true
+    t.index ["date"], name: "index_weather_data_on_date"
+    t.index ["latitude"], name: "index_weather_data_on_latitude"
+    t.index ["longitude"], name: "index_weather_data_on_longitude"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

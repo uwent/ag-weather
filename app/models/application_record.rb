@@ -1,6 +1,20 @@
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
 
+  def self.on(date)
+    where(date:)
+  end
+
+  def self.all_for_date(date)
+    where(date:).order(:latitude, :longitude)
+  end
+
+  def self.grid_summarize(sql)
+    group(:latitude, :longitude)
+      .order(:latitude, :longitude)
+      .select(:latitude, :longitude, sql)
+  end
+
   def self.latest_date
     maximum(:date)
   end

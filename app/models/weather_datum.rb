@@ -1,10 +1,6 @@
 class WeatherDatum < ApplicationRecord
   UNITS = ["C", "F"]
 
-  def self.all_for_date(date)
-    where(date:).order(:latitude, :longitude)
-  end
-  
   def self.calculate_all_degree_days_for_date_range(
     lat_range: LandExtent.latitudes,
     long_range: LandExtent.longitudes,

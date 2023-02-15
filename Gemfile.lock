@@ -104,8 +104,6 @@ GEM
       xpath (~> 3.2)
     chronic (0.10.2)
     coderay (1.1.3)
-    compact_log_formatter (0.1.1)
-      rails (> 5.0)
     concurrent-ruby (1.2.0)
     crack (0.4.5)
       rexml
@@ -356,7 +354,6 @@ DEPENDENCIES
   capistrano-bundler
   capistrano-rails
   capistrano-rbenv
-  compact_log_formatter
   dredd-rack
   factory_bot_rails
   guard-rspec

@@ -68,26 +68,24 @@ class Precip < ApplicationRecord
     grid
   end
 
-  def self.create_image(date, start_date: nil, units: UNITS[0])
+  def self.create_image(date = latest_date, start_date: nil, units: UNITS[0])
     if start_date.nil?
       precips = where(date:)
-      raise StandardError.new("No data") if precips.size == 0
-      date = precips.distinct.pluck(:date).max
+      raise StandardError.new("No data") if precips.empty?
     else
       precips = where(date: start_date..date)
-      raise StandardError.new("No data") if precips.size == 0
-      start_date = precips.distinct.pluck(:date).min
-      date = precips.distinct.pluck(:date).max
-      precips = precips.group(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(precip) as precip")
+      raise StandardError.new("No data") if precips.empty?
+      start_date = precips.minimum(:date)
+      date = precips.maximum(:date)
+      precips = precips.grid_summarize("sum(precip) as precip")
     end
     title = image_title(date, start_date, units)
     file = image_name(date, start_date, units)
-    Rails.logger.info "Precip :: Creating image ==> #{file}"
+    Rails.logger.info "#{name} :: Creating image ==> #{file}"
     grid = create_image_data(LandGrid.new, precips, units)
     ImageCreator.create_image(grid, title, file, min_value: 0.0)
   rescue => e
-    Rails.logger.warn "Precip :: Failed to create image for #{date}: #{e.message}"
-    "no_data.png"
+    Rails.logger.warn "#{name} :: Failed to create image for #{date}: #{e.message}"
+    nil
   end
 end

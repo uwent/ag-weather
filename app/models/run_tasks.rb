@@ -16,6 +16,11 @@ class RunTasks
     threads << Thread.new { DegreeDayImporter.create_data }
     threads.each { |thr| thr.join }
 
+    # create images
+    Evapotranspiration.create_image
+    PestForecast.create_image
+    DegreeDay.create_image
+
     # display status of import attempts
     DataImport.check_statuses
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"

@@ -77,6 +77,5 @@ Rails.application.configure do
 
   # Logging configuration
   config.log_level = :debug
-  Rails.logger = Logger.new("log/#{Rails.env}.log")
-  Rails.logger.formatter = CompactLogFormatter::Formatter.new
+
 end

@@ -1,2 +1,0 @@
-class EvapotranspirationDataImport < DataImport
-end
