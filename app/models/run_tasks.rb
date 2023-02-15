@@ -8,8 +8,13 @@ class RunTasks
     InsolationImporter.fetch
     PrecipImporter.fetch
     WeatherImporter.fetch
-    EvapotranspirationImporter.create_et_data
-    PestForecastImporter.create_forecast_data
+
+    # calculate local data
+    threads = []
+    threads << Thread.new { EvapotranspirationImporter.create_data }
+    threads << Thread.new { PestForecastImporter.create_data }
+    threads << Thread.new { DegreeDayImporter.create_data }
+    threads.each { |thr| thr.join }
 
     # display status of import attempts
     DataImport.check_statuses

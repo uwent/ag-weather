@@ -24,6 +24,7 @@ group :development do
   gem "letter_opener_web"
   gem "web-console"
   gem "standard"
+  gem "compact_log_formatter"
 end
 
 group :development, :test do

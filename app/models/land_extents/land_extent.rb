@@ -13,6 +13,10 @@ class LandExtent
     STEP
   end
 
+  def self.grid_size
+    latitudes.step(STEP).count * longitudes.step(STEP).count
+  end
+
   def self.min_lat
     latitudes.min.to_d.round(1)
   end

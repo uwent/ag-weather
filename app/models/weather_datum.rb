@@ -1,6 +1,10 @@
 class WeatherDatum < ApplicationRecord
   UNITS = ["C", "F"]
 
+  def self.all_for_date(date)
+    where(date:).order(:latitude, :longitude)
+  end
+  
   def self.calculate_all_degree_days_for_date_range(
     lat_range: LandExtent.latitudes,
     long_range: LandExtent.longitudes,
@@ -100,7 +104,7 @@ class WeatherDatum < ApplicationRecord
   # INSTANCE METHODS
 
   # fahrenheit min/max. base/upper must be F
-  def degree_days(base, upper, method = DegreeDaysCalculator::METHOD, in_f = true)
+  def degree_days(base, upper = 150, method = DegreeDaysCalculator::METHOD, in_f = true)
     min = in_f ? UnitConverter.c_to_f(min_temperature) : min_temperature
     max = in_f ? UnitConverter.c_to_f(max_temperature) : max_temperature
     dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)

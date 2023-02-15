@@ -7,31 +7,30 @@ class PestForecastImporter < DataImporter
     WeatherDataImport.successful.find_by(readings_on: date)
   end
 
-  def self.create_forecast_data
-    dates = import.days_to_load
-    if dates.size > 0
-      dates.each { |date| calculate_forecast_for_date(date) }
-    else
+  def self.create_data(dates = import.days_to_load)
+    dates = dates.to_a unless dates.is_a? Array
+
+    if dates.size == 0
       Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
+      return true
+    end
+
+    dates.each do |date|
+      create_data_for_date(date)
     end
   end
 
-  def self.calculate_forecast_for_date(date)
-    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
+  def self.create_data_for_date(date)
+    raise StandardError.new("Weather data not found for #{date}") unless data_sources_loaded?(date)
+
     start_time = Time.now
-
-    unless data_sources_loaded?(date)
-      import.fail(date, "Weather data not found for #{date}")
-      return
-    end
-
     import.start(date)
-    weather = WeatherDatum.land_grid_for_date(date)
+    Rails.logger.info "#{name} :: Creating pest forecast data for #{date}"
+    weather = WeatherDatum.all_for_date(date)
     forecasts = []
 
-    LandExtent.each_point do |lat, long|
-      next if weather[lat, long].nil?
-      forecasts << PestForecast.new_from_weather(weather[lat, long])
+    weather.each do |w|
+      forecasts << PestForecast.new_from_weather(w)
     end
 
     PestForecast.transaction do
@@ -40,11 +39,12 @@ class PestForecastImporter < DataImporter
       import.succeed(date)
     end
 
-    PestForecast.create_dd_map("dd_50_86") unless Rails.env.test?
-
-    Rails.logger.info "PestForecastImporter :: Completed pest forecast calc & image creation for #{date} in #{elapsed(start_time)}."
+    Rails.logger.info "#{name} :: Completed pest forecast calc & image creation for #{date} in #{elapsed(start_time)}."
+    true
   rescue => e
-    PestForecastDataImport.fail(date, "Failed to calculate pest forecasts for #{date}: #{e.message}")
-    nil
+    msg = "Failed to calculate pest forecasts for #{date}: #{e.message}"
+    Rails.logger.error "#{name} :: #{msg}"
+    import.fail(date, msg)
+    false
   end
 end

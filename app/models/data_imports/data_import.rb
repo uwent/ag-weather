@@ -1,6 +1,17 @@
 class DataImport < ApplicationRecord
   DAYS_BACK_WINDOW = (ENV["DAYS_BACK_WINDOW"] || 7).to_i
 
+  def self.import_types
+    [
+      WeatherDataImport,
+      PrecipDataImport,
+      InsolationDataImport,
+      EvapotranspirationDataImport,
+      PestForecastDataImport,
+      DegreeDayDataImport
+    ].freeze
+  end
+
   def self.latest_date
     Time.now.in_time_zone("US/Central").yesterday.to_date
   end
@@ -21,6 +32,14 @@ class DataImport < ApplicationRecord
     where(readings_on: date)
   end
 
+  def self.missing(date)
+    on(date).successful.size == 0
+  end
+
+  def self.pending
+    where(status: "pending")
+  end
+
   def self.started
     where(status: "started")
   end
@@ -38,7 +57,7 @@ class DataImport < ApplicationRecord
     if status.exists?
       status.update(status: "started", message:)
     else
-      started.on(date).create!
+      started.on(date).pending.create!
     end
   end
 
@@ -76,25 +95,25 @@ class DataImport < ApplicationRecord
       if statuses.empty?
         count += 1
         message << "  #{date}: Data load not attempted."
-      elsif statuses.unsuccessful.count > 0 || statuses.started.count > 0
-        message << "  #{date}: PROBLEM"
-        statuses.order(:updated_at).each do |status|
-          case status.status
-          when "unsuccessful"
-            count += 1
-            message << "    #{status.type} ==> FAIL: #{status.message}"
-          when "started"
-            count += 1
-            message << "    #{status.type} ==> STARTED: #{DataImporter.elapsed(status.updated_at)} ago"
-          when "successful"
-            message << "    #{status.type} ==> OK"
+      elsif statuses.successful.size == import_types.size
+        message << "  #{date}: OK"
+      else
+        message << "  #{date}"
+        import_types.each do |type|
+          status = type.find_by(readings_on: date)
+          if status
+            case status.status
+            when "successful"
+              message << "    #{status.type} ==> OK"
+            else
+              count += 1
+              message << "    #{status.type} ==> #{status.status.upcase}: #{status.message} (#{DataImporter.elapsed(status.updated_at)} ago)"
+            end
           else
             count += 1
-            message << "    #{status.type} ==> UNKNOWN"
+            message << "    #{type} ==> PENDING"
           end
         end
-      else
-        message << "  #{date}: OK"
       end
     end
 
