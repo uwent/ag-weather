@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_15_182508) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_16_161646) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -165,8 +165,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_182508) do
     t.float "avg_temp_rh_over_90"
     t.integer "hours_rh_over_90"
     t.float "dew_point"
-    t.virtual "frost", type: :boolean, as: "(min_temperature <= (0)::double precision)", stored: true
-    t.virtual "freeze", type: :boolean, as: "(min_temperature <= ('-2.22'::numeric)::double precision)", stored: true
+    t.virtual "frost", type: :integer, as: "((min_temperature < (0)::double precision))::integer", stored: true
+    t.virtual "freezing", type: :integer, as: "((min_temperature < ('-2'::integer)::double precision))::integer", stored: true
     t.index ["date", "latitude", "longitude"], name: "weather_data_unique_key", unique: true
     t.index ["date"], name: "index_weather_data_on_date"
     t.index ["latitude"], name: "index_weather_data_on_latitude"
