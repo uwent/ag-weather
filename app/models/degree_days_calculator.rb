@@ -14,6 +14,7 @@ class DegreeDaysCalculator
 
   # Min, max in Celcius
   def self.calculate(min, max, base: BASE_C, upper: UPPER_C, method: METHOD)
+    upper ||= 150
     case method.downcase
     when "average"
       average_degree_days(min, max, base)

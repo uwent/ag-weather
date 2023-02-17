@@ -28,6 +28,12 @@ class ApplicationController < ActionController::Base
     DataImport.latest_date
   end
 
+  ## PARSE PARAMS ##
+
+  def parse_number(s)
+    (!/\D/.match?(s)) ? s.to_i : nil
+  end
+
   def date
     Date.parse(params[:date])
   rescue
@@ -40,10 +46,10 @@ class ApplicationController < ActionController::Base
     default_date
   end
 
-  def start_date
+  def start_date(default = default_date.beginning_of_year)
     Date.parse(params[:start_date])
   rescue
-    default_date.beginning_of_year
+    default
   end
 
   def end_date
@@ -52,11 +58,43 @@ class ApplicationController < ActionController::Base
     default_date
   end
 
+  def pest
+    params[:pest]
+  end
+
+  def t_base
+    params[:t_base].present? ? params[:t_base].to_f : DegreeDaysCalculator::BASE_F
+  end
+
+  def t_upper
+    params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
+  end
+
   def lat
     params[:lat]&.to_d&.round(1)
   end
 
   def long
     params[:long]&.to_d&.round(1)
+  end
+
+  def lat_range
+    parse_coords(params[:lat_range], LandExtent.latitudes)
+  end
+
+  def long_range
+    parse_coords(params[:long_range], LandExtent.longitudes)
+  end
+
+  def parse_coord(param, default)
+    param.present? ? param.to_f.round(1) : default
+  rescue
+    default
+  end
+
+  def parse_coords(param, default)
+    param.present? ? param.split(",").map(&:to_f).sort.inject { |a, b| a.round(1)..b.round(1) } : default
+  rescue
+    default
   end
 end
