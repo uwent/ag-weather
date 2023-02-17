@@ -95,39 +95,46 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: create map and return url to it
 
-  def show
+  def map
     start_time = Time.current
 
-    @date = [date_from_id, default_date].min
-    if params[:start_date].present?
-      latest_date = Evapotranspiration.latest_date || default_date
-      @date = [@date, latest_date].min
-      @start_date = start_date.clamp(earliest_date, @date)
-      @start_date = nil if @start_date == @date
-    end
+    @end_date = params[:date].present? ? date : end_date
+    @start_date = start_date(nil)
+    @start_date = nil if @start_date == @end_date
     @units = units
-
-    image_name = Evapotranspiration.image_name(@date, @start_date, @units)
-    image_filename = File.join(ImageCreator.file_dir, image_name)
+    @extent = params[:extent]
+    @image_args = {
+      start_date: @start_date,
+      end_date: @end_date,
+      units: @units,
+      extent: @extent
+    }.compact
+    
+    image_name, _ = Evapotranspiration.image_attr(**@image_args)
+    image_filename = Evapotranspiration.image_path(image_name)
+    image_url = Evapotranspiration.image_url(image_name)
 
     if File.exist?(image_filename)
-      url = File.join(ImageCreator.url_path, image_name)
+      @url = image_url
+      @status = "already exists"
     else
-      image_name = Evapotranspiration.create_image(@date, start_date: @start_date, units: @units)
-      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
+      image_name = Evapotranspiration.create_image(**@image_args)
+      @url = image_url
+      @status = "image created"
     end
 
     if request.format.png?
-      render html: "<img src=#{url} height=100%>".html_safe
+      render html: @url ? "<img src=#{@url} height=100%>".html_safe : "Unable to create image, invalid query or no data."
     else
       render json: {
-        params: {
+        info: {
+          status: @status,
           start_date: @start_date,
-          end_date: @date,
-          units: @units
+          end_date: @end_date,
+          units: @units,
+          compute_time: Time.current - start_time
         },
-        compute_time: Time.current - start_time,
-        map: url
+        map: @url
       }
     end
   end
@@ -229,13 +236,11 @@ class EvapotranspirationsController < ApplicationController
   end
 
   def units
-    valid_units = Evapotranspiration::UNITS
-    if valid_units.include?(params[:units])
-      params[:units]
-    elsif !params[:units].present?
-      valid_units.first
+    unit = params[:units]&.downcase || Evapotranspiration.valid_units[0]
+    if Evapotranspiration.valid_units.include?(unit)
+      unit
     else
-      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      raise ActionController::BadRequest.new("Invalid unit '#{unit}'. Must be one of #{Evapotranspiration.valid_units.join(", ")}.")
     end
   end
 end

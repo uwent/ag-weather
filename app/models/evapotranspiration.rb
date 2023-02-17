@@ -1,23 +1,26 @@
 class Evapotranspiration < ApplicationRecord
-  UNITS = ["in", "mm"]
-  DEFAULT_MAX_IN = 0.3
-  DEFAULT_MAX_MM = 8
 
-  def has_required_data?
-    weather && insolation
+  IMAGE_SUBDIR = "et"
+
+  def self.valid_units
+    ["in", "mm"].freeze
   end
 
-  def weather
-    @weather ||= WeatherDatum.find_by(latitude:, longitude:, date:)
-  end
+  # def has_required_data?
+  #   weather && insolation
+  # end
 
-  def insolation
-    @insolation ||= Insolation.find_by(latitude:, longitude:, date:)
-  end
+  # def weather
+  #   @weather ||= WeatherDatum.find_by(latitude:, longitude:, date:)
+  # end
 
-  def already_calculated?
-    Evapotranspiration.find_by(latitude:, longitude:, date:)
-  end
+  # def insolation
+  #   @insolation ||= Insolation.find_by(latitude:, longitude:, date:)
+  # end
+
+  # def already_calculated?
+  #   Evapotranspiration.find_by(latitude:, longitude:, date:)
+  # end
 
   def calculate_et(insolation, weather)
     EvapotranspirationCalculator.et(
@@ -39,52 +42,74 @@ class Evapotranspiration < ApplicationRecord
     grid
   end
 
-  def self.create_image(date = latest_date, start_date: nil, units: "in")
-    if start_date.nil?
-      ets = where(date:)
-      raise StandardError.new("No data") if ets.empty?
-      date = ets.maximum(:date)
-      min = 0
-      max = (units == "mm") ? DEFAULT_MAX_MM : DEFAULT_MAX_IN
+  def self.image_path(filename)
+    File.join(ImageCreator.file_dir, IMAGE_SUBDIR, filename)
+  end
+
+  def self.image_url(filename)
+    File.join(ImageCreator.url_path, IMAGE_SUBDIR, filename)
+  end
+
+  def self.create_image(
+    start_date: nil,
+    end_date: latest_date,
+    units: "in",
+    extent: nil
+  )
+    raise ArgumentError.new("Invalid units!") unless valid_units.include?(units)
+
+    if start_date
+      data = where(date: start_date..end_date)
+      min_date = data.minimum(:date)
+      max_date = data.maximum(:date)
+      attrs = {start_date: min_date, end_date: max_date, units:, extent:}
     else
-      ets = where(date: start_date..date)
-      raise StandardError.new("No data") if ets.empty?
-      start_date = ets.minimum(:date)
-      date = ets.maximum(:date)
-      ets = ets.grid_summarize("sum(potential_et) as potential_et")
-      min = max = nil
+      data = where(date: end_date)
+      attrs = {end_date:, units:, extent:}
     end
-    title = image_title(date, start_date, units)
-    file = image_name(date, start_date, units)
-    Rails.logger.info "Evapotranspiration :: Creating image ==> #{file}"
-    grid = create_image_data(LandGrid.new, ets, units)
-    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
-  rescue => e
-    Rails.logger.warn "Evapotranspiration :: Failed to create image for #{date}: #{e.message}"
-    "no_data.png"
-  end
 
-  def self.image_name(date, start_date = nil, units = "in")
-    name = "evapo-#{units}-#{date.to_formatted_s(:number)}"
-    name += "-#{start_date.to_formatted_s(:number)}" unless start_date.nil?
-    name + ".png"
-  end
+    raise StandardError.new("No data") unless data.exists?
 
-  def self.image_title(date, start_date = nil, units = "in")
-    if start_date.nil?
-      "Potential evapotranspiration (#{units}/day) for #{date.strftime("%b %-d, %Y")}"
-    else
-      fmt = (start_date.year != date.year) ? "%b %-d, %Y" : "%b %-d"
-      "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
-    end
-  end
+    file, title = image_attr(**attrs)
+    Rails.logger.info "#{name} :: Creating image ==> #{file}"
 
-  def self.create_image_data(grid, query, units = "in")
-    query.each do |et|
-      lat, long = et.latitude, et.longitude
+    grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
+    totals = data.grid_summarize("sum(potential_et) as total")
+    totals.each do |point|
+      lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = (units == "mm") ? UnitConverter.in_to_mm(et.potential_et) : et.potential_et
+      grid[lat, long] = (units == "in") ? point.total : UnitConverter.in_to_mm(point.total)
     end
-    grid
+
+    # gnuplot scale bar range
+    if start_date
+      min_value = max_value = nil
+    else
+      min_value = 0
+      max_value = (units == "mm") ? 8 : 0.3 # image scale bar maximum
+    end
+
+    ImageCreator.create_image(grid, title, file, subdir: IMAGE_SUBDIR, min_value:, max_value:)
+  rescue => e
+    Rails.logger.error "#{name} :: Failed to create image for #{end_date}: #{e.message}"
+    nil
+  end
+
+  def self.image_attr(start_date: nil, end_date:, units: "in", extent: nil, min_value: nil, max_value: nil)
+    title = if start_date.nil?
+      "Potential evapotranspiration (#{units}/day) for #{end_date.strftime("%b %-d, %Y")}"
+    else
+      fmt1 = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
+      "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt1)} - #{end_date.strftime("%b %-d, %Y")}"
+    end
+
+    file = "evapo-#{units}"
+    file += "-#{start_date.to_formatted_s(:number)}" unless start_date.nil?
+    file += "-#{end_date.to_formatted_s(:number)}"
+    file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
+    file += "-wi" if extent == "wi"
+    file += ".png"
+
+    [file, title]
   end
 end

@@ -285,20 +285,14 @@ class DegreeDaysController < ApplicationController
   def map
     start_time = Time.current
 
-    # parse dates
-    
     @end_date = params[:date].present? ? date : end_date
     @start_date = start_date(@end_date.beginning_of_year)
+    @start_date = nil if @start_date == @end_date
     @model = params[:model] || "dd_50"
-    # @date = [date, default_date].min
-    # latest_date = DegreeDay.latest_date || default_date
-    # @date = [@date, latest_date].min
-    # @start_date = start_date.clamp(earliest_date, @date)
-    # @start_date = nil if @start_date == @date
     @min_value = params[:min_value]
     @max_value = params[:max_value]
     @extent = params[:extent]
-    @image_args = {
+    puts @image_args = {
       model: @model,
       start_date: @start_date,
       end_date: @end_date,
@@ -306,16 +300,11 @@ class DegreeDaysController < ApplicationController
       min_value: @min_value,
       max_value: @max_value,
       extent: @extent
-    }
-
-    puts @image_args
+    }.compact
 
     image_name, _ = DegreeDay.image_attr(**@image_args)
     image_filename = DegreeDay.image_path(image_name)
     image_url = DegreeDay.image_url(image_name)
-
-    puts image_filename
-    puts image_url
 
     if File.exist?(image_filename)
       @url = image_url
@@ -329,7 +318,7 @@ class DegreeDaysController < ApplicationController
     end
 
     if request.format.png?
-      render html: "<img src=#{@url} height=100%>".html_safe
+      render html: @url ? "<img src=#{@url} height=100%>".html_safe : "Unable to create image, invalid query or no data."
     else
       render json: {
         info: {

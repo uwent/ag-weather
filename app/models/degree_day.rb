@@ -32,10 +32,6 @@ class DegreeDay < ApplicationRecord
     models.map(&:to_s)
   end
 
-  def self.on(date)
-    where(date:)
-  end
-
   def self.find_model(base, upper = nil)
     raise ArgumentError.new("Must provide base temperature") if base.nil?
     model = "dd_" + sprintf("%.4g", base)
@@ -136,28 +132,31 @@ class DegreeDay < ApplicationRecord
     units: "F",
     min_value: nil,
     max_value: nil,
-    extent: "all"
+    extent: nil
   )
 
-    raise ArgumentError.new("Invalid model!") unless model_names.include? model
-    raise ArgumentError.new("Invalid units!") unless valid_units.include? units
+    raise ArgumentError.new("Invalid model!") unless model_names.include?(model)
+    raise ArgumentError.new("Invalid units!") unless valid_units.include?(units)
 
-    end_date = end_date.to_date
-    start_date ||= end_date.beginning_of_year
+    if start_date.nil?
+      data = where(date: end_date)
+      attrs = {model:, end_date:, units:, extent:}
+    else
+      data = where(date: start_date..end_date)
+      min_date = data.minimum(:date)
+      max_date = data.maximum(:date)
+      attrs = {model:, start_date: min_date, end_date: max_date, units:, extent:}
+    end
 
-    dds = where(date: start_date..end_date)
-    min_date = dds.minimum(:date)
-    max_date = dds.maximum(:date)
-    totals = dds.grid_summarize("sum(#{model}) as total")
+    raise StandardError.new("No data") unless data.exists?
+
     grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
-
+    totals = data.grid_summarize("sum(#{model}) as total")
     totals.each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
       grid[lat, long] = (units == "F") ? point.total : UnitConverter.fdd_to_cdd(point.total)
     end
-
-    attrs = {model:, start_date: min_date, end_date: max_date, units:, extent:}
 
     # define map scale by rounding the interval up to divisible by 5
     tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
@@ -173,15 +172,15 @@ class DegreeDay < ApplicationRecord
     end
 
     file, title = image_attr(**attrs)
+    Rails.logger.info "#{name} :: Creating image ==> #{file}"
 
-    Rails.logger.info "#{name} :: Creating #{model} image for #{min_date} - #{max_date}"
     ImageCreator.create_image(grid, title, file, subdir: IMAGE_SUBDIR, min_value:, max_value:)
-  rescue => e
-    Rails.logger.warn "#{name} :: Failed to create image for #{model}: #{e.message}"
-    nil
+  # rescue => e
+  #   Rails.logger.warn "#{name} :: Failed to create image for #{model} on #{end_date}: #{e.message}"
+  #   nil
   end
 
-  def self.image_attr(model:, start_date: nil, end_date:, units:, min_value:, max_value:, extent:)
+  def self.image_attr(model:, start_date: nil, end_date:, units:, min_value: nil, max_value: nil, extent: nil)
     # model name format like "dd_42p8_86" in Fahrenheit
     _, base, upper = model.tr("p", ".").split("_")
     if units == "C"
@@ -193,10 +192,10 @@ class DegreeDay < ApplicationRecord
     fmt1 = "%b %-d, %Y"
     if start_date
       fmt2 = (start_date.year != end_date.year) ? fmt1 : "%b %-d"
-      title = "Degree day totals for #{model_name} from #{start_date.strftime(fmt1)} - #{end_date.strftime(fmt2)}"
+      title = "Degree day totals #{model_name} from #{start_date.strftime(fmt2)} - #{end_date.strftime(fmt1)}"
       file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
     else
-      title = "Degree day totals for #{model_name} on #{end_date.strftime(fmt1)}"
+      title = "Degree day totals #{model_name} on #{end_date.strftime(fmt1)}"
       file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-for-#{end_date.to_formatted_s(:number)}"
     end
     file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
