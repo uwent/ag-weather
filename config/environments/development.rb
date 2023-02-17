@@ -77,4 +77,7 @@ Rails.application.configure do
 
   # Logging configuration
   config.log_level = :debug
+
+  # enable compression
+  config.middleware.insert_before ActionDispatch::Static, Rack::Deflater
 end
