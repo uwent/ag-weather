@@ -1,5 +1,7 @@
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
+  attribute :latitude, :float
+  attribute :longitude, :float
 
   def self.on(date)
     where(date:)
@@ -9,7 +11,7 @@ class ApplicationRecord < ActiveRecord::Base
     where(date:).order(:latitude, :longitude)
   end
 
-  def self.grid_summarize(sql)
+  def self.grid_summarize(sql = nil)
     group(:latitude, :longitude)
       .order(:latitude, :longitude)
       .select(:latitude, :longitude, sql)
