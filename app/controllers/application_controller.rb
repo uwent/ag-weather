@@ -1,10 +1,16 @@
 class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
-  protect_from_forgery prepend: true, with: :null_session
+  protect_from_forgery with: :null_session
 
-  rescue_from ActionController::ParameterMissing do |e|
-    render json: {error: e.message}, status: :bad_request
+  rescue_from ActionController::ParameterMissing,
+    ActionController::RoutingError,
+    ActionController::BadRequest do |message|
+      render json: { message: }, status: :bad_request
+  end
+
+  def reject(message = "bad request")
+    raise ActionController::BadRequest.new(message)
   end
 
   def index
@@ -36,12 +42,6 @@ class ApplicationController < ActionController::Base
 
   def date
     Date.parse(params[:date])
-  rescue
-    default_date
-  end
-
-  def date_from_id
-    Date.parse(params[:id])
   rescue
     default_date
   end

@@ -211,7 +211,7 @@ class DegreeDaysController < ApplicationController
       @model = model
     else
       params.require(:base)
-      implied_model = DegreeDay.find_model(params[:base], params[:upper])
+      implied_model = DegreeDay.find_model(params[:base], params[:upper], units)
       @model = implied_model if DegreeDay.model_names.include?(implied_model)
     end
 
@@ -220,7 +220,7 @@ class DegreeDaysController < ApplicationController
       if dds.exists?
         days_returned = dds.where(latitude: lat_range.min, longitude: long_range.min).size
         data = dds.grid_summarize.sum(@model)
-        status = "missing data" if days_returned < days_requested - 2
+        status = "missing data" if days_returned < days_requested - 1
       else
         status = "no data"
       end
@@ -241,11 +241,22 @@ class DegreeDaysController < ApplicationController
       status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.models.join(", ")}"
     end
 
+    data.each { |k, v| data[k] = convert_dds(v) }
     values = data.values
+
+    if @model
+      base, upper = DegreeDay.model_to_base_upper(@model, units)
+    else
+      base, upper = params[:base], params[:upper]
+    end
+
+    model_text = "base: #{base}°#{units}"
+    model_text += ", upper: #{upper}°#{units}" if upper
 
     info = {
       status:,
-      model: @model || "base: #{params[:base]}, upper: #{params[:upper] || "none"}",
+      model: model_text,
+      units: units_text,
       start_date:,
       end_date:,
       days_requested:,
@@ -292,7 +303,7 @@ class DegreeDaysController < ApplicationController
     @min_value = params[:min_value]
     @max_value = params[:max_value]
     @extent = params[:extent]
-    puts @image_args = {
+    @image_args = {
       model: @model,
       start_date: @start_date,
       end_date: @end_date,
@@ -360,8 +371,12 @@ class DegreeDaysController < ApplicationController
   private
 
   def units
-    unit = params[:units]&.upcase
-    DegreeDay.valid_units.include?(unit) ? unit : DegreeDay.valid_units[0]
+    unit = params[:units]&.upcase || DegreeDay.valid_units[0]
+    if DegreeDay.valid_units.include?(unit)
+      unit
+    else
+      reject("Invalid unit '#{unit}'. Must be one of #{DegreeDay.valid_units.join(", ")}.")
+    end
   end
 
   def in_f

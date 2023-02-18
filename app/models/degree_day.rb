@@ -32,8 +32,12 @@ class DegreeDay < ApplicationRecord
     models.map(&:to_s)
   end
 
-  def self.find_model(base, upper = nil)
+  def self.find_model(base, upper = nil, units = "F")
     raise ArgumentError.new("Must provide base temperature") if base.nil?
+    if units == "C"
+      base = UnitConverter.c_to_f(base)
+      upper = UnitConverter.c_to_f(upper)
+    end
     model = "dd_" + sprintf("%.4g", base)
     model += sprintf("_%.4g", upper) if upper
     model.gsub(/\./, "p")
@@ -148,7 +152,7 @@ class DegreeDay < ApplicationRecord
       attrs = {model:, start_date: min_date, end_date: max_date, units:, extent:}
     end
 
-    raise StandardError.new("No data") unless data.exists?
+    raise StandardError.new("No data") if data.empty?
 
     grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
     totals = data.grid_summarize("sum(#{model}) as total")
@@ -175,18 +179,23 @@ class DegreeDay < ApplicationRecord
     Rails.logger.info "#{name} :: Creating image ==> #{file}"
 
     ImageCreator.create_image(grid, title, file, subdir: IMAGE_SUBDIR, min_value:, max_value:)
-  # rescue => e
-  #   Rails.logger.warn "#{name} :: Failed to create image for #{model} on #{end_date}: #{e.message}"
-  #   nil
+  rescue => e
+    Rails.logger.warn "#{name} :: Failed to create image for #{model} on #{end_date}: #{e.message}"
+    nil
   end
 
-  def self.image_attr(model:, start_date: nil, end_date:, units:, min_value: nil, max_value: nil, extent: nil)
+  def self.model_to_base_upper(model, units)
     # model name format like "dd_42p8_86" in Fahrenheit
     _, base, upper = model.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
       upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) unless upper.nil?
     end
+    [base, upper]
+  end
+
+  def self.image_attr(model:, start_date: nil, end_date:, units:, min_value: nil, max_value: nil, extent: nil)
+    base, upper = model_to_base_upper(model, units)
     model_name = "base #{base}°#{units}"
     model_name += ", upper #{upper}°#{units}" unless upper.nil?
     fmt1 = "%b %-d, %Y"

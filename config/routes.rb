@@ -1,36 +1,38 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
-  resources :degree_days, only: [:index] do
+  resources :degree_days, only: :index do
     collection do
       get "info"
       get "dd_table"
+      get "grid"
+      get "map"
     end
   end
 
-  resources :evapotranspirations, only: [:show, :index] do
+  resources :evapotranspirations, only: :index do
     collection do
       get "info"
-      get "all_for_date"
-      get "calculate_et"
+      get "grid"
+      get "map"
     end
   end
 
-  resources :insolations, only: [:show, :index] do
-    collection do
-      get "info"
-      get "all_for_date"
-    end
-  end
-
-  resources :precips, only: [:show, :index] do
+  resources :insolations, only: :index do
     collection do
       get "info"
       get "all_for_date"
     end
   end
 
-  resources :pest_forecasts, only: [:show, :index] do
+  resources :precips, only: :index do
+    collection do
+      get "info"
+      get "all_for_date"
+    end
+  end
+
+  resources :pest_forecasts, only: :index do
     collection do
       get "custom"
       get "point_details"
@@ -41,12 +43,14 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :weather, only: [:show, :index] do
+  resources :weather, only: :index do
     collection do
+      get "map"
       get "info"
-      get "all_for_date"
+      get "grid"
       get "forecast"
       get "forecast_nws"
+      get "freeze_grid"
     end
   end
 

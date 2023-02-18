@@ -6,22 +6,6 @@ class Evapotranspiration < ApplicationRecord
     ["in", "mm"].freeze
   end
 
-  # def has_required_data?
-  #   weather && insolation
-  # end
-
-  # def weather
-  #   @weather ||= WeatherDatum.find_by(latitude:, longitude:, date:)
-  # end
-
-  # def insolation
-  #   @insolation ||= Insolation.find_by(latitude:, longitude:, date:)
-  # end
-
-  # def already_calculated?
-  #   Evapotranspiration.find_by(latitude:, longitude:, date:)
-  # end
-
   def calculate_et(insolation, weather)
     EvapotranspirationCalculator.et(
       weather.avg_temperature,

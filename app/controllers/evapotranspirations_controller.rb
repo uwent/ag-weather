@@ -5,6 +5,7 @@ class EvapotranspirationsController < ApplicationController
   #   long (required)
   #   start_date - default 1st of year
   #   end_date - default today
+  #   units - optional, either 'in' (default) or 'mm'
 
   def index
     params.require([:lat, :long])
@@ -15,35 +16,36 @@ class EvapotranspirationsController < ApplicationController
 
     conditions = {date: start_date..end_date, latitude: lat, longitude: long}
 
+    # have to calculate from weather & insol
     if params[:method] == "adjusted"
       weather = {}
       insols = {}
-      WeatherDatum.where(conditions)
-        .order(:date).each { |w| weather[w.date] = w }
-      Insolation.where(conditions)
-        .order(:date).each { |i| insols[i.date] = i }
+      WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
+      Insolation.where(conditions).each { |i| insols[i.date] = i }
 
-      if weather.empty? || insols.empty?
-        status = "no data"
-      else
+      unless weather.empty? && insols.empty?
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
-          next if weather[date].nil? || insols[date].nil?
-          t = weather[date].avg_temperature
-          vp = weather[date].vapor_pressure
-          i = insols[date].insolation
-          d = date.yday
-          l = lat
+          if weather[date].nil? || insols[date].nil?
+            value = 0
+          else
+            t = weather[date].avg_temperature
+            vp = weather[date].vapor_pressure
+            i = insols[date].insolation
+            d = date.yday
+            l = lat
 
-          reg = EvapotranspirationCalculator.et(t, vp, i, d, l)
-          adj = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
-          # Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
-
-          value = (params[:method] == "adjusted") ? adj : reg
+            # classic = EvapotranspirationCalculator.et(t, vp, i, d, l)
+            value = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+            # Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
+          end
+          value = UnitConverter.in_to_mm(value) if units == "mm"
           cumulative_value += value
           data << {date:, value:, cumulative_value:}
         end
+      else
+        status = "no data"
       end
     else
       ets = Evapotranspiration.where(conditions).order(:date)
@@ -55,6 +57,7 @@ class EvapotranspirationsController < ApplicationController
         data = ets.collect do |et|
           date = et.date.to_formatted_s
           value = et.potential_et
+          value = UnitConverter.in_to_mm(value) if units == "mm"
           cumulative_value += value
           {date:, value:, cumulative_value:}
         end
@@ -74,7 +77,8 @@ class EvapotranspirationsController < ApplicationController
       days_returned:,
       min_value: values.min,
       max_value: values.max,
-      units: "in/day",
+      cumulative_value: values.sum,
+      units: "#{units}/day",
       compute_time: Time.current - start_time
     }
 
@@ -86,8 +90,73 @@ class EvapotranspirationsController < ApplicationController
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
+        headers = info unless params[:headers] == "false"
         filename = "et data for #{lat}, #{long}.csv"
+        send_data(to_csv(response[:data], headers), filename:)
+      end
+    end
+  end
+
+# GET: return grid of all values for date
+  # params:
+  #   date - default most recent date
+
+  def grid
+    start_time = Time.current
+    status = "OK"
+    info = {}
+    data = {}
+
+    end_date = date || end_date
+    start_date = start_date(nil) || end_date
+    days_requested = (start_date..end_date).count
+    days_returned = 0
+    query = {
+      date: start_date..end_date,
+      latitude: lat_range,
+      longitude: long_range
+    }
+    data = Evapotranspiration.where(query)
+
+    if data.exists?
+      days_returned = data.where(latitude: lat_range.min, longitude: long_range.min).size
+      data = data.grid_summarize.sum(:potential_et)
+      if units == "mm"
+        data.each { |k, v| data[k] = UnitConverter.in_to_mm(v) }
+      end
+      status = "missing data" if days_returned < days_requested - 1
+    else
+      status = "no data"
+    end
+
+    values = data.values
+
+    info = {
+      status:,
+      start_date:,
+      end_date:,
+      days_requested:,
+      days_returned:,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
+      min_value: values.min,
+      max_value: values.max,
+      units: "Potential evapotranspiration (in/day)",
+      compute_time: Time.current - start_time
+    }
+
+    response = { info:, data: }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.csv do
+        csv_data = data.collect do |key, value|
+          { latitude: key[0], longitude: key[1], value: }
+        end
+        headers = info unless params[:headers] == "false"
+        filename = "et data grid for #{@date}.csv"
         send_data(to_csv(response[:data], headers), filename:)
       end
     end
@@ -139,64 +208,6 @@ class EvapotranspirationsController < ApplicationController
     end
   end
 
-  # GET: return grid of all values for date
-  # params:
-  #   date - default most recent date
-
-  def all_for_date
-    start_time = Time.current
-    status = "OK"
-    info = {}
-    data = []
-
-    @date = date
-
-    ets = Evapotranspiration.where(date: @date)
-
-    if ets.empty?
-      status = "no data"
-    else
-      data = ets.collect do |et|
-        {
-          lat: et.latitude.to_f.round(1),
-          long: et.longitude.to_f.round(1),
-          value: et.potential_et.round(3)
-        }
-      end
-    end
-
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
-
-    info = {
-      date:,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      grid_points: lats.count * longs.count,
-      min_value: values.min,
-      max_value: values.max,
-      units: "Potential evapotranspiration (in/day)",
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      status:,
-      info:,
-      data:
-    }
-
-    respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8" }
-      format.json { render json: response }
-      format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = "et data grid for #{@date}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
-      end
-    end
-  end
-
   # GET: calculate et with arguments
 
   def calculate_et
@@ -240,7 +251,7 @@ class EvapotranspirationsController < ApplicationController
     if Evapotranspiration.valid_units.include?(unit)
       unit
     else
-      raise ActionController::BadRequest.new("Invalid unit '#{unit}'. Must be one of #{Evapotranspiration.valid_units.join(", ")}.")
+      reject("Invalid unit '#{unit}'. Must be one of #{Evapotranspiration.valid_units.join(", ")}.")
     end
   end
 end
