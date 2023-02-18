@@ -70,7 +70,7 @@ class Evapotranspiration < ApplicationRecord
       min_value = max_value = nil
     else
       min_value = 0
-      max_value = (units == "mm") ? 8 : 0.3 # image scale bar maximum
+      max_value = (units == "mm") ? 8 : 0.3 # image scale bar maximum depending on units
     end
 
     ImageCreator.create_image(grid, title, file, subdir: IMAGE_SUBDIR, min_value:, max_value:)

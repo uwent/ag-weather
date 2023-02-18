@@ -13,21 +13,23 @@ class InsolationsController < ApplicationController
     status = "OK"
     data = []
 
-    insols = Insolation.where(
+    conditions = {
       date: start_date..end_date,
       latitude: lat,
       longitude: long
-    ).order(:date)
+    }
 
-    if insols.empty?
-      status = "no data"
-    else
+    insols = Insolation.where(conditions)
+
+    unless insols.empty?
       data = insols.collect do |insol|
         {
           date: insol.date.to_s,
           value: insol.insolation.round(3)
         }
       end
+    else
+      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
@@ -47,11 +49,7 @@ class InsolationsController < ApplicationController
 
     status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
 
-    response = {
-      status:,
-      info:,
-      data:
-    }
+    response = { status:, info:, data: }
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
@@ -64,98 +62,118 @@ class InsolationsController < ApplicationController
     end
   end
 
-  # GET: create map and return url to it
-
-  def show
-    start_time = Time.current
-
-    @date = [date_from_id, default_date].min
-    if params[:start_date].present?
-      @start_date = start_date.clamp(earliest_date, @date)
-      @start_date = nil if @start_date == @date
-    end
-    @units = units
-
-    image_name = Insolation.image_name(@date, @start_date, @units)
-    image_filename = File.join(ImageCreator.file_dir, image_name)
-
-    if File.exist?(image_filename)
-      url = File.join(ImageCreator.url_path, image_name)
-    else
-      image_name = Insolation.create_image(@date, start_date: @start_date, units: @units)
-      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
-    end
-
-    if request.format.png?
-      render html: "<img src=#{url} height=100%>".html_safe
-    else
-      render json: {
-        params: {
-          start_date: @start_date,
-          end_date: @date,
-          units: @units
-        },
-        compute_time: Time.current - start_time,
-        map: url
-      }
-    end
-  end
-
+  
   # GET: return grid of all values for date
   # params:
   #   date - defaults to most recent data
 
-  def all_for_date
+  def grid
     start_time = Time.current
     status = "OK"
     info = {}
     data = []
 
-    @date = date
+    end_date = date || end_date
+    start_date = start_date(nil) || end_date
+    days_requested = (start_date..end_date).count
+    days_returned = 0
+    query = {
+      date: start_date..end_date,
+      latitude: lat_range,
+      longitude: long_range
+    }
+    data = Insolation.where(query)
 
-    insols = Insolation.where(date: @date)
-
-    if insols.empty?
-      status = "no data"
+    if data.exists?
+      days_returned = data.where(latitude: lat_range.min, longitude: long_range.min).size
+      data = data.grid_summarize.sum(:insolation)
+      data.each { |k, v| data[k] = UnitConverter.mj_to_kwh(v) } if units == "KWh"
+      status = "missing data" if days_returned < days_requested - 1
     else
-      data = insols.collect do |insol|
-        {
-          lat: insol.latitude.round(1),
-          long: insol.longitude.round(1),
-          value: insol.insolation.round(3)
-        }
-      end
+      status = "no data"
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
+    values = data.values
 
     info = {
-      date: @date,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      points: lats.count * longs.count,
+      status:,
+      start_date:,
+      end_date:,
+      days_requested:,
+      days_returned:,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
       min_value: values.min,
       max_value: values.max,
       units: "Solar insolation (MJ/day)",
       compute_time: Time.current - start_time
     }
 
-    response = {
-      status:,
-      info:,
-      data:
-    }
+    response = { info:, data: }
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
+        csv_data = data.collect do |key, value|
+          { latitude: key[0], longitude: key[1], value: }
+        end
+        headers = info unless params[:headers] == "false"
         filename = "insol data grid for #{@date}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
+        send_data(to_csv(csv_data, headers), filename:)
       end
+    end
+  end
+
+
+  # GET: create map and return url to it
+
+  def map
+    start_time = Time.current
+
+    @end_date = params[:date].present? ? date : end_date
+    @start_date = start_date(nil)
+    @start_date = nil if @start_date == @end_date
+    @units = units
+    @extent = params[:extent]
+    puts @image_args = {
+      start_date: @start_date,
+      end_date: @end_date,
+      units: @units,
+      extent: @extent
+    }.compact
+
+    image_name, _ = Insolation.image_attr(**@image_args)
+    image_filename = Insolation.image_path(image_name)
+    image_url = Insolation.image_url(image_name)
+
+    @status = "unable to create image, invalid query or no data"
+
+    if File.exist?(image_filename)
+      @url = image_url
+      @status = "already exists"
+    else
+      image_name = Insolation.create_image(**@image_args)
+      if image_name
+        @url = image_url
+        @status = "image created"
+      end
+    end
+
+    if request.format.png?
+      render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status
+    else
+      render json: {
+        info: {
+          status: @status,
+          start_date: @start_date,
+          end_date: @end_date,
+          units: @units,
+          compute_time: Time.current - start_time
+        },
+        map: @url
+      }
     end
   end
 
@@ -188,13 +206,11 @@ class InsolationsController < ApplicationController
   end
 
   def units
-    valid_units = Insolation::UNITS
-    if valid_units.include?(params[:units])
-      params[:units]
-    elsif !params[:units].present?
-      valid_units.first
+    unit = params[:units]&.downcase || Insolation.valid_units[0]
+    if Insolation.valid_units.include?(unit)
+      unit
     else
-      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
+      reject("Invalid unit '#{unit}'. Must be one of #{Insolation.valid_units.join(", ")}.")
     end
   end
 end

@@ -317,6 +317,8 @@ class DegreeDaysController < ApplicationController
     image_filename = DegreeDay.image_path(image_name)
     image_url = DegreeDay.image_url(image_name)
 
+    @status = "unable to create image, invalid query or no data"
+
     if File.exist?(image_filename)
       @url = image_url
       @status = "already exists"
@@ -329,7 +331,7 @@ class DegreeDaysController < ApplicationController
     end
 
     if request.format.png?
-      render html: @url ? "<img src=#{@url} height=100%>".html_safe : "Unable to create image, invalid query or no data."
+      render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status
     else
       render json: {
         info: {

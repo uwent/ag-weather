@@ -136,8 +136,7 @@ class DegreeDay < ApplicationRecord
     units: "F",
     min_value: nil,
     max_value: nil,
-    extent: nil
-  )
+    extent: nil)
 
     raise ArgumentError.new("Invalid model!") unless model_names.include?(model)
     raise ArgumentError.new("Invalid units!") unless valid_units.include?(units)

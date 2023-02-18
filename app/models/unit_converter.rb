@@ -26,7 +26,7 @@ module UnitConverter
   # convert Megajoules to Kilowatt hours
   def self.mj_to_kwh(mj)
     return if mj.nil?
-    mj.to_f * (1 / 3.6)
+    mj.to_f / 3.6
   end
 
   # inches to mm

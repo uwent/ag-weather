@@ -35,7 +35,7 @@ class ImageCreator
   end
 
   def self.create_image(grid, title, image_name, subdir: "", min_value: nil, max_value: nil)
-    return "no_data.png" if grid.empty?
+    return if grid.empty?
 
     # get params from data
     data_min = grid.min.round(3)
@@ -59,7 +59,7 @@ class ImageCreator
       image_name
     rescue => e
       Rails.logger.error "ImageCreator :: Failed to create image '#{image_name}': #{e.message}"
-      "no_data.png"
+      nil
     end
     # image_name = generate_image_file(datafile_name, image_name, subdir, title, min, max, grid.extents)
   end

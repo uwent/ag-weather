@@ -48,11 +48,9 @@ class EvapotranspirationsController < ApplicationController
         status = "no data"
       end
     else
-      ets = Evapotranspiration.where(conditions).order(:date)
+      ets = Evapotranspiration.where(conditions)
 
-      if ets.empty?
-        status = "no data"
-      else
+      unless ets.empty?
         cumulative_value = 0
         data = ets.collect do |et|
           date = et.date.to_formatted_s
@@ -61,6 +59,8 @@ class EvapotranspirationsController < ApplicationController
           cumulative_value += value
           {date:, value:, cumulative_value:}
         end
+      else
+        status = "no data"
       end
     end
 
@@ -157,7 +157,7 @@ class EvapotranspirationsController < ApplicationController
         end
         headers = info unless params[:headers] == "false"
         filename = "et data grid for #{@date}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
+        send_data(to_csv(csv_data), headers), filename:)
       end
     end
   end
@@ -183,13 +183,17 @@ class EvapotranspirationsController < ApplicationController
     image_filename = Evapotranspiration.image_path(image_name)
     image_url = Evapotranspiration.image_url(image_name)
 
+    @status = "unable to create image, invalid query or no data"
+
     if File.exist?(image_filename)
       @url = image_url
       @status = "already exists"
     else
       image_name = Evapotranspiration.create_image(**@image_args)
-      @url = image_url
-      @status = "image created"
+      if image_name
+        @url = image_url
+        @status = "image created"
+      end
     end
 
     if request.format.png?
@@ -210,12 +214,12 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: calculate et with arguments
 
-  def calculate_et
-    render json: {
-      inputs: params,
-      value: Evapotranspiration.new.potential_et
-    }
-  end
+  # def calculate_et
+  #   render json: {
+  #     inputs: params,
+  #     value: Evapotranspiration.new.potential_et
+  #   }
+  # end
 
   # GET: Returns info about et database
 
