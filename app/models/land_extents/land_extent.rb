@@ -33,6 +33,11 @@ class LandExtent
     longitudes.max.to_d.round(1)
   end
 
+  # for gnuplot, min x, max x, min y, max y
+  def bbox
+    [min_long, max_long, min_lat, max_lat]
+  end
+
   def self.random_point
     lat = rand(latitudes).round(1)
     long = rand(longitudes).round(1)

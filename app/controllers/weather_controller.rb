@@ -23,9 +23,7 @@ class WeatherController < ApplicationController
       longitude: long
     ).order(:date)
 
-    if weather.empty?
-      status = "no data"
-    else
+    if weather.exists?
       data = weather.collect do |w|
         {
           date: w.date.to_s,
@@ -33,27 +31,34 @@ class WeatherController < ApplicationController
           max_temp: convert(w.max_temperature),
           avg_temp: convert(w.avg_temperature),
           dew_point: convert(w.dew_point),
-          pressure: w.vapor_pressure,
+          vapor_pressure: w.vapor_pressure,
           hours_rh_over_90: w.hours_rh_over_90,
           avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)
         }
       end
+    else
+      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
+    days_requested = (start_date..end_date).count
+    days_returned = values.count
 
     info = {
       lat: lat.to_f,
       long: long.to_f,
       start_date:,
       end_date:,
-      units:,
-      days_requested: (start_date..end_date).count,
-      days_returned: values.count,
+      units: {
+        temp: units,
+        pressure: "kPa"
+      },
+      days_requested:,
+      days_returned:,
       compute_time: Time.current - start_time
     }
 
-    status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
+    status = "missing days" if status == "OK" && days_requested != days_returned
 
     response = {
       status:,
@@ -72,31 +77,39 @@ class WeatherController < ApplicationController
   end
 
   # GET: create map and return url to it
-  def show
+  def map
     start_time = Time.current
-    @date = [date_from_id, default_date].min
+    @date = [date, default_date].min
     @units = units
 
     image_name = WeatherDatum.image_name(@date, @units)
     image_filename = File.join(ImageCreator.file_dir, image_name)
 
     if File.exist?(image_filename)
-      url = File.join(ImageCreator.url_path, image_name)
+      @url = File.join(ImageCreator.url_path, image_name)
+      @status = "already exists"
     else
       image_name = WeatherDatum.create_image(@date, units: @units)
-      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
+      if image_name
+        @url = File.join(ImageCreator.url_path, image_name)
+        @status = "image created"
+      else
+        @status = "no data"
+      end
     end
 
     if request.format.png?
-      render html: "<img src=#{url} height=100%>".html_safe
+      render html: "<img src=#{@url} height=100%>".html_safe
     else
       render json: {
-        params: {
+        info: {
+          status: @status,
           date: @date,
-          units: @units
+          mapped_value: "avg_temperature",
+          units: @units,
+          compute_time: Time.current - start_time
         },
-        compute_time: Time.current - start_time,
-        map: url
+        map: @url
       }
     end
   end
@@ -105,44 +118,52 @@ class WeatherController < ApplicationController
   # params:
   #   date - default most recent data
   #   units - default C
+  #   lat_range - latitude range, default entire grid
+  #   long_range - longitude range, default entire grid
 
-  def all_for_date
+  def grid
     start_time = Time.current
     status = "OK"
     info = {}
     data = []
     @date = date
 
-    weather = WeatherDatum.where(date: @date)
+    weather = WeatherDatum.where(
+      date: @date,
+      latitude: lat_range,
+      longitude: long_range
+    )
 
-    if weather.empty?
-      status = "no data"
-    else
+    if weather.exists?
       data = weather.collect do |w|
         {
-          lat: w.latitude.round(1),
-          long: w.longitude.round(1),
-          min_temp: convert(w.min_temperature),
-          max_temp: convert(w.max_temperature),
-          avg_temp: convert(w.avg_temperature),
-          dew_point: convert(w.dew_point),
-          pressure: w.vapor_pressure,
+          latitude: w.latitude,
+          longitude: w.longitude,
+          min_temp: convert(w.min_temperature).round(3),
+          max_temp: convert(w.max_temperature).round(3),
+          avg_temp: convert(w.avg_temperature).round(3),
+          dew_point: convert(w.dew_point).round(3),
+          vapor_pressure: w.vapor_pressure.round(5),
           hours_rh_over_90: w.hours_rh_over_90,
-          avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)
+          avg_temp_rh_over_90: convert(w.avg_temp_rh_over_90)&.round(3),
+          frost: w.frost == 1,
+          freezing: w.freezing == 1
         }
       end
       status = "OK"
+    else
+      status = "no data"
     end
-
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
 
     info = {
       date: @date,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      points: lats.size * longs.size,
-      units:,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
+      units: {
+        temp: units,
+        pressure: "kPa"
+      },
       compute_time: Time.current - start_time
     }
 
@@ -326,6 +347,58 @@ class WeatherController < ApplicationController
     }
   end
 
+  # GET: returns grid of frost and freezing counts for date range
+  # Used for VDIFN
+  # params:
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
+  #   lat_range - min,max - default whole grid
+  #   long_range - min,max - default whole grid
+
+  def freeze_grid
+    start_time = Time.current
+    status = "OK"
+    info = {}
+    data = {}
+
+    weather = WeatherDatum.where(
+      date: start_date..end_date,
+      latitude: lat_range,
+      longitude: long_range
+    )
+
+    if weather.exists?
+      data = weather.grid_summarize.sum(:freezing)
+    else
+      status = "no data"
+    end
+
+    info = {
+      status:,
+      start_date:,
+      end_date:,
+      lat_range: [lat_range.min, lat_range.max],
+      long_range: [long_range.min, long_range.max],
+      grid_points: data.size,
+      compute_time: Time.current - start_time
+    }
+
+    response = {
+      info:,
+      data:
+    }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      # format.csv do
+      #   headers = info unless params[:headers] == "false"
+      #   filename = "pest data grid for #{pest}.csv"
+      #   send_data(to_csv(response[:data], headers), filename:)
+      # end
+    end
+  end
+
   # GET: Returns info about weather db
 
   def info
@@ -374,6 +447,7 @@ class WeatherController < ApplicationController
     end
   end
 
+  # directional compass bearings
   def bearings
     {
       N: 0,
@@ -387,6 +461,7 @@ class WeatherController < ApplicationController
     }.freeze
   end
 
+  # convert a degree to the nearest compass bearing, for wind directions
   def deg_to_dir(deg)
     deg = (deg + 22.5) % 360
     bearings.each do |k, v|

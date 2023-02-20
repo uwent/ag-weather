@@ -21,7 +21,8 @@ Rails.application.routes.draw do
   resources :insolations, only: :index do
     collection do
       get "info"
-      get "all_for_date"
+      get "grid"
+      get "map"
     end
   end
 

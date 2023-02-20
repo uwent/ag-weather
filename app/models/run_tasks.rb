@@ -17,9 +17,9 @@ class RunTasks
     threads.each { |thr| thr.join }
 
     # create images
-    Evapotranspiration.create_image
-    PestForecast.create_image
-    DegreeDay.create_image
+    # Evapotranspiration.create_image
+    # PestForecast.create_image
+    # DegreeDay.create_image
 
     # display status of import attempts
     DataImport.check_statuses

@@ -1,47 +1,6 @@
 class DegreeDay < ApplicationRecord
-
-  IMAGE_SUBDIR = "degree_days"
-
-  def self.valid_units
-    ["F", "C"].freeze
-  end
-
-  def self.models
-    %i[
-      dd_32
-      dd_38_75
-      dd_39p2_86
-      dd_41
-      dd_41_86
-      dd_42p8_86
-      dd_45
-      dd_45_80p1
-      dd_45_86
-      dd_48
-      dd_50
-      dd_50_86
-      dd_50_87p8
-      dd_50_90
-      dd_52
-      dd_52_86
-      dd_55_92
-    ].freeze
-  end
-
-  def self.model_names
-    models.map(&:to_s)
-  end
-
-  def self.find_model(base, upper = nil, units = "F")
-    raise ArgumentError.new("Must provide base temperature") if base.nil?
-    if units == "C"
-      base = UnitConverter.c_to_f(base)
-      upper = UnitConverter.c_to_f(upper)
-    end
-    model = "dd_" + sprintf("%.4g", base)
-    model += sprintf("_%.4g", upper) if upper
-    model.gsub(/\./, "p")
-  end
+  extend GridMethods
+  extend ImageMethods
 
   def self.new_from_weather(w)
     new(
@@ -115,100 +74,97 @@ class DegreeDay < ApplicationRecord
     )
   end
 
-  def self.create_images
-    dd_models.each do |model|
-      create_image(model)
-    end
+  def self.default_col
+    :dd_50
   end
 
-  def self.image_path(filename)
-    File.join(ImageCreator.file_dir, IMAGE_SUBDIR, filename)
+  def self.valid_units
+    ["F", "C"].freeze
   end
 
-  def self.image_url(filename)
-    File.join(ImageCreator.url_path, IMAGE_SUBDIR, filename)
+  def self.image_subdir
+    "degree_days"
   end
 
-  def self.create_image(
-    model: "dd_50",
-    start_date: nil,
-    end_date: latest_date,
-    units: "F",
-    min_value: nil,
-    max_value: nil,
-    extent: nil)
-
-    raise ArgumentError.new("Invalid model!") unless model_names.include?(model)
-    raise ArgumentError.new("Invalid units!") unless valid_units.include?(units)
-
-    if start_date.nil?
-      data = where(date: end_date)
-      attrs = {model:, end_date:, units:, extent:}
-    else
-      data = where(date: start_date..end_date)
-      min_date = data.minimum(:date)
-      max_date = data.maximum(:date)
-      attrs = {model:, start_date: min_date, end_date: max_date, units:, extent:}
-    end
-
-    raise StandardError.new("No data") if data.empty?
-
-    grid = (extent == "wi") ? LandGrid.wisconsin_grid : LandGrid.new
-    totals = data.grid_summarize("sum(#{model}) as total")
-    totals.each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = (units == "F") ? point.total : UnitConverter.fdd_to_cdd(point.total)
-    end
-
-    # define map scale by rounding the interval up to divisible by 5
-    tick = ((grid.max / 10.0) / 5.0).ceil * 5.0
-
-    if min_value || max_value
-      min_value ||= 0
-      max_value ||= tick * 10
-      attrs.merge!({min_value:, max_value:})
-    else
-      attrs.merge!({min_value:, max_value:})
-      min_value = 0
-      max_value = tick * 10
-    end
-
-    file, title = image_attr(**attrs)
-    Rails.logger.info "#{name} :: Creating image ==> #{file}"
-
-    ImageCreator.create_image(grid, title, file, subdir: IMAGE_SUBDIR, min_value:, max_value:)
-  rescue => e
-    Rails.logger.warn "#{name} :: Failed to create image for #{model} on #{end_date}: #{e.message}"
-    nil
+  # value stored in FDD, converts if "CDD" requested
+  def self.convert(value, units)
+    (units == "C") ? UnitConverter.fdd_to_cdd(value) : value
   end
 
-  def self.model_to_base_upper(model, units)
-    # model name format like "dd_42p8_86" in Fahrenheit
-    _, base, upper = model.tr("p", ".").split("_")
+  # must be sent :col and :units
+  def self.image_name_prefix(col:, units:, **args)
+    base, upper = dd_to_base_upper(col, units)
+    str = "degree-days-base-#{base}"
+    str += "-upper-#{upper}" if upper
+    str
+  end
+
+  def self.models
+    %i[
+      dd_32
+      dd_38_75
+      dd_39p2_86
+      dd_41
+      dd_41_86
+      dd_42p8_86
+      dd_45
+      dd_45_80p1
+      dd_45_86
+      dd_48
+      dd_50
+      dd_50_86
+      dd_50_87p8
+      dd_50_90
+      dd_52
+      dd_52_86
+      dd_55_92
+    ].freeze
+  end
+
+  def self.model_names
+    models.map(&:to_s)
+  end
+
+  # model name format like "dd_42p8_86" in Fahrenheit
+  def self.dd_to_base_upper(model, units)
+    _, base, upper = model.to_s.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
-      upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) unless upper.nil?
+      upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) if upper
     end
     [base, upper]
   end
 
-  def self.image_attr(model:, start_date: nil, end_date:, units:, min_value: nil, max_value: nil, extent: nil)
-    base, upper = model_to_base_upper(model, units)
-    model_name = "base #{base}°#{units}"
-    model_name += ", upper #{upper}°#{units}" unless upper.nil?
-    fmt1 = "%b %-d, %Y"
-    if start_date
-      fmt2 = (start_date.year != end_date.year) ? fmt1 : "%b %-d"
-      title = "Degree day totals #{model_name} from #{start_date.strftime(fmt2)} - #{end_date.strftime(fmt1)}"
-      file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-from-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}"
-    else
-      title = "Degree day totals #{model_name} on #{end_date.strftime(fmt1)}"
-      file = "#{units.downcase}dd-totals-for-#{model_name.tr(",°", "").tr(" ", "-").downcase}-for-#{end_date.to_formatted_s(:number)}"
+  def self.find_model(base, upper = nil, units = "F")
+    raise ArgumentError.new("Must provide base temperature") if base.nil?
+    if units == "C"
+      base = UnitConverter.c_to_f(base)
+      upper = UnitConverter.c_to_f(upper)
     end
-    file += "-range-#{min_value.to_i}-#{max_value.to_i}" unless min_value.nil? && max_value.nil?
-    file += "-wi" if extent == "wi"
-    file += ".png"
-    [file, title]
+    model = "dd_" + sprintf("%.4g", base)
+    model += sprintf("_%.4g", upper) if upper
+    model.gsub(/\./, "p")
+  end
+
+  def self.image_title(
+    col:,
+    date: nil,
+    start_date: nil,
+    end_date: nil,
+    units: valid_units[0],
+    **args)
+
+    end_date ||= date
+    raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
+
+    base, upper = dd_to_base_upper(col, units)
+    dd_name = "base #{base}°#{units}"
+    dd_name += ", upper #{upper}°#{units}" if upper
+    if start_date
+      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
+      "Degree day totals #{dd_name} from #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
+    else
+      "Degree day totals #{dd_name} on #{end_date.strftime("%b %-d, %Y")}"
+    end
   end
 end

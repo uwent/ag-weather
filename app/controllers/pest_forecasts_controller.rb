@@ -1,4 +1,96 @@
 class PestForecastsController < ApplicationController
+
+  # GET: returns pest data for dates at lat/long point
+  # params:
+  #   pest (required)
+  #   lat (required)
+  #   long (required)
+  #   start_date - default 1st of year
+  #   end_date - default yesterday
+
+  def index
+    params.require([:pest, :lat, :long])
+
+    start_time = Time.current
+    days_requested = (start_date..end_date).count
+    days_returned = 0
+    status = "OK"
+    info = {}
+    data = []
+
+    if PestForecast.column_names.include?(pest)
+      forecasts = PestForecast.where(
+        date: start_date..end_date,
+        latitude: lat,
+        longitude: long
+      )
+
+      if forecasts.exists?
+        pest_data = forecasts.collect do |pf|
+          [pf.date, pf.send(pest)]
+        end.to_h
+        pest_data.default = 0
+        cum_value = 0
+
+        weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
+        data = weather.collect do |w|
+          value = pest_data[w.date]
+          cum_value += value
+          days_returned += 1
+          {
+            date: w.date,
+            min_temp: w.min_temperature.round(1),
+            max_temp: w.max_temperature.round(1),
+            avg_temp: w.avg_temperature.round(1),
+            avg_temp_hi_rh: w.avg_temp_rh_over_90,
+            hours_hi_rh: w.hours_rh_over_90,
+            value: value.round(1),
+            cumulative_value: cum_value.round(1)
+          }
+        end
+        status = "missing data" if days_returned < days_requested - 1
+      else
+        status = "no data"
+      end
+    else
+      status = "pest not found"
+    end
+
+    # values = data.map { |d| d[:value] }
+
+    info = {
+      pest:,
+      lat: lat.to_f.round(1),
+      long: long.to_f.round(1),
+      start_date:,
+      end_date:,
+      units: {
+        weather: "C",
+        degree_days: "F"
+      },
+      cumulative_value: cum_value.round(1),
+      days_requested:,
+      days_returned:,
+      status:,
+      compute_time: Time.current - start_time
+    }
+
+    response = {
+      info:,
+      data:
+    }
+
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.csv do
+        headers = {status:}.merge(info) unless params[:headers] == "false"
+        filename = "point details for #{pest} at #{lat}, #{long}.csv"
+        send_data(to_csv(response[:data], headers), filename:)
+      end
+    end
+  end
+
   # GET: returns grid of pest data for dates
   # params:
   #   pest (required)
@@ -7,7 +99,7 @@ class PestForecastsController < ApplicationController
   #   lat_range - min,max - default whole grid
   #   long_range - min,max - default whole grid
 
-  def index
+  def get_grid
     params.require(:pest)
 
     start_time = Time.current
@@ -27,8 +119,7 @@ class PestForecastsController < ApplicationController
       if forecasts.empty?
         status = "no data"
       else
-        data = forecasts.group(:latitude, :longitude)
-          .select(:latitude, :longitude, "sum(#{pest}) as total, count(*) as count")
+        data = forecasts.grid_summarize("sum(#{pest}) as total, count(*) as count")
           .collect do |point|
           days_returned = point.count
           {
@@ -72,223 +163,6 @@ class PestForecastsController < ApplicationController
       format.csv do
         headers = info unless params[:headers] == "false"
         filename = "pest data grid for #{pest}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
-      end
-    end
-  end
-
-  # GET: degree-day grid for date range
-
-  # params (if pest):
-  #   pest - column name from pest_forecasts
-  #   start_date - default 1st of year
-  #   end_date - default today
-  #   lat_range - min,max
-  #   long_range - min,max
-
-  # params (if no pest, degree days are computed from weather):
-  #   start_date - default first of year
-  #   end_date - default today
-  #   t_base - default 50F
-  #   t_upper - default 86F
-  #   lat_range (min,max) - default full extent
-  #   long_range (min,max) - default full extent
-
-  def custom
-    start_time = Time.current
-    days_requested = (start_date..end_date).count
-    days_returned = 0
-    status = "OK"
-    info = {}
-    weather_info = {}
-    data = []
-
-    # requested a column in PestForecasts
-    if pest
-      if PestForecast.column_names.include?(pest)
-        pest_data = PestForecast.where(
-          date: start_date..end_date,
-          latitude: lat_range,
-          longitude: long_range
-        )
-
-        if pest_data.empty?
-          status = "pest not found"
-        else
-          data = pest_data.group(:latitude, :longitude)
-            .select(:latitude, :longitude, "sum(#{pest}) as total, count(*) as count")
-            .collect do |point|
-            days_returned = point.count
-            {
-              lat: point.latitude.to_f.round(1),
-              long: point.longitude.to_f.round(1),
-              total: point.total.round(2)
-            }
-          end
-          status = "missing data" if days_returned < days_requested - 2
-        end
-      else
-        status = "no data"
-      end
-    else
-      # need to run a custom degree day model
-      weather = WeatherDatum.where(
-        date: start_date..end_date,
-        latitude: lat_range,
-        longitude: long_range
-      )
-
-      weather_info = {
-        t_base:,
-        t_upper:,
-        units: "Fahrenheit degree days"
-      }
-
-      # TODO: This is incredibly intensive to compute, consider rethinking method
-      if weather.empty?
-        status = "no data"
-      else
-        grid = weather.each_with_object(Hash.new(0)) do |w, h|
-          coord = [w.latitude.to_f, w.longitude.to_f]
-          if h[coord].nil?
-            h[coord] = w.degree_days(t_base, t_upper)
-          else
-            h[coord] += w.degree_days(t_base, t_upper)
-          end
-          h
-        end
-        grid.keys.each do |coord|
-          data << {
-            lat: coord.first,
-            long: coord.last,
-            total: grid[coord].round(2)
-          }
-        end
-      end
-    end
-
-    values = data.map { |d| d[:total] }
-
-    info = {
-      pest: pest || "degree day model",
-      start_date:,
-      end_date:,
-      lat_range: [lat_range.min, lat_range.max],
-      long_range: [long_range.min, long_range.max],
-      grid_points: data.size
-    }
-      .merge(weather_info)
-      .merge({
-        min_value: values.min,
-        max_value: values.max,
-        days_requested:,
-        days_returned: days_returned || 0,
-        status:,
-        compute_time: Time.current - start_time
-      })
-
-    response = {
-      info:,
-      data:
-    }
-
-    respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8" }
-      format.json { render json: response }
-      format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = if pest
-          "#{pest} data grid for #{start_date} to #{end_date}.csv"
-        else
-          "degree day grid for #{start_date} to #{end_date}.csv"
-        end
-        send_data(to_csv(response[:data], headers), filename:)
-      end
-    end
-  end
-
-  # GET: returns pest data for dates at lat/long point
-  # params:
-  #   pest (required)
-  #   lat (required)
-  #   long (required)
-  #   start_date - default 1st of year
-  #   end_date - default yesterday
-
-  def point_details
-    params.require([:pest, :lat, :long])
-
-    start_time = Time.current
-    days_requested = (start_date..end_date).count
-    days_returned = 0
-    status = "OK"
-    info = {}
-    data = []
-
-    if PestForecast.column_names.include?(pest)
-      forecasts = PestForecast.where(
-        date: start_date..end_date,
-        latitude: lat,
-        longitude: long
-      ).map do |pf|
-        [pf.date, pf.send(pest)]
-      end.to_h
-
-      forecasts.default = 0
-      cum_value = 0
-
-      if forecasts.empty?
-        status = "no data"
-      else
-        weather = WeatherDatum.where(date: start_date..end_date, latitude: lat, longitude: long)
-        data = weather.collect do |w|
-          value = forecasts[w.date]
-          cum_value += value
-          days_returned += 1
-          {
-            date: w.date,
-            min_temp: w.min_temperature.round(1),
-            max_temp: w.max_temperature.round(1),
-            avg_temp: w.avg_temperature.round(1),
-            avg_temp_hi_rh: w.avg_temp_rh_over_90,
-            hours_hi_rh: w.hours_rh_over_90,
-            value: value.round(1),
-            cumulative_value: cum_value.round(1)
-          }
-        end
-        status = "missing data" if days_returned < days_requested - 2
-      end
-    else
-      status = "pest not found"
-    end
-
-    # values = data.map { |d| d[:value] }
-
-    info = {
-      pest:,
-      lat: lat.to_f.round(1),
-      long: long.to_f.round(1),
-      start_date:,
-      end_date:,
-      units: {weather: "C", degree_days: "F"},
-      cumulative_value: cum_value.round(1),
-      days_requested:,
-      days_returned: days_returned,
-      status:,
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      info:,
-      data:
-    }
-
-    respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8" }
-      format.json { render json: response }
-      format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = "point details for #{pest} at #{lat}, #{long}.csv"
         send_data(to_csv(response[:data], headers), filename:)
       end
     end
@@ -387,19 +261,20 @@ class PestForecastsController < ApplicationController
     data = []
     forecast = []
 
-    forecasts = PestForecast.where(date: start_date..end_date, latitude: lat, longitude: long)
+    dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: long)
+      .select(:date, :latitude, :longitude, :dd_39p2_86)
 
-    if forecasts.empty?
+    if dds.empty?
       status = "no data"
     else
       cum_dd = 0
-      data = forecasts.collect do |pf|
-        dd = pf.dd_39p2_86
-        cum_dd += dd
+      data = dds.collect do |dd|
+        value = dd.dd_39p2_86
+        cum_dd += value
         days_returned += 1
         {
-          date: pf.date.to_s,
-          dd: dd.round(1),
+          date: dd.date.to_s,
+          dd: value.round(1),
           cum_dd: cum_dd.round(1)
         }
       end
@@ -447,65 +322,7 @@ class PestForecastsController < ApplicationController
     render json: response
   end
 
-  # GET: returns grid of pest data for dates
-  # params:
-  #   start_date - default 1st of year
-  #   end_date - default yesterday
-  #   lat_range - min,max - default whole grid
-  #   long_range - min,max - default whole grid
-
-  def freeze
-    start_time = Time.current
-    status = "OK"
-    info = {}
-    data = []
-
-    forecasts = PestForecast.where(
-      date: start_date..end_date,
-      latitude: lat_range,
-      longitude: long_range
-    )
-
-    if forecasts.empty?
-      status = "no data"
-    else
-      data = forecasts.where(freeze: true)
-        .group(:latitude, :longitude)
-        .count
-        .map do |point|
-        {
-          lat: point[0][0].to_f.round(1),
-          long: point[0][1].to_f.round(1),
-          freeze: point[1]
-        }
-      end
-    end
-
-    info = {
-      start_date:,
-      end_date:,
-      lat_range: [lat_range.min, lat_range.max],
-      long_range: [long_range.min, long_range.max],
-      grid_points: data.size,
-      status:,
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      info:,
-      data:
-    }
-
-    respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8" }
-      format.json { render json: response }
-      format.csv do
-        headers = info unless params[:headers] == "false"
-        filename = "pest data grid for #{pest}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
-      end
-    end
-  end
+  
 
   # GET: generates and returns a pest map
   # id: the column name from PestForecasts
@@ -624,71 +441,4 @@ class PestForecastsController < ApplicationController
     @wi_only = params[:wi_only] == "true"
   end
 
-  def parse_number(s)
-    (!/\D/.match?(s)) ? s.to_i : nil
-  end
-
-  def date
-    Date.parse(params[:date])
-  rescue
-    default_date
-  end
-
-  def date_from_id
-    Date.parse(params[:id])
-  rescue
-    default_date
-  end
-
-  def start_date
-    Date.parse(params[:start_date])
-  rescue
-    default_date.beginning_of_year
-  end
-
-  def end_date
-    Date.parse(params[:end_date])
-  rescue
-    default_date
-  end
-
-  def lat
-    params[:lat].to_d.round(1)
-  end
-
-  def long
-    params[:long].to_d.round(1)
-  end
-
-  def lat_range
-    parse_coords(params[:lat_range], LandExtent.latitudes)
-  end
-
-  def long_range
-    parse_coords(params[:long_range], LandExtent.longitudes)
-  end
-
-  def pest
-    params[:pest]
-  end
-
-  def t_base
-    params[:t_base].present? ? params[:t_base].to_f : DegreeDaysCalculator::BASE_F
-  end
-
-  def t_upper
-    params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
-  end
-
-  def parse_coord(param, default)
-    param.present? ? param.to_f.round(1) : default
-  rescue
-    default
-  end
-
-  def parse_coords(param, default)
-    param.present? ? param.split(",").map(&:to_f).sort.inject { |a, b| a.round(1)..b.round(1) } : default
-  rescue
-    default
-  end
 end

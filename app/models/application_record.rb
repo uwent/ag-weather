@@ -36,4 +36,8 @@ class ApplicationRecord < ActiveRecord::Base
     }
   rescue
   end
+
+  def self.log_prefix(level = 0)
+    "#{name}##{caller_locations[level].label} :: "
+  end
 end

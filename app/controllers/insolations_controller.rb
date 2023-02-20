@@ -1,4 +1,5 @@
 class InsolationsController < ApplicationController
+  
   # GET: returns insols for lat, long, date range
   # params:
   #   lat (required)
@@ -65,7 +66,10 @@ class InsolationsController < ApplicationController
   
   # GET: return grid of all values for date
   # params:
-  #   date - defaults to most recent data
+  #   date or end_date - defaults to most recent data
+  #   start_date - optional, provides a sum across dates if given
+  #   lat_range - optional, constrain latitudes i.e. '45,50'
+  #   long_range - optional, constrain longitudes i.e. '-89,-85'
 
   def grid
     start_time = Time.current

@@ -28,10 +28,12 @@ class InsolationImporter < DataImporter
       Rails.logger.info "InsolationImporter :: GET #{url}"
       response = HTTParty.get(url)
       import_insolation_data(response, date)
-      Insolation.create_image(date) unless Rails.env.test?
+      Insolation.create_image(date:) unless Rails.env.test?
       Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
     rescue => e
-      import.fail(date, "Unable to retrieve insolation data: #{e.message}")
+      msg = "Unable to retrieve insolation data: #{e.message}"
+      Rails.logger.error "#{name} :: #{msg}"
+      import.fail(date, msg)
     end
   end
 
