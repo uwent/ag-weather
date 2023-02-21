@@ -22,19 +22,16 @@ class InsolationImporter < DataImporter
     Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     start_time = Time.now
     import.start(date)
-
-    begin
-      url = "#{URL_BASE}.#{formatted_date(date)}"
-      Rails.logger.info "InsolationImporter :: GET #{url}"
-      response = HTTParty.get(url)
-      import_insolation_data(response, date)
-      Insolation.create_image(date:) unless Rails.env.test?
-      Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
-    rescue => e
-      msg = "Unable to retrieve insolation data: #{e.message}"
-      Rails.logger.error "#{name} :: #{msg}"
-      import.fail(date, msg)
-    end
+    url = "#{URL_BASE}.#{formatted_date(date)}"
+    Rails.logger.info "InsolationImporter :: GET #{url}"
+    response = HTTParty.get(url)
+    import_insolation_data(response, date)
+    Insolation.create_image(date:) unless Rails.env.test?
+    Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
+  rescue => e
+    msg = "Unable to retrieve insolation data: #{e.message}"
+    Rails.logger.error "#{name} :: #{msg}"
+    import.fail(date, msg)
   end
 
   # longitudes are positive degrees west in data import
@@ -61,7 +58,7 @@ class InsolationImporter < DataImporter
 
     Insolation.transaction do
       Insolation.where(date:).delete_all
-      Insolation.import(insolations)
+      Insolation.import!(insolations)
       import.succeed(date)
     end
   end

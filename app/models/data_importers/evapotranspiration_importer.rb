@@ -28,6 +28,8 @@ class EvapotranspirationImporter < LocalDataImporter
       Evapotranspiration.import(ets)
     end
 
+    Evapotranspiration.create_image(date:) unless Rails.env.test?
+
     true
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e.message}"

@@ -11,15 +11,14 @@ class PestForecastImporter < LocalDataImporter
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
     weather = WeatherDatum.all_for_date(date)
-    forecasts = []
-    weather.each do |w|
-      forecasts << PestForecast.new_from_weather(w)
-    end
+    pfs = weather.collect { |w| PestForecast.new_from_weather(w) }
 
     PestForecast.transaction do
       PestForecast.where(date:).delete_all
-      PestForecast.import(forecasts)
+      PestForecast.import!(pfs)
     end
+
+    PestForecast.create_image(date:)
 
     true
   rescue => e

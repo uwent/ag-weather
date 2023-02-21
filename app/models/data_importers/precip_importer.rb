@@ -22,8 +22,41 @@ class PrecipImporter < GribImporter
 
   def self.fetch_day(date, force: false)
     start_time = Time.current
+    date = date.to_date
     Rails.logger.info "#{name} :: Fetching precip data for #{date}..."
     import.start(date)
+
+    # download grib files
+    gribs = download_gribs(date)
+    if gribs == 0
+      raise StandardError.new "Failed to retrieve any grib files for #{date}"
+    elsif gribs < 24 && !force
+      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{grib}. Override with force: true"
+    end
+
+    grid = load_from(local_dir(date))
+    precips = grid.map do |key, value|
+      Precip.new(date:, latitude: key[0], longitude: key[1], precip: value)
+    end
+
+    Precip.transaction do
+      Precip.where(date:).delete_all
+      Precip.import!(precips)
+      import.succeed(date)
+    end
+
+    Precip.create_image(date:) unless Rails.env.test?
+
+    Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
+  rescue => e
+    msg = "Failed to load precip data for #{date}: #{e}"
+    Rails.logger.error "#{name} :: #{msg}"
+    import.fail(date, e)
+    false
+  end
+
+  def self.download_gribs(date)
+    date = date.to_date
     hours = central_time(date, 0).to_i..central_time(date, 23).to_i
     gribs = 0
 
@@ -36,102 +69,53 @@ class PrecipImporter < GribImporter
       local_file = "#{local_dir(date)}/#{hour}_#{file_name}"
       gribs += fetch_grib(file_url, local_file, "PCP #{hour}")
     end
-
-    if gribs == 0
-      import.fail(date, "Failed to retrieve any grib files for #{date}")
-      return
-    end
-
-    if gribs < 24
-      unless force
-        import.fail(date, "Failed to retrieve all grib files for #{date}")
-        return
-      end
-    end
-
-    import_precip_data(date)
-
-    Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
-  end
-
-  def self.import_precip_data(date)
-    precips = load_from(local_dir(date))
-    write_to_db(precips, date)
-    Precip.create_image(date) unless Rails.env.test?
-  rescue => e
-    import.fail(date, e.message)
+    gribs
   end
 
   def self.load_from(dirname)
     files = Dir["#{dirname}/*.grb2"]
-    Rails.logger.warn "PrecipImprter :: Trying to load less than 24 grib files" if files.size < 24
+    Rails.logger.warn "#{name} :: Trying to load less than 24 grib files (#{files.size})" if files.size < 24
 
-    hourly_precips = []
-    files.each_with_index do |file, i|
-      hourly_precips[i] = load_grib(file)
-    end
+    # array of grids
+    hourly_grids = files.map { |file| load_grib(file) }
 
-    precip_totals = LandGrid.new(default: 0.0)
-    hourly_precips.each do |grid|
-      grid.each_point do |lat, long|
-        precip_totals[lat, long] += grid[lat, long]
+    daily_grid = Hash.new(0.0)
+    hourly_grids.each do |grid|
+      LandExtent.each_point do |lat, long|
+        key = [lat, long]
+        daily_grid[key] += grid[key] || 0.0
       end
     end
 
     FileUtils.rm_r(dirname) unless KEEP_GRIB
 
-    precip_totals
+    daily_grid
   end
 
   def self.load_grib(grib)
-    data = LandGrid.new
-    # can't use LandGrid's default because all the arrays would be the same object
-    data.each_point do |lat, long|
-      data[lat, long] = []
-    end
-
     cmd = "grib_get_data -w shortName=tp #{grib}"
     Rails.logger.info "PCP grib cmd >> #{cmd}"
     _, stdout, _ = Open3.popen3(cmd)
 
+    # collect all precips and assign them to a grid point
+    grid = {}
     stdout.each do |line|
       lat, long, precip = line.split
-      lat = lat.to_f
-      long = long.to_f - 360.0
+      lat = lat.to_f.round(1)
+      long = (long.to_f - 360.0).round(1)
+      next unless LandExtent.inside?(lat, long)
       precip = precip.to_f
-      if LandExtent.inside?(lat, long)
-        lat = lat.round(1)
-        long = long.round(1)
-        precip = 0 if precip < 0
-        data[lat, long] << precip
-      end
+      precip = 0 if precip < 0
+      key = [lat, long]
+      grid[key] ||= []
+      grid[key] << precip
     end
 
     # average all pts in a cell
-    data.each_point do |lat, long|
-      precips = data[lat, long]
-      precip = (precips.size > 0) ? precips.sum(0.0) / precips.size : 0.0
-      data[lat, long] = precip
+    grid.each do |key, value|
+      grid[key] = value.empty? ? 0.0 : value.sum(0.0) / value.size
     end
 
-    data
-  end
-
-  def self.write_to_db(data, date)
-    precip_data = []
-    data.each_point do |lat, long|
-      precip_data << Precip.new(
-        date: date,
-        latitude: lat,
-        longitude: long,
-        precip: data[lat, long]
-      )
-    end
-
-    Precip.transaction do
-      Precip.where(date:).delete_all
-      Precip.import(precip_data)
-      import.succeed(date)
-    end
+    grid
   end
 end
