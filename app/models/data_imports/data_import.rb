@@ -3,9 +3,12 @@ class DataImport < ApplicationRecord
 
   def self.import_types
     [
-      WeatherDataImport,
       PrecipDataImport,
-      InsolationDataImport
+      WeatherDataImport,
+      InsolationDataImport,
+      EvapotranspirationDataImport,
+      PestForecastDataImport,
+      DegreeDayDataImport
     ].freeze
   end
 
@@ -18,19 +21,15 @@ class DataImport < ApplicationRecord
   end
 
   def self.days_to_load
-    successful_dates = successful.pluck(:readings_on)
+    successful_dates = successful.pluck(:date)
 
     earliest_date.upto(latest_date).reject do |date|
       successful_dates.include?(date)
     end
   end
 
-  def self.on(date)
-    where(readings_on: date)
-  end
-
   def self.missing(date)
-    on(date).successful.size == 0
+    where(date:).successful.empty?
   end
 
   def self.pending
@@ -50,45 +49,44 @@ class DataImport < ApplicationRecord
   end
 
   def self.start(date, message = nil)
-    status = on(date)
+    status = where(date:)
     if status.exists?
       status.update(status: "started", message:)
     else
-      started.on(date).pending.create!
+      started.where(date:).pending.create!
     end
   end
 
   def self.succeed(date, message = nil)
-    status = on(date)
+    status = where(date:)
     if status.exists?
       status.update(status: "successful", message:)
     else
-      successful.on(date).create!
+      successful.where(date:).create!
     end
   end
 
   def self.fail(date, message = nil)
     message ||= "No reason given"
     Rails.logger.warn "#{name} :: Import failed for #{date}: #{message}"
-    status = on(date)
+    status = where(date:)
     if status.exists?
       status.update(status: "unsuccessful", message:)
     else
-      create!(readings_on: date, status: "unsuccessful", message:)
+      create!(date:, status: "unsuccessful", message:)
     end
   end
 
   # run this from console
   def self.check_statuses(start_date = earliest_date, end_date = latest_date)
-    initial_log_level = ActiveRecord::Base.logger.level
-    ActiveRecord::Base.logger.level = 1
+    ActiveRecord::Base.logger.level = :info
 
     message = []
     count = 0
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
     (start_date..end_date).each do |date|
-      statuses = DataImport.on(date)
+      statuses = DataImport.where(date:)
       if statuses.empty?
         count += 1
         message << "  #{date}: Data load not attempted."
@@ -97,7 +95,7 @@ class DataImport < ApplicationRecord
       else
         message << "  #{date}"
         import_types.each do |type|
-          status = type.find_by(readings_on: date)
+          status = type.find_by(date:)
           if status
             case status.status
             when "successful"
@@ -108,14 +106,13 @@ class DataImport < ApplicationRecord
             end
           else
             count += 1
-            message << "    #{type} ==> PENDING"
+            message << "    #{type} ==> NOT STARTED"
           end
         end
       end
     end
 
-    ActiveRecord::Base.logger.level = initial_log_level
-
+    ActiveRecord::Base.logger.level = Rails.configuration.log_level
     message.each { |m| Rails.logger.info m }
     {count:, message:}
   end

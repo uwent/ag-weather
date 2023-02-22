@@ -1,0 +1,2 @@
+class DegreeDayDataImport < DataImport
+end

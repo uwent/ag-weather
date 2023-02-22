@@ -1,6 +1,12 @@
-class PrecipImporter < GribImporter
+class PrecipImporter < DataImporter
+  extend GribMethods
+
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
-  LOCAL_DIR = "#{GRIB_DIR}/precip"
+  LOCAL_DIR = "#{grib_dir}/precip"
+
+  def self.data_model
+    Precip
+  end
 
   def self.import
     PrecipDataImport
@@ -49,10 +55,8 @@ class PrecipImporter < GribImporter
 
     Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
   rescue => e
-    msg = "Failed to load precip data for #{date}: #{e}"
-    Rails.logger.error "#{name} :: #{msg}"
+    Rails.logger.error "#{name} :: Failed to load precip data for #{date}: #{e}"
     import.fail(date, e)
-    false
   end
 
   def self.download_gribs(date)
@@ -87,7 +91,7 @@ class PrecipImporter < GribImporter
       end
     end
 
-    FileUtils.rm_r(dirname) unless KEEP_GRIB
+    FileUtils.rm_r(dirname) unless keep_grib
 
     daily_grid
   end

@@ -5,9 +5,12 @@ class EvapotranspirationImporter < DataImporter
     Evapotranspiration
   end
 
+  def self.import
+    EvapotranspirationDataImport
+  end
+
   def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by(readings_on: date) &&
-      InsolationDataImport.successful.find_by(readings_on: date)
+    WeatherImport.successful.find_by(date:) && InsolationImport.successful.find_by(date:)
   end
 
   def self.create_data_for_date(date)
@@ -24,7 +27,7 @@ class EvapotranspirationImporter < DataImporter
       next unless w && i
 
       value = EvapotranspirationCalculator.et(
-        avg_temp: w.avg_temperature,
+        avg_temp: w.avg_temp,
         avg_v_press: w.vapor_pressure,
         insol: i,
         day_of_year: date.yday,
@@ -44,10 +47,8 @@ class EvapotranspirationImporter < DataImporter
     end
 
     Evapotranspiration.create_image(date:) unless Rails.env.test?
-
-    true
   rescue => e
-    Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e.message}"
-    false
+    Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e}"
+    import.fail(date, e)
   end
 end

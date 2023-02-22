@@ -5,8 +5,12 @@ class DegreeDayImporter < DataImporter
     DegreeDay
   end
 
+  def self.import
+    DegreeDayDataImport
+  end
+
   def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by(readings_on: date)
+    WeatherDataImport.successful.find_by(date:)
   end
 
   def self.create_data_for_date(date)
@@ -21,10 +25,8 @@ class DegreeDayImporter < DataImporter
     end
 
     DegreeDay.create_image(date:) unless Rails.env.test?
-
-    true
   rescue => e
-    Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e.message}"
-    false
+    Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e}"
+    import.fail(date, e)
   end
 end

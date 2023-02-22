@@ -1,5 +1,11 @@
 class InsolationImporter < DataImporter
+  extend GribMethods
+
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
+
+  def self.data_model
+    Insolation
+  end
 
   def self.import
     InsolationDataImport
@@ -9,16 +15,7 @@ class InsolationImporter < DataImporter
     "#{date.year}#{date.yday.to_s.rjust(3, "0")}"
   end
 
-  def self.fetch
-    dates = import.days_to_load
-    if dates.size > 0
-      dates.each { |date| fetch_day(date) }
-    else
-      Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
-    end
-  end
-
-  def self.fetch_day(date)
+  def self.fetch_day(date, **args)
     Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     start_time = Time.now
     import.start(date)
@@ -29,9 +26,8 @@ class InsolationImporter < DataImporter
     Insolation.create_image(date:) unless Rails.env.test?
     Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
   rescue => e
-    msg = "Unable to retrieve insolation data: #{e.message}"
-    Rails.logger.error "#{name} :: #{msg}"
-    import.fail(date, msg)
+    Rails.logger.error "#{name} :: Unable to retrieve insolation data: #{e}"
+    import.fail(date, e)
   end
 
   # longitudes are positive degrees west in data import

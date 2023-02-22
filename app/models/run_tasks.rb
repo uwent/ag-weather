@@ -1,7 +1,7 @@
 class RunTasks
   def self.all
     start_time = Time.now
-
+    ActiveRecord::Base.logger.level = :info
     DataImport.check_statuses
 
     # fetch remote data
@@ -10,19 +10,13 @@ class RunTasks
     WeatherImporter.fetch
 
     # calculate local data
-    threads = []
-    threads << Thread.new { EvapotranspirationImporter.create_data }
-    threads << Thread.new { PestForecastImporter.create_data }
-    threads << Thread.new { DegreeDayImporter.create_data }
-    threads.each { |thr| thr.join }
-
-    # create images
-    # Evapotranspiration.create_image
-    # PestForecast.create_image
-    # DegreeDay.create_image
+    EvapotranspirationImporter.create_data
+    PestForecastImporter.create_data
+    DegreeDayImporter.create_data
 
     # display status of import attempts
     DataImport.check_statuses
+    ActiveRecord::Base.logger.level = Rails.configuration.log_level
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
   end
 

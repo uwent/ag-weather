@@ -1,6 +1,12 @@
-class WeatherImporter < GribImporter
+class WeatherImporter < DataImporter
+  extend GribMethods
+
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/rtma/prod"
-  LOCAL_DIR = "#{GRIB_DIR}/rtma"
+  LOCAL_DIR = "#{grib_dir}/rtma"
+
+  def self.data_model
+    WeatherDatum
+  end
 
   def self.import
     WeatherDataImport
@@ -37,12 +43,14 @@ class WeatherImporter < GribImporter
     weather_day = WeatherDay.new(date)
     weather_day.load_from(grib_dir)
     persist_day_to_db(weather_day)
-    FileUtils.rm_r grib_dir unless KEEP_GRIB
+    FileUtils.rm_r grib_dir unless keep_grib
+
     WeatherDatum.create_image(date:) unless Rails.env.test?
 
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
-    Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e.message}"
+    Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
+    import.fail(date, e)
   end
 
   # try to get a grib for each hour

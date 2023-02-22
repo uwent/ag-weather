@@ -1,41 +1,37 @@
 module LocalDataMethods
-  # check for and return missing dates
-  def missing_dates(date = DataImport.latest_date)
-    dates = date.beginning_of_year..date
-    existing_dates = data_model.where(date: dates).distinct.pluck(:date)
-
-    return nil if dates.count == existing_dates.size
-
-    missing_dates = []
-    dates.each do |d|
-      missing_dates << d.to_s unless existing_dates.include?(d)
-    end
-    Rails.logger.info "#{name} :: Missing #{missing_dates.size} dates: #{missing_dates.join(", ")}."
-    missing_dates
-  end
 
   # compute daily values
-  def create_data(date = DataImport.latest_date, force: false)
-    date = date.to_date
-    dates = force ? (date.beginning_of_year..date).map(&:to_s).to_a : missing_dates(date)
+  def create_data(start_date: earliest_date, end_date: latest_date, all_dates: false, overwrite: false)
+    ActiveRecord::Base.logger.level = :info
+    dates = if all_dates
+      (start_date.to_date..end_date.to_date).to_a
+    else
+      missing_dates(start_date:, end_date:)
+    end
 
     if dates.count == 0
       Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
       return true
-    else
-      Rails.logger.info "#{name} :: Calculating data for #{dates.count} dates: #{dates.join(", ")}"
     end
 
     dates.each do |date|
-      if data_model.on(date).exists? && !force
-        Rails.logger.info "#{name} :: Data already exists for #{date}, overwrite with force: true"
-        return true
+      begin
+        if data_model.where(date:).exists? && !overwrite
+          Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
+          import.succeed(date)
+          next
+        end
+        Rails.logger.info "#{name} :: Calculating data for #{date}"
+        create_data_for_date(date)
+        import.succeed(date)
+        true
+      rescue => e
+        msg = "Failed to calculate data for #{date}: #{e.message}"
+        Rails.logger.warn "#{name} :: #{msg}"
+        import.fail(date, msg)
+        false
       end
-      Rails.logger.info "#{name} :: Calculating data for #{date}"
-      create_data_for_date(date)
     end
-  rescue => e
-    Rails.logger.error "#{name} :: Failed to calculate data for #{dates.min} - #{dates.max}: #{e.message}"
-    false
+    ActiveRecord::Base.logger.level = Rails.configuration.log_level
   end
 end

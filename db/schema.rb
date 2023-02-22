@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_21_213513) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_22_200621) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -44,12 +44,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_21_213513) do
 
   create_table "data_imports", force: :cascade do |t|
     t.string "type"
-    t.date "readings_on", null: false
+    t.date "date", null: false
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "message"
-    t.index ["readings_on"], name: "index_data_imports_on_readings_on"
+    t.index ["date"], name: "index_data_imports_on_date"
     t.index ["status"], name: "index_data_imports_on_status"
     t.index ["updated_at"], name: "index_data_imports_on_updated_at"
   end

@@ -5,8 +5,12 @@ class PestForecastImporter < DataImporter
     PestForecast
   end
 
+  def self.import
+    PestForecastDataImport
+  end
+
   def self.data_sources_loaded?(date)
-    WeatherDataImport.successful.find_by(readings_on: date)
+    WeatherImport.successful.find_by(date:)
   end
 
   def self.create_data_for_date(date)
@@ -21,10 +25,8 @@ class PestForecastImporter < DataImporter
     end
 
     PestForecast.create_image(date:)
-
-    true
   rescue => e
-    Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e.message}"
-    false
+    Rails.logger.error "#{name} :: Failed to calculate data for #{date}: #{e}"
+    import.fail(date, e)
   end
 end
