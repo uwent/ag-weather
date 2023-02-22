@@ -87,7 +87,7 @@ class WeatherDatum < ApplicationRecord
   def self.image_name_prefix(col:, stat: nil, **args)
     str = col_name(col) || "weather"
     str = str.downcase.tr(" ", "-")
-    str = "#{stat.to_s}-#{str}" if stat && stat.to_s != str.split("-")[0] # avoid repeating same word
+    str = "#{stat}-#{str}" if stat && stat.to_s != str.split("-")[0] # avoid repeating same word
     str
   end
 
@@ -97,7 +97,8 @@ class WeatherDatum < ApplicationRecord
     start_date: nil,
     end_date: nil,
     units: nil,
-    stat: nil)
+    stat: nil
+  )
 
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date

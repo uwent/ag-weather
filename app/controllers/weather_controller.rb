@@ -358,7 +358,6 @@ class WeatherController < ApplicationController
   def freeze_grid
     start_time = Time.current
     status = "OK"
-    info = {}
     data = {}
 
     weather = WeatherDatum.where(

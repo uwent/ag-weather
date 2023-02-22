@@ -22,7 +22,7 @@ class EvapotranspirationImporter < DataImporter
       w = weather[lat, long]
       i = insols[[lat, long]]
       next unless w && i
-      
+
       value = EvapotranspirationCalculator.et(
         avg_temp: w.avg_temperature,
         avg_v_press: w.vapor_pressure,

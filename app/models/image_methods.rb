@@ -1,5 +1,4 @@
 module ImageMethods
-
   def image_subdir
   end
 
@@ -34,7 +33,8 @@ module ImageMethods
     units: nil,
     extent: nil,
     scale: nil,
-    stat: nil)
+    stat: nil
+  )
 
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
@@ -53,7 +53,8 @@ module ImageMethods
     col: default_col,
     units: nil,
     extent: nil,
-    scale: nil)
+    scale: nil
+  )
 
     date = date.to_date
     raise ArgumentError.new log_prefix + "Must name a column to image" unless col
@@ -75,7 +76,8 @@ module ImageMethods
     units: nil,
     stat: default_stat,
     extent: nil,
-    scale: nil)
+    scale: nil
+  )
 
     raise ArgumentError.new log_prefix + "Must name a column to image" unless col
     units ||= default_units(col)

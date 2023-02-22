@@ -37,14 +37,14 @@ class PestForecast < ApplicationRecord
   def self.default_scale(*args)
     [0, 4]
   end
-  
+
   def self.image_subdir
     "pest_models"
   end
 
   def self.image_name_prefix(col:, **args)
     str = pest_names[col.to_sym]
-    str&.downcase.tr(" ", "-")
+    str&.downcase&.tr(" ", "-")
   end
 
   def self.image_title(col:, date: nil, start_date: nil, end_date: nil, **args)

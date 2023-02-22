@@ -23,7 +23,9 @@ class EvapotranspirationsController < ApplicationController
       WeatherDatum.where(conditions).each { |w| weather[w.date] = w }
       Insolation.where(conditions).each { |i| insols[i.date] = i }
 
-      unless weather.empty? && insols.empty?
+      if weather.empty? && insols.empty?
+        status = "no data"
+      else
         data = []
         cumulative_value = 0
         start_date.upto(end_date) do |date|
@@ -44,13 +46,13 @@ class EvapotranspirationsController < ApplicationController
           cumulative_value += value
           data << {date:, value:, cumulative_value:}
         end
-      else
-        status = "no data"
       end
     else
       ets = Evapotranspiration.where(conditions)
 
-      unless ets.empty?
+      if ets.empty?
+        status = "no data"
+      else
         cumulative_value = 0
         data = ets.collect do |et|
           date = et.date.to_formatted_s
@@ -59,8 +61,6 @@ class EvapotranspirationsController < ApplicationController
           cumulative_value += value
           {date:, value:, cumulative_value:}
         end
-      else
-        status = "no data"
       end
     end
 
@@ -97,7 +97,7 @@ class EvapotranspirationsController < ApplicationController
     end
   end
 
-# GET: return grid of all values for date
+  # GET: return grid of all values for date
   # params:
   #   date - default most recent date
 
@@ -146,18 +146,18 @@ class EvapotranspirationsController < ApplicationController
       compute_time: Time.current - start_time
     }
 
-    response = { info:, data: }
+    response = {info:, data:}
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
         csv_data = data.collect do |key, value|
-          { latitude: key[0], longitude: key[1], value: }
+          {latitude: key[0], longitude: key[1], value:}
         end
         headers = info unless params[:headers] == "false"
         filename = "et data grid for #{@date}.csv"
-        send_data(to_csv(csv_data), headers), filename:)
+        send_data(to_csv(csv_data, headers), filename:)
       end
     end
   end
@@ -178,7 +178,7 @@ class EvapotranspirationsController < ApplicationController
       units: @units,
       extent: @extent
     }.compact
-    
+
     image_name, _ = Evapotranspiration.image_attr(**@image_args)
     image_filename = Evapotranspiration.image_path(image_name)
     image_url = Evapotranspiration.image_url(image_name)

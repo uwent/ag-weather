@@ -7,7 +7,7 @@ class Insolation < ApplicationRecord
   end
 
   def self.default_scale(units)
-    units == "KWh" ? [0, 10] : [0, 30]
+    (units == "KWh") ? [0, 10] : [0, 30]
   end
 
   # per day per m^2
@@ -30,8 +30,9 @@ class Insolation < ApplicationRecord
     start_date: nil,
     end_date: nil,
     units: valid_units[0],
-    **args)
-    
+    **args
+  )
+
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
 

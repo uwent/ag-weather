@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   rescue_from ActionController::ParameterMissing,
     ActionController::RoutingError,
     ActionController::BadRequest do |message|
-      render json: { message: }, status: :bad_request
+    render json: {message:}, status: :bad_request
   end
 
   def reject(message = "bad request")

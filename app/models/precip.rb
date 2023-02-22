@@ -25,7 +25,8 @@ class Precip < ApplicationRecord
     start_date: nil,
     end_date: nil,
     units: valid_units[0],
-    **args)
+    **args
+  )
 
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
@@ -41,7 +42,9 @@ class Precip < ApplicationRecord
   def self.stats(date)
     data = where(date:).pluck(:precip)
 
-    unless data.empty?
+    if data.empty?
+      puts "No precip data for #{date}"
+    else
       pos_precips = data.find_all { |n| n > 0 }
       pts = data.size
       pts_precip = pos_precips.size
@@ -54,8 +57,6 @@ class Precip < ApplicationRecord
       puts "Points with precip: #{pts_precip} (#{precip_pct}%)"
       puts "Mean precip: #{mean_precip.round(3)} mm"
       puts "Max precip: #{max_precip} mm"
-    else
-      puts "No precip data for #{date}"
     end
   end
 end

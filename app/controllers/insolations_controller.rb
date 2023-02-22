@@ -1,5 +1,4 @@
 class InsolationsController < ApplicationController
-  
   # GET: returns insols for lat, long, date range
   # params:
   #   lat (required)
@@ -22,15 +21,15 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(conditions)
 
-    unless insols.empty?
+    if insols.empty?
+      status = "no data"
+    else
       data = insols.collect do |insol|
         {
           date: insol.date.to_s,
           value: insol.insolation.round(3)
         }
       end
-    else
-      status = "no data"
     end
 
     values = data.map { |day| day[:value] }
@@ -50,7 +49,7 @@ class InsolationsController < ApplicationController
 
     status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
 
-    response = { status:, info:, data: }
+    response = {status:, info:, data:}
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
@@ -63,7 +62,6 @@ class InsolationsController < ApplicationController
     end
   end
 
-  
   # GET: return grid of all values for date
   # params:
   #   date or end_date - defaults to most recent data
@@ -114,14 +112,14 @@ class InsolationsController < ApplicationController
       compute_time: Time.current - start_time
     }
 
-    response = { info:, data: }
+    response = {info:, data:}
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
         csv_data = data.collect do |key, value|
-          { latitude: key[0], longitude: key[1], value: }
+          {latitude: key[0], longitude: key[1], value:}
         end
         headers = info unless params[:headers] == "false"
         filename = "insol data grid for #{@date}.csv"
@@ -129,7 +127,6 @@ class InsolationsController < ApplicationController
       end
     end
   end
-
 
   # GET: create map and return url to it
 

@@ -1,5 +1,4 @@
 module GridMethods
-
   def default_col
   end
 
@@ -57,7 +56,8 @@ module GridMethods
     date:,
     col: default_col,
     extent: LandExtent,
-    units: valid_units[0])
+    units: valid_units[0]
+  )
 
     check_col(col)
     check_extent(extent)
@@ -79,7 +79,8 @@ module GridMethods
     end_date: latest_date,
     extent: LandExtent,
     units: nil,
-    stat: default_stat)
+    stat: default_stat
+  )
 
     check_col(col)
     check_extent(extent)

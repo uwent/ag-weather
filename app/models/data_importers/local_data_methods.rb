@@ -1,5 +1,4 @@
 module LocalDataMethods
-
   # check for and return missing dates
   def missing_dates(date = DataImport.latest_date)
     dates = date.beginning_of_year..date

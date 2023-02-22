@@ -144,7 +144,7 @@ class DegreeDay < ApplicationRecord
     end
     model = "dd_" + sprintf("%.4g", base)
     model += sprintf("_%.4g", upper) if upper
-    model.gsub(/\./, "p")
+    model.tr(".", "p")
   end
 
   def self.image_title(
@@ -153,7 +153,8 @@ class DegreeDay < ApplicationRecord
     start_date: nil,
     end_date: nil,
     units: valid_units[0],
-    **args)
+    **args
+  )
 
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date

@@ -7,7 +7,7 @@ class Evapotranspiration < ApplicationRecord
   end
 
   def self.default_scale(units)
-    units == "mm" ? [0, 8] : [0, 0.3]
+    (units == "mm") ? [0, 8] : [0, 0.3]
   end
 
   def self.valid_units
@@ -29,8 +29,9 @@ class Evapotranspiration < ApplicationRecord
     start_date: nil,
     end_date: nil,
     units: valid_units[0],
-    **args)
-    
+    **args
+  )
+
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
 

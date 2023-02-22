@@ -1,5 +1,4 @@
 class DegreeDaysController < ApplicationController
-
   # GET: returns weather and computed degree days for point
   # params:
   #   lat (required)
@@ -199,7 +198,6 @@ class DegreeDaysController < ApplicationController
     days_returned = 0
     status = "OK"
     info = {}
-    weather_info = {}
     data = {}
     query = {
       date: start_date..end_date,
@@ -269,7 +267,7 @@ class DegreeDaysController < ApplicationController
       compute_time: Time.current - start_time
     }
 
-    response = { info:, data: }
+    response = {info:, data:}
 
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
@@ -346,7 +344,6 @@ class DegreeDaysController < ApplicationController
       }
     end
   end
-
 
   # GET: Returns info about degree day data and methods. No params.
 

@@ -1,5 +1,4 @@
 class PestForecastsController < ApplicationController
-
   # GET: returns pest data for dates at lat/long point
   # params:
   #   pest (required)
@@ -322,8 +321,6 @@ class PestForecastsController < ApplicationController
     render json: response
   end
 
-  
-
   # GET: generates and returns a pest map
   # id: the column name from PestForecasts
   # start_date - default 1st of year
@@ -418,5 +415,4 @@ class PestForecastsController < ApplicationController
     @max_value = params[:max_value].present? ? parse_number(params[:max_value]) : nil
     @wi_only = params[:wi_only] == "true"
   end
-
 end
