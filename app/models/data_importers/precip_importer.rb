@@ -27,11 +27,11 @@ class PrecipImporter < GribImporter
     import.start(date)
 
     # download grib files
-    gribs = download_gribs(date)
-    if gribs == 0
+    n_gribs = download_gribs(date)
+    if n_gribs == 0
       raise StandardError.new "Failed to retrieve any grib files for #{date}"
-    elsif gribs < 24 && !force
-      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{grib}. Override with force: true"
+    elsif n_gribs < 24 && !force
+      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{n_gribs}. Override with force: true"
     end
 
     grid = load_from(local_dir(date))

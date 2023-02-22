@@ -127,13 +127,13 @@ class EvapotranspirationCalculator
 
   # temperatures are in Celsius
   # avg_v_pressure is in kPa (kilopascals)
-  # d_to_sol is insolation reading in MJ/day (Megajoules/day)
+  # insol is insolation reading in MJ/day (Megajoules/day)
   # lat is latitude in fractional degrees
-  def self.et(avg_temp, avg_v_press, d_to_sol, day_of_year, lat)
+  def self.et(avg_temp:, avg_v_press:, insol:, day_of_year:, lat:)
     # calculates L_n in the paper (represents L_u - L_d)
-    lwnet = lwnet(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
+    lwnet = lwnet(avg_v_press, avg_temp, insol, day_of_year, lat)
     # calculates R_n in paper
-    net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
+    net_radiation = (1.0 - ALBEDO) * insol - lwnet
     # Evapotranspiration. Unsure why 1.28, not 1.26 as written in the paper
     pot_et = 1.26 * sfactor(avg_temp) * net_radiation
     # Assume the 62.3 is a conversion factor, but unable to determine.

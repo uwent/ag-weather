@@ -39,9 +39,9 @@ class PestForecastsController < ApplicationController
           days_returned += 1
           {
             date: w.date,
-            min_temp: w.min_temperature.round(1),
-            max_temp: w.max_temperature.round(1),
-            avg_temp: w.avg_temperature.round(1),
+            min_temp: w.min_temp.round(1),
+            max_temp: w.max_temp.round(1),
+            avg_temp: w.avg_temp.round(1),
             avg_temp_hi_rh: w.avg_temp_rh_over_90,
             hours_hi_rh: w.hours_rh_over_90,
             value: value.round(1),
@@ -204,9 +204,9 @@ class PestForecastsController < ApplicationController
         days_returned += 1
         {
           date: w.date,
-          min_temp: w.min_temperature.round(1),
-          max_temp: w.max_temperature.round(1),
-          avg_temp: w.avg_temperature.round(1),
+          min_temp: w.min_temp.round(1),
+          max_temp: w.max_temp.round(1),
+          avg_temp: w.avg_temp.round(1),
           value: value.round(1),
           cumulative_value: cum_value.round(1)
         }
@@ -406,28 +406,6 @@ class PestForecastsController < ApplicationController
   end
 
   private
-
-  # def check_hard_freeze
-  #   nov_1 = Date.new(end_date.year, 11, 1)
-
-  #   return {} if end_date < nov_1
-  #   WeatherDatum.select(:latitude, :longitude)
-  #     .distinct
-  #     .where(date: nov_1..end_date)
-  #     .where("min_temperature < ?", -2.22)
-  #     .order(:latitude, :longitude)
-  #     .collect { |w| {"#{w.latitude},#{w.longitude}" => true} }
-  #     .inject({}, :merge)
-  # end
-
-  # def build_cumulative_dd(weather, date, t_base, t_upper)
-  #   degree_days = []
-  #   weather.select { |day| date >= day.date }
-  #     .each do |w|
-  #       degree_days << w.degree_days(t_base, t_upper)
-  #     end
-  #   degree_days.sum
-  # end
 
   def parse_map_params
     earliest_date = PestForecast.earliest_date || Date.current.beginning_of_year

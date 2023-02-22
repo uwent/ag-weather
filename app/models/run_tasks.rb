@@ -169,8 +169,8 @@ class RunTasks
       if weather.size > 0
         frosts = {}
         freezes = {}
-        weather.where("min_temperature < ?", 0.0).each { |w| frosts[[w.latitude, w.longitude]] = true }
-        weather.where("min_temperature < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
+        weather.where("min_temp < ?", 0.0).each { |w| frosts[[w.latitude, w.longitude]] = true }
+        weather.where("min_temp < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
         frost_ids = []
         freeze_ids = []
         PestForecast.where(date:).each do |pf|

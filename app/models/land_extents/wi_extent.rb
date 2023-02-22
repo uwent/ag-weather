@@ -1,9 +1,9 @@
-class WiMn < LandExtent
+class WiExtent < LandExtent
   def self.latitudes
-    42.0..50.0
+    42.4..47.2
   end
 
   def self.longitudes
-    -98.0..-86.0
+    -93..-86.7
   end
 end

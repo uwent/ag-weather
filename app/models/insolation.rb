@@ -16,7 +16,8 @@ class Insolation < ApplicationRecord
   end
 
   # value stored in MJ, converts if "KWh" requested
-  def self.convert(value, units)
+  def self.convert(value:, units:, **args)
+    check_units(units)
     (units == "KWh") ? UnitConverter.mj_to_kwh(value) : value
   end
 

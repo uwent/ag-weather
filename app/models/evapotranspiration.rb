@@ -15,7 +15,8 @@ class Evapotranspiration < ApplicationRecord
   end
 
   # value stored in 'in', coverts if 'mm' requested
-  def self.convert(value, units)
+  def self.convert(value:, units:, **args)
+    check_units(units)
     (units == "mm") ? UnitConverter.in_to_mm(value) : value
   end
 
@@ -39,15 +40,5 @@ class Evapotranspiration < ApplicationRecord
       fmt1 = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
       "Potential evapotranspiration (total #{units}) for #{start_date.strftime(fmt1)} - #{end_date.strftime("%b %-d, %Y")}"
     end
-  end
-
-  def calculate_et(insolation, weather)
-    EvapotranspirationCalculator.et(
-      weather.avg_temperature,
-      weather.vapor_pressure,
-      insolation,
-      date.yday,
-      latitude
-    )
   end
 end

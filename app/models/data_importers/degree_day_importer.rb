@@ -1,4 +1,6 @@
-class DegreeDayImporter < LocalDataImporter
+class DegreeDayImporter < DataImporter
+  extend LocalDataMethods
+
   def self.data_model
     DegreeDay
   end
@@ -11,7 +13,7 @@ class DegreeDayImporter < LocalDataImporter
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
     weather = WeatherDatum.all_for_date(date)
-    dds = weather.collect { |w| DegreeDay.new_from_weather(w) }
+    dds = weather.map { |w| DegreeDay.new_from_weather(w) }
 
     DegreeDay.transaction do
       DegreeDay.where(date:).delete_all
@@ -19,7 +21,7 @@ class DegreeDayImporter < LocalDataImporter
     end
 
     DegreeDay.create_image(date:) unless Rails.env.test?
-    
+
     true
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e.message}"

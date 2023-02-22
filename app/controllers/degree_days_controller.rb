@@ -28,8 +28,8 @@ class DegreeDaysController < ApplicationController
     if weather.exists?
       data = weather.collect do |w|
         dd = w.degree_days(base, upper, method, in_f)
-        min = convert_temp(w.min_temperature)
-        max = convert_temp(w.max_temperature)
+        min = convert_temp(w.min_temp)
+        max = convert_temp(w.max_temp)
         total += dd
         {
           date: w.date,
@@ -108,7 +108,7 @@ class DegreeDaysController < ApplicationController
       date: dates,
       latitude: lat,
       longitude: long
-    ).order(:date).select(:date, :min_temperature, :max_temperature)
+    ).order(:date).select(:date, :min_temp, :max_temp)
 
     pest_forecasts = PestForecast.where(
       date: dates,
@@ -120,8 +120,8 @@ class DegreeDaysController < ApplicationController
       status = "no data"
     else
       weather.each do |w|
-        min = convert_temp(w.min_temperature)
-        max = convert_temp(w.max_temperature)
+        min = convert_temp(w.min_temp)
+        max = convert_temp(w.max_temp)
         weather_data[w.date] = {
           min_temp: min.round(2),
           max_temp: max.round(2)

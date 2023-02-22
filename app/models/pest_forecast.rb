@@ -47,13 +47,7 @@ class PestForecast < ApplicationRecord
     str&.downcase.tr(" ", "-")
   end
 
-  def self.image_title(
-    col:,
-    date: nil,
-    start_date: nil,
-    end_date: nil,
-    **args)
-
+  def self.image_title(col:, date: nil, start_date: nil, end_date: nil, **args)
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
 

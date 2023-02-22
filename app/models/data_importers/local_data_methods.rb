@@ -1,10 +1,7 @@
-class LocalDataImporter < DataImporter
-  def self.data_model
-    ApplicationRecord
-  end
+module LocalDataMethods
 
   # check for and return missing dates
-  def self.missing_dates(date = DataImport.latest_date)
+  def missing_dates(date = DataImport.latest_date)
     dates = date.beginning_of_year..date
     existing_dates = data_model.where(date: dates).distinct.pluck(:date)
 
@@ -19,7 +16,7 @@ class LocalDataImporter < DataImporter
   end
 
   # compute daily values
-  def self.create_data(date = DataImport.latest_date, force: false)
+  def create_data(date = DataImport.latest_date, force: false)
     date = date.to_date
     dates = force ? (date.beginning_of_year..date).map(&:to_s).to_a : missing_dates(date)
 
@@ -39,7 +36,7 @@ class LocalDataImporter < DataImporter
       create_data_for_date(date)
     end
   rescue => e
-    Rails.logger.error "#{name} :: Failed to calculate data #{dates.min} - #{dates.max}: #{e.message}"
+    Rails.logger.error "#{name} :: Failed to calculate data for #{dates.min} - #{dates.max}: #{e.message}"
     false
   end
 end

@@ -11,7 +11,7 @@ module GridMethods
     []
   end
 
-  def convert(value, units)
+  def convert(value:, col: nil, units: nil)
     value
   end
 
@@ -23,46 +23,36 @@ module GridMethods
     :sum
   end
 
-  def land_grid(
-    date:,
-    col: default_col,
-    grid: default_grid,
-    units: valid_units[0])
+  def all_for_date(date)
+    where(date:).order(:latitude, :longitude)
+  end
 
-    check_col(col)
+  def extent
+    {
+      latitude: [minimum(:latitude).to_s, maximum(:latitude).to_s],
+      longitude: [minimum(:longitude).to_s, maximum(:longitude).to_s]
+    }
+  end
+
+  def grid_summarize(sql = nil)
+    group(:latitude, :longitude)
+      .order(:latitude, :longitude)
+      .select(:latitude, :longitude, sql)
+  end
+
+  # collects all records for date and inserts them into a land grid
+  def land_grid(date:, grid: default_grid)
     check_grid(grid)
-    check_units(units)
 
-    where(date:).each do |point|
+    all_for_date(date).each do |point|
       lat, long = point.latitude, point.longitude
       next unless grid.inside?(lat, long)
-      grid[lat, long] = convert(point.send(col), units)
+      grid[lat, long] = point
     end
     grid
   end
 
-  def cumulative_land_grid(
-    col: default_col,
-    start_date: latest_date.beginning_of_year,
-    end_date: latest_date,
-    grid: default_grid,
-    units: valid_units[0],
-    stat: default_stat)
-
-    check_col(col)
-    check_grid(grid)
-    check_units(units)
-    check_stat(stat)
-
-    data = where(date: start_date..end_date).grid_summarize("#{stat}(#{col}) as value")
-    data.each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = convert(point.value, units)
-    end
-    grid
-  end
-
+  # creates a hash keyed by [lat, long] with a column value at each key
   def hash_grid(
     date:,
     col: default_col,
@@ -71,28 +61,28 @@ module GridMethods
 
     check_col(col)
     check_extent(extent)
-    check_units(units)
 
     grid = {}
     where(date:).each do |point|
       lat, long = point.latitude, point.longitude
       next unless extent.inside?(lat, long)
-      grid[[lat, long]] = convert(point.send(col), units)
+      value = point.send(col)
+      grid[[lat, long]] = units ? convert(value:, col:, units:) : value
     end
     grid
   end
 
+  # creates a hash keyed by [lat, long] with a summarized value at each key
   def cumulative_hash_grid(
     col: default_col,
     start_date: latest_date.beginning_of_year,
     end_date: latest_date,
     extent: LandExtent,
-    units: valid_units[0],
+    units: nil,
     stat: default_stat)
 
     check_col(col)
     check_extent(extent)
-    check_units(units)
     check_stat(stat)
 
     grid = {}
@@ -100,7 +90,8 @@ module GridMethods
     data.each do |point|
       lat, long = point.latitude, point.longitude
       next unless extent.inside?(lat, long)
-      grid[[lat, long]] = convert(point.value, units)
+      value = point.value
+      grid[[lat, long]] = units ? convert(value:, col:, units:) : value
     end
     grid
   end
@@ -119,7 +110,7 @@ module GridMethods
   end
 
   def check_units(unit)
-    return if valid_units.empty?
+    return if valid_units.empty? || unit.nil?
     raise ArgumentError.new(log_prefix(1) + "Unit has invalid value: #{unit.inspect}. Must be one of #{valid_units.join(", ")}") unless valid_units.include? unit
   end
 

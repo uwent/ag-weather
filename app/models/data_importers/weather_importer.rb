@@ -23,12 +23,34 @@ class WeatherImporter < GribImporter
   def self.fetch_day(date, force: false)
     start_time = Time.current
 
-    Rails.logger.info "WeatherImporter :: Fetching grib files for #{date}..."
+    Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
     import.start(date)
+
+    n_gribs = download_gribs(date)
+    if n_gribs == 0
+      raise StandardError.new "Failed to retrieve any grib files for #{date}"
+    elsif n_gribs < 24 && !force
+      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{n_gribs}. Override with force: true"
+    end
+
+    grib_dir = local_dir(date)
+    weather_day = WeatherDay.new(date)
+    weather_day.load_from(grib_dir)
+    persist_day_to_db(weather_day)
+    FileUtils.rm_r grib_dir unless KEEP_GRIB
+    WeatherDatum.create_image(date:) unless Rails.env.test?
+
+    Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
+  rescue => e
+    Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e.message}"
+  end
+
+  # try to get a grib for each hour
+  def self.download_gribs(date)
+    date = date.to_date
     hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
     gribs = 0
 
-    # try to get a grib for each hour
     hours.step(1.hour) do |time_in_central|
       time = Time.at(time_in_central).utc
       hour = Time.at(time_in_central).strftime("%H")
@@ -37,33 +59,7 @@ class WeatherImporter < GribImporter
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
       gribs += fetch_grib(file_url, local_file, "RTMA #{hour}")
     end
-
-    if gribs == 0
-      import.fail("Failed to retrieve any grib files for #{date}")
-      return
-    end
-
-    if gribs < 24
-      unless force
-        import.fail(date, "Failed to retrieve all grib files for #{date}")
-        return
-      end
-    end
-
-    import_weather_data(date)
-
-    Rails.logger.info "WeatherImporter :: Completed weather load for #{date} in #{elapsed(start_time)}."
-  end
-
-  def self.import_weather_data(date)
-    grib_dir = local_dir(date)
-    weather_day = WeatherDay.new(date)
-    weather_day.load_from(grib_dir)
-    persist_day_to_db(weather_day)
-    FileUtils.rm_r grib_dir unless KEEP_GRIB
-    WeatherDatum.create_image(date) unless Rails.env.test?
-  rescue => e
-    Rails.logger.warn "WeatherImporter :: Failed to import weather data for #{date}: #{e.message}"
+    gribs
   end
 
   def self.persist_day_to_db(weather_day)
@@ -72,15 +68,20 @@ class WeatherImporter < GribImporter
     LandExtent.each_point do |lat, long|
       observations = weather_day.observations_at(lat, long) || next
       temperatures = observations.map(&:temperature)
-      dew_point = weather_average(observations.map(&:dew_point))
+      humidities = observations.map(&:relative_humidity)
+      dew_points = observations.map(&:dew_point)
+      dew_point = true_avg(dew_points)
 
       weather_data << WeatherDatum.new(
+        date: weather_day.date,
         latitude: lat,
         longitude: long,
-        date: weather_day.date,
-        max_temperature: temperatures.max,
-        min_temperature: temperatures.min,
-        avg_temperature: weather_average(temperatures),
+        min_temp: temperatures.min,
+        max_temp: temperatures.max,
+        avg_temp: true_avg(temperatures),
+        min_rh: humidities.min.clamp(0, 100),
+        max_rh: humidities.max.clamp(0, 100),
+        avg_rh: true_avg(humidities).clamp(0, 100),
         dew_point:,
         vapor_pressure: dew_point_to_vapor_pressure(dew_point),
         hours_rh_over_90: relative_humidity_over(observations, 90.0),
@@ -112,8 +113,13 @@ class WeatherImporter < GribImporter
     vapor_p_mb / 10
   end
 
-  def self.weather_average(array)
+  def self.simple_avg(array)
     return 0.0 if array.empty?
     (array.max + array.min) / 2.0
+  end
+
+  def self.true_avg(array)
+    return 0.0 if array.empty?
+    array.compact.sum.to_f / array.size
   end
 end

@@ -87,7 +87,8 @@ class DegreeDay < ApplicationRecord
   end
 
   # value stored in FDD, converts if "CDD" requested
-  def self.convert(value, units)
+  def self.convert(value:, units:, **args)
+    check_units(units)
     (units == "C") ? UnitConverter.fdd_to_cdd(value) : value
   end
 

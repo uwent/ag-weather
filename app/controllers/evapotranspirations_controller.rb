@@ -30,7 +30,7 @@ class EvapotranspirationsController < ApplicationController
           if weather[date].nil? || insols[date].nil?
             value = 0
           else
-            t = weather[date].avg_temperature
+            t = weather[date].avg_temp
             vp = weather[date].vapor_pressure
             i = insols[date].insolation
             d = date.yday

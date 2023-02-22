@@ -27,9 +27,9 @@ class WeatherController < ApplicationController
       data = weather.collect do |w|
         {
           date: w.date.to_s,
-          min_temp: convert(w.min_temperature),
-          max_temp: convert(w.max_temperature),
-          avg_temp: convert(w.avg_temperature),
+          min_temp: convert(w.min_temp),
+          max_temp: convert(w.max_temp),
+          avg_temp: convert(w.avg_temp),
           dew_point: convert(w.dew_point),
           vapor_pressure: w.vapor_pressure,
           hours_rh_over_90: w.hours_rh_over_90,
@@ -105,7 +105,7 @@ class WeatherController < ApplicationController
         info: {
           status: @status,
           date: @date,
-          mapped_value: "avg_temperature",
+          mapped_value: "avg_temp",
           units: @units,
           compute_time: Time.current - start_time
         },
@@ -139,9 +139,9 @@ class WeatherController < ApplicationController
         {
           latitude: w.latitude,
           longitude: w.longitude,
-          min_temp: convert(w.min_temperature).round(3),
-          max_temp: convert(w.max_temperature).round(3),
-          avg_temp: convert(w.avg_temperature).round(3),
+          min_temp: convert(w.min_temp).round(3),
+          max_temp: convert(w.max_temp).round(3),
+          avg_temp: convert(w.avg_temp).round(3),
           dew_point: convert(w.dew_point).round(3),
           vapor_pressure: w.vapor_pressure.round(5),
           hours_rh_over_90: w.hours_rh_over_90,

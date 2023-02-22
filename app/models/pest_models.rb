@@ -17,8 +17,8 @@ module PestModels
 
   # temps in celsius
   def compute_potato_p_days(weather)
-    min = weather.min_temperature || 0
-    max = weather.max_temperature || 0
+    min = weather.min_temp || 0
+    max = weather.max_temp || 0
 
     calculate_p_day(min, max)
   end
@@ -27,7 +27,7 @@ module PestModels
   def compute_late_blight_dsv(weather)
     hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
-    temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
+    temp = weather.avg_temp_rh_over_90 || weather.avg_temp
 
     late_blight_logic(temp, hours)
   end
@@ -58,7 +58,7 @@ module PestModels
   def compute_carrot_foliar_dsv(weather)
     hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
-    temp = weather.avg_temp_rh_over_90 || weather.avg_temperature
+    temp = weather.avg_temp_rh_over_90 || weather.avg_temp
 
     carrot_foliar_logic(temp, hours)
   end
@@ -95,7 +95,7 @@ module PestModels
   def compute_cercospora_div(weather)
     hours = weather.hours_rh_over_90
     return 0 if hours.nil? || hours == 0
-    temp_c = weather.avg_temp_rh_over_90 || weather.avg_temperature
+    temp_c = weather.avg_temp_rh_over_90 || weather.avg_temp
     temp = (temp_c * 9 / 5) + 32.0
 
     cercospora_logic(temp, hours)
@@ -223,15 +223,15 @@ module PestModels
 
   # implementation of equations in Carisse 2012
   # lw is the number of hours over the past 96 hours where rh > 90%
-  # t is the average temperature over that time period
+  # t is the average temp over that time period
   def compute_botrytis_pmi(lw, t)
     # puts lw = weather.hours_rh_over_90
     # puts t = weather.avg_temp_rh_over_90 || 0
     c = 8.0
     return 0 if lw <= c
     e = 1.001 # maximum response
-    f = 21.045 # location parameter proportional to the optimum temperature
-    g = 0.4954 # intrinsic rate of decline from the maximum as the temperature departs from the optimum
+    f = 21.045 # location parameter proportional to the optimum temp
+    g = 0.4954 # intrinsic rate of decline from the maximum as the temp departs from the optimum
     h = 2.1529 # degree of asymmetry of the curve
     b = 0.026
     d = 1.999

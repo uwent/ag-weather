@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_16_161646) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_21_213513) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -155,9 +155,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_16_161646) do
   end
 
   create_table "weather_data", force: :cascade do |t|
-    t.float "max_temperature"
-    t.float "min_temperature"
-    t.float "avg_temperature"
+    t.float "max_temp"
+    t.float "min_temp"
+    t.float "avg_temp"
     t.float "vapor_pressure"
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
@@ -165,8 +165,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_16_161646) do
     t.float "avg_temp_rh_over_90"
     t.integer "hours_rh_over_90"
     t.float "dew_point"
-    t.virtual "frost", type: :integer, as: "((min_temperature < (0)::double precision))::integer", stored: true
-    t.virtual "freezing", type: :integer, as: "((min_temperature < ('-2'::integer)::double precision))::integer", stored: true
+    t.virtual "frost", type: :integer, as: "((min_temp < (0)::double precision))::integer", stored: true
+    t.virtual "freezing", type: :integer, as: "((min_temp < ('-2'::integer)::double precision))::integer", stored: true
+    t.float "min_rh"
+    t.float "max_rh"
+    t.float "avg_rh"
     t.index ["date", "latitude", "longitude"], name: "weather_data_unique_key", unique: true
     t.index ["date"], name: "index_weather_data_on_date"
     t.index ["latitude"], name: "index_weather_data_on_latitude"

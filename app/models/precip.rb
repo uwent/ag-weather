@@ -11,7 +11,8 @@ class Precip < ApplicationRecord
     ["in", "mm"]
   end
 
-  def self.convert(value, units)
+  def self.convert(value:, units:, **args)
+    check_units(units)
     (units == "in") ? UnitConverter.mm_to_in(value) : value
   end
 
