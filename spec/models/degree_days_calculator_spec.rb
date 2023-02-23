@@ -47,28 +47,28 @@ RSpec.describe DegreeDaysCalculator, type: :module do
   describe "calculate should delegate to proper method" do
     it "should delegate to when method is 'average'" do
       expect(DegreeDaysCalculator).to receive(:average_degree_days)
-      DegreeDaysCalculator.calculate(10, 20, method: "average")
+      DegreeDaysCalculator.calculate(min: 10, max: 20, method: "average")
     end
 
     it "should delegate to when method is 'modified'" do
       expect(DegreeDaysCalculator).to receive(:modified_degree_days)
-      DegreeDaysCalculator.calculate(10, 20, method: "modified")
+      DegreeDaysCalculator.calculate(min: 10, max: 20, method: "modified")
     end
 
     it "should delegate to when method is 'sine'" do
       expect(DegreeDaysCalculator).to receive(:sine_degree_days)
-      DegreeDaysCalculator.calculate(10, 20, method: "sine")
+      DegreeDaysCalculator.calculate(min: 10, max: 20, method: "sine")
     end
 
     it "should raise an error on unknown method" do
-      expect { DegreeDaysCalculator.calculate(10, 20, method: "foo") }.to raise_error(ArgumentError)
+      expect { DegreeDaysCalculator.calculate(min: 10, max: 20, method: "foo") }.to raise_error(ArgumentError)
     end
   end
 
   describe ".calculate_f" do
     it "should convert F to C and send values to .calculate" do
-      expect(DegreeDaysCalculator).to receive(:calculate).exactly(1).times
-      DegreeDaysCalculator.calculate_f(38, 52, base: 50, upper: 86, method: "sine")
+      expect(DegreeDaysCalculator).to receive(:calculate).exactly(1).times.with({min: 38, max: 52, base: 50, upper: 86, method: "sine"})
+      DegreeDaysCalculator.calculate_f(min: 38, max: 52)
     end
   end
 end

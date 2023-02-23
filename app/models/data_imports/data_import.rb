@@ -17,7 +17,7 @@ class DataImport < ApplicationRecord
   end
 
   def self.earliest_date
-    (Time.now.in_time_zone("US/Central") - DAYS_BACK_WINDOW.days).to_date
+    Time.now.in_time_zone("US/Central").to_date - DAYS_BACK_WINDOW.days
   end
 
   def self.days_to_load

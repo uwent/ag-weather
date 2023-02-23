@@ -115,11 +115,14 @@ class WeatherDatum < ApplicationRecord
     title
   end
 
-  # fahrenheit min/max. base/upper must be F
-  def degree_days(base, upper = 150, method = DegreeDaysCalculator::METHOD, in_f = true)
-    min = in_f ? UnitConverter.c_to_f(min_temp) : min_temp
-    max = in_f ? UnitConverter.c_to_f(max_temp) : max_temp
-    dd = DegreeDaysCalculator.calculate(min, max, base:, upper:, method:)
-    [0, dd].max unless dd.nil?
+  # min_temp/max_temp stored in C, must be converted if F
+  def degree_days(base:, upper: 150, method: "sine", in_f: true)
+    if in_f
+      min = UnitConverter.c_to_f(min_temp)
+      max = UnitConverter.c_to_f(max_temp)
+      DegreeDaysCalculator.calculate(min:, max:, base:, upper:, method:)
+    else
+      DegreeDaysCalculator.calculate(min: min_temp, max: max_temp, base:, upper:, method:)
+    end
   end
 end

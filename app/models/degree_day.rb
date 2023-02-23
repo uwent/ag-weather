@@ -94,7 +94,7 @@ class DegreeDay < ApplicationRecord
 
   # must be sent :col and :units
   def self.image_name_prefix(col:, units:, **args)
-    base, upper = dd_to_base_upper(col, units)
+    base, upper = parse_model(col, units)
     str = "degree-days-base-#{base}"
     str += "-upper-#{upper}" if upper
     str
@@ -127,7 +127,7 @@ class DegreeDay < ApplicationRecord
   end
 
   # model name format like "dd_42p8_86" in Fahrenheit
-  def self.dd_to_base_upper(model, units)
+  def self.parse_model(model, units)
     _, base, upper = model.to_s.tr("p", ".").split("_")
     if units == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
@@ -159,7 +159,7 @@ class DegreeDay < ApplicationRecord
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
 
-    base, upper = dd_to_base_upper(col, units)
+    base, upper = parse_model(col, units)
     dd_name = "base #{base}°#{units}"
     dd_name += ", upper #{upper}°#{units}" if upper
     if start_date

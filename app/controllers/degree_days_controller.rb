@@ -1,4 +1,6 @@
 class DegreeDaysController < ApplicationController
+  before_action { @start_time = Time.now }
+
   # GET: returns weather and computed degree days for point
   # params:
   #   lat (required)
@@ -12,72 +14,97 @@ class DegreeDaysController < ApplicationController
 
   def index
     params.require([:lat, :long])
+    index_params
 
-    start_time = Time.current
-    status = "OK"
-    total = 0
-    data = []
-
-    weather = WeatherDatum.where(
-      date: start_date..end_date,
-      latitude: lat,
-      longitude: long
-    )
-
+    weather = WeatherDatum.where(date: @dates, latitude: lat, longitude: long)
     if weather.exists?
-      data = weather.collect do |w|
-        dd = w.degree_days(base, upper, method, in_f)
+      @data = weather.collect do |w|
+        dd = w.degree_days(base:, upper:, method:, in_f:)
         min = convert_temp(w.min_temp)
         max = convert_temp(w.max_temp)
-        total += dd
+        @total += dd
         {
           date: w.date,
           min_temp: min.round(1),
           max_temp: max.round(1),
           value: dd.round(1),
-          cumulative_value: total.round(1)
+          cumulative_value: @total.round(1)
         }
       end
     else
-      status = "no data"
+      @status = "no data"
     end
 
-    values = data.map { |day| day[:value] }
-    days_requested = (start_date..end_date).count
-    days_returned = data.size
+    @values = @data.map { |day| day[:value] }
+    @days_returned = @data.size
+    @status ||= "missing days" if @days_requested != @days_returned
+    @info = index_info
 
-    status = "missing days" if status == "OK" && days_requested != days_returned
-
-    info = {
-      lat: lat.to_f,
-      long: long.to_f,
-      start_date:,
-      end_date:,
-      days_requested:,
-      days_returned:,
-      base:,
-      upper:,
-      method:,
-      units: units_text,
-      min_value: values.min,
-      max_value: values.max,
-      total: total.round(1),
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      status:,
-      info:,
-      data:
-    }
-
+    response = {info: @info, data: @data}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
+        headers = info unless params[:headers] == "false"
         filename = "degree day data for #{lat}, #{long}.csv"
         send_data to_csv(response[:data], headers), filename:
+      end
+    end
+  end
+
+  # GET: degree-day grid for date range
+  # will either return pre-calculated degree day accumulations or compute new ones
+  # params:
+  #   Must specify one of:
+  #     model - name of degree day model column (default dd_50)
+  #   OR
+  #     base - default 50F, required
+  #     upper - default 86F, optional
+  #   units - 'F' (default) or 'C' degree days
+  #   start_date - default first of year
+  #   end_date - default today
+  #   lat_range (min,max) - default full extent
+  #   long_range (min,max) - default full extent
+  #   compute=true - force computation of a custom degree day model grid (takes at least 25s)
+
+  def grid
+    grid_params
+
+    dds = DegreeDay.where(date: @dates, latitude: @lat_range, longitude: @long_range)
+    if dds.exists?
+      @days_returned = dds.where(latitude: lat_range.min, longitude: long_range.min).size
+      @status = "missing data" if @days_returned < @days_requested - 1
+      if @model
+        @data = dds.grid_summarize.sum(@model)
+      elsif @compute
+        @status = "calculated new degree day model"
+        weather = WeatherDatum.where(query)
+        @data = Hash.new(0)
+        weather.each do |w|
+          key = [w.latitude, w.longitude]
+          @data[key] += w.degree_days(base: @base, upper: @upper, in_f:)
+        end
+      else
+        @status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.models.join(", ")}"
+      end
+    else
+      @status = "no data"
+    end
+
+    @data.each { |k, v| @data[k] = convert_dds(v) }
+    @values = @data.values
+
+    response = {info: grid_info, data: @data}
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.csv do
+        csv_data = data.collect do |key, value|
+          { latitude: key[0], longitude: key[1], value: }
+        end
+        headers = info unless params[:headers] == "false"
+        filename = "#{@model || implied_model} data grid for #{start_date} to #{end_date}.csv"
+        send_data(to_csv(csv_data, headers), filename:)
       end
     end
   end
@@ -100,40 +127,33 @@ class DegreeDaysController < ApplicationController
     weather_data = {}
     dd_data = {}
     dates = start_date..end_date
-    valid_models = models & PestForecast.column_names || ["dd_50_86"]
-    valid_models = valid_models&.sort
+    if models == ["all"]
+      valid_models = DegreeDay.model_names
+    else
+      valid_models = (models & DegreeDay.model_names)&.sort
+    end
+    query = {date: dates, latitude: lat, longitude: long}
 
-    weather = WeatherDatum.where(
-      date: dates,
-      latitude: lat,
-      longitude: long
-    ).order(:date).select(:date, :min_temp, :max_temp)
+    weather = WeatherDatum.where(query).order(:date).select(:date, :min_temp, :max_temp)
+    dds = DegreeDay.where(query).order(:date)
 
-    pest_forecasts = PestForecast.where(
-      date: dates,
-      latitude: lat,
-      longitude: long
-    ).order(:date)
-
-    if weather.empty? || pest_forecasts.empty?
+    if weather.empty? || dds.empty?
       status = "no data"
     else
       weather.each do |w|
-        min = convert_temp(w.min_temp)
-        max = convert_temp(w.max_temp)
         weather_data[w.date] = {
-          min_temp: min.round(2),
-          max_temp: max.round(2)
+          min_temp: convert_temp(w.min_temp).round(2),
+          max_temp: convert_temp(w.max_temp).round(2)
         }
       end
 
       valid_models.each do |m|
         total = 0
         dd_data[m] = {}
-        pest_forecasts.each do |pf|
-          value = convert_dds(pf.send(m)) || 0
+        dds.each do |dd|
+          value = convert_dds(dd.send(m)) || 0
           total += value
-          dd_data[m][pf.date] = {
+          dd_data[m][dd.date] = {
             value: value.round(2),
             total: total.round(2)
           }
@@ -177,171 +197,35 @@ class DegreeDaysController < ApplicationController
     end
   end
 
-  # GET: degree-day grid for date range
-  # will either return pre-calculated degree day accumulations or compute new ones
-  # params:
-  #   Must specify one of:
-  #     model - name of degree day model column
-  #   OR
-  #     base - default 50F, required
-  #     upper - default 86F, optional
-  #   start_date - default first of year
-  #   end_date - default today
-  #   lat_range (min,max) - default full extent
-  #   long_range (min,max) - default full extent
-  #   compute=true - force computation of a custom degree day model grid (takes at least 25s)
-
-  def grid
-    start_time = Time.current
-    model = params[:model]
-    days_requested = (start_date..end_date).count
-    days_returned = 0
-    status = "OK"
-    info = {}
-    data = {}
-    query = {
-      date: start_date..end_date,
-      latitude: lat_range,
-      longitude: long_range
-    }
-
-    if model && DegreeDay.model_names.include?(model)
-      @model = model
-    else
-      params.require(:base)
-      implied_model = DegreeDay.find_model(params[:base], params[:upper], units)
-      @model = implied_model if DegreeDay.model_names.include?(implied_model)
-    end
-
-    if @model
-      dds = DegreeDay.where(query)
-      if dds.exists?
-        days_returned = dds.where(latitude: lat_range.min, longitude: long_range.min).size
-        data = dds.grid_summarize.sum(@model)
-        status = "missing data" if days_returned < days_requested - 1
-      else
-        status = "no data"
-      end
-    elsif params[:compute] == "true"
-      # degree days are not pre-calculated...
-      status = "calculated new degree day model"
-      weather = WeatherDatum.where(query)
-      days_returned = weather.where(latitude: lat_range.min, longitude: long_range.min).size
-      if weather.exists?
-        data = Hash.new(0)
-        weather.each do |w|
-          key = [w.latitude, w.longitude]
-          data[key] ||= 0
-          data[key] += w.degree_days(base, upper)
-        end
-      end
-    else
-      status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.models.join(", ")}"
-    end
-
-    data.each { |k, v| data[k] = convert_dds(v) }
-    values = data.values
-
-    if @model
-      base, upper = DegreeDay.model_to_base_upper(@model, units)
-    else
-      base, upper = params[:base], params[:upper]
-    end
-
-    model_text = "base: #{base}°#{units}"
-    model_text += ", upper: #{upper}°#{units}" if upper
-
-    info = {
-      status:,
-      model: model_text,
-      units: units_text,
-      start_date:,
-      end_date:,
-      days_requested:,
-      days_returned: days_returned || 0,
-      lat_range: [lat_range.min, lat_range.max],
-      long_range: [long_range.min, long_range.max],
-      grid_points: data.size,
-      min_value: values.min,
-      max_value: values.max,
-      compute_time: Time.current - start_time
-    }
-
-    response = {info:, data:}
-
-    respond_to do |format|
-      format.html { render json: response, content_type: "application/json; charset=utf-8" }
-      format.json { render json: response }
-      format.csv do
-        csv_data = data.collect do |key, value|
-          {
-            latitude: key[0],
-            longitude: key[1],
-            value:
-          }
-        end
-        headers = info unless params[:headers] == "false"
-        filename = "#{@model || implied_model} data grid for #{start_date} to #{end_date}.csv"
-        send_data(to_csv(csv_data, headers), filename:)
-      end
-    end
-  end
-
   # GET: create map and return url to it
   # params:
   #   model
 
   def map
-    start_time = Time.current
+    map_params
 
-    @end_date = params[:date].present? ? date : end_date
-    @start_date = start_date(@end_date.beginning_of_year)
-    @start_date = nil if @start_date == @end_date
-    @model = params[:model] || "dd_50"
-    @min_value = params[:min_value]
-    @max_value = params[:max_value]
-    @extent = params[:extent]
-    @image_args = {
-      model: @model,
-      start_date: @start_date,
-      end_date: @end_date,
-      units:,
-      min_value: @min_value,
-      max_value: @max_value,
-      extent: @extent
-    }.compact
-
-    image_name, _ = DegreeDay.image_attr(**@image_args)
+    image_name = DegreeDay.image_name(**@image_args)
     image_filename = DegreeDay.image_path(image_name)
     image_url = DegreeDay.image_url(image_name)
-
-    @status = "unable to create image, invalid query or no data"
 
     if File.exist?(image_filename)
       @url = image_url
       @status = "already exists"
     else
-      image_name = DegreeDay.create_image(**@image_args)
+      image_name = DegreeDay.guess_image(**@image_args)
       if image_name
         @url = image_url
         @status = "image created"
       end
     end
 
-    if request.format.png?
-      render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status
-    else
-      render json: {
-        info: {
-          status: @status,
-          model: @model,
-          start_date: @start_date,
-          end_date: @end_date,
-          units: @units,
-          compute_time: Time.current - start_time
-        },
-        map: @url
-      }
+    @status ||= "unable to create image, invalid query or no data"
+
+    response = {info: map_info, map: @url}
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.png { render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status }
     end
   end
 
@@ -369,12 +253,135 @@ class DegreeDaysController < ApplicationController
 
   private
 
+  def index_params
+    @lat = lat.to_f
+    @long = long.to_f
+    @start_date = start_date
+    @end_date = end_date
+    @dates = @start_date..@end_date
+    @days_requested = @dates.count
+    @base = base
+    @upper = upper
+    @method = method
+    @units = units
+    @units_text = units_text
+    @total = 0
+    @data = []
+  end
+
+  def index_info
+    {
+      status: @status,
+      lat: @lat,
+      long: @long,
+      start_date: @start_date,
+      end_date: @end_date,
+      days_requested: @days_requested,
+      days_returned: @days_returned,
+      base: @base,
+      upper: @upper,
+      method: @method,
+      units: @units_text,
+      min_value: @values.min,
+      max_value: @values.max,
+      total: @total.round(1),
+      compute_time: Time.current - @start_time
+    }
+  end
+
+  def grid_params
+    @model = params[:model]
+    @units = units
+    @units_text = units_text
+    @base = base
+    @upper = upper
+    @start_date = start_date
+    @end_date = end_date
+    @dates = @start_date..@end_date
+    @days_requested = @dates.count
+    @lat_range = lat_range
+    @long_range = long_range
+    @compute = params[:compute] == "true"
+    @data = {}
+
+    if @model
+      if !DegreeDay.model_names.include?(@model)
+        return reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
+      end
+    elsif @base
+      implied_model = DegreeDay.find_model(@base, @upper, @units)
+      @model = implied_model if DegreeDay.model_names.include?(implied_model)
+    else
+      @model = DegreeDay.default_col.to_s
+    end
+
+    @base, @upper = DegreeDay.parse_model(@model, @units) if @model
+    @model_text = "base: #{@base}°#{@units}"
+    @model_text += ", upper: #{@upper}°#{@units}" if @upper
+  end
+
+  def grid_info
+    {
+      status: @status || "OK",
+      model: @model_text,
+      units: @units_text,
+      start_date: @start_date,
+      end_date: @end_date,
+      days_requested: @days_requested,
+      days_returned: @days_returned,
+      missing_days: @days_requested - @days_returned,
+      lat_range: "#{@lat_range.min}, #{@lat_range.max}",
+      long_range: "#{@long_range.min}, #{@long_range.max}",
+      grid_points: @data.size,
+      min_value: @values.min,
+      max_value: @values.max,
+      compute_time: Time.current - @start_time
+    }
+  end
+
+  def map_params
+    if params[:date].present?
+      @date = date
+    else
+      @end_date = end_date
+      @start_date = start_date(@end_date.beginning_of_year)
+      @start_date = nil if @start_date == @end_date
+    end
+    @model = params[:model] || "dd_50"
+    @min_value = params[:min_value]
+    @max_value = params[:max_value]
+    @extent = params[:extent]
+    @stat = params[:stat]
+    @image_args = {
+      col: @model,
+      date: @date,
+      start_date: @start_date,
+      end_date: @end_date,
+      units:,
+      min_value: @min_value,
+      max_value: @max_value,
+      extent: @extent,
+      stat: @stat
+    }.compact
+  end
+
+  def map_info
+    {
+      status: @status,
+      model: @model,
+      start_date: @start_date,
+      end_date: @end_date,
+      units: @units,
+      compute_time: Time.current - @start_time
+    }
+  end
+
   def units
     unit = params[:units]&.upcase || DegreeDay.valid_units[0]
     if DegreeDay.valid_units.include?(unit)
       unit
     else
-      reject("Invalid unit '#{unit}'. Must be one of #{DegreeDay.valid_units.join(", ")}.")
+      reject("Invalid unit '#{params[:units]}'. Must be one of #{DegreeDay.valid_units.join(", ")}")
     end
   end
 
@@ -408,6 +415,7 @@ class DegreeDaysController < ApplicationController
     nil
   end
 
+  # base temp must be given in F
   def base
     params[:base] ? params[:base].to_f : default_base
   end
@@ -418,10 +426,6 @@ class DegreeDaysController < ApplicationController
 
   def method
     DegreeDaysCalculator::METHODS.include?(params[:method]&.downcase) ? params[:method].downcase : DegreeDaysCalculator::METHOD
-  end
-
-  def pest
-    params[:pest]
   end
 
   def models

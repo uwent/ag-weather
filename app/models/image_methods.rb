@@ -48,12 +48,21 @@ module ImageMethods
     file + ".png"
   end
 
+  def guess_image(**args)
+    if args[:date]
+      create_image(**args)
+    else
+      create_cumulative_image(**args)
+    end
+  end
+
   def create_image(
     date:,
     col: default_col,
     units: nil,
     extent: nil,
-    scale: nil
+    scale: nil,
+    **args
   )
 
     date = date.to_date
@@ -76,7 +85,8 @@ module ImageMethods
     units: nil,
     stat: default_stat,
     extent: nil,
-    scale: nil
+    scale: nil,
+    **args
   )
 
     raise ArgumentError.new log_prefix + "Must name a column to image" unless col

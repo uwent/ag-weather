@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       get "info"
       get "dd_table"
       get "grid"
+      get "grid_for"
       get "map"
     end
   end

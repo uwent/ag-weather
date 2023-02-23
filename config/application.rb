@@ -38,7 +38,7 @@ module AgWeather
 
     def call(severity, time, progname, msg)
       sev = severity.to_sym.downcase
-      time = time.strftime("%Y%m%d %H:%M:%S")
+      time = time.strftime("%Y-%m-%d %H:%M:%S")
       msg = msg&.truncate(500, omission: "...")
       "#{time} #{CLR[sev]}[#{SEV[sev]}] #{msg}#{PAL[:reset]}\n"
     end
