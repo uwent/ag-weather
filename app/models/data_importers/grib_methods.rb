@@ -12,16 +12,27 @@ module GribMethods
   end
 
   # will allow importer to accept missing hourly gribs if imports have failed for two days
-  def fetch
+  def fetch(start_date: earliest_date, end_date: latest_date, all_dates: false, overwrite: false)
     ActiveRecord::Base.logger.level = :info
-    dates = import.days_to_load
-    if dates.size > 0
-      dates.each do |date|
+
+    dates = all_dates ? (start_date.to_date..end_date.to_date).to_a : missing_dates(start_date:, end_date:)
+    return Rails.logger.info "#{name} :: Everything's up to date, nothing to do!" if dates.empty?
+
+    dates.each do |date|
+      begin
+        if data_model.where(date:).exists? && !overwrite
+          Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
+          import.succeed(date)
+          next
+        end
         fetch_day(date, force: date < 2.days.ago)
+      rescue => e
+        msg = "Failed to retrieve data for #{date}: #{e.message}"
+        Rails.logger.warn "#{name} :: #{msg}"
+        import.fail(date, msg)
       end
-    else
-      Rails.logger.info "#{name} :: Everything's up to date, nothing to do!"
     end
+
     ActiveRecord::Base.logger.level = Rails.configuration.log_level
   end
 

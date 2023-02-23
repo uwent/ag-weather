@@ -10,10 +10,12 @@ class PestForecastImporter < DataImporter
   end
 
   def self.data_sources_loaded?(date)
-    WeatherImport.successful.find_by(date:)
+    WeatherDataImport.successful.find_by(date:)
   end
 
   def self.create_data_for_date(date)
+    date = date.to_date
+    import.start(date)
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
     weather = WeatherDatum.all_for_date(date)

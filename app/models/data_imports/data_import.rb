@@ -64,6 +64,7 @@ class DataImport < ApplicationRecord
     else
       successful.where(date:).create!
     end
+    Rails.logger.info "#{name} :: Import completed successfully for #{date}"
   end
 
   def self.fail(date, message = nil)
@@ -77,36 +78,45 @@ class DataImport < ApplicationRecord
     end
   end
 
+  def self.create_pending(date)
+    import_types.each do |i|
+      i.start(date)
+    end
+  end
+
   # run this from console
   def self.check_statuses(start_date = earliest_date, end_date = latest_date)
     ActiveRecord::Base.logger.level = :info
 
-    message = []
+    dates = start_date.to_date..end_date.to_date
     count = 0
+    message = []
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
-    (start_date..end_date).each do |date|
+    dates.each do |date|
+      # initialize import record
+      import_types.each do |import|
+        import.find_by(date:) || import.start(date)
+      end
+
+      # describe import states
       statuses = DataImport.where(date:)
-      if statuses.empty?
-        count += 1
-        message << "  #{date}: Data load not attempted."
-      elsif statuses.successful.size == import_types.size
+      if statuses.successful.size == import_types.size
         message << "  #{date}: OK"
+      elsif statuses.pending.size == import_types.size
+        count += import_types.size
+        message << "  #{date}: PENDING"
       else
         message << "  #{date}"
         import_types.each do |type|
           status = type.find_by(date:)
-          if status
-            case status.status
-            when "successful"
-              message << "    #{status.type} ==> OK"
-            else
-              count += 1
-              message << "    #{status.type} ==> #{status.status.upcase}: #{status.message} (#{DataImporter.elapsed(status.updated_at)} ago)"
-            end
+          if status.status == "successful"
+            message << "    #{status.type} ==> OK"
           else
             count += 1
-            message << "    #{type} ==> NOT STARTED"
+            msg = "    #{status.type} ==> #{status.status.upcase}"
+            msg += ": #{status.message}" if status.message
+            message << msg
           end
         end
       end

@@ -8,40 +8,40 @@ class DegreeDay < ApplicationRecord
       latitude: w.latitude,
       longitude: w.longitude,
 
-      dd_32: w.degree_days(32), # 0 C
+      dd_32: w.degree_days(base: 32), # 0 C
       # nothing yet
 
-      dd_38_75: w.degree_days(38, 75), # 3.3 C / 23.9 C
+      dd_38_75: w.degree_days(base: 38, upper: 75), # 3.3 C / 23.9 C
       # nothing yet
 
-      dd_39p2_86: w.degree_days(39.2, 86), # 4 / 30 C
+      dd_39p2_86: w.degree_days(base: 39.2, upper: 86), # 4 / 30 C
       # aphid pvy model
       # onion maggot
       # seedcorn maggot
 
-      dd_41: w.degree_days(41), # 5 C
+      dd_41: w.degree_days(base: 41), # 5 C
       # flea beetle
       # oak wilt vectors
 
-      dd_41_86: w.degree_days(41, 86), # 5 / 30 C
+      dd_41_86: w.degree_days(base: 41, upper: 86), # 5 / 30 C
       # stalk borer
 
-      dd_42p8_86: w.degree_days(42.8, 86), # 6 / 30 C
+      dd_42p8_86: w.degree_days(base: 42.8, upper: 86), # 6 / 30 C
       # cabbage maggot
 
-      dd_45: w.degree_days(45), # 7.2 C
+      dd_45: w.degree_days(base: 45), # 7.2 C
       # western flower thrips
 
-      dd_45_80p1: w.degree_days(45, 80.1), # 7.2 / 26.7
+      dd_45_80p1: w.degree_days(base: 45, upper: 80.1), # 7.2 / 26.7
       # variegated cutworm
 
-      dd_45_86: w.degree_days(45, 86), # 7.2 / 30 C
+      dd_45_86: w.degree_days(base: 45, upper: 86), # 7.2 / 30 C
       # spotted wing drosophila
 
-      dd_48: w.degree_days(48), # 9 C
+      dd_48: w.degree_days(base: 48), # 9 C
       # alfalfa weevil
 
-      dd_50: w.degree_days(50), # 10 C
+      dd_50: w.degree_days(base: 50), # 10 C
       # BMSB (dubious)
       # flea beetle (crucifer)
       # imported cabbageworm
@@ -50,26 +50,26 @@ class DegreeDay < ApplicationRecord
       # squash vine borer
       # western bean cutworm
 
-      dd_50_86: w.degree_days(50, 86), # 10 / 30 C
+      dd_50_86: w.degree_days(base: 50, upper: 86), # 10 / 30 C
       # asparagus beetle (common)
       # black cutworm
       # european corn borer
 
-      dd_50_87p8: w.degree_days(50, 87.8), # 10 / 31 C
+      dd_50_87p8: w.degree_days(base: 50, upper: 87.8), # 10 / 31 C
       # no insect model
 
-      dd_50_90: w.degree_days(50, 90), # 10 / 32.2 C
+      dd_50_90: w.degree_days(base: 50, upper: 90), # 10 / 32.2 C
       # cabbage looper
 
-      dd_52: w.degree_days(52), # 11.1 C
+      dd_52: w.degree_days(base: 52), # 11.1 C
       # colorado potato beetle
       # corn rootworm
       # tarnished plant bug
 
-      dd_52_86: w.degree_days(52, 86), # 11.1 / 30 C
+      dd_52_86: w.degree_days(base: 52, upper: 86), # 11.1 / 30 C
       # nothing yet
 
-      dd_55_92: w.degree_days(55, 92) # 12.8 / 33.3 C
+      dd_55_92: w.degree_days(base: 55, upper: 92) # 12.8 / 33.3 C
       # corn earworm
     )
   end

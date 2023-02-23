@@ -10,11 +10,12 @@ class EvapotranspirationImporter < DataImporter
   end
 
   def self.data_sources_loaded?(date)
-    WeatherImport.successful.find_by(date:) && InsolationImport.successful.find_by(date:)
+    WeatherDataImport.successful.find_by(date:) && InsolationDataImport.successful.find_by(date:)
   end
 
   def self.create_data_for_date(date)
     date = date.to_date
+    import.start(date)
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
     weather = WeatherDatum.land_grid(date:)
