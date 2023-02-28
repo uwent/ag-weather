@@ -82,13 +82,17 @@ class ApplicationController < ActionController::Base
   end
 
   def parse_date_or_dates
-    if params[:date]
-      @date = date
-    elsif params[:start_date] || params[:end_date]
-      @end_date = end_date
+    if params[:start_date] || params[:end_date]
+      @end_date = params[:date] ? date : end_date
       @start_date = start_date(@end_date.beginning_of_year)
-      @dates = @start_date..@end_date
-      @start_date = nil if @start_date == @end_date
+      if @start_date == @end_date
+        @date = @end_date
+        @start_date = @end_date = nil
+      else
+        @dates = @start_date..@end_date
+      end
+    elsif params[:date]
+      @date = date
     else
       return false
     end
@@ -96,11 +100,21 @@ class ApplicationController < ActionController::Base
   end
 
   def lat
-    parse_float(params[:lat], digits: 1)
+    val = parse_float(params[:lat], digits: 1)
+    if LandExtent.latitudes === val
+      return val
+    else
+      reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.latitudes}")
+    end
   end
 
   def long
-    parse_float(params[:long], digits: 1)
+    val = parse_float(params[:long], digits: 1)
+    if LandExtent.longitudes === val
+      return val
+    else
+      reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.longitudes}")
+    end
   end
 
   def lat_range
@@ -171,8 +185,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def units_text(unit)
-    "#{unit}"
+  def units_text
+    "#{@unit}"
   end
 
   def extent
@@ -195,7 +209,7 @@ class ApplicationController < ActionController::Base
     @lat = lat.to_f
     @long = long.to_f
     @units = units
-    @units_text = units_text(@units)
+    @units_text = units_text
     @query = {date: @dates || @date, latitude: @lat, longitude: @long}
     @data = []
   end
@@ -227,7 +241,7 @@ class ApplicationController < ActionController::Base
     @days_requested = @dates&.count || 1
     @days_returned = 0
     @units = units
-    @units_text = units_text(@units)
+    @units_text = units_text
     @stat = stat
     @query = {date: @dates || @date, latitude: @lat_range, longitude: @long_range}
     @data = {}
@@ -241,14 +255,14 @@ class ApplicationController < ActionController::Base
       end_date: @end_date,
       days_requested: @days_requested,
       days_returned: @days_returned,
-      lat_range: "#{@lat_range.min}, #{@lat_range.max}",
-      long_range: "#{@long_range.min}, #{@long_range.max}",
-      grid_points: @data.size,
+      lat_range: "#{@lat_range&.min},#{@lat_range&.max}",
+      long_range: "#{@long_range&.min},#{@long_range&.max}",
+      grid_points: @data&.size,
       model: @model_text,
       units: @units_text,
       stat: @stat,
-      min_value: @values.min,
-      max_value: @values.max,
+      min_value: @values&.min,
+      max_value: @values&.max,
       compute_time: Time.current - @start_time
     }.compact
   end
@@ -259,7 +273,6 @@ class ApplicationController < ActionController::Base
     @extent = extent
     @stat = stat
     @image_args = {
-      col: @col,
       date: @date,
       start_date: @start_date,
       end_date: @end_date,

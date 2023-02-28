@@ -99,7 +99,7 @@ module GridMethods
 
   def check_col(col)
     col = col.to_s
-    raise ArgumentError.new(log_prefix(1) + "'#{col.inspect} is not a valid data column for #{name}. Must be one of #{column_names.join(", ")}") unless column_names.include? col
+    raise ArgumentError.new(log_prefix(1) + "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{column_names.join(", ")}") unless column_names.include? col
   end
 
   def check_grid(grid)

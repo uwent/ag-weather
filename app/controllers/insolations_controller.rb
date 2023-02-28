@@ -84,6 +84,13 @@ class InsolationsController < ApplicationController
   end
 
   # GET: create map and return url to it
+  # params:
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, 'F' or 'C'
+  #   scale - optional, 'min,max' for image scalebar
+  #   extent - optional, omit or 'wi' for Wisconsin only
+  #   stat - optional, summarization statistic, must be sum, min, max, avg
 
   def map
     parse_date_or_dates || default_single_date

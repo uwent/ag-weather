@@ -83,12 +83,10 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: return grid of all values for date
   # params:
-  #   date - default latest date
-  #     OR
-  #   start_date - default first of year
-  #   end_date - default today
-  #   lat_range (min,max) - default full extent
-  #   long_range (min,max) - default full extent
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default first of year if end_date provided
+  #   lat_range - optional, default full extent, format min,max
+  #   long_range - optional, default full extent, format min,max
   #   units - 'MJ' (default) or 'KWh'
 
   def grid
@@ -125,6 +123,13 @@ class EvapotranspirationsController < ApplicationController
   end
 
   # GET: create map and return url to it
+  # params:
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, 'F' or 'C'
+  #   scale - optional, 'min,max' for image scalebar
+  #   extent - optional, omit or 'wi' for Wisconsin only
+  #   stat - optional, summarization statistic, must be sum, min, max, avg
 
   def map
     parse_date_or_dates || default_single_date
@@ -154,15 +159,6 @@ class EvapotranspirationsController < ApplicationController
       format.png { render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status }
     end
   end
-
-  # GET: calculate et with arguments
-
-  # def calculate_et
-  #   render json: {
-  #     inputs: params,
-  #     value: Evapotranspiration.new.potential_et
-  #   }
-  # end
 
   # GET: Returns info about et database
 
@@ -197,8 +193,8 @@ class EvapotranspirationsController < ApplicationController
     Evapotranspiration.valid_units
   end
 
-  def units_text(unit)
-    "#{unit}/day"
+  def units_text
+    "#{@units}/day"
   end
 
   # stored in 'in'

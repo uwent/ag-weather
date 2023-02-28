@@ -50,7 +50,8 @@ module ImageMethods
     file += "-#{end_date.to_date.to_formatted_s(:number)}"
     file += "-range-#{scale.min}-#{scale.max}" if scale && scale != default_scale(units)
     file += "-#{extent}" if extent == "wi"
-    file + ".png"
+    file += ".png"
+    ActiveStorage::Filename.new(file).sanitized.squeeze("-")
   end
 
   def guess_image(**args)

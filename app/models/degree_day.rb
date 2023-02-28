@@ -100,7 +100,7 @@ class DegreeDay < ApplicationRecord
   def self.image_name_prefix(col:, units:, stat:, **args)
     base, upper = parse_model(col, units)
     str = ""
-    str += "#{stat}-" if stat
+    str += "#{stat}-" if stat && stat != default_stat
     str += "degree-days-base-#{base}"
     str += "-upper-#{upper}" if upper
     str
@@ -151,10 +151,6 @@ class DegreeDay < ApplicationRecord
     model = "dd_" + sprintf("%.4g", base)
     model += sprintf("_%.4g", upper) if upper
     model.tr(".", "p")
-  end
-
-  def self.default_image_type
-    :cumulative
   end
 
   def self.image_title(

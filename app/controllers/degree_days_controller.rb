@@ -25,11 +25,13 @@ class DegreeDaysController < ApplicationController
         dd = w.degree_days(base:, upper:, method:, in_f:)
         min = convert_temp(w.min_temp)
         max = convert_temp(w.max_temp)
+        avg = convert_temp(w.avg_temp)
         cumulative_value += dd
         {
           date: w.date,
           min_temp: min.round(2),
           max_temp: max.round(2),
+          avg_temp: avg.round(2),
           value: dd.round(3),
           cumulative_value: cumulative_value.round(2)
         }
@@ -74,7 +76,7 @@ class DegreeDaysController < ApplicationController
   def grid
     parse_date_or_dates || default_date_range
     grid_params
-    parse_model # after grid_params
+    parse_model_or_base_upper # after grid_params
     @data = {}
 
     dds = DegreeDay.where(@query)
@@ -119,12 +121,18 @@ class DegreeDaysController < ApplicationController
 
   # GET: create map and return url to it
   # params:
-  #   model
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, 'F' or 'C'
+  #   scale - optional, 'min,max' for image scalebar
+  #   extent - optional, omit or 'wi' for Wisconsin only
+  #   stat - optional, summarization statistic, must be sum, min, max, avg
+  #   model - optional, which degree day column to render, default 'dd_50'
 
   def map
     parse_date_or_dates || default_date_range
     map_params
-    @model = params[:model] || "dd_50"
+    parse_model
     @image_args.merge!({col: @model})
 
     image_name = DegreeDay.image_name(**@image_args)
@@ -243,13 +251,13 @@ class DegreeDaysController < ApplicationController
   # GET: Returns info about degree day data and methods. No params.
 
   def info
-    start_time = Time.current
-    t = WeatherDatum
+    t = DegreeDay
     min_date = t.minimum(:date) || 0
     max_date = t.maximum(:date) || 0
     all_dates = (min_date..max_date).to_a
     actual_dates = t.distinct.pluck(:date).to_a
     response = {
+      dd_cols: DegreeDay.model_names,
       dd_methods: DegreeDaysCalculator::METHODS,
       lat_range: [t.minimum(:latitude).to_f, t.maximum(:latitude).to_f],
       long_range: [t.minimum(:longitude).to_f, t.maximum(:longitude).to_f],
@@ -257,7 +265,7 @@ class DegreeDaysController < ApplicationController
       expected_days: all_dates.size,
       actual_days: actual_dates.size,
       missing_days: all_dates - actual_dates,
-      compute_time: Time.current - start_time
+      compute_time: Time.current - @start_time
     }
     render json: response
   end
@@ -265,6 +273,17 @@ class DegreeDaysController < ApplicationController
   private
 
   def parse_model
+    @model = params[:model]
+    if @model
+      if !DegreeDay.model_names.include?(@model)
+        return reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
+      end
+    else
+      @model = DegreeDay.default_col.to_s
+    end
+  end
+  
+  def parse_model_or_base_upper
     @model = params[:model]
     @base = base
     @upper = upper

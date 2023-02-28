@@ -20,7 +20,7 @@ class DataImporter
     dates.each do |date|
       missing_dates << date unless existing_dates.include?(date)
     end
-    missing_dates.uniq.sort
+    missing_dates = missing_dates.uniq.sort
     if !missing_dates.empty?
       Rails.logger.info "#{name} :: Missing #{missing_dates.size} dates: #{missing_dates.join(", ")}"
     end

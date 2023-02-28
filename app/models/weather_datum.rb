@@ -57,12 +57,16 @@ class WeatherDatum < ApplicationRecord
     :avg
   end
 
+  def self.col_names
+    col_attr.keys.map(&:to_s).freeze
+  end
+
   def self.col_name(col)
     col_attr[col.to_sym][:name]
   end
 
   def self.valid_units(col)
-    col_attr[col.to_sym][:valid_units]
+    col_attr[col.to_sym][:valid_units] || default_units(col) || []
   end
 
   def self.default_units(col)
