@@ -17,11 +17,17 @@ module ImageMethods
   def default_scale(units)
   end
 
-  def image_name_prefix(*args)
-    name.downcase
+  # daily unless "cumulative"
+  def default_image_type
   end
 
-  def image_title(*args)
+  def image_name_prefix(**args)
+    title = ""
+    title += "#{args[:stat]}-" if args[:stat] && args[:stat] != default_stat
+    title + name.downcase
+  end
+
+  def image_title(**args)
     name
   end
 
@@ -35,7 +41,6 @@ module ImageMethods
     scale: nil,
     stat: nil
   )
-
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
 
@@ -51,8 +56,10 @@ module ImageMethods
   def guess_image(**args)
     if args[:date]
       create_image(**args)
-    else
+    elsif args[:start_date] || args[:end_date]
       create_cumulative_image(**args)
+    else
+      raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'"
     end
   end
 

@@ -3,6 +3,8 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :null_session
 
+  before_action { @start_time = Time.now }
+
   rescue_from ActionController::ParameterMissing,
     ActionController::RoutingError,
     ActionController::BadRequest do |message|
@@ -30,52 +32,75 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def default_date
-    DataImport.latest_date
-  end
-
   ## PARSE PARAMS ##
 
   def parse_number(s)
     (!/\D/.match?(s)) ? s.to_i : nil
   end
 
+  def parse_float(val, digits: nil)
+    return if val.nil?
+    digits ? val.to_f.round(digits) : val.to_f
+  end
+
   def date
-    Date.parse(params[:date])
-  rescue
-    default_date
+    parse_date(params[:date])
   end
 
   def start_date(default = default_date.beginning_of_year)
-    Date.parse(params[:start_date])
-  rescue
-    default
+    parse_date(params[:start_date], default:)
   end
 
   def end_date
-    Date.parse(params[:end_date])
-  rescue
-    default_date
+    parse_date(params[:end_date], default: default_date)
   end
 
-  def pest
-    params[:pest]
+  def default_date
+    DataImport.latest_date
   end
 
-  def t_base
-    params[:t_base].present? ? params[:t_base].to_f : DegreeDaysCalculator::BASE_F
+  def default_single_date
+    @date = default_date
   end
 
-  def t_upper
-    params[:t_upper].present? ? params[:t_upper].to_f : PestForecast::NO_MAX
+  def default_date_range
+    @end_date = default_date
+    @start_date = @end_date.beginning_of_year
+    @dates = @start_date..@end_date
+  end
+
+  def parse_date(date, default: nil)
+    if date
+      begin
+        Date.parse(date)
+      rescue
+        reject("Invalid date: '#{date}'")
+      end
+    else
+      default
+    end
+  end
+
+  def parse_date_or_dates
+    if params[:date]
+      @date = date
+    elsif params[:start_date] || params[:end_date]
+      @end_date = end_date
+      @start_date = start_date(@end_date.beginning_of_year)
+      @dates = @start_date..@end_date
+      @start_date = nil if @start_date == @end_date
+    else
+      return false
+    end
+    true
   end
 
   def lat
-    params[:lat]&.to_f&.round(1)
+    parse_float(params[:lat], digits: 1)
   end
 
   def long
-    params[:long]&.to_f&.round(1)
+    parse_float(params[:long], digits: 1)
   end
 
   def lat_range
@@ -87,14 +112,169 @@ class ApplicationController < ActionController::Base
   end
 
   def parse_coord(param, default)
-    param.present? ? param.to_f.round(1) : default
-  rescue
-    default
+    parse_float(param, digits: 1) || default
   end
 
   def parse_coords(param, default)
     param.present? ? param.split(",").map(&:to_f).sort.inject { |a, b| a.round(1)..b.round(1) } : default
   rescue
     default
+  end
+
+  # scale should be given as 'min,max' or separate scale_min, scale_max params
+  def scale
+    if params[:scale]
+      begin
+        s = params[:scale].split(",").map(&:to_f).sort
+        reject("Must provide two comma-separated values for scale params") if s.size != 2
+        s
+      rescue
+        nil
+      end
+    else
+      s = [scale_min, scale_max]
+      s == [nil, nil] ? nil : s
+    end
+  end
+
+  def scale_min
+    parse_float(params[:scale_min])
+  end
+
+  def scale_max
+    parse_float(params[:scale_max])
+  end
+
+  def stat
+    s = params[:stat]&.to_sym
+    return if s.nil?
+    valid_stats = [:avg, :min, :max, :sum]
+    if valid_stats.include?(s.to_sym)
+      @stat = s
+    else
+      reject("Invalid statistic '#{s}'. Must be one of #{valid_stats.join(", ")}")
+    end
+  end
+
+  # find the matching unit case insensitive then return the correct units
+  def units
+    if params[:units]
+      unit = params[:units]&.downcase
+      i = valid_units.map(&:downcase).find_index(unit)
+      if i
+        valid_units[i]
+      else
+        reject("Invalid unit '#{unit}'. Must be one of #{valid_units.join(", ")}")
+      end
+    else
+      valid_units[0]
+    end
+  end
+
+  def units_text(unit)
+    "#{unit}"
+  end
+
+  def extent
+    ext = params[:extent]
+    if ext
+      if ext&.downcase == "wi"
+        return "wi"
+      else
+        reject("Invalid extent '#{ext}'. Must be 'wi' or blank for all")
+      end
+    end
+  end
+
+  ## SHARED METHODS ##
+
+  def index_params
+    params.require([:lat, :long])
+    @days_requested = @dates&.count || 1
+    @days_returned = 0
+    @lat = lat.to_f
+    @long = long.to_f
+    @units = units
+    @units_text = units_text(@units)
+    @query = {date: @dates || @date, latitude: @lat, longitude: @long}
+    @data = []
+  end
+
+  def index_info
+    {
+      status: @status || "OK",
+      lat: @lat,
+      long: @long,
+      date: @date,
+      start_date: @start_date,
+      end_date: @end_date,
+      days_requested: @days_requested,
+      days_returned: @days_returned,
+      base: @base,
+      upper: @upper,
+      method: @method,
+      units: @units_text,
+      min_value: @values&.min,
+      max_value: @values&.max,
+      total: @total&.round(4),
+      compute_time: Time.current - @start_time
+    }.compact
+  end
+
+  def grid_params
+    @lat_range = lat_range
+    @long_range = long_range
+    @days_requested = @dates&.count || 1
+    @days_returned = 0
+    @units = units
+    @units_text = units_text(@units)
+    @stat = stat
+    @query = {date: @dates || @date, latitude: @lat_range, longitude: @long_range}
+    @data = {}
+  end
+
+  def grid_info
+    {
+      status: @status || "OK",
+      date: @date,
+      start_date: @start_date,
+      end_date: @end_date,
+      days_requested: @days_requested,
+      days_returned: @days_returned,
+      lat_range: "#{@lat_range.min}, #{@lat_range.max}",
+      long_range: "#{@long_range.min}, #{@long_range.max}",
+      grid_points: @data.size,
+      model: @model_text,
+      units: @units_text,
+      stat: @stat,
+      min_value: @values.min,
+      max_value: @values.max,
+      compute_time: Time.current - @start_time
+    }.compact
+  end
+
+  def map_params
+    @units = units
+    @scale = scale
+    @extent = extent
+    @stat = stat
+    @image_args = {
+      col: @col,
+      date: @date,
+      start_date: @start_date,
+      end_date: @end_date,
+      units: @units,
+      scale: @scale,
+      extent: @extent,
+      stat: @stat
+    }.compact
+  end
+
+  def map_info
+    {
+      status: @status || "OK",
+      args: @image_args,
+      compute_time: Time.current - @start_time
+    }.compact
   end
 end

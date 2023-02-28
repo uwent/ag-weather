@@ -12,51 +12,50 @@ Rails.application.routes.draw do
 
   resources :evapotranspirations, only: :index do
     collection do
-      get "info"
       get "grid"
       get "map"
+      get "info"
     end
   end
 
   resources :insolations, only: :index do
     collection do
-      get "info"
       get "grid"
       get "map"
+      get "info"
     end
   end
 
   resources :precips, only: :index do
     collection do
+      get "grid"
+      get "map"
       get "info"
-      get "all_for_date"
     end
   end
 
   resources :pest_forecasts, only: :index do
     collection do
-      get "custom"
-      get "point_details"
-      get "custom_point_details"
+      get "grid"
+      get "map"
       get "pvy"
-      get "freeze"
       get "info"
     end
   end
 
   resources :weather, only: :index do
     collection do
-      get "map"
-      get "info"
       get "grid"
+      get "map"
       get "forecast"
       get "forecast_nws"
       get "freeze_grid"
+      get "info"
     end
   end
 
-  resources :station_observations, only: [:index]
-  resources :stations, only: [:index]
+  # resources :station_observations, only: [:index]
+  # resources :stations, only: [:index]
 
   root to: "application#index"
 

@@ -78,6 +78,10 @@ class DegreeDay < ApplicationRecord
     :dd_50
   end
 
+  def self.default_stat
+    :sum
+  end
+
   def self.valid_units
     ["F", "C"].freeze
   end
@@ -93,9 +97,11 @@ class DegreeDay < ApplicationRecord
   end
 
   # must be sent :col and :units
-  def self.image_name_prefix(col:, units:, **args)
+  def self.image_name_prefix(col:, units:, stat:, **args)
     base, upper = parse_model(col, units)
-    str = "degree-days-base-#{base}"
+    str = ""
+    str += "#{stat}-" if stat
+    str += "degree-days-base-#{base}"
     str += "-upper-#{upper}" if upper
     str
   end
@@ -145,6 +151,10 @@ class DegreeDay < ApplicationRecord
     model = "dd_" + sprintf("%.4g", base)
     model += sprintf("_%.4g", upper) if upper
     model.tr(".", "p")
+  end
+
+  def self.default_image_type
+    :cumulative
   end
 
   def self.image_title(

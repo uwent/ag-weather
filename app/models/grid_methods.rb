@@ -15,7 +15,7 @@ module GridMethods
   end
 
   def valid_stats
-    [:avg, :count, :min, :max, :sum]
+    [:avg, :min, :max, :sum]
   end
 
   def default_stat
