@@ -2,7 +2,6 @@ require "open-uri"
 require "open3"
 
 module GribMethods
-
   def grib_dir
     "/tmp/gribdata"
   end
@@ -19,18 +18,17 @@ module GribMethods
     return Rails.logger.info "#{name} :: Everything's up to date, nothing to do!" if dates.empty?
 
     dates.each do |date|
-      begin
-        if data_model.where(date:).exists? && !overwrite
-          Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
-          import.succeed(date)
-          next
-        end
-        fetch_day(date, force: date < 2.days.ago)
-      rescue => e
-        msg = "Failed to retrieve data for #{date}: #{e.message}"
-        Rails.logger.warn "#{name} :: #{msg}"
-        import.fail(date, msg)
+      if data_model.where(date:).exists? && !overwrite
+        Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
+        import.succeed(date)
+        next
       end
+      fetch_day(date, force: date < 2.days.ago)
+    rescue => e
+      msg = "Failed to retrieve data for #{date}: #{e.message}"
+      Rails.logger.warn "#{name} :: #{msg}"
+      import.fail(date, msg)
+      next
     end
 
     ActiveRecord::Base.logger.level = Rails.configuration.log_level

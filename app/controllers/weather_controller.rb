@@ -101,7 +101,7 @@ class WeatherController < ApplicationController
     parse_date_or_dates || default_one_week
     grid_params
     @units_text = "freezing days"
-    data = {}
+    @data = {}
     weather = WeatherDatum.where(@query)
     if weather.exists?
       @data = weather.grid_summarize.sum(:freezing)
@@ -126,7 +126,7 @@ class WeatherController < ApplicationController
     parse_date_or_dates || default_single_date
     parse_col
     map_params
-    @image_args.merge!({col: @col})
+    @image_args[:col] = @col
 
     image_name = WeatherDatum.image_name(**@image_args)
     image_filename = WeatherDatum.image_path(image_name)

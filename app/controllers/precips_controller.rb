@@ -11,7 +11,7 @@ class PrecipsController < ApplicationController
     parse_date_or_dates || default_date_range
     index_params
     cumulative_value = 0
-    
+
     precips = Precip.where(@query)
     if precips.empty?
       @status = "no data"
@@ -151,6 +151,6 @@ class PrecipsController < ApplicationController
 
   # precips stored in mm
   def convert(val)
-    @units == "in" ? UnitConverter.mm_to_in(val) : val
+    (@units == "in") ? UnitConverter.mm_to_in(val) : val
   end
 end

@@ -1,5 +1,4 @@
 class DegreeDaysController < ApplicationController
-
   # GET: returns weather and computed degree days for point
   # params:
   #   lat (required)
@@ -110,7 +109,7 @@ class DegreeDaysController < ApplicationController
       format.json { render json: response }
       format.csv do
         csv_data = @data.collect do |key, value|
-          { latitude: key[0], longitude: key[1], value: }
+          {latitude: key[0], longitude: key[1], value:}
         end
         headers = @info unless params[:headers] == "false"
         filename = "#{@model_text} degree day grid for #{@start_date} to #{@end_date}.csv"
@@ -133,7 +132,7 @@ class DegreeDaysController < ApplicationController
     parse_date_or_dates || default_date_range
     map_params
     parse_model
-    @image_args.merge!({col: @model})
+    @image_args[:col] = @model
 
     image_name = DegreeDay.image_name(**@image_args)
     image_filename = DegreeDay.image_path(image_name)
@@ -178,10 +177,10 @@ class DegreeDaysController < ApplicationController
     weather_data = {}
     dd_data = {}
     dates = start_date..end_date
-    if models == ["all"]
-      valid_models = DegreeDay.model_names
+    valid_models = if models == ["all"]
+      DegreeDay.model_names
     else
-      valid_models = (models & DegreeDay.model_names)&.sort
+      (models & DegreeDay.model_names)&.sort
     end
     query = {date: dates, latitude: lat, longitude: long}
 
@@ -276,13 +275,13 @@ class DegreeDaysController < ApplicationController
     @model = params[:model]
     if @model
       if !DegreeDay.model_names.include?(@model)
-        return reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
+        reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
       end
     else
       @model = DegreeDay.default_col.to_s
     end
   end
-  
+
   def parse_model_or_base_upper
     @model = params[:model]
     @base = base

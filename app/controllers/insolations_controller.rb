@@ -1,5 +1,4 @@
 class InsolationsController < ApplicationController
-
   # GET: returns insols for lat, long, date range
   # params:
   #   lat - required, point latitude
@@ -159,6 +158,6 @@ class InsolationsController < ApplicationController
 
   # stored in 'MJ'
   def convert(val)
-    @units == "KWh" ? UnitConverter.mj_to_kwh(val) : val
+    (@units == "KWh") ? UnitConverter.mj_to_kwh(val) : val
   end
 end

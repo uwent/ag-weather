@@ -90,7 +90,7 @@ class DegreeDaysCalculator
       c = alpha * (Math.cos(btr) - Math.cos(utr))
       d = upper - base
       e = Math::PI / 2 - utr
-      return (a * b + c + d * e) / Math::PI
+      (a * b + c + d * e) / Math::PI
     end
   end
 end

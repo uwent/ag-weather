@@ -1,5 +1,4 @@
 class PestForecastsController < ApplicationController
-
   # GET: returns pest data for dates at lat/long point
   # params:
   #   pest - required, column name of pest data
@@ -198,7 +197,7 @@ class PestForecastsController < ApplicationController
     parse_date_or_dates || default_date_range
     map_params
     parse_pest
-    @image_args.merge!({col: @pest})
+    @image_args[:col] = @pest
 
     image_name = PestForecast.image_name(**@image_args)
     image_filename = PestForecast.image_path(image_name)

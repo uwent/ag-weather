@@ -102,7 +102,7 @@ class ApplicationController < ActionController::Base
   def lat
     val = parse_float(params[:lat], digits: 1)
     if LandExtent.latitudes === val
-      return val
+      val
     else
       reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.latitudes}")
     end
@@ -111,7 +111,7 @@ class ApplicationController < ActionController::Base
   def long
     val = parse_float(params[:long], digits: 1)
     if LandExtent.longitudes === val
-      return val
+      val
     else
       reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.longitudes}")
     end
@@ -147,7 +147,7 @@ class ApplicationController < ActionController::Base
       end
     else
       s = [scale_min, scale_max]
-      s == [nil, nil] ? nil : s
+      (s == [nil, nil]) ? nil : s
     end
   end
 
@@ -186,14 +186,14 @@ class ApplicationController < ActionController::Base
   end
 
   def units_text
-    "#{@unit}"
+    @unit.to_s
   end
 
   def extent
     ext = params[:extent]
     if ext
       if ext&.downcase == "wi"
-        return "wi"
+        "wi"
       else
         reject("Invalid extent '#{ext}'. Must be 'wi' or blank for all")
       end

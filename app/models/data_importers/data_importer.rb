@@ -1,5 +1,4 @@
 class DataImporter
-
   def self.latest_date
     DataImport.latest_date
   end

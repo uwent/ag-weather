@@ -1,5 +1,4 @@
 class EvapotranspirationsController < ApplicationController
-
   # GET: returns ets for lat, long, date range
   # params:
   #   lat - required, point latitude
@@ -199,6 +198,6 @@ class EvapotranspirationsController < ApplicationController
 
   # stored in 'in'
   def convert(val)
-    @units == "mm" ? UnitConverter.in_to_mm(val) : val
+    (@units == "mm") ? UnitConverter.in_to_mm(val) : val
   end
 end
