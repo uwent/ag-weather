@@ -1,27 +1,28 @@
 class DegreeDaysController < ApplicationController
   # GET: returns weather and computed degree days for point
   # params:
-  #   lat (required)
-  #   long (required)
-  #   start_date - default 1st of year
-  #   end_date - default yesterday
-  #   base - default 50 F
-  #   upper - default none
-  #   method - default sine
+  #   lat - required, decimal latitude
+  #   long - required, decimal longitude
+  #   date or end_date - optional, default 1st of year. Use date for single day
+  #   start_date - optional, default 1st of year
+  #   Must specify one of:
+  #     model - name of degree day model column (default dd_50)
+  #   OR
+  #     base - required, default 50F
+  #     upper - optional, default none
+  #     method - default sine
   #   units - default F
 
   def index
     parse_date_or_dates || default_date_range
     index_params
-    @method = method
-    @base = base
-    @upper = upper
+    parse_model_or_base_upper
     cumulative_value = 0
 
-    weather = WeatherDatum.where(date: @dates, latitude: lat, longitude: long)
+    weather = WeatherDatum.where(@query)
     if weather.exists?
       @data = weather.collect do |w|
-        dd = w.degree_days(base:, upper:, method:, in_f:)
+        dd = w.degree_days(base: @base, upper: @upper, method: @method, in_f:)
         min = convert_temp(w.min_temp)
         max = convert_temp(w.max_temp)
         avg = convert_temp(w.avg_temp)
@@ -286,15 +287,21 @@ class DegreeDaysController < ApplicationController
     @model = params[:model]
     @base = base
     @upper = upper
+    @units = units
+    @method = method
     @compute = params[:compute] == "true"
 
     if @model
       if !DegreeDay.model_names.include?(@model)
-        return reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
+        reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
       end
     elsif @base
-      @implied_model = DegreeDay.find_model(@base, @upper, @units)
-      @model = @implied_model if DegreeDay.model_names.include?(@implied_model)
+      implied_model = DegreeDay.find_model(@base, @upper, @units)
+      if DegreeDay.model_names.include?(implied_model)
+        @model = implied_model
+      else
+        @model = nil
+      end
     else
       @model = DegreeDay.default_col.to_s
     end

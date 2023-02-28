@@ -135,7 +135,7 @@ class DegreeDay < ApplicationRecord
   # model name format like "dd_42p8_86" in Fahrenheit
   def self.parse_model(model, units)
     _, base, upper = model.to_s.tr("p", ".").split("_")
-    if units == "C"
+    if units.upcase == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))
       upper = "%g" % ("%.1f" % UnitConverter.f_to_c(upper.to_f)) if upper
     end
