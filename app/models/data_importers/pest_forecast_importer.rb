@@ -24,9 +24,10 @@ class PestForecastImporter < DataImporter
     PestForecast.transaction do
       PestForecast.where(date:).delete_all
       PestForecast.import!(pfs)
+      import.succeed(date)
     end
 
-    PestForecast.create_image(date:)
+    PestForecast.create_image(date:) unless Rails.env.test?
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data for #{date}: #{e}"
     import.fail(date, e)

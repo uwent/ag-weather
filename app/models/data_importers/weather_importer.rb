@@ -46,7 +46,6 @@ class WeatherImporter < DataImporter
     FileUtils.rm_r grib_dir unless keep_grib
 
     WeatherDatum.create_image(date:) unless Rails.env.test?
-
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"

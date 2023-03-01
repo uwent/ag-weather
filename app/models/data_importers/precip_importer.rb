@@ -52,7 +52,6 @@ class PrecipImporter < DataImporter
     end
 
     Precip.create_image(date:) unless Rails.env.test?
-
     Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to load precip data for #{date}: #{e}"

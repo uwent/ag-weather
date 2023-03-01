@@ -45,6 +45,7 @@ class EvapotranspirationImporter < DataImporter
     Evapotranspiration.transaction do
       Evapotranspiration.where(date:).delete_all
       Evapotranspiration.import!(ets)
+      import.succeed(date)
     end
 
     Evapotranspiration.create_image(date:) unless Rails.env.test?
