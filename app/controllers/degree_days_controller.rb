@@ -287,6 +287,9 @@ class DegreeDaysController < ApplicationController
     @model = params[:model]
     @base = base
     @upper = upper
+    if @upper && @upper < @base
+      reject("Upper threshold '#{@upper}' must be lower than base temperature '#{@base}'")
+    end
     @units = units
     @method = method
     @compute = params[:compute] == "true"
@@ -341,17 +344,12 @@ class DegreeDaysController < ApplicationController
     in_f ? DegreeDaysCalculator::BASE_F : DegreeDaysCalculator::BASE_C
   end
 
-  def default_upper
-    nil
-  end
-
-  # base temp must be given in F
   def base
-    params[:base] ? params[:base].to_f.round(1) : default_base
+    params[:base].present? ? parse_float(params[:base]) : default_base
   end
 
   def upper
-    params[:upper] ? params[:upper].to_f.round(1) : default_upper
+    params[:upper].present? ? parse_float(params[:upper]) : nil
   end
 
   def method
