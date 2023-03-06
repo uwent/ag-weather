@@ -4,7 +4,7 @@ class WeatherImporter < DataImporter
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/rtma/prod"
   LOCAL_DIR = "#{grib_dir}/rtma"
 
-  def self.data_model
+  def self.data_class
     WeatherDatum
   end
 

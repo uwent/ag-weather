@@ -1,7 +1,7 @@
 class PestForecastImporter < DataImporter
   extend LocalDataMethods
 
-  def self.data_model
+  def self.data_class
     PestForecast
   end
 

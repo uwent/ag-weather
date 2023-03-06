@@ -4,7 +4,7 @@ class PrecipImporter < DataImporter
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
   LOCAL_DIR = "#{grib_dir}/precip"
 
-  def self.data_model
+  def self.data_class
     Precip
   end
 

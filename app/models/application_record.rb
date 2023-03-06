@@ -15,8 +15,16 @@ class ApplicationRecord < ActiveRecord::Base
     minimum(:date)
   end
 
-  def self.days
-    distinct.pluck(:date).count
+  def self.dates
+    distinct.pluck(:date)
+  end
+
+  def self.dates_in_range(date_range)
+    where(date: date_range).distinct_dates
+  end
+
+  def self.num_dates
+    distinct_dates.size
   end
 
   def self.log_prefix(level = 0)

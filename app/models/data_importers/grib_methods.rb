@@ -18,7 +18,7 @@ module GribMethods
     return Rails.logger.info "#{name} :: Everything's up to date, nothing to do!" if dates.empty?
 
     dates.each do |date|
-      if data_model.where(date:).exists? && !overwrite
+      if data_class.where(date:).exists? && !overwrite
         Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
         import.succeed(date)
         next

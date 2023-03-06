@@ -1,7 +1,7 @@
 class DegreeDayImporter < DataImporter
   extend LocalDataMethods
 
-  def self.data_model
+  def self.data_class
     DegreeDay
   end
 

@@ -3,7 +3,7 @@ class InsolationImporter < DataImporter
 
   URL_BASE = "http://prodserv1.ssec.wisc.edu/insolation_high_res/INSOLEAST/INSOLEAST"
 
-  def self.data_model
+  def self.data_class
     Insolation
   end
 

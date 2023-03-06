@@ -1,7 +1,7 @@
 class EvapotranspirationImporter < DataImporter
   extend LocalDataMethods
 
-  def self.data_model
+  def self.data_class
     Evapotranspiration
   end
 
