@@ -1,11 +1,11 @@
 class LandExtent
   STEP = 0.1
 
-  def self.latitudes
+  def self.lat_range
     38.0..50.0
   end
 
-  def self.longitudes
+  def self.long_range
     -98.0..-82.0
   end
 
@@ -13,48 +13,47 @@ class LandExtent
     STEP
   end
 
-  def self.grid_size
-    latitudes.step(STEP).count * longitudes.step(STEP).count
+  def self.latitudes
+    lat_range.step(step)
+  end
+
+  def self.longitudes
+    long_range.step(step)
   end
 
   def self.min_lat
-    latitudes.min.to_d.round(1)
+    lat_range.min
   end
 
   def self.max_lat
-    latitudes.max.to_d.round(1)
+    lat_range.max
   end
 
   def self.min_long
-    longitudes.min.to_d.round(1)
+    long_range.min
   end
 
   def self.max_long
-    longitudes.max.to_d.round(1)
-  end
-
-  # for gnuplot, min x, max x, min y, max y
-  def bbox
-    [min_long, max_long, min_lat, max_lat]
-  end
-
-  def self.random_point
-    lat = rand(latitudes).round(1)
-    long = rand(longitudes).round(1)
-    [lat, long]
-  end
-
-  def self.inside?(lat, long)
-    (latitudes === lat) && (longitudes === long)
+    long_range.max
   end
 
   def self.num_points
-    latitudes.step(step).count * longitudes.step(step).count
+    latitudes.count * longitudes.count
   end
 
-  def self.each_point(step = STEP)
-    latitudes.step(step).each do |lat|
-      longitudes.step(step).each do |long|
+  def self.inside?(lat, long)
+    (lat_range === lat) && (long_range === long)
+  end
+
+  def self.random_point
+    lat = rand(lat_range).round(1)
+    long = rand(long_range).round(1)
+    [lat, long]
+  end
+
+  def self.each_point
+    latitudes.each do |lat|
+      longitudes.each do |long|
         yield(lat, long)
       end
     end
