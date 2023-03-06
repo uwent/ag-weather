@@ -22,8 +22,10 @@ group :development do
   gem "letter_opener"
   gem "letter_opener_web"
   gem "web-console"
-  gem "standard"
+  gem "standard" # linter
   gem "activerecord-analyze" # query analysis
+  gem "brakeman" # security analysis https://brakemanscanner.org/
+  gem "bundler-audit" # patch-level verification
 end
 
 group :development, :test do

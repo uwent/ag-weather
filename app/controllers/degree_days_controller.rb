@@ -300,10 +300,8 @@ class DegreeDaysController < ApplicationController
       end
     elsif @base
       implied_model = DegreeDay.find_model(@base, @upper, @units)
-      if DegreeDay.model_names.include?(implied_model)
-        @model = implied_model
-      else
-        @model = nil
+      @model = if DegreeDay.model_names.include?(implied_model)
+        implied_model
       end
     else
       @model = DegreeDay.default_col.to_s
