@@ -1,4 +1,4 @@
-class DegreeDaysCalculator
+module DegreeDaysCalculator
   INVERSE_PI = 1 / Math::PI
   BASE_F = 50.0
   UPPER_F = 86.0
@@ -18,7 +18,7 @@ class DegreeDaysCalculator
     base = base.to_f
     upper = (upper || 150.0).to_f
     method ||= METHOD
-    dd = case method.downcase
+    dd = case method&.downcase
     when "average"
       average_degree_days(min, max, base)
     when "modified" # uses upper threshold cutoff
@@ -31,15 +31,22 @@ class DegreeDaysCalculator
     [dd, 0.0].max if dd
   end
 
+  # simple average
   def self.average_degree_days(min, max, base)
-    degree_days = ((max + min) / 2.0) - base
-    [degree_days, 0.0].max
+    raise ArgumentError.new "min must be < max" if min > max
+
+    return 0.0 if min <= base && max <= base
+    avg = (max + min) / 2.0
+    avg - base
   end
 
+  # simple average with horizontal cutoffs
   def self.modified_degree_days(min, max, base, upper)
-    min = base if base > min
-    max = base if base > max
+    raise ArgumentError.new "min must be <= max" if min > max
+    raise ArgumentError.new "base must be <= upper" if base > upper
 
+    return 0.0 if min <= base && max <= base
+    min = base if base > min
     min = upper if upper < min
     max = upper if upper < max
 
@@ -48,23 +55,26 @@ class DegreeDaysCalculator
 
   # Reference: http://libcatalog.cimmyt.org/download/reprints/97465.pdf
   def self.sine_degree_days(min, max, base, upper)
-    average = (min + max) / 2.0
-
-    # both min and max greater than upper
-    return upper - base if min >= upper
+    raise ArgumentError.new "min must be <= max" if min > max
+    raise ArgumentError.new "base must be <= upper" if base > upper
 
     # both min and max less than base
     return 0.0 if max <= base
 
+    # both min and max greater than upper
+    return upper - base if min >= upper
+
+    avg = (min + max) / 2.0
+
     # both min and max between base and upper
-    return average - base if max <= upper && min >= base
+    return avg - base if max <= upper && min >= base
 
     alpha = (max - min) / 2.0
 
     # max is between base and upper, min is less than base
     if max <= upper && min < base
-      btr = Math.asin((base - average) / alpha) # time of base threshold in radians
-      a = average - base
+      btr = Math.asin((base - avg) / alpha) # time of base threshold in radians
+      a = avg - base
       b = Math::PI / 2.0 - btr
       c = alpha * Math.cos(btr)
       return (a * b + c) / Math::PI
@@ -72,8 +82,8 @@ class DegreeDaysCalculator
 
     # max is greater than upper and min is between base and upper
     if max > upper && min >= base
-      btr = Math.asin((upper - average) / alpha) # time of base threshold in radians
-      a = average - base
+      btr = Math.asin((upper - avg) / alpha) # time of base threshold in radians
+      a = avg - base
       b = btr + Math::PI / 2
       c = upper - base
       d = (Math::PI / 2 - btr)
@@ -83,9 +93,9 @@ class DegreeDaysCalculator
 
     # max is greater than upper and min is less than base
     if max > upper && min < base
-      btr = Math.asin((base - average) / alpha) # time of base threshold in radians
-      utr = Math.asin((upper - average) / alpha) # time of upper threshold in radians
-      a = average - base
+      btr = Math.asin((base - avg) / alpha) # time of base threshold in radians
+      utr = Math.asin((upper - avg) / alpha) # time of upper threshold in radians
+      a = avg - base
       b = utr - btr
       c = alpha * (Math.cos(btr) - Math.cos(utr))
       d = upper - base
