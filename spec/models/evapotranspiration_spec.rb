@@ -1,125 +1,90 @@
 require "rails_helper"
 
-RSpec.describe Evapotranspiration, type: :model do
-  let(:new_et_point) { FactoryBot.build(:evapotranspiration) }
+RSpec.describe Evapotranspiration do
+  let(:et) { Evapotranspiration }
+  let(:et_point) { FactoryBot.build(:evapotranspiration) }
 
-  describe ".already_calculated?" do
-    context "ET point for same lat, long, and date exists" do
-      before do
-        FactoryBot.create(:evapotranspiration)
-      end
+  describe ".default_col" do
+    it {expect(et.default_col).to_not be_nil}
+    it {expect(et.default_col).to be_an(Symbol)}
+    it {expect(et.default_col).to be_in(et.data_cols)}
+  end
 
-      it "is true" do
-        expect(new_et_point).to be_already_calculated
-      end
+  describe ".valid_units" do
+    it { expect(et.valid_units).to_not be_nil }
+    it { expect(et.valid_units).to be_an(Array) }
+  end
+
+  describe ".convert" do
+    it "returns given value if default units" do
+      expect(et.convert(value: 1, units: "in")).to eq 1
     end
 
-    context "No other ET points exist" do
-      it "is false" do
-        expect(new_et_point).not_to be_already_calculated
-      end
+    it "converts value if alternate units" do
+      expect(et.convert(value: 1, units: "mm")).to eq 25.4
+    end
+
+    it "raises error on invalid units" do
+      expect {et.convert(value: 1, units: "foo")}.to raise_error(ArgumentError)
     end
   end
 
-  describe ".has_required_data?" do
-    context "weather and and insolation data imported" do
-      before do
-        FactoryBot.create(:weather_datum)
-        FactoryBot.create(:insolation)
-      end
+  describe ".image_subdir" do
+    it {expect(et.image_subdir).to eq "et" }
+  end
 
-      it "is true" do
-        expect(new_et_point).to have_required_data
-      end
+  describe ".default_scale" do
+    it {expect(et.default_scale("in")).to be_an(Array)}
+
+    context "when units: in" do
+      it {expect(et.default_scale("in")).to eq [0, 0.3]}
     end
 
-    context "only weather data has been imported" do
-      before do
-        FactoryBot.create(:weather_datum)
-      end
-
-      it "is false" do
-        expect(new_et_point).not_to have_required_data
-      end
+    context "when units: mm" do
+      it {expect(et.default_scale("mm")).to eq [0, 8]}
     end
 
-    context "only insolation data has been imported" do
-      before do
-        FactoryBot.create(:insolation)
-      end
-
-      it "is false" do
-        expect(new_et_point).not_to have_required_data
-      end
+    context "when invalid units" do
+      it {expect {et.default_scale("foo")}.to raise_error(ArgumentError)}
     end
   end
 
-  describe ".calculate_et" do
-    let(:insol) { FactoryBot.create(:insolation) }
-    let(:weather) { FactoryBot.create(:weather_datum) }
+  describe ".image_title" do
+    let(:start_date) { "2023-1-1".to_date }
+    let(:date) { "2023-2-1".to_date }
+    let(:units) { "in" }
+    let(:args) { {date:, start_date:, end_date: date, units: } }
 
-    it "should calculate a value for give insolation and weather" do
-      # expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.8552734)
-      expect(new_et_point.calculate_et(insol.insolation, weather)).to be_within(LandGrid::EPSILON).of(4.77941)
-    end
-  end
+    it {expect(et.image_title(**args)).to be_an(String)}
 
-  describe "construct land grid with evapotranspiration for given date" do
-    it "should constuct a land grid" do
-      expect(Evapotranspiration.land_grid_for_date(Date.current)).to be_kind_of(LandGrid)
-    end
-
-    it "should have evapotranspirations stored in the grid" do
-      date = Date.current
-      lat = LandExtent.max_lat
-      long = LandExtent.min_long
-
-      FactoryBot.create(
-        :evapotranspiration,
-        date:,
-        latitude: lat,
-        longitude: long,
-        potential_et: 23.4
-      )
-
-      grid = Evapotranspiration.land_grid_for_date(date)
-      expect(grid[lat, long]).to eq(23.4)
+    it "should show units in title" do
+      expect(et.image_title(**args)).to include("in")
+      args[:units] = "mm"
+      expect(et.image_title(**args)).to include("mm")
     end
 
-    it "should store nil in grid for points without values" do
-      grid = Evapotranspiration.land_grid_for_date(Date.current)
-      expect(grid[LandExtent.max_lat, LandExtent.min_long]).to be_nil
-    end
-  end
-
-  describe "create image for date" do
-    let(:earliest_date) { Date.current - 1.week }
-    let(:latest_date) { Date.current }
-    let(:empty_date) { earliest_date - 1.week }
-    let(:lat) { 45.0 }
-    let(:long) { -89.0 }
-
-    before(:each) do
-      earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
-        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+    context "when given start_date" do
+      it "should return string with start and end date" do
+        expect(et.image_title(**args)).to include("for Jan 1 - Feb 1, 2023")
       end
     end
 
-    it "should call ImageCreator when data present" do
-      expect(Evapotranspiration).to receive(:create_image_data).exactly(1).times
-      expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Evapotranspiration.create_image(latest_date)
+    context "when not given start_date" do
+      it "should return string with end date" do
+        args.delete(:start_date)
+        expect(et.image_title(**args)).to include("for Feb 1, 2023")
+      end
     end
 
-    it "should create a cumulative data grid when given a date range" do
-      expect(Evapotranspiration).to receive(:create_image_data).exactly(1).times
-      expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Evapotranspiration.create_image(latest_date, start_date: earliest_date)
+    context "when start and end date are different years" do
+      it "should show year for both dates" do
+        args[:start_date] = "2022-1-1".to_date
+        expect(et.image_title(**args)).to include("for Jan 1, 2022 - Feb 1, 2023")
+      end
     end
 
-    it "should return 'no_data.png' when data sources not loaded" do
-      expect(Evapotranspiration.create_image(empty_date)).to eq("no_data.png")
+    context "when not given any date" do
+      it { expect {et.image_title}.to raise_error(ArgumentError) }
     end
   end
 end

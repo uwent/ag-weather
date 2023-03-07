@@ -31,6 +31,21 @@ module ImageMethods
     name
   end
 
+  def image_title_date(start_date: nil, end_date:)
+    start_date = start_date&.to_date
+    end_date = end_date&.to_date
+    fmt1 = "%b %-d, %Y"
+    fmt2 = "%b %-d"
+    end_date_string = end_date.strftime(fmt1)
+
+    if start_date.nil?
+      end_date_string
+    else
+      fmt = (start_date.year != end_date.year) ? fmt1 : fmt2
+      "#{start_date.strftime(fmt)} - #{end_date_string}"
+    end
+  end
+
   def image_name(
     date: nil,
     start_date: nil,

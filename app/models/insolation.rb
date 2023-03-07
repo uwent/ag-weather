@@ -6,10 +6,6 @@ class Insolation < ApplicationRecord
     :insolation
   end
 
-  def self.default_scale(units)
-    (units == "KWh") ? [0, 10] : [0, 30]
-  end
-
   # per day per m^2
   def self.valid_units
     ["MJ", "KWh"].freeze
@@ -25,22 +21,20 @@ class Insolation < ApplicationRecord
     "insol"
   end
 
-  def self.image_title(
-    date: nil,
-    start_date: nil,
-    end_date: nil,
-    units: valid_units[0],
-    **args
-  )
+  def self.default_scale(units)
+    check_units(units)
+    (units == "KWh") ? [0, 10] : [0, 30]
+  end
 
+  def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
     end_date ||= date
-    raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
+    raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
 
+    datestring = image_title_date(start_date:, end_date:)
     if start_date.nil?
-      "Daily insolation (#{units}/m2/day) for #{end_date.strftime("%-d %B %Y")}"
+      "Solar insolation (#{units}/m2/day) for #{datestring}"
     else
-      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
-      "Total insolation (#{units}/m2) for #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
+      "Solar insolation (total #{units}/m2) for #{datestring}"
     end
   end
 end

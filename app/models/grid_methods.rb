@@ -1,4 +1,12 @@
 module GridMethods
+  def attr_cols
+    [:id, :latitude, :longitude, :date]
+  end
+
+  def data_cols
+    column_names.map(&:to_sym) - attr_cols
+  end
+
   def default_col
   end
 
