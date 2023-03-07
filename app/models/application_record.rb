@@ -20,11 +20,11 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.dates_in_range(date_range)
-    where(date: date_range).distinct_dates
+    where(date: date_range).dates
   end
 
   def self.num_dates
-    distinct_dates.size
+    dates.size
   end
 
   def self.log_prefix(level = 0)
