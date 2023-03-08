@@ -4,7 +4,7 @@ UNIT = "MJ"
 UNIT1 = "KWh"
 
 RSpec.describe Insolation do
-  let(:subject) { Insolation }
+  subject { Insolation }
 
   describe ".default_col" do
     it { expect(subject.default_col).to_not be_nil }
@@ -19,11 +19,11 @@ RSpec.describe Insolation do
   end
 
   describe ".convert" do
-    it "returns given value if MJ" do
+    it "returns given value if units: MJ" do
       expect(subject.convert(value: 1, units: UNIT)).to eq 1
     end
 
-    it "converts value if KWh" do
+    it "converts value if units: KWh" do
       expect(subject.convert(value: 1, units: UNIT1)).to eq 1 / 3.6
     end
 

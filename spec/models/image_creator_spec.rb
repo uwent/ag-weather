@@ -121,6 +121,13 @@ RSpec.describe ImageCreator do
       expect(subject.run_composite(**args)).to eq image_name
     end
 
+    it "should place filename in subdir if specified" do
+      allow(subject).to receive(:system)
+      args[:subdir] = "subdir"
+      expect(subject).to receive(:system).with(/subdir/)
+      subject.run_composite(**args)
+    end
+
     it "should delete gnuplot image" do
       allow(subject).to receive(:system)
       expect(FileUtils).to receive(:rm_f).with(gnuplot_image)

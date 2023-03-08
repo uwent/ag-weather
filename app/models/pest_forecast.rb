@@ -16,7 +16,7 @@ class PestForecast < ApplicationRecord
     )
   end
 
-  def self.pest_names
+  def self.col_names
     {
       potato_blight_dsv: "Late blight DSV",
       potato_p_days: "Early blight P-Day",
@@ -24,10 +24,6 @@ class PestForecast < ApplicationRecord
       cercospora_div: "Cercospora leaf spot DSV",
       botcast_dsi: "Botrytis botcast DSI"
     }.freeze
-  end
-
-  def self.pests
-    pest_names.keys.map(&:to_s).freeze
   end
 
   def self.default_col
@@ -43,20 +39,20 @@ class PestForecast < ApplicationRecord
   end
 
   def self.image_name_prefix(col:, **args)
-    str = pest_names[col.to_sym]
+    str = col_names[col]
     str&.downcase&.tr(" ", "-")
   end
 
   def self.image_title(col:, date: nil, start_date: nil, end_date: nil, **args)
     end_date ||= date
-    raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
+    raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
 
-    pest_name = pest_names[col.to_sym] || "DSV"
-    if start_date
-      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
-      "#{pest_name} totals from #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
+    pest_name = col_names[col] || "DSV"
+    datestring = image_title_date(start_date:, end_date:)
+    if start_date.nil?
+      "#{pest_name} totals for #{datestring}"
     else
-      "#{pest_name} totals on #{end_date.strftime("%b %-d, %Y")}"
+      "#{pest_name} totals for #{datestring}"
     end
   end
 end

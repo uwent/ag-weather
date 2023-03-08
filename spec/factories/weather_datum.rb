@@ -1,16 +1,19 @@
 FactoryBot.define do
   factory :weather_datum do
-    latitude { 43.0 }
-    longitude { -89.7 }
     date { Date.yesterday }
-    max_temp { 12.5 }
-    min_temp { 8.9 }
-    avg_temp { 10.7 }
-    min_rh { 10.0 }
-    avg_rh { 50.0 }
-    max_rh { 75.0 }
-    vapor_pressure { 1.6 }
-    hours_rh_over_90 { 4 }
-    avg_temp_rh_over_90 { 15 }
+    latitude { 45.0 }
+    longitude { -89.0 }
+    min_temp { rand(0.0..10.0) }
+    max_temp { rand(20.0..30.0) }
+    min_rh { rand(0..50) }
+    max_rh { rand(50..100) }
+    vapor_pressure { rand(0.0..3.5) }
+    hours_rh_over_90 { rand(0..24) }
+    avg_temp_rh_over_90 { rand(10.0..20.0) }
+
+    after :build do |t|
+      t.avg_temp = (t.min_temp + t.max_temp) / 2.0 if t.min_temp && t.max_temp
+      t.avg_rh = (t.min_rh + t.max_rh) / 2.0 if t.min_rh && t.max_rh
+    end
   end
 end
