@@ -76,7 +76,7 @@ class ImageCreator
         lat, long = key
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
-        file.puts "#{lat} #{long} #{value.round(2)}" unless value.nil?
+        file.puts "#{lat} #{long} #{value.round(3)}" unless value.nil?
         last_lat = lat
       end
     end
@@ -88,25 +88,24 @@ class ImageCreator
 
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min}; max_val=#{max}; x_min=#{extents[0]}; x_max=#{extents[1]}; y_min=#{extents[2]}; y_max=#{extents[3]}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
     Rails.logger.debug "ImageCreator >> gnuplot cmd: #{gnuplot_cmd}"
-    `#{gnuplot_cmd}`
 
+    status = system(gnuplot_cmd)
+    raise StandardError.new("Gnuplot execution failed with status: #{status}") if status
     FileUtils.rm_f(datafile_name)
-    raise StandardError.new("Gnuplot execution failed with status: #{$?.exitstatus}") if $?.exitstatus != 0
     temp_image
   end
 
-  def self.run_composite(gnuplot_image:, image_name:, subdir:)
+  def self.run_composite(gnuplot_image:, image_name:, subdir: "")
     image_dir = File.join(file_dir, subdir)
     FileUtils.mkdir_p(image_dir)
     out_file = File.join(image_dir, image_name)
     overlay_image = image_name.include?("-wi.png") ? "lib/wi_overlay.png" : "lib/map_overlay.png"
-
     image_cmd = "composite '#{overlay_image}' '#{gnuplot_image}' '#{out_file}'"
     Rails.logger.debug "ImageCreator >> imagemagick cmd: #{image_cmd}"
-    `#{image_cmd}`
 
+    status = system(image_cmd)
+    raise StandardError.new "ImageMagick execution failed with status: #{status}" if status
     FileUtils.rm_f(gnuplot_image)
-    raise StandardError.new("ImageMagick execution failed with status: #{$?.exitstatus}") if $?.exitstatus != 0
     image_name
   end
 end

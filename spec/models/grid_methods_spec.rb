@@ -5,7 +5,6 @@ RSpec.describe GridMethods, type: :module do
 
   let(:latitudes) { 45..46 }
   let(:longitudes) { -89..-88 }
-  let(:grid_points) { 4 }
   let(:dates) { 3.days.ago.to_date..1.day.ago.to_date }
 
   before do
@@ -22,23 +21,26 @@ RSpec.describe GridMethods, type: :module do
     subject.create(latitude: 1, longitude: 1, date: dates.last, insolation: 1.0)
   end
 
+  let(:grid_points) { 4 }
+  let(:total_points) { 5 }
+
+  describe ".all_for_date" do
+    let(:relation) { subject.all_for_date(dates.last) }
+
+    it { expect(relation.size).to eq total_points }
+  end
+
   describe ".extent" do
     let(:extent) { subject.extent }
 
     it { expect(extent).to be_an(Hash) }
 
-    it { expect(extent.keys).to match([:latitude, :longitude])}
+    it { expect(extent.keys).to match([:latitude, :longitude]) }
 
     it "returns lat and long extents of data" do
       expect(extent[:latitude]).to eq [1.0, latitudes.last.to_f]
       expect(extent[:longitude]).to eq [longitudes.first.to_f, 1.0]
     end
-  end
-
-  describe ".all_for_date" do
-    let(:relation) { subject.all_for_date(dates.last) }
-
-    it { expect(relation.size).to eq grid_points + 1 }
   end
 
   describe ".hash_grid" do
@@ -115,7 +117,7 @@ RSpec.describe GridMethods, type: :module do
     end
 
     context "with alternate sql aggregation function" do
-      let(:grid) { subject.cumulative_hash_grid(start_date:, end_date:, stat: :avg)}
+      let(:grid) { subject.cumulative_hash_grid(start_date:, end_date:, stat: :avg) }
 
       it "returns the average at each grid point" do
         expect(grid[[45.0, -89.0]]).to eq 1.0
@@ -124,19 +126,19 @@ RSpec.describe GridMethods, type: :module do
 
     context "with invalid arguments" do
       it "checks the given data col" do
-        expect { subject.cumulative_hash_grid(col: "foo")}.to raise_error(ArgumentError)
+        expect { subject.cumulative_hash_grid(col: "foo") }.to raise_error(ArgumentError)
       end
 
       it "checks the given extent" do
-        expect { subject.cumulative_hash_grid(extent: "foo")}.to raise_error(ArgumentError)
+        expect { subject.cumulative_hash_grid(extent: "foo") }.to raise_error(ArgumentError)
       end
 
       it "checks the given units" do
-        expect { subject.cumulative_hash_grid(units: "foo")}.to raise_error(ArgumentError)
+        expect { subject.cumulative_hash_grid(units: "foo") }.to raise_error(ArgumentError)
       end
 
       it "checks the given stat" do
-        expect { subject.cumulative_hash_grid(stat: "foo")}.to raise_error(ArgumentError)
+        expect { subject.cumulative_hash_grid(stat: "foo") }.to raise_error(ArgumentError)
       end
     end
   end

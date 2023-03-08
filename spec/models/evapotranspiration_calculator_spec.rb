@@ -15,9 +15,9 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
 
   describe ".declin" do
     it "should compute declination angle correctly" do
-      expect(subject.declin(20)).to be_within(epsilon).of -0.354775
+      expect(subject.declin(20)).to be_within(epsilon).of(-0.354775)
       expect(subject.declin(180)).to be_within(epsilon).of 0.4061183
-      expect(subject.declin(364)).to be_within(epsilon).of -0.4045297
+      expect(subject.declin(364)).to be_within(epsilon).of(-0.4045297)
     end
   end
 
@@ -79,7 +79,7 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
 
   describe ".sfactor" do
     it "should compute sfactor correctly" do
-      expect(subject.sfactor(-20.0)).to be_within(epsilon).of -0.0008
+      expect(subject.sfactor(-20.0)).to be_within(epsilon).of(-0.0008)
       expect(subject.sfactor(9.0)).to be_within(epsilon).of 0.540398
       expect(subject.sfactor(35.0)).to be_within(epsilon).of 0.82255
     end
@@ -103,8 +103,8 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
   describe ".angstrom" do
     it "should compute angstroms correctly" do
       expect(subject.angstrom(0.4, -11.0)).to be_within(epsilon).of 0.2058123
-      expect(subject.angstrom(10.0, 5.0)).to be_within(epsilon).of -1.0955145
-      expect(subject.angstrom(25.0, 25.0)).to be_within(epsilon).of -2.1072759
+      expect(subject.angstrom(10.0, 5.0)).to be_within(epsilon).of(-1.0955145)
+      expect(subject.angstrom(25.0, 25.0)).to be_within(epsilon).of(-2.1072759)
     end
   end
 
@@ -132,19 +132,22 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
         avg_v_press: 2.0,
         insol: 30.0,
         day_of_year: 200,
-        lat: 15.0)).to be_within(epsilon).of 0.2859975
+        lat: 15.0
+      )).to be_within(epsilon).of 0.2859975
       expect(subject.et(
         avg_temp: 2.0,
         avg_v_press: 0.4,
         insol: 9.0,
         day_of_year: 60,
-        lat: 45.0)).to be_within(epsilon).of 0.0298425
+        lat: 45.0
+      )).to be_within(epsilon).of 0.0298425
       expect(subject.et(
         avg_temp: 17.0,
         avg_v_press: 1.0,
         insol: 23.0,
         day_of_year: 120,
-        lat: 30.0)).to be_within(epsilon).of 0.173987
+        lat: 30.0
+      )).to be_within(epsilon).of 0.173987
     end
   end
 
@@ -157,17 +160,17 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
           avg_v_press: 2.0,
           insol: 30.0,
           day_of_year: 200,
-          lat: 15.0)
-        ).to be_within(epsilon).of 0.212872
+          lat: 15.0
+        )).to be_within(epsilon).of 0.212872
         # non-adjusted: 0.2859975
-        
+
         expect(subject.et_adj(
           avg_temp: 17.0,
           avg_v_press: 1.0,
           insol: 23.0,
           day_of_year: 120,
-          lat: 30.0)
-        ).to be_within(epsilon).of 0.124371
+          lat: 30.0
+        )).to be_within(epsilon).of 0.124371
         # non-adjusted: 0.173987
       end
     end
@@ -180,8 +183,8 @@ RSpec.describe EvapotranspirationCalculator, type: :model do
           avg_v_press: 0.4,
           insol: 9.0,
           day_of_year: 60,
-          lat: 45.0)
-        ).to be_within(epsilon).of 0.0298425
+          lat: 45.0
+        )).to be_within(epsilon).of 0.0298425
         # non-adjusted: 0.0298425
       end
     end

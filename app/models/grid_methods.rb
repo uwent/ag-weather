@@ -34,16 +34,16 @@ module GridMethods
     where(date:).order(:latitude, :longitude)
   end
 
-  def extent
-    {latitude: lat_range, longitude: long_range}
-  end
-
   def lat_range
     [minimum(:latitude), maximum(:latitude)]
   end
 
   def long_range
     [minimum(:longitude), maximum(:longitude)]
+  end
+
+  def extent
+    {latitude: lat_range, longitude: long_range}
   end
 
   def grid_summarize(sql = nil)

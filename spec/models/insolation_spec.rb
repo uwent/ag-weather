@@ -7,9 +7,9 @@ RSpec.describe Insolation do
   let(:subject) { Insolation }
 
   describe ".default_col" do
-    it {expect(subject.default_col).to_not be_nil}
-    it {expect(subject.default_col).to be_an(Symbol)}
-    it {expect(subject.default_col).to be_in(subject.data_cols)}
+    it { expect(subject.default_col).to_not be_nil }
+    it { expect(subject.default_col).to be_an(Symbol) }
+    it { expect(subject.default_col).to be_in(subject.data_cols) }
   end
 
   describe ".valid_units" do
@@ -28,27 +28,27 @@ RSpec.describe Insolation do
     end
 
     it "raises error on invalid units" do
-      expect {subject.convert(value: 1, units: "foo")}.to raise_error(ArgumentError)
+      expect { subject.convert(value: 1, units: "foo") }.to raise_error(ArgumentError)
     end
   end
 
   describe ".image_subdir" do
-    it {expect(subject.image_subdir).to eq "insol" }
+    it { expect(subject.image_subdir).to eq "insol" }
   end
 
   describe ".default_scale" do
-    it {expect(subject.default_scale(UNIT)).to be_an(Array)}
+    it { expect(subject.default_scale(UNIT)).to be_an(Array) }
 
     context "when default unit" do
-      it {expect(subject.default_scale(UNIT)).to eq [0, 30]}
+      it { expect(subject.default_scale(UNIT)).to eq [0, 30] }
     end
 
     context "when alternate unit" do
-      it {expect(subject.default_scale(UNIT1)).to eq [0, 10]}
+      it { expect(subject.default_scale(UNIT1)).to eq [0, 10] }
     end
 
     context "when invalid units" do
-      it {expect {subject.default_scale("foo")}.to raise_error(ArgumentError)}
+      it { expect { subject.default_scale("foo") }.to raise_error(ArgumentError) }
     end
   end
 
@@ -56,9 +56,9 @@ RSpec.describe Insolation do
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
     let(:units) { UNIT }
-    let(:args) { {date:, start_date:, end_date: date, units: } }
+    let(:args) { {date:, start_date:, end_date: date, units:} }
 
-    it {expect(subject.image_title(**args)).to be_an(String)}
+    it { expect(subject.image_title(**args)).to be_an(String) }
 
     it "should show units in title" do
       expect(subject.image_title(**args)).to include(UNIT)
@@ -87,7 +87,7 @@ RSpec.describe Insolation do
     end
 
     context "when not given any date" do
-      it { expect {subject.image_title}.to raise_error(ArgumentError) }
+      it { expect { subject.image_title }.to raise_error(ArgumentError) }
     end
   end
 end

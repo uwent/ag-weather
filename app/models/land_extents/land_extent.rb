@@ -37,8 +37,16 @@ class LandExtent
     long_range.max
   end
 
+  def self.num_latitudes
+    latitudes.count
+  end
+
+  def self.num_longitudes
+    longitudes.count
+  end
+
   def self.num_points
-    latitudes.count * longitudes.count
+    num_latitudes * num_longitudes
   end
 
   def self.inside?(lat, long)
@@ -57,5 +65,13 @@ class LandExtent
         yield(lat, long)
       end
     end
+  end
+
+  def self.create_grid(default_value = nil)
+    hash = {}
+    each_point do |lat, long|
+      hash[[lat, long]] = default_value
+    end
+    hash
   end
 end

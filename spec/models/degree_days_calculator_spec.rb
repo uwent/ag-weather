@@ -62,7 +62,7 @@ RSpec.describe DegreeDaysCalculator, type: :module do
 
     context "when invalid inputs" do
       it "should raise error when min > max" do
-        expect {subject.average_degree_days(50, 20, 50)}.to raise_error(ArgumentError)
+        expect { subject.average_degree_days(50, 20, 50) }.to raise_error(ArgumentError)
       end
     end
   end
@@ -106,11 +106,11 @@ RSpec.describe DegreeDaysCalculator, type: :module do
 
     context "when invalid inputs" do
       it "should raise error when min > max" do
-        expect {subject.modified_degree_days(50, 1, 1, 1)}.to raise_error(ArgumentError)
+        expect { subject.modified_degree_days(50, 1, 1, 1) }.to raise_error(ArgumentError)
       end
 
       it "should raise error when base > upper" do
-        expect {subject.modified_degree_days(1, 1, 50, 1)}.to raise_error(ArgumentError)
+        expect { subject.modified_degree_days(1, 1, 50, 1) }.to raise_error(ArgumentError)
       end
     end
   end
@@ -127,7 +127,7 @@ RSpec.describe DegreeDaysCalculator, type: :module do
         expect(subject.sine_degree_days(30, 45, 40, 90)).to be_within(epsilon).of(1.2712244)
       end
     end
-    
+
     context "min <  base < upper < max" do
       it "calculates correctly" do
         expect(subject.sine_degree_days(38, 100, 40, 90)).to be_within(epsilon).of(27.419432)
@@ -154,11 +154,11 @@ RSpec.describe DegreeDaysCalculator, type: :module do
 
     context "when invalid inputs" do
       it "should raise error when min > max" do
-        expect {subject.sine_degree_days(50, 1, 1, 1)}.to raise_error(ArgumentError)
+        expect { subject.sine_degree_days(50, 1, 1, 1) }.to raise_error(ArgumentError)
       end
 
       it "should raise error when base > upper" do
-        expect {subject.sine_degree_days(1, 1, 50, 1)}.to raise_error(ArgumentError)
+        expect { subject.sine_degree_days(1, 1, 50, 1) }.to raise_error(ArgumentError)
       end
     end
   end

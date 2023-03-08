@@ -31,7 +31,7 @@ module ImageMethods
     name
   end
 
-  def image_title_date(start_date: nil, end_date:)
+  def image_title_date(end_date:, start_date: nil)
     start_date = start_date&.to_date
     end_date = end_date&.to_date
     fmt1 = "%b %-d, %Y"

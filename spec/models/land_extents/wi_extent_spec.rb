@@ -4,7 +4,7 @@ RSpec.describe WiExtent do
   describe "defines the correct extent" do
     it "has correct extents" do
       expect(described_class.lat_range).to eq 42.4..47.2
-      expect(described_class.long_range).to eq -93.0..-86.7
+      expect(described_class.long_range).to eq(-93.0..-86.7)
     end
 
     it "has a valid extents" do

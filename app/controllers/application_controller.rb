@@ -32,7 +32,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def self.log_prefix(level = 0)
+  def log_prefix(level = 0)
     "#{name}##{caller_locations[level].label} :: "
   end
 
