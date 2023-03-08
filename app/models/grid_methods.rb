@@ -35,10 +35,15 @@ module GridMethods
   end
 
   def extent
-    {
-      latitude: [minimum(:latitude), maximum(:latitude)],
-      longitude: [minimum(:longitude), maximum(:longitude)]
-    }
+    {latitude: lat_range, longitude: long_range}
+  end
+
+  def lat_range
+    [minimum(:latitude), maximum(:latitude)]
+  end
+
+  def long_range
+    [minimum(:longitude), maximum(:longitude)]
   end
 
   def grid_summarize(sql = nil)
@@ -66,7 +71,6 @@ module GridMethods
     extent: LandExtent,
     units: valid_units[0]
   )
-
     check_col(col)
     check_extent(extent)
 
@@ -89,7 +93,6 @@ module GridMethods
     units: nil,
     stat: default_stat
   )
-
     check_col(col)
     check_extent(extent)
     check_stat(stat)

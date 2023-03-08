@@ -123,23 +123,7 @@ class InsolationsController < ApplicationController
   # GET: Returns info about insolations db
 
   def info
-    start_time = Time.current
-    t = Insolation
-    min_date = t.minimum(:date) || 0
-    max_date = t.maximum(:date) || 0
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.distinct.pluck(:date).to_a
-    response = {
-      table_cols: t.column_names,
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:insolation), t.maximum(:insolation)],
-      date_range: [min_date.to_s, max_date.to_s],
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      compute_time: Time.current - start_time
-    }
-    render json: response
+    render json: get_info(Insolation)
   end
 
   private

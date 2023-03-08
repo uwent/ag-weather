@@ -227,22 +227,7 @@ class PestForecastsController < ApplicationController
   # GET: Pest forecasts database info. No params.
 
   def info
-    t = PestForecast
-    min_date = t.minimum(:date)
-    max_date = t.maximum(:date)
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.distinct.pluck(:date)
-    response = {
-      pest_names: t.pests,
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      date_range: [min_date.to_s, max_date.to_s],
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      missing_days: all_dates - actual_dates,
-      compute_time: Time.current - @start_time
-    }
-    render json: response
+    render json: get_info(PestForecast)
   end
 
   private

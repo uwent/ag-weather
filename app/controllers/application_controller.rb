@@ -36,6 +36,26 @@ class ApplicationController < ActionController::Base
     "#{name}##{caller_locations[level].label} :: "
   end
 
+  # for controller #info endpoints
+  def get_info(t)
+    min_date = t.minimum(:date)
+    max_date = t.maximum(:date)
+    all_dates = (min_date..max_date).to_a
+    actual_dates = t.dates
+    {
+      data_cols: t.data_cols,
+      lat_range: t.lat_range,
+      long_range: t.long_range,
+      date_range: t.date_range,
+      expected_days: all_dates.size,
+      actual_days: actual_dates.size,
+      missing_days: all_dates - actual_dates,
+      compute_time: Time.current - @start_time
+    }
+  rescue
+    {message: "error"}
+  end
+
   ## PARSE PARAMS ##
 
   def parse_number(s)

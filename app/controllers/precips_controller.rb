@@ -119,24 +119,7 @@ class PrecipsController < ApplicationController
   # GET: Returns info about precips db
 
   def info
-    start_time = Time.current
-    t = Precip
-    min_date = t.minimum(:date) || 0
-    max_date = t.maximum(:date) || 0
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.distinct.pluck(:date).to_a
-    response = {
-      table_cols: t.column_names,
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:precip), t.maximum(:precip)],
-      date_range: [min_date.to_s, max_date.to_s],
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      missing_days: all_dates - actual_dates,
-      compute_time: Time.current - start_time
-    }
-    render json: response
+    render json: get_info(Precip)
   end
 
   private

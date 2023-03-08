@@ -15,8 +15,12 @@ class ApplicationRecord < ActiveRecord::Base
     minimum(:date)
   end
 
+  def self.date_range
+    [earliest_date, latest_date]
+  end
+
   def self.dates
-    distinct.pluck(:date)
+    distinct.pluck(:date).sort
   end
 
   def self.dates_in_range(date_range)
