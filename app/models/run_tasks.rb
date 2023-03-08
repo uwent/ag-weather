@@ -1,4 +1,4 @@
-class RunTasks
+module RunTasks
   def self.all
     start_time = Time.now
     ActiveRecord::Base.logger.level = :info

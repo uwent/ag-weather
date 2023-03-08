@@ -36,8 +36,8 @@ module GridMethods
 
   def extent
     {
-      latitude: [minimum(:latitude).to_s, maximum(:latitude).to_s],
-      longitude: [minimum(:longitude).to_s, maximum(:longitude).to_s]
+      latitude: [minimum(:latitude), maximum(:latitude)],
+      longitude: [minimum(:longitude), maximum(:longitude)]
     }
   end
 
@@ -106,16 +106,15 @@ module GridMethods
   end
 
   def check_col(col)
-    col = col.to_s
-    raise ArgumentError.new(log_prefix(1) + "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{column_names.join(", ")}") unless column_names.include? col
+    raise ArgumentError.new(log_prefix(1) + "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{data_cols.join(", ")}") unless data_cols.include? col
   end
 
   def check_grid(grid)
-    raise ArgumentError.new(log_prefix(1) + "Grid is of incorrect type: #{grid.name}") unless grid.is_a? LandGrid
+    raise ArgumentError.new(log_prefix(1) + "Grid is of incorrect type, must be LandGrid") unless grid.is_a? LandGrid
   end
 
   def check_extent(extent)
-    raise ArgumentError.new(log_prefix(1) + "Extent is of incorrect type: #{extent.name}") unless extent.new.is_a? LandExtent
+    raise ArgumentError.new(log_prefix(1) + "Extent is of incorrect type, must be LandExtent") unless extent.is_a?(Class) && extent.new.is_a?(LandExtent)
   end
 
   def check_units(unit)
