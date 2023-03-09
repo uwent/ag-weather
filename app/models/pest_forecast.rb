@@ -30,7 +30,7 @@ class PestForecast < ApplicationRecord
     :potato_blight_dsv
   end
 
-  def self.default_scale(*args)
+  def self.default_scale(**args)
     [0, 4]
   end
 
@@ -50,9 +50,7 @@ class PestForecast < ApplicationRecord
     pest_name = col_names[col] || "DSV"
     datestring = image_title_date(start_date:, end_date:)
     if start_date.nil?
-      "#{pest_name} totals for #{datestring}"
-    else
-      "#{pest_name} totals for #{datestring}"
     end
+    "#{pest_name} totals for #{datestring}"
   end
 end

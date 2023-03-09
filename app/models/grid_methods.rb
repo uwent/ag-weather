@@ -18,7 +18,7 @@ module GridMethods
     []
   end
 
-  def convert(value:, col: nil, units: nil)
+  def convert(value:, **args)
     value
   end
 
@@ -109,23 +109,23 @@ module GridMethods
   end
 
   def check_col(col)
-    raise ArgumentError.new(log_prefix(1) + "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{data_cols.join(", ")}") unless data_cols.include? col
+    raise ArgumentError.new "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{data_cols.join(", ")}" unless data_cols.include? col
   end
 
   def check_grid(grid)
-    raise ArgumentError.new(log_prefix(1) + "Grid is of incorrect type, must be LandGrid") unless grid.is_a? LandGrid
+    raise ArgumentError.new "Grid is of incorrect type, must be LandGrid" unless grid.is_a? LandGrid
   end
 
   def check_extent(extent)
-    raise ArgumentError.new(log_prefix(1) + "Extent is of incorrect type, must be LandExtent") unless extent.is_a?(Class) && extent.new.is_a?(LandExtent)
+    raise ArgumentError.new "Extent is of incorrect type, must be LandExtent" unless extent.is_a?(Class) && extent.new.is_a?(LandExtent)
   end
 
   def check_units(unit)
     return if valid_units.empty? || unit.nil?
-    raise ArgumentError.new(log_prefix(1) + "Unit has invalid value: #{unit.inspect}. Must be one of #{valid_units.join(", ")}") unless valid_units.include? unit
+    raise ArgumentError.new "Unit has invalid value: #{unit.inspect}. Must be one of #{valid_units.join(", ")}" unless valid_units.include? unit
   end
 
   def check_stat(stat)
-    raise ArgumentError.new log_prefix(1) + "Invalid aggregation function: #{stat.inspect}. Must be one of #{valid_stats.join(", ")}" unless valid_stats.include? stat
+    raise ArgumentError.new "Invalid aggregation function: #{stat.inspect}. Must be one of #{valid_stats.join(", ")}" unless valid_stats.include? stat
   end
 end

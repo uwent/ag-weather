@@ -10,11 +10,11 @@ module ImageMethods
     File.join(ImageCreator.url_path, image_subdir, filename)
   end
 
-  def default_units(col)
+  def default_units(col = nil)
     valid_units[0]
   end
 
-  def default_scale(units)
+  def default_scale(**args)
   end
 
   # daily unless "cumulative"
@@ -57,13 +57,13 @@ module ImageMethods
     stat: nil
   )
     end_date ||= date
-    raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
+    raise ArgumentError.new "Must provide either 'date' or 'end_date'" unless end_date
 
     file = image_name_prefix(col:, units:, stat:)
     file += "-#{units.downcase}" if units
     file += "-#{start_date.to_date.to_formatted_s(:number)}" if start_date
     file += "-#{end_date.to_date.to_formatted_s(:number)}"
-    file += "-range-#{scale.min}-#{scale.max}" if scale && scale != default_scale(units)
+    file += "-range-#{scale.min}-#{scale.max}" if scale && scale != default_scale(col:, units:)
     file += "-#{extent}" if extent == "wi"
     file += ".png"
     ActiveStorage::Filename.new(file).sanitized.squeeze("-")
@@ -75,7 +75,7 @@ module ImageMethods
     elsif args[:start_date] || args[:end_date]
       create_cumulative_image(**args)
     else
-      raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'"
+      raise ArgumentError.new "Must provide either 'date' or 'end_date'"
     end
   end
 
@@ -87,13 +87,13 @@ module ImageMethods
     scale: nil,
     **args
   )
-
     date = date.to_date
-    raise ArgumentError.new log_prefix + "Must name a column to image" unless col
+    raise ArgumentError.new "Must name a column to image" unless col
+
     units ||= default_units(col)
-    scale ||= default_scale(units)
+    scale ||= default_scale(col:, units:)
     land_extent = (extent == "wi") ? WiExtent : LandExtent
-    data = hash_grid(date:, extent: land_extent, units:, col:)
+    data = hash_grid(date:, units:, col:, extent: land_extent)
 
     # call image creator
     title = image_title(date:, col:, units:)
@@ -111,18 +111,17 @@ module ImageMethods
     scale: nil,
     **args
   )
-
-    raise ArgumentError.new log_prefix + "Must name a column to image" unless col
+    raise ArgumentError.new "Must name a column to image" unless col
     units ||= default_units(col)
 
     # create data grid
     land_extent = (extent == "wi") ? WiExtent : LandExtent
-    data = cumulative_hash_grid(start_date:, end_date:, extent: land_extent, units:, col:, stat:)
+    data = cumulative_hash_grid(start_date:, end_date:, units:, col:, stat:, extent: land_extent)
 
     # get actual date range
     point = where(date: start_date..end_date, latitude: land_extent.min_lat, longitude: land_extent.min_long)
-    start_date = point.minimum(:date)
-    end_date = point.maximum(:date)
+    start_date = point.minimum(:date) || start_date
+    end_date = point.maximum(:date) || end_date
 
     # call image creator
     title = image_title(start_date:, end_date:, col:, units:, stat:)

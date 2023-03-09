@@ -89,8 +89,8 @@ class ImageCreator
     gnuplot_cmd = "gnuplot -e \"plottitle='#{title}'; min_val=#{min}; max_val=#{max}; x_min=#{extents[0]}; x_max=#{extents[1]}; y_min=#{extents[2]}; y_max=#{extents[3]}; outfile='#{temp_image}'; infile='#{datafile_name}';\" lib/color_contour.gp"
     Rails.logger.debug "ImageCreator >> gnuplot cmd: #{gnuplot_cmd}"
 
-    status = system(gnuplot_cmd)
-    raise StandardError.new("Gnuplot execution failed with status: #{status}") if status
+    success = system(gnuplot_cmd)
+    raise StandardError.new("Gnuplot execution failed for cmd: #{gnuplot_cmd}") unless success
     FileUtils.rm_f(datafile_name)
     temp_image
   end
@@ -103,8 +103,8 @@ class ImageCreator
     image_cmd = "composite '#{overlay_image}' '#{gnuplot_image}' '#{out_file}'"
     Rails.logger.debug "ImageCreator >> imagemagick cmd: #{image_cmd}"
 
-    status = system(image_cmd)
-    raise StandardError.new "ImageMagick execution failed with status: #{status}" if status
+    success = system(image_cmd)
+    raise StandardError.new "ImageMagick execution failed for cmd: #{image_cmg}" unless success
     FileUtils.rm_f(gnuplot_image)
     image_name
   end

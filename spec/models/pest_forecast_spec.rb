@@ -6,8 +6,8 @@ RSpec.describe PestForecast do
   describe "configuration" do
     describe ".col_names" do
       context "is valid" do
-        it { expect(subject.col_names).to be_an Hash}
-        it { expect(subject.col_names.keys).to match_array(subject.data_cols)}
+        it { expect(subject.col_names).to be_an Hash }
+        it { expect(subject.col_names.keys).to match_array(subject.data_cols) }
       end
     end
 
@@ -28,7 +28,7 @@ RSpec.describe PestForecast do
     describe ".default_scale" do
       context "is valid" do
         it { expect(subject.default_scale).to be_an(Array) }
-        it { expect(subject.default_scale.size).to eq 2}
+        it { expect(subject.default_scale.size).to eq 2 }
       end
     end
   end
@@ -39,7 +39,7 @@ RSpec.describe PestForecast do
       @pf = subject.new_from_weather(@weather)
     end
 
-    it {expect(@pf).to be_valid}
+    it { expect(@pf).to be_valid }
 
     context "carries over values from weather" do
       %i[date latitude longitude].each do |col|

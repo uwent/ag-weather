@@ -21,7 +21,7 @@ class Insolation < ApplicationRecord
     "insol"
   end
 
-  def self.default_scale(units)
+  def self.default_scale(units:)
     check_units(units)
     (units == "KWh") ? [0, 10] : [0, 30]
   end

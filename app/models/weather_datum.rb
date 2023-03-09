@@ -2,51 +2,30 @@ class WeatherDatum < ApplicationRecord
   extend GridMethods
   extend ImageMethods
 
+  def self.temperature_defaults
+    {
+      units: "C", # stored value
+      valid_units: ["C", "F"], # first is default display unit
+      gnuplot_scale: {
+        "F" => [0, 100],
+        "C" => [-20, 40]
+      }
+    }
+  end
+
   def self.col_attr
     {
-      min_temp: {
-        name: "Min air temp",
-        units: "C",
-        valid_units: ["C", "F"]
-      },
-      max_temp: {
-        name: "Max air temp",
-        units: "C",
-        valid_units: ["C", "F"]
-      },
-      avg_temp: {
-        name: "Avg air temp",
-        units: "C",
-        valid_units: ["C", "F"]
-      },
-      min_rh: {
-        name: "Min relative humidity",
-        units: "%"
-      },
-      max_rh: {
-        name: "Max relative humidity",
-        units: "%"
-      },
-      avg_rh: {
-        name: "Avg relative humidity",
-        units: "%"
-      },
-      vapor_pressure: {
-        name: "Vapor pressure",
-        units: "kPa"
-      },
-      dew_point: {
-        name: "Dew point",
-        units: "C",
-        valid_units: ["C", "F"]
-      },
-      frost: {
-        name: "Frost days"
-      }, # number of days < 0 C
-      freezing: {
-        name: "Freezing days"
-      } # number of days < 2 C
-    }
+      min_temp: {name: "Min air temp"}.merge(temperature_defaults),
+      max_temp: {name: "Max air temp"}.merge(temperature_defaults),
+      avg_temp: {name: "Avg air temp"}.merge(temperature_defaults),
+      min_rh: {name: "Min relative humidity", units: "%"},
+      max_rh: {name: "Max relative humidity", units: "%"},
+      avg_rh: {name: "Avg relative humidity", units: "%"},
+      vapor_pressure: {name: "Vapor pressure", units: "kPa"},
+      dew_point: {name: "Dew point"}.merge(temperature_defaults),
+      frost: {name: "Frost days"}, # number of days < 0 C
+      freezing: {name: "Freezing days"} # number of days < 2 C
+    }.freeze
   end
 
   def self.default_col
@@ -62,15 +41,24 @@ class WeatherDatum < ApplicationRecord
   end
 
   def self.col_name(col)
-    col_attr[col.to_sym][:name]
+    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    col_attr[col][:name]
   end
 
   def self.valid_units(col)
-    col_attr[col.to_sym][:valid_units] || default_units(col) || []
+    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    col_attr[col][:valid_units] || [default_units(col)] || []
   end
 
   def self.default_units(col)
-    col_attr[col.to_sym][:units]
+    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    col_attr[col][:units]
+  end
+
+  def self.default_scale(col:, units:)
+    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    scales = col_attr[col][:gnuplot_scale]
+    scales ? scales[units] : nil
   end
 
   def self.convert(col:, value:, units:)

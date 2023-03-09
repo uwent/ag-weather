@@ -124,7 +124,7 @@ class WeatherController < ApplicationController
 
   def map
     parse_date_or_dates || default_single_date
-    parse_col
+    @col = parse_col
     map_params
     @image_args[:col] = @col
 
@@ -322,14 +322,13 @@ class WeatherController < ApplicationController
   private
 
   def parse_col
-    @col = params[:col]
-    if @col
-      if !WeatherDatum.col_names.include?(@col)
-        reject("Invalid data column: '#{@col}'. Must be one of #{WeatherDatum.col_names.join(", ")}")
-      end
+    col = params[:col]&.to_sym
+    if col
+      reject("Invalid data column: '#{col}'. Must be one of #{WeatherDatum.data_cols.join(", ")}") unless WeatherDatum.data_cols.include?(col)
     else
-      @col = WeatherDatum.default_col
+      col = WeatherDatum.default_col
     end
+    col
   end
 
   def default_date

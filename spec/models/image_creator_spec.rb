@@ -88,20 +88,25 @@ RSpec.describe ImageCreator do
       }
     }
 
-    it "should call gnuplot" do
-      allow(subject).to receive(:temp_filename).and_return("foo")
-      expect(subject).to receive(:system).with(/gnuplot/).exactly(1).times
-      subject.run_gnuplot(**args)
-    end
+    context "on success" do
+      before do
+        allow(subject).to receive(:system).and_return true
+      end
 
-    it "should delete temporary data file" do
-      allow(subject).to receive(:system)
-      expect(FileUtils).to receive(:rm_f).with(datafile_name)
-      subject.run_gnuplot(**args)
+      it "should call gnuplot" do
+        allow(subject).to receive(:temp_filename).and_return("foo")
+        expect(subject).to receive(:system).with(/gnuplot/).exactly(1).times
+        subject.run_gnuplot(**args)
+      end
+
+      it "should delete temporary data file" do
+        expect(FileUtils).to receive(:rm_f).with(datafile_name)
+        subject.run_gnuplot(**args)
+      end
     end
 
     it "should raise error on failure" do
-      allow(subject).to receive(:system).and_return `exit 1`
+      allow(subject).to receive(:system).and_return false
       expect { subject.run_gnuplot(**args) }.to raise_error(StandardError)
     end
   end
@@ -111,31 +116,34 @@ RSpec.describe ImageCreator do
     let(:image_name) { "final.png" }
     let(:args) { {gnuplot_image:, image_name:} }
 
-    it "should call composite" do
-      expect(subject).to receive(:system).with(/composite/).exactly(1).times
-      subject.run_composite(**args)
-    end
+    context "on success" do
+      before do
+        allow(subject).to receive(:system).and_return true
+      end
 
-    it "should return filename on success" do
-      allow(subject).to receive(:system)
-      expect(subject.run_composite(**args)).to eq image_name
-    end
+      it "should call composite" do
+        expect(subject).to receive(:system).with(/composite/).exactly(1).times
+        subject.run_composite(**args)
+      end
 
-    it "should place filename in subdir if specified" do
-      allow(subject).to receive(:system)
-      args[:subdir] = "subdir"
-      expect(subject).to receive(:system).with(/subdir/)
-      subject.run_composite(**args)
-    end
+      it "should return filename on success" do
+        expect(subject.run_composite(**args)).to eq image_name
+      end
 
-    it "should delete gnuplot image" do
-      allow(subject).to receive(:system)
-      expect(FileUtils).to receive(:rm_f).with(gnuplot_image)
-      subject.run_composite(**args)
+      it "should place filename in subdir if specified" do
+        args[:subdir] = "subdir"
+        expect(subject).to receive(:system).with(/subdir/)
+        subject.run_composite(**args)
+      end
+
+      it "should delete gnuplot image" do
+        expect(FileUtils).to receive(:rm_f).with(gnuplot_image)
+        subject.run_composite(**args)
+      end
     end
 
     it "should raise error on failure" do
-      allow(subject).to receive(:system).and_return `exit 1`
+      allow(subject).to receive(:system).and_return false
       expect { subject.run_composite(**args) }.to raise_error(StandardError)
     end
   end

@@ -37,18 +37,18 @@ RSpec.describe Insolation do
   end
 
   describe ".default_scale" do
-    it { expect(subject.default_scale(UNIT)).to be_an(Array) }
+    it { expect(subject.default_scale(units: UNIT)).to be_an(Array) }
 
     context "when default unit" do
-      it { expect(subject.default_scale(UNIT)).to eq [0, 30] }
+      it { expect(subject.default_scale(units: UNIT)).to eq [0, 30] }
     end
 
     context "when alternate unit" do
-      it { expect(subject.default_scale(UNIT1)).to eq [0, 10] }
+      it { expect(subject.default_scale(units: UNIT1)).to eq [0, 10] }
     end
 
     context "when invalid units" do
-      it { expect { subject.default_scale("foo") }.to raise_error(ArgumentError) }
+      it { expect { subject.default_scale(units: "foo") }.to raise_error(ArgumentError) }
     end
   end
 

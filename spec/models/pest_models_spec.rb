@@ -84,7 +84,7 @@ RSpec.describe PestModels do
       [25, 5] => 1,
       [25, 15] => 3,
       [30, 10] => 2,
-      [30, 24] => 4,
+      [30, 24] => 4
     }
 
     inputs.each do |args, val|
