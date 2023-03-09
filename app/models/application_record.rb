@@ -31,6 +31,21 @@ class ApplicationRecord < ActiveRecord::Base
     dates.size
   end
 
+  def self.col_stats(col)
+    values = pluck(col)
+    return nil unless values
+    n = values.size
+    avg = values.sum / n.to_f
+    median = values.sort[(n / 2).to_i]
+    {
+      n:,
+      min: values.min,
+      max: values.max,
+      avg:,
+      median:
+    }
+  end
+
   def self.log_prefix(level = 0)
     "#{name}##{caller_locations[level].label} :: "
   end
