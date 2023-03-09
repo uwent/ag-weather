@@ -2,6 +2,18 @@ class WeatherDatum < ApplicationRecord
   extend GridMethods
   extend ImageMethods
 
+  def self.default_col
+    :avg_temp
+  end
+
+  def self.default_stat
+    :avg
+  end
+
+  def self.image_subdir
+    "weather"
+  end
+
   def self.temperature_defaults
     {
       units: "C", # stored value
@@ -30,52 +42,40 @@ class WeatherDatum < ApplicationRecord
     }.freeze
   end
 
-  def self.default_col
-    :avg_temp
-  end
-
-  def self.default_stat
-    :avg
-  end
-
-  def self.col_names
-    col_attr.keys.map(&:to_s).freeze
-  end
-
   def self.col_name(col)
-    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    check_col(col)
     col_attr[col][:name]
   end
 
-  def self.valid_units(col)
-    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
-    col_attr[col][:valid_units] || [default_units(col)] || []
-  end
-
   def self.default_units(col)
-    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
+    check_col(col)
     col_attr[col][:units]
   end
 
-  def self.default_scale(col:, units:)
-    raise ArgumentError.new "col must be a symbol" unless col.is_a? Symbol
-    scales = col_attr[col][:gnuplot_scale]
-    scales ? scales[units] : nil
+  def self.valid_units(col)
+    check_col(col)
+    col_attr[col][:valid_units] || [default_units(col)]
   end
 
-  def self.convert(col:, value:, units:)
+  def self.default_scale(col:, units: nil)
+    check_col(col)
+    scales = col_attr[col][:gnuplot_scale]
+    return unless scales
+    scales.is_a?(Hash) ? scales[units] : scales
+  end
+
+  # only converts temperature otherwise returns value unchanged
+  def self.convert(col:, value:, units: nil)
+    check_col(col)
+    return value unless units
     valid_units = valid_units(col)
     if valid_units
-      raise ArgumentError.new(log_prefix(1) + "Unit has invalid value: #{units.inspect}. Must be one of #{valid_units.join(", ")}") unless valid_units.include? units
+      raise ArgumentError.new "Unit has invalid value: #{units.inspect}. Must be one of #{valid_units.join(", ")}" unless valid_units.include? units
       if ["C", "F"].include? units
         value = (units == "F") ? UnitConverter.c_to_f(value) : value
       end
     end
     value
-  end
-
-  def self.image_subdir
-    "weather"
   end
 
   def self.image_name_prefix(col:, stat: nil, **args)

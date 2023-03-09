@@ -10,6 +10,12 @@ module GribMethods
     ENV["KEEP_GRIB"] == "true" || false
   end
 
+  def central_time(date, hour)
+    Time.use_zone("Central Time (US & Canada)") do
+      Time.zone.local(date.year, date.month, date.day, hour)
+    end
+  end
+
   # will allow importer to accept missing hourly gribs if imports have failed for two days
   def fetch(start_date: earliest_date, end_date: latest_date, all_dates: false, overwrite: false)
     ActiveRecord::Base.logger.level = :info
@@ -18,7 +24,7 @@ module GribMethods
     return Rails.logger.info "#{name} :: Everything's up to date, nothing to do!" if dates.empty?
 
     dates.each do |date|
-      if data_class.where(date:).exists? && !overwrite
+      if data_class.find_by(date:) && !overwrite
         Rails.logger.info "#{name} :: Data already exists for #{date}, force with overwrite: true"
         import.succeed(date)
         next
@@ -44,26 +50,17 @@ module GribMethods
     end
   end
 
-  def central_time(date, hour)
-    Time.use_zone("Central Time (US & Canada)") do
-      Time.zone.local(date.year, date.month, date.day, hour)
-    end
-  end
-
   # returns 1 if it downloaded a file or one already existed
   def fetch_grib(file_url, local_file, msg_prefix = "")
     if File.exist?(local_file)
       Rails.logger.info "#{msg_prefix} ==> Exists"
-      return 1
-    end
-
-    Rails.logger.info "#{msg_prefix} ==> GET #{file_url}"
-    begin
+    else
+      Rails.logger.info "#{msg_prefix} ==> GET #{file_url}"
       download(file_url, local_file)
-      1
-    rescue => e
-      Rails.logger.warn "#{msg_prefix} ==> FAIL: #{e.message}"
-      0
     end
+    1
+  rescue => e
+    Rails.logger.warn "#{msg_prefix} ==> FAIL: #{e.message}"
+    0
   end
 end

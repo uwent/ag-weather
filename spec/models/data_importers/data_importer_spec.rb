@@ -1,25 +1,27 @@
 require "rails_helper"
 
-RSpec.describe DataImporter do
+RSpec.describe DataImporter, type: :module do
+  subject { DataImporter }
+
   describe ".latest_date" do
     it "provides the most recent date for data load" do
-      expect(described_class.latest_date).to eq DataImport.latest_date
+      expect(subject.latest_date).to eq DataImport.latest_date
     end
   end
 
   describe ".earliest_date" do
     it "provides the earliest date for data load" do
-      expect(described_class.earliest_date).to eq DataImport.earliest_date
+      expect(subject.earliest_date).to eq DataImport.earliest_date
     end
   end
 
   describe ".elapsed" do
     it "returns a string of the elapsed time" do
-      expect(described_class.elapsed(Time.current - 1.second)).to eq "1 second"
+      expect(subject.elapsed(Time.current - 1.second)).to eq "1 second"
     end
 
     it "splits out minutes and seconds" do
-      expect(described_class.elapsed(Time.current - 61.seconds)).to eq "1 minute and 1 second"
+      expect(subject.elapsed(Time.current - 61.seconds)).to eq "1 minute and 1 second"
     end
   end
 
@@ -34,12 +36,12 @@ RSpec.describe DataImporter do
       data_class = double("data")
       import_class = double("import")
 
-      allow(described_class).to receive(:data_class) { data_class }
+      allow(subject).to receive(:data_class) { data_class }
       allow(data_class).to receive(:dates_in_range) { existing_dates }
-      allow(described_class).to receive(:import) { import_class }
+      allow(subject).to receive(:import) { import_class }
       allow(import_class).to receive(:days_to_load) { days_to_load }
 
-      expect(described_class.missing_dates(start_date:, end_date:)).to eq expected_missing_dates
+      expect(subject.missing_dates(start_date:, end_date:)).to eq expected_missing_dates
     end
   end
 end
