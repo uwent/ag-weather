@@ -23,12 +23,6 @@ module UnitConverter
     fdd.to_f * 5.0 / 9.0
   end
 
-  # convert Megajoules to Kilowatt hours
-  def self.mj_to_kwh(mj)
-    return if mj.nil?
-    mj.to_f / 3.6
-  end
-
   # inches to mm
   def self.in_to_mm(inches)
     return if inches.nil?
@@ -39,5 +33,11 @@ module UnitConverter
   def self.mm_to_in(mm)
     return if mm.nil?
     mm.to_f / 25.4
+  end
+
+  # convert Megajoules to Kilowatt hours
+  def self.mj_to_kwh(mj)
+    return if mj.nil?
+    mj.to_f / 3.6
   end
 end

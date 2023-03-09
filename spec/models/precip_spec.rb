@@ -1,70 +1,76 @@
 require "rails_helper"
 
-RSpec.describe Precip, type: :model do
-  describe "construct land grid grid with precip values for given date" do
-    let(:date) { Date.current }
+UNIT = "mm"
+UNIT2 = "in"
 
-    it "should construct a land grid of precip values" do
-      expect(Precip.land_grid_for_date(date)).to be_kind_of(LandGrid)
+RSpec.describe Precip do
+  subject { Precip }
+
+  describe ".default_col" do
+    it { expect(subject.default_col).to_not be_nil }
+    it { expect(subject.default_col).to be_an(Symbol) }
+    it { expect(subject.default_col).to be_in(subject.data_cols) }
+  end
+
+  describe ".valid_units" do
+    it { expect(subject.valid_units).to_not be_nil }
+    it { expect(subject.valid_units).to be_an(Array) }
+  end
+
+  describe ".convert" do
+    it "returns given value if units: #{UNIT}" do
+      expect(subject.convert(value: 1, units: "mm")).to eq 1
     end
 
-    it "should have precips stored" do
-      lat = 45
-      long = -90
-      precip = rand.round(2)
-      FactoryBot.create(
-        :precip,
-        date:,
-        latitude: lat,
-        longitude: long,
-        precip:
-      )
-      grid = Precip.land_grid_for_date(date)
-      expect(grid[lat, long]).to eq(precip)
+    it "converts value if units: #{UNIT2}" do
+      expect(subject.convert(value: 1, units: "in")).to eq UnitConverter.mm_to_in(1)
     end
 
-    it "should store nil in grid for points without values" do
-      grid = Precip.land_grid_for_date(date)
-      lat, long = LandExtent.random_point
-      expect(grid[lat, long]).to eq nil
+    it "raises error on invalid units" do
+      expect { subject.convert(value: 1, units: "foo") }.to raise_error(ArgumentError)
     end
   end
 
-  describe "create image for date or date range" do
-    let(:earliest_date) { Date.current - 1.weeks }
-    let(:latest_date) { Date.current }
-    let(:empty_date) { earliest_date - 1.week }
-    let(:lat) { 45.0 }
-    let(:long) { -89.0 }
+  describe ".image_subdir" do
+    it { expect(subject.image_subdir).to eq "precip" }
+  end
 
-    before(:each) do
-      earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:precip, date:, latitude: lat, longitude: long, precip: 1)
-        FactoryBot.create(:precip_data_import, readings_on: date)
+  describe ".image_title" do
+    let(:start_date) { "2023-1-1".to_date }
+    let(:date) { "2023-2-1".to_date }
+    let(:units) { UNIT }
+    let(:args) { {date:, start_date:, end_date: date, units:} }
+
+    it { expect(subject.image_title(**args)).to be_an(String) }
+
+    it "should show units in title" do
+      expect(subject.image_title(**args)).to include(UNIT)
+      args[:units] = UNIT2
+      expect(subject.image_title(**args)).to include(UNIT2)
+    end
+
+    context "when given start_date" do
+      it "should return string with start and end date" do
+        expect(subject.image_title(**args)).to include("for Jan 1 - Feb 1, 2023")
       end
     end
 
-    it "should call ImageCreator when data present" do
-      expect(Precip).to receive(:create_image_data).exactly(1).times
-      expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Precip.create_image(latest_date)
+    context "when not given start_date" do
+      it "should return string with end date" do
+        args.delete(:start_date)
+        expect(subject.image_title(**args)).to include("for Feb 1, 2023")
+      end
     end
 
-    it "should create a cumulative data grid when given a date range" do
-      expect(Precip).to receive(:create_image_data).exactly(1).times
-      expect(ImageCreator).to receive(:create_image).exactly(1).times
-      Precip.create_image(latest_date, start_date: earliest_date)
+    context "when start and end date are different years" do
+      it "should show year for both dates" do
+        args[:start_date] = "2022-1-1".to_date
+        expect(subject.image_title(**args)).to include("for Jan 1, 2022 - Feb 1, 2023")
+      end
     end
 
-    it "should construct a data grid and convert units" do
-      precips = Precip.where(date: latest_date)
-      grid_mm = Precip.create_image_data(LandGrid.new, precips, "mm")
-      grid_in = Precip.create_image_data(LandGrid.new, precips, "in")
-      expect(grid_mm[lat, long].round(3)).to eq((grid_in[lat, long] * 25.4).round(3))
-    end
-
-    it "should return 'no_data.png' when data sources not loaded" do
-      expect(Precip.create_image(empty_date)).to eq("no_data.png")
+    context "when not given any date" do
+      it { expect { subject.image_title }.to raise_error(ArgumentError) }
     end
   end
 end
