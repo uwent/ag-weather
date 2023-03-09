@@ -110,7 +110,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       {
         lat:,
         long:,
-        models: "dd_32_none,dd_50_86"
+        models: "dd_32,dd_50_86"
       }
     }
 
@@ -119,7 +119,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       longitude = long.round(1)
       (start_date..end_date).each do |date|
         FactoryBot.create(:weather_datum, latitude:, longitude:, date:)
-        FactoryBot.create(:pest_forecast, latitude:, longitude:, date:, dd_32_none: 10, dd_50_86: 15)
+        FactoryBot.create(:degree_day, latitude:, longitude:, date:, dd_32: 10, dd_50_86: 15)
       end
     end
 
@@ -138,7 +138,7 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(json[:info]).to be_an(Hash)
         expect(json[:data]).to be_an(Hash)
         expect(json[:data].keys).to include(start_date_key)
-        expect(json[:data][start_date_key].keys).to eq([:min_temp, :max_temp, :dd_32_none, :dd_50_86])
+        expect(json[:data][start_date_key].keys).to eq([:min_temp, :max_temp, :dd_32, :dd_50_86])
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do

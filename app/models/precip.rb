@@ -20,23 +20,11 @@ class Precip < ApplicationRecord
     "precip"
   end
 
-  def self.image_title(
-    date: nil,
-    start_date: nil,
-    end_date: nil,
-    units: valid_units[0],
-    **args
-  )
-
+  def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
-
-    if start_date
-      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
-      "Total cumulative precip (#{units}) for #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
-    else
-      "Total daily precip (#{units}) for #{end_date.strftime("%b %-d, %Y")}"
-    end
+    datestring = image_title_date(start_date:, end_date:)
+    "Total precipitation (#{units}) for #{datestring}"
   end
 
   def self.stats(date)

@@ -28,13 +28,9 @@ class Insolation < ApplicationRecord
 
   def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
     end_date ||= date
-    raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
-
+    raise ArgumentError.new "Must provide either 'date' or 'end_date'" unless end_date
+    check_units(units)
     datestring = image_title_date(start_date:, end_date:)
-    if start_date.nil?
-      "Solar insolation (#{units}/m2/day) for #{datestring}"
-    else
-      "Solar insolation (total #{units}/m2) for #{datestring}"
-    end
+    "Solar insolation (#{units}/m2) for #{datestring}"
   end
 end

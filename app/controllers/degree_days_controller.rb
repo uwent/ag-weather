@@ -94,7 +94,7 @@ class DegreeDaysController < ApplicationController
           @data[key] += w.degree_days(base: @base, upper: @upper, in_f:)
         end
       else
-        @status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.models.join(", ")}"
+        @status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.data_cols.join(", ")}"
       end
     else
       @status = "no data"

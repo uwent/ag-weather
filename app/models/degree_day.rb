@@ -86,10 +86,6 @@ class DegreeDay < ApplicationRecord
     ["F", "C"].freeze
   end
 
-  def self.image_subdir
-    "degree_days"
-  end
-
   # value stored in FDD, converts if "CDD" requested
   def self.convert(value:, units:, **args)
     check_units(units)
@@ -106,30 +102,8 @@ class DegreeDay < ApplicationRecord
     str
   end
 
-  def self.models
-    %i[
-      dd_32
-      dd_38_75
-      dd_39p2_86
-      dd_41
-      dd_41_86
-      dd_42p8_86
-      dd_45
-      dd_45_80p1
-      dd_45_86
-      dd_48
-      dd_50
-      dd_50_86
-      dd_50_87p8
-      dd_50_90
-      dd_52
-      dd_52_86
-      dd_55_92
-    ].freeze
-  end
-
   def self.model_names
-    models.map(&:to_s)
+    data_cols.map(&:to_s)
   end
 
   # model name format like "dd_42p8_86" in Fahrenheit
@@ -148,31 +122,23 @@ class DegreeDay < ApplicationRecord
       base = UnitConverter.c_to_f(base)
       upper = UnitConverter.c_to_f(upper)
     end
-    model = "dd_" + sprintf("%.4g", base)
-    model += sprintf("_%.4g", upper) if upper
+    model = "dd_" + sprintf("%.4g", base.round(1))
+    model += sprintf("_%.4g", upper.round(1)) if upper
     model.tr(".", "p")
   end
 
-  def self.image_title(
-    col:,
-    date: nil,
-    start_date: nil,
-    end_date: nil,
-    units: valid_units[0],
-    **args
-  )
+  def self.image_subdir
+    "degree_days"
+  end
 
+  def self.image_title(col:, date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
-
+    check_units(units)
     base, upper = parse_model(col, units)
     dd_name = "base #{base}°#{units}"
     dd_name += ", upper #{upper}°#{units}" if upper
-    if start_date
-      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
-      "Degree day totals #{dd_name} from #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
-    else
-      "Degree day totals #{dd_name} on #{end_date.strftime("%b %-d, %Y")}"
-    end
+    datestring = image_title_date(start_date:, end_date:)
+    "Degree day totals #{dd_name} for #{datestring}"
   end
 end

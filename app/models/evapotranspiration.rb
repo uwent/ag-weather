@@ -31,13 +31,9 @@ class Evapotranspiration < ApplicationRecord
   # creates a title for the gnuplot image
   def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
     end_date ||= date
-    raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
-
+    raise ArgumentError.new "Must provide either 'date' or 'end_date'" unless end_date
+    check_units(units)
     datestring = image_title_date(start_date:, end_date:)
-    if start_date.nil?
-      "Potential evapotranspiration (#{units}/day) for #{datestring}"
-    else
-      "Potential evapotranspiration (total #{units}) for #{datestring}"
-    end
+    "Potential evapotranspiration (#{units}) for #{datestring}"
   end
 end

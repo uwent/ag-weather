@@ -23,6 +23,8 @@ class WeatherDatum < ApplicationRecord
       avg_rh: {name: "Avg relative humidity", units: "%"},
       vapor_pressure: {name: "Vapor pressure", units: "kPa"},
       dew_point: {name: "Dew point"}.merge(temperature_defaults),
+      hours_rh_over_90: {name: "Hours high RH (>90%)", units: "hours"},
+      avg_temp_rh_over_90: {name: "Avg air temp (RH >90%)"}.merge(temperature_defaults),
       frost: {name: "Frost days"}, # number of days < 0 C
       freezing: {name: "Freezing days"} # number of days < 2 C
     }.freeze
@@ -83,28 +85,14 @@ class WeatherDatum < ApplicationRecord
     str
   end
 
-  def self.image_title(
-    col:,
-    date: nil,
-    start_date: nil,
-    end_date: nil,
-    units: nil,
-    stat: nil
-  )
-
+  def self.image_title(col:, date: nil, start_date: nil, end_date: nil, units: nil, stat: nil)
     end_date ||= date
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
-
     title = col_name(col)
     title = "#{stat.to_s.humanize} #{title.downcase}" if stat && stat.to_s.humanize != title.split(" ")[0]
     title += " (#{units}) " if units
-    if start_date
-      fmt = (start_date.year != end_date.year) ? "%b %-d, %Y" : "%b %-d"
-      title += "from #{start_date.strftime(fmt)} - #{end_date.strftime("%b %-d, %Y")}"
-    else
-      title += "on #{end_date.strftime("%b %-d, %Y")}"
-    end
-    title
+    datestring = image_title_date(start_date:, end_date:)
+    "#{title} for #{datestring}"
   end
 
   # min_temp/max_temp stored in C, must be converted if F
