@@ -221,7 +221,6 @@ class ApplicationController < ActionController::Base
   def index_params
     params.require([:lat, :long])
     @days_requested = @dates&.count || 1
-    @days_returned = 0
     @lat = lat.to_f
     @long = long.to_f
     @units = units
@@ -255,7 +254,6 @@ class ApplicationController < ActionController::Base
     @lat_range = lat_range
     @long_range = long_range
     @days_requested = @dates&.count || 1
-    @days_returned = 0
     @units = units
     @units_text = units_text
     @stat = stat
@@ -270,7 +268,6 @@ class ApplicationController < ActionController::Base
       start_date: @start_date,
       end_date: @end_date,
       days_requested: @days_requested,
-      days_returned: @days_returned,
       lat_range: "#{@lat_range&.min},#{@lat_range&.max}",
       long_range: "#{@long_range&.min},#{@long_range&.max}",
       grid_points: @data&.size,

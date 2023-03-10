@@ -81,8 +81,6 @@ class DegreeDaysController < ApplicationController
 
     dds = DegreeDay.where(@query)
     if dds.exists?
-      @days_returned = dds.where(latitude: @lat_range.min, longitude: @long_range.min).size
-      @status = "missing data" if @days_returned < @days_requested - 1
       if @model
         @data = dds.grid_summarize.sum(@model)
       elsif @compute

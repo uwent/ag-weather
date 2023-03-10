@@ -59,10 +59,8 @@ class PrecipsController < ApplicationController
 
     precips = Precip.where(@query)
     if precips.exists?
-      @days_returned = precips.where(latitude: @lat_range.min, longitude: @long_range.min).size
       @data = precips.grid_summarize.sum(:precip)
       @data.each { |k, v| @data[k] = convert(v) } if @units != "mm"
-      @status = "missing days" if @days_returned < @days_requested
     else
       @status = "no data"
     end

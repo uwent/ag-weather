@@ -63,7 +63,7 @@ class EvapotranspirationsController < ApplicationController
     end
 
     @total = cumulative_value
-    @values = @data.map { |day| day[:value] }
+    @values = @data.collect { |day| day[:value] }
     @days_returned = @values.size
     @status ||= "missing days" if @days_requested != @days_returned
     @info = index_info
@@ -95,10 +95,8 @@ class EvapotranspirationsController < ApplicationController
 
     ets = Evapotranspiration.where(@query)
     if ets.exists?
-      @days_returned = ets.where(latitude: @lat_range.min, longitude: @long_range.min).size
       @data = ets.grid_summarize.sum(:potential_et)
       @data.each { |k, v| @data[k] = convert(v) } if @units == "mm"
-      @status = "missing days" if @days_returned < @days_requested
     else
       @status = "no data"
     end

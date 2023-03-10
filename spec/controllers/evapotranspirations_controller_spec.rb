@@ -5,9 +5,9 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   let(:import_class) { EvapotranspirationDataImport }
 
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
-  let(:lat) { 42.0 }
-  let(:long) { -98.0 }
-  let(:latest_date) { DataImport.latest_date }
+  let(:lat) { 45.0 }
+  let(:long) { -89.0 }
+  let(:latest_date) { Date.yesterday }
   let(:earliest_date) { latest_date - 1.week }
   let(:empty_date) { "2000-01-01" }
 
@@ -94,32 +94,31 @@ RSpec.describe EvapotranspirationsController, type: :controller do
         }
       }
 
-      it "and has no latitude return no data" do
+      it "throws error on missing param: lat" do
         params.delete(:lat)
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json[:error]).to match("lat")
+        expect(json[:message]).to eq "param is missing or the value is empty: lat"
       end
 
-      it "and has no longitude return no content" do
+      it "throws error on missing param: long" do
         params.delete(:long)
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json[:error]).to match("long")
+        expect(json[:message]).to eq "param is missing or the value is empty: long"
       end
     end
   end
 
-  describe "#show" do
+  describe "#map" do
     let(:date) { latest_date }
-    let(:start_date) { nil }
     let(:units) { "in" }
-    let(:image_name) { Evapotranspiration.image_name(date, start_date, units) }
-    let(:url) { "/#{image_name}" }
+    let(:subdir) { data_class.image_subdir }
 
-    before(:each) do
+    before do
+      allow(ImageCreator).to receive(:create_image)
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
         import_class.succeed(date)
@@ -134,92 +133,101 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
       it "has the correct response structure" do
         get(:map, params: {date:})
-        expect(json.keys).to eq([:info, :url])
+        expect(json.keys).to eq([:info, :filename, :url])
       end
 
       it "responds with the correct map name if data loaded" do
+        image_name = data_class.image_name(date:, units:)
+        url = "/#{subdir}/#{image_name}"
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
+
         get(:map, params: {date:})
         expect(json[:url]).to eq(url)
       end
 
       it "returns the correct image when given starting date" do
-        start_date = Date.current - 1.month
+        start_date = date - 1.month
+        image_name = data_class.image_name(date:, start_date:, units:)
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
+
         get(:map, params: {date:, start_date:})
-        expect(json[:url]).to eq(url)
+        expect(json[:url]).to eq "/#{subdir}/#{image_name}"
       end
 
       it "responds to the units param" do
-        new_unit = "mm"
-        new_image_name = data_class.image_name(date, start_date, new_unit)
-        allow(ImageCreator).to receive(:create_image).and_return(new_image_name)
-        get(:map, params: {date:, units: new_unit})
+        units = "mm"
+        image_name = data_class.image_name(date:, units:)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params: {date:, units:})
 
-        expect(json[:url]).to eq("/#{new_image_name}")
+
+        expect(json[:url]).to eq "/#{subdir}/#{image_name}"
       end
 
       it "has the correct response of no map for date not loaded" do
-        get(:show, params: {id: empty_date})
+        get(:map, params: {date: empty_date})
 
-        expect(json[:map]).to eq("/no_data.png")
+        expect(json[:url]).to be_nil
       end
 
       it "shows the image in the browser when format=png" do
+        image_name = data_class.image_name(date:, units:)
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
-        get(:show, params: {id: date, format: :png})
+        get(:map, params: {date:, format: :png})
 
-        expect(response.body).to include("<img src=#{url}")
+        expect(response.body).to include("<img src=#{"/#{subdir}/#{image_name}"}")
       end
     end
 
     context "when the request is invalid" do
-      it "returns the most recent map" do
-        allow(ImageCreator).to receive(:create_image).and_return(image_name)
-        get(:show, params: {id: "foo"})
-
-        expect(json[:map]).to eq(url)
+      it "returns error message on bad date" do
+        get(:map, params: {date: "foo"})
+        expect(json[:message]).to eq "Invalid date: 'foo'"
+        expect(response.status).to eq 400
       end
 
-      it "throws error on bad units" do
-        expect { get(:show, params: {id: date, units: "foo"}) }.to raise_error ActionController::BadRequest
+      it "returns error message on bad units" do
+        get(:map, params: {date:, units: "foo"})
+        expect(json[:message]).to eq "Invalid unit 'foo'. Must be one of in, mm"
+        expect(response.status).to eq 400
       end
     end
   end
 
-  describe "#all_for_date" do
+  describe "#grid" do
     let(:date) { latest_date }
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
+        FactoryBot.create(:evapotranspiration, date:)
         import_class.succeed(date)
       end
     end
 
     context "when the request is valid" do
       it "is okay" do
-        get(:all_for_date, params: {date:})
+        get(:grid, params: {date:})
 
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get(:all_for_date, params: {date:})
+        get(:grid, params: {date:})
 
-        expect(json.keys).to match([:status, :info, :data])
+        expect(json.keys).to match([:info, :data])
       end
 
       it "returns valid data" do
-        get(:all_for_date, params: {date:})
+        get(:grid, params: {date:})
 
-        expect(json[:status]).to eq("OK")
+        puts json.inspect
         expect(json[:info]).to be_an(Hash)
-        expect(json[:data]).to be_an(Array)
-        expect(json[:data][0].keys).to match([:lat, :long, :value])
+        expect(json[:info][:status]).to eq("OK")
+        expect(json[:data]).to be_an(Hash)
+        expect(json[:data].keys.first).to eq :"[45.0, -89.0]"
       end
 
       it "can return a csv" do
-        get(:all_for_date, params: {date:}, as: :csv)
+        get(:grid, params: {date:}, as: :csv)
 
         expect(response).to have_http_status(:ok)
         expect(response.header["Content-Type"]).to include("text/csv")
@@ -228,7 +236,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when date is valid but has no data" do
       it "returns empty data" do
-        get(:all_for_date, params: {date: empty_date})
+        get(:grid, params: {date: empty_date})
 
         expect(json[:info][:date]).to eq(empty_date.to_s)
         expect(json[:data]).to be_empty
@@ -237,7 +245,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
     context "when params are empty" do
       it "defaults to latest date" do
-        get(:all_for_date)
+        get(:grid)
 
         expect(json[:info][:date]).to eq(latest_date.to_s)
       end
@@ -250,22 +258,6 @@ RSpec.describe EvapotranspirationsController, type: :controller do
       get(:info)
 
       expect(response).to have_http_status(:ok)
-    end
-  end
-
-  describe "#calculate_et" do
-    it "correctly formats the response" do
-      get(:calculate_et, params: {
-        max_temp: 12.5,
-        min_temp: 8.9,
-        avg_temp: 10.7,
-        vapor_p: 1.6,
-        insol: 561,
-        doy: 123,
-        latitude: 43
-      })
-
-      expect(json.keys).to match([:inputs, :value])
     end
   end
 end

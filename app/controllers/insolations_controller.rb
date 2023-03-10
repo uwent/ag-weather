@@ -56,10 +56,8 @@ class InsolationsController < ApplicationController
 
     insols = Insolation.where(@query)
     if insols.exists?
-      @days_returned = insols.where(latitude: @lat_range.min, longitude: @long_range.min).size
       @data = insols.grid_summarize.sum(:insolation)
       @data.each { |k, v| @data[k] = convert(v) } if @units != "MJ"
-      @status = "missing days" if @days_returned < @days_requested
     else
       @status = "no data"
     end
