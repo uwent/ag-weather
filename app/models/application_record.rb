@@ -1,7 +1,5 @@
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
-  attribute :latitude, :float
-  attribute :longitude, :float
 
   def self.on(date)
     where(date:)

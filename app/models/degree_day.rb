@@ -1,4 +1,7 @@
 class DegreeDay < ApplicationRecord
+  attribute :latitude, :float
+  attribute :longitude, :float
+  
   extend GridMethods
   extend ImageMethods
 

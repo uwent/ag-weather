@@ -28,10 +28,6 @@ class DataImport < ApplicationRecord
     end
   end
 
-  def self.missing(date)
-    where(date:).successful.empty?
-  end
-
   def self.pending
     where(status: "pending")
   end
@@ -44,44 +40,33 @@ class DataImport < ApplicationRecord
     where(status: "successful")
   end
 
-  def self.unsuccessful
-    where(status: "unsuccessful")
+  def self.failed
+    where(status: "failed")
   end
 
   def self.start(date, message = nil)
     status = where(date:)
-    if status.exists?
-      status.update(status: "started", message:)
-    else
-      started.where(date:).pending.create!
-    end
+    opts = {status: "started", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
   end
 
   def self.succeed(date, message = nil)
-    status = where(date:)
-    if status.exists?
-      status.update(status: "successful", message:)
-    else
-      successful.where(date:).create!
-    end
     Rails.logger.info "#{name} :: Import completed successfully for #{date}"
+    status = where(date:)
+    opts = {status: "successful", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
   end
 
   def self.fail(date, message = nil)
     message ||= "No reason given"
     Rails.logger.warn "#{name} :: Import failed for #{date}: #{message}"
     status = where(date:)
-    if status.exists?
-      status.update(status: "unsuccessful", message:)
-    else
-      create!(date:, status: "unsuccessful", message:)
-    end
+    opts = {status: "failed", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
   end
 
   def self.create_pending(date)
-    import_types.each do |i|
-      i.start(date)
-    end
+    import_types.each { |i| i.create!(date:, status: "pending") }
   end
 
   # run this from console
