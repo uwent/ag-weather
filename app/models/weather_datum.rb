@@ -47,22 +47,22 @@ class WeatherDatum < ApplicationRecord
 
   def self.col_name(col)
     check_col(col)
-    col_attr[col][:name]
+    col_attr[col.to_sym][:name]
   end
 
   def self.default_units(col)
     check_col(col)
-    col_attr[col][:units]
+    col_attr[col.to_sym][:units]
   end
 
   def self.valid_units(col)
     check_col(col)
-    col_attr[col][:valid_units] || [default_units(col)]
+    col_attr[col.to_sym][:valid_units] || [default_units(col)]
   end
 
   def self.default_scale(col:, units: nil)
     check_col(col)
-    scales = col_attr[col][:gnuplot_scale]
+    scales = col_attr[col.to_sym][:gnuplot_scale]
     return unless scales
     scales.is_a?(Hash) ? scales[units] : scales
   end

@@ -233,11 +233,12 @@ class PestForecastsController < ApplicationController
   private
 
   def parse_pest
-    if params[:pest]
-      if PestForecast.pests.include?(params[:pest])
-        @pest = params[:pest]
+    pest = params[:pest]
+    if pest
+      if PestForecast.col_names.include?(pest.to_sym)
+        @pest = pest
       else
-        reject("Invalid pest name '#{params[:pest]}'. Must be one of #{PestForecast.pests.join(", ")}")
+        reject("Invalid pest name '#{pest}'. Must be one of #{PestForecast.data_cols.join(", ")}")
       end
     else
       @pest = default_pest

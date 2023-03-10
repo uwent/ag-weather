@@ -178,6 +178,7 @@ class DegreeDaysController < ApplicationController
     weather_data = {}
     dd_data = {}
     dates = start_date..end_date
+    @units = params[:units] || "F"
     valid_models = if models == ["all"]
       DegreeDay.model_names
     else
@@ -225,8 +226,8 @@ class DegreeDaysController < ApplicationController
     status = "missing days" if status == "OK" && days_requested != days_returned
 
     info = {
-      lat: lat.to_f,
-      long: long.to_f,
+      lat:,
+      long:,
       start_date:,
       end_date:,
       days_requested:,
@@ -257,13 +258,13 @@ class DegreeDaysController < ApplicationController
   private
 
   def parse_model
-    @model = params[:model]
+    @model = params[:model]&.to_sym
     if @model
       if !DegreeDay.model_names.include?(@model)
         reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
       end
     else
-      @model = DegreeDay.default_col.to_s
+      @model = DegreeDay.default_col
     end
   end
 
@@ -280,7 +281,7 @@ class DegreeDaysController < ApplicationController
 
     if @model
       if !DegreeDay.model_names.include?(@model)
-        reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
+        reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
       end
     elsif @base
       implied_model = DegreeDay.find_model(@base, @upper, @units)

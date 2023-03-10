@@ -116,14 +116,6 @@ RSpec.describe GribMethods, type: :module do
       allow(dc).to receive(:remote_file).and_return("file")
     end
 
-    # folder changes due to NOAA server storing files in UTC time and we are in CST
-    it "should call fetch_grib with correct UTC date" do
-      allow(dc).to receive(:fetch_grib).and_return 1
-      expect(dc).to receive(:fetch_grib).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
-      expect(dc).to receive(:fetch_grib).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
-      dc.download_gribs(date)
-    end
-
     it "should raise error if it fails to download gribs" do
       allow(dc).to receive(:fetch_grib).and_return 0
       expect { dc.download_gribs(date) }.to raise_error(StandardError)

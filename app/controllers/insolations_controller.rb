@@ -136,8 +136,8 @@ class InsolationsController < ApplicationController
     Insolation.valid_units
   end
 
-  def units_text(unit)
-    "#{unit}/day/m^2"
+  def units_text
+    "#{@units}/day/m^2"
   end
 
   # stored in 'MJ'

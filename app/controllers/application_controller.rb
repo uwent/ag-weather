@@ -125,28 +125,20 @@ class ApplicationController < ActionController::Base
 
   def lat
     val = parse_float(params[:lat], digits: 1)
-    if LandExtent.latitudes === val
-      val
-    else
-      reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.latitudes}")
-    end
+    val.in?(LandExtent.lat_range) ? val : reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.lat_range}")
   end
 
   def long
     val = parse_float(params[:long], digits: 1)
-    if LandExtent.longitudes === val
-      val
-    else
-      reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.longitudes}")
-    end
+    val.in?(LandExtent.long_range) ? val : reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.long_range}")
   end
 
   def lat_range
-    parse_coords(params[:lat_range], LandExtent.latitudes)
+    parse_coords(params[:lat_range], LandExtent.lat_range)
   end
 
   def long_range
-    parse_coords(params[:long_range], LandExtent.longitudes)
+    parse_coords(params[:long_range], LandExtent.long_range)
   end
 
   def parse_coord(param, default)

@@ -42,8 +42,9 @@ class PestForecast < ApplicationRecord
   end
 
   def self.image_name_prefix(col:, **args)
-    str = col_names[col]
-    str&.downcase&.tr(" ", "-")
+    check_col(col)
+    str = col_names[col.to_sym]
+    str.downcase.tr(" ", "-")
   end
 
   def self.image_title(col:, date: nil, start_date: nil, end_date: nil, **args)
