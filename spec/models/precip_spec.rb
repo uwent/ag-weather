@@ -1,10 +1,9 @@
 require "rails_helper"
 
-UNIT = "mm"
-UNIT2 = "in"
-
 RSpec.describe Precip do
   subject { Precip }
+  unit1 = "mm"
+  unit2 = "in"
 
   describe ".default_col" do
     it { expect(subject.default_col).to_not be_nil }
@@ -18,12 +17,12 @@ RSpec.describe Precip do
   end
 
   describe ".convert" do
-    it "returns given value if units: #{UNIT}" do
-      expect(subject.convert(value: 1, units: "mm")).to eq 1
+    it "returns given value if units: #{unit1}" do
+      expect(subject.convert(value: 1, units: unit1)).to eq 1
     end
 
-    it "converts value if units: #{UNIT2}" do
-      expect(subject.convert(value: 1, units: "in")).to eq UnitConverter.mm_to_in(1)
+    it "converts value if units: #{unit2}" do
+      expect(subject.convert(value: 1, units: unit2)).to eq UnitConverter.mm_to_in(1)
     end
 
     it "raises error on invalid units" do
@@ -38,15 +37,15 @@ RSpec.describe Precip do
   describe ".image_title" do
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
-    let(:units) { UNIT }
+    let(:units) { unit1 }
     let(:args) { {date:, start_date:, end_date: date, units:} }
 
     it { expect(subject.image_title(**args)).to be_an(String) }
 
     it "should show units in title" do
-      expect(subject.image_title(**args)).to include(UNIT)
-      args[:units] = UNIT2
-      expect(subject.image_title(**args)).to include(UNIT2)
+      expect(subject.image_title(**args)).to include(unit1)
+      args[:units] = unit2
+      expect(subject.image_title(**args)).to include(unit2)
     end
 
     context "when given start_date" do

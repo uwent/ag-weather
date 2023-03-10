@@ -23,7 +23,7 @@ class Evapotranspiration < ApplicationRecord
   end
 
   # depending on units, set default scale for gnuplot images
-  def self.default_scale(units)
+  def self.default_scale(units:, **args)
     check_units(units)
     (units == "mm") ? [0, 8] : [0, 0.3]
   end

@@ -30,6 +30,13 @@ RSpec.describe UnitConverter, type: :module do
     end
   end
 
+  describe ".k_to_c" do
+    it "converts kelvin to cesius" do
+      expect(subject.k_to_c(0)).to be_within(epsilon).of(-273.15)
+      expect(subject.k_to_c(300)).to be_within(epsilon).of(26.85)
+    end
+  end
+
   # for degree days
   describe "converts between CDD and FDD" do
     inputs = {
@@ -83,7 +90,7 @@ RSpec.describe UnitConverter, type: :module do
   end
 
   # for insolation
-  describe "converts between MJ and KWh" do
+  describe ".mj_to_kwh converts between MJ and KWh" do
     inputs = {
       0 => 0,
       123 => 34.166666667,
@@ -91,11 +98,40 @@ RSpec.describe UnitConverter, type: :module do
       5015 => 1393.0555556
     }
 
-    describe ".mj_to_kwh" do
-      inputs.each do |x, y|
-        it "returns #{y} given #{x}" do
-          expect(subject.mj_to_kwh(x)).to be_within(epsilon).of(y)
-        end
+    inputs.each do |x, y|
+      it "returns #{y} given #{x}" do
+        expect(subject.mj_to_kwh(x)).to be_within(epsilon).of(y)
+      end
+    end
+  end
+
+  # vapor pressure (kPa) from temperature
+  describe ".temp_to_vp" do
+    inputs = {
+      0 => 0.6105,
+      12.34 => 1.4335720,
+      23.45 => 2.8852424
+    }
+
+    inputs.each do |x, y|
+      it "returns #{y} given #{x}" do
+        expect(subject.temp_to_vp(x)).to be_within(epsilon).of(y)
+      end
+    end
+  end
+
+  # computes relative humidity from temp and dewpoint
+  describe ".compute_rh" do
+    inputs = {
+      [10, 5] => 71.038117,
+      [10, 10] => 100,
+      [17.23, 14.81] => 85.680309
+    }
+
+    inputs.each do |args, rh|
+      t, td = args
+      it "returns #{rh} given temp #{t} and dewpoint #{td}" do
+        expect(subject.compute_rh(t, td)).to be_within(epsilon).of(rh)
       end
     end
   end

@@ -1,10 +1,9 @@
 require "rails_helper"
 
-UNIT = "MJ"
-UNIT1 = "KWh"
-
 RSpec.describe Insolation do
   subject { Insolation }
+  unit1 = "MJ"
+  unit2 = "KWh"
 
   describe ".default_col" do
     it { expect(subject.default_col).to_not be_nil }
@@ -15,16 +14,16 @@ RSpec.describe Insolation do
   describe ".valid_units" do
     it { expect(subject.valid_units).to_not be_nil }
     it { expect(subject.valid_units).to be_an(Array) }
-    it { expect(subject.valid_units[0]).to eq UNIT }
+    it { expect(subject.valid_units[0]).to eq unit1 }
   end
 
   describe ".convert" do
     it "returns given value if units: MJ" do
-      expect(subject.convert(value: 1, units: UNIT)).to eq 1
+      expect(subject.convert(value: 1, units: unit1)).to eq 1
     end
 
     it "converts value if units: KWh" do
-      expect(subject.convert(value: 1, units: UNIT1)).to eq 1 / 3.6
+      expect(subject.convert(value: 1, units: unit2)).to eq 1 / 3.6
     end
 
     it "raises error on invalid units" do
@@ -37,14 +36,14 @@ RSpec.describe Insolation do
   end
 
   describe ".default_scale" do
-    it { expect(subject.default_scale(units: UNIT)).to be_an(Array) }
+    it { expect(subject.default_scale(units: unit1)).to be_an(Array) }
 
     context "when default unit" do
-      it { expect(subject.default_scale(units: UNIT)).to eq [0, 30] }
+      it { expect(subject.default_scale(units: unit1)).to eq [0, 30] }
     end
 
     context "when alternate unit" do
-      it { expect(subject.default_scale(units: UNIT1)).to eq [0, 10] }
+      it { expect(subject.default_scale(units: unit2)).to eq [0, 10] }
     end
 
     context "when invalid units" do
@@ -55,15 +54,15 @@ RSpec.describe Insolation do
   describe ".image_title" do
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
-    let(:units) { UNIT }
+    let(:units) { unit1 }
     let(:args) { {date:, start_date:, end_date: date, units:} }
 
     it { expect(subject.image_title(**args)).to be_an(String) }
 
     it "should show units in title" do
-      expect(subject.image_title(**args)).to include(UNIT)
-      args[:units] = UNIT1
-      expect(subject.image_title(**args)).to include(UNIT1)
+      expect(subject.image_title(**args)).to include(unit1)
+      args[:units] = unit2
+      expect(subject.image_title(**args)).to include(unit2)
     end
 
     context "when given start_date" do

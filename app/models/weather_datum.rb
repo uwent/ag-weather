@@ -17,7 +17,7 @@ class WeatherDatum < ApplicationRecord
   def self.temperature_defaults
     {
       units: "C", # stored value
-      valid_units: ["C", "F"], # first is default display unit
+      valid_units: ["F", "C"], # first is default display unit
       gnuplot_scale: {
         "F" => [0, 100],
         "C" => [-20, 40]

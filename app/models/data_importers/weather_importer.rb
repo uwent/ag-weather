@@ -32,20 +32,14 @@ class WeatherImporter < DataImporter
     Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
     import.start(date)
 
-    n_gribs = download_gribs(date)
-    if n_gribs == 0
-      raise StandardError.new "Failed to retrieve any grib files for #{date}"
-    elsif n_gribs < 24 && !force
-      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{n_gribs}. Override with force: true"
-    end
-
     grib_dir = local_dir(date)
+    download_gribs(date, force:)
     weather_day = WeatherDay.new(date)
     weather_day.load_from(grib_dir)
     persist_day_to_db(weather_day)
     FileUtils.rm_r grib_dir unless keep_grib
 
-    WeatherDatum.create_image(date:) unless Rails.env.test?
+    WeatherDatum.create_image(date:)
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
@@ -53,7 +47,7 @@ class WeatherImporter < DataImporter
   end
 
   # try to get a grib for each hour
-  def self.download_gribs(date)
+  def self.download_gribs(date, force: false)
     date = date.to_date
     hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
     gribs = 0
@@ -66,7 +60,12 @@ class WeatherImporter < DataImporter
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
       gribs += fetch_grib(file_url, local_file, "RTMA #{hour}")
     end
-    gribs
+
+    if gribs == 0
+      raise StandardError.new "Failed to retrieve any grib files for #{date}"
+    elsif gribs < 24 && !force
+      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{gribs}. Override with force: true"
+    end
   end
 
   def self.persist_day_to_db(weather_day)
@@ -90,8 +89,8 @@ class WeatherImporter < DataImporter
         max_rh: humidities.max.clamp(0, 100),
         avg_rh: true_avg(humidities).clamp(0, 100),
         dew_point:,
-        vapor_pressure: dew_point_to_vapor_pressure(dew_point),
-        hours_rh_over_90: relative_humidity_over(observations, 90.0),
+        vapor_pressure: UnitConverter.temp_to_vp(dew_point),
+        hours_rh_over_90: count_rh_over(observations, 90.0),
         avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
       )
     end
@@ -103,21 +102,13 @@ class WeatherImporter < DataImporter
     end
   end
 
-  def self.relative_humidity_over(observations, rh_cutoff)
+  def self.count_rh_over(observations, rh_cutoff)
     observations.map(&:relative_humidity).count { |x| x >= rh_cutoff }
   end
 
   def self.avg_temp_rh_over(observations, rh_cutoff)
-    over_rh_observations = observations.select { |obs| obs.relative_humidity >= rh_cutoff }
-    if over_rh_observations.size >= 1
-      (over_rh_observations.map(&:temperature).sum / over_rh_observations.size).round(2)
-    end
-  end
-
-  def self.dew_point_to_vapor_pressure(dew_point)
-    # units in: dew point in Celsius
-    vapor_p_mb = 6.105 * Math.exp((2500000.0 / 461.0) * ((1.0 / 273.16) - (1.0 / (dew_point + 273.15))))
-    vapor_p_mb / 10
+    rh_obs = observations.select { |obs| obs.relative_humidity >= rh_cutoff }
+    (rh_obs.map(&:temperature).sum / rh_obs.size) if rh_obs.size >= 1
   end
 
   def self.simple_avg(array)

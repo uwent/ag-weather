@@ -1,10 +1,12 @@
 require "rails_helper"
 
-UNIT = "F"
-UNIT2 = "C"
+unit1 = "F"
+unit2 = "C"
 
 RSpec.describe DegreeDay do
   subject { DegreeDay }
+  let(:unit1) { "F" }
+  let(:unit2) { "C" }
 
   describe ".new_from_weather" do
     before do
@@ -41,16 +43,16 @@ RSpec.describe DegreeDay do
   describe ".valid_units" do
     it { expect(subject.valid_units).to_not be_nil }
     it { expect(subject.valid_units).to be_an(Array) }
-    it { expect(subject.valid_units[0]).to eq UNIT }
+    it { expect(subject.valid_units[0]).to eq unit1 }
   end
 
   describe ".convert" do
-    it "returns given value if units: #{UNIT}" do
-      expect(subject.convert(value: 100, units: UNIT)).to eq 100
+    it "returns given value if units: #{unit1}" do
+      expect(subject.convert(value: 100, units: unit1)).to eq 100
     end
 
-    it "converts value if units: #{UNIT2}" do
-      expect(subject.convert(value: 100, units: UNIT2)).to eq UnitConverter.fdd_to_cdd(100)
+    it "converts value if units: #{unit2}" do
+      expect(subject.convert(value: 100, units: unit2)).to eq UnitConverter.fdd_to_cdd(100)
     end
 
     it "raises error on invalid units" do
@@ -130,15 +132,15 @@ RSpec.describe DegreeDay do
     let(:col) { subject.default_col }
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
-    let(:units) { UNIT }
+    let(:units) { unit1 }
     let(:args) { {col:, date:, start_date:, end_date: date, units:} }
 
     it { expect(subject.image_title(**args)).to be_an(String) }
 
     it "should show units in title" do
-      expect(subject.image_title(**args)).to include(UNIT)
-      args[:units] = UNIT2
-      expect(subject.image_title(**args)).to include(UNIT2)
+      expect(subject.image_title(**args)).to include(unit1)
+      args[:units] = unit2
+      expect(subject.image_title(**args)).to include(unit2)
     end
 
     it "should show degree day model name in title" do
@@ -147,7 +149,7 @@ RSpec.describe DegreeDay do
     end
 
     it "should show degree day model in celsius" do
-      args[:units] = UNIT2
+      args[:units] = unit2
       title = subject.image_title(**args)
       expect(title).to include("base 10")
     end

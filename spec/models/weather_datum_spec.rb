@@ -1,10 +1,9 @@
 require "rails_helper"
 
-UNIT = "C"
-UNIT2 = "F"
-
 RSpec.describe WeatherDatum do
   subject { WeatherDatum }
+  unit1 = "C"
+  unit2 = "F"
 
   describe "static configurations" do
     describe ".default_col" do
@@ -36,7 +35,7 @@ RSpec.describe WeatherDatum do
 
     describe ".valid_units" do
       it "returns a units array if col_attr has one" do
-        expect(subject.valid_units(:min_temp)).to eq ["C", "F"]
+        expect(subject.valid_units(:min_temp)).to eq ["F", "C"]
       end
 
       it "returns default unit if col_attr doesn't have valid_units" do
@@ -81,12 +80,12 @@ RSpec.describe WeatherDatum do
         expect(subject.convert(col:, value: 10)).to eq 10
       end
 
-      it "returns given value if units: #{UNIT}" do
-        expect(subject.convert(col:, value: 10, units: UNIT)).to eq 10
+      it "returns given value if units: #{unit1}" do
+        expect(subject.convert(col:, value: 10, units: unit1)).to eq 10
       end
 
-      it "converts value if units: #{UNIT2}" do
-        expect(subject.convert(col:, value: 10, units: UNIT2)).to eq UnitConverter.c_to_f(10)
+      it "converts value if units: #{unit2}" do
+        expect(subject.convert(col:, value: 10, units: unit2)).to eq UnitConverter.c_to_f(10)
       end
 
       it "raises error on invalid units" do
@@ -111,16 +110,16 @@ RSpec.describe WeatherDatum do
     let(:col) { subject.default_col }
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
-    let(:units) { UNIT }
+    let(:units) { unit1 }
     let(:args) { {col:, date:, start_date:, end_date: date, units:} }
 
     context "with defaults" do
       it { expect(subject.image_title(**args)).to be_an(String) }
 
       it "should show units in title" do
-        expect(subject.image_title(**args)).to include(UNIT)
-        args[:units] = UNIT2
-        expect(subject.image_title(**args)).to include(UNIT2)
+        expect(subject.image_title(**args)).to include(unit1)
+        args[:units] = unit2
+        expect(subject.image_title(**args)).to include(unit2)
       end
 
       context "when given start_date" do

@@ -4,6 +4,8 @@ RSpec.describe WeatherHour do
   let(:temp_key) { "2t" }
   let(:dew_point_key) { "2d" }
   let(:weather_hour) { WeatherHour.new }
+  let(:lat) { 45.0 }
+  let(:long) { -89.0 }
 
   context "initialization" do
     it "can be created" do
@@ -21,9 +23,6 @@ RSpec.describe WeatherHour do
   end
 
   context "store" do
-    let(:lat) { Wisconsin.min_lat }
-    let(:long) { Wisconsin.min_long }
-
     it "should add an element to the temperatures" do
       expect { weather_hour.store(lat, long, 17, temp_key) }
         .to change { weather_hour.data[lat, long][:temperatures].length }
@@ -50,16 +49,16 @@ RSpec.describe WeatherHour do
     end
 
     it "should read data in range from popen3" do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{Wisconsin.min_lat} #{Wisconsin.min_long + 360.0} 17.0 2t"], []])
+      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{lat} #{long + 360.0} 17.0 2t"], []])
       weather_hour.load_from("file.name")
-      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.min_long)).to eq 17.0
+      expect(weather_hour.temperature_at(lat, long)).to eq 17.0
     end
 
     it "can handle an invalid data line" do
       expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name")
-        .and_return([[], ["#{Wisconsin.min_lat} #{Wisconsin.min_long + 360.0}"], []]) # missing value and key
+        .and_return([[], ["#{lat} #{long + 360.0}"], []]) # missing value and key
       weather_hour.load_from("file.name")
-      expect(weather_hour.temperature_at(Wisconsin.min_lat, Wisconsin.min_long)).to be_nil
+      expect(weather_hour.temperature_at(lat, long)).to be_nil
     end
   end
 

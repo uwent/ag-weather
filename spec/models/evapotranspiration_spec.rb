@@ -2,6 +2,8 @@ require "rails_helper"
 
 RSpec.describe Evapotranspiration do
   subject { Evapotranspiration }
+  unit1 = "in"
+  unit2 = "mm"
 
   describe ".default_col" do
     it { expect(subject.default_col).to_not be_nil }
@@ -15,12 +17,12 @@ RSpec.describe Evapotranspiration do
   end
 
   describe ".convert" do
-    it "returns given value if units: in" do
-      expect(subject.convert(value: 1, units: "in")).to eq 1
+    it "returns given value if default units: #{unit1}" do
+      expect(subject.convert(value: 1, units: unit1)).to eq 1
     end
 
-    it "converts value if units: mm" do
-      expect(subject.convert(value: 1, units: "mm")).to eq 25.4
+    it "converts value if units: #{unit2}" do
+      expect(subject.convert(value: 1, units: unit2)).to eq 25.4
     end
 
     it "raises error on invalid units" do
@@ -33,33 +35,32 @@ RSpec.describe Evapotranspiration do
   end
 
   describe ".default_scale" do
-    it { expect(subject.default_scale("in")).to be_an(Array) }
+    it { expect(subject.default_scale(units: unit1)).to be_an(Array) }
 
-    context "when units: in" do
-      it { expect(subject.default_scale("in")).to eq [0, 0.3] }
+    context "when units: #{unit1}" do
+      it { expect(subject.default_scale(units: unit1)).to eq [0, 0.3] }
     end
 
-    context "when units: mm" do
-      it { expect(subject.default_scale("mm")).to eq [0, 8] }
+    context "when units: #{unit2}" do
+      it { expect(subject.default_scale(units: unit2)).to eq [0, 8] }
     end
 
     context "when invalid units" do
-      it { expect { subject.default_scale("foo") }.to raise_error(ArgumentError) }
+      it { expect { subject.default_scale(units: "foo") }.to raise_error(ArgumentError) }
     end
   end
 
   describe ".image_title" do
     let(:start_date) { "2023-1-1".to_date }
     let(:date) { "2023-2-1".to_date }
-    let(:units) { "in" }
-    let(:args) { {date:, start_date:, end_date: date, units:} }
+    let(:args) { {date:, start_date:, end_date: date, units: unit1} }
 
     it { expect(subject.image_title(**args)).to be_an(String) }
 
     it "should show units in title" do
-      expect(subject.image_title(**args)).to include("in")
-      args[:units] = "mm"
-      expect(subject.image_title(**args)).to include("mm")
+      expect(subject.image_title(**args)).to include(unit1)
+      args[:units] = unit2
+      expect(subject.image_title(**args)).to include(unit2)
     end
 
     context "when given start_date" do
