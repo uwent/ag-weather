@@ -16,6 +16,15 @@ module GribMethods
     end
   end
 
+  def local_dir(date)
+  end
+
+  def remote_url(date)
+  end
+
+  def remote_file(hour:, date: nil)
+  end
+
   # will allow importer to accept missing hourly gribs if imports have failed for two days
   def fetch(start_date: earliest_date, end_date: latest_date, all_dates: false, overwrite: false)
     ActiveRecord::Base.logger.level = :info
@@ -40,13 +49,24 @@ module GribMethods
     ActiveRecord::Base.logger.level = Rails.configuration.log_level
   end
 
-  def download(url, path)
-    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
-    when StringIO
-      File.write(path, io.read)
-    when Tempfile
-      io.close
-      FileUtils.mv(io.path, path)
+  def download_gribs(date, force: false)
+    date = date.to_date
+    hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
+    gribs = 0
+
+    hours.step(1.hour) do |time_in_central|
+      time = Time.at(time_in_central).utc
+      hour = Time.at(time_in_central).strftime("%H")
+      remote_file = remote_file(date:, hour: time.hour)
+      file_url = remote_url(time.to_date) + "/" + remote_file
+      local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
+      gribs += fetch_grib(file_url, local_file, hour.to_s)
+    end
+
+    if gribs == 0
+      raise StandardError.new "Failed to retrieve any grib files for #{date}"
+    elsif gribs < 24 && !force
+      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{gribs}. Override with force: true"
     end
   end
 
@@ -62,5 +82,15 @@ module GribMethods
   rescue => e
     Rails.logger.warn "#{msg_prefix} ==> FAIL: #{e.message}"
     0
+  end
+
+  def download(url, path)
+    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
+    when StringIO
+      File.write(path, io.read)
+    when Tempfile
+      io.close
+      FileUtils.mv(io.path, path)
+    end
   end
 end

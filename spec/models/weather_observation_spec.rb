@@ -3,12 +3,12 @@ require "rails_helper"
 RSpec.describe WeatherObservation do
   subject { WeatherObservation }
   let(:epsilon) { 1e-6 }
- 
+
   describe "initialization" do
     context "with good data" do
       let(:obs) { subject.new(300.15, 290.15) }
 
-      it { expect(obs).to_not be_nil}
+      it { expect(obs).to_not be_nil }
 
       # temps are in Kelvin in grib file
       it "will set temperature passed to celsius" do
@@ -38,7 +38,7 @@ RSpec.describe WeatherObservation do
     inputs = {
       [300.15, 290.15] => 54.350247,
       [291.15, 290.15] => 93.882937,
-      [300.0, 300.0] => 100,
+      [300.0, 300.0] => 100
     }
 
     inputs.each do |args, rh|

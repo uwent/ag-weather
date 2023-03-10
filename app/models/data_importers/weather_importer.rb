@@ -22,7 +22,7 @@ class WeatherImporter < DataImporter
     "#{REMOTE_URL_BASE}/rtma2p5.#{date.to_formatted_s(:number)}"
   end
 
-  def self.remote_file_name(hour)
+  def self.remote_file(hour:, date: nil)
     "rtma2p5.t%02dz.2dvaranl_ndfd.grb2_wexp" % hour
   end
 
@@ -41,31 +41,10 @@ class WeatherImporter < DataImporter
 
     WeatherDatum.create_image(date:)
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
+    import.succeed(date)
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
     import.fail(date, e)
-  end
-
-  # try to get a grib for each hour
-  def self.download_gribs(date, force: false)
-    date = date.to_date
-    hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
-    gribs = 0
-
-    hours.step(1.hour) do |time_in_central|
-      time = Time.at(time_in_central).utc
-      hour = Time.at(time_in_central).strftime("%H")
-      remote_file = remote_file_name(time.hour)
-      file_url = remote_url(time.to_date) + "/" + remote_file
-      local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
-      gribs += fetch_grib(file_url, local_file, "RTMA #{hour}")
-    end
-
-    if gribs == 0
-      raise StandardError.new "Failed to retrieve any grib files for #{date}"
-    elsif gribs < 24 && !force
-      raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{gribs}. Override with force: true"
-    end
   end
 
   def self.persist_day_to_db(weather_day)
@@ -98,7 +77,6 @@ class WeatherImporter < DataImporter
     WeatherDatum.transaction do
       WeatherDatum.where(date: weather_day.date).delete_all
       WeatherDatum.import(weather_data)
-      import.succeed(weather_day.date)
     end
   end
 

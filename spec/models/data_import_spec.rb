@@ -16,7 +16,7 @@ RSpec.describe DataImport do
     end
 
     it ".earliest_date should be DAYS_BACK_WINDOW days ago in central time" do
-      stub_const("ENV", { "DAYS_BACK_WINDOW" => 7 })
+      stub_const("ENV", {"DAYS_BACK_WINDOW" => 7})
       expect(subject.earliest_date).to eq(date - 7)
     end
   end
@@ -31,7 +31,7 @@ RSpec.describe DataImport do
       it "only lists days that are within the defined range" do
         expect(days.min).to be >= subject.earliest_date
       end
-    
+
       it "returns all dates in window" do
         expect(days.count).to be subject::DAYS_BACK_WINDOW
       end

@@ -33,6 +33,7 @@ RSpec.describe GribMethods, type: :module do
       expect(dc.keep_grib).to eq true
     end
   end
+
   describe ".central_time" do
     it "should return a time for a given date and hour in Central Time" do
       expect(dc.central_time(date, 0).zone).to eq("CST")
@@ -108,9 +109,29 @@ RSpec.describe GribMethods, type: :module do
     end
   end
 
-  describe ".download" do
-    it "downloads a file from a URL" do
-      true
+  describe ".download_gribs" do
+    before do
+      allow(dc).to receive(:local_dir).and_return("dir")
+      allow(dc).to receive(:remote_url).and_return("url")
+      allow(dc).to receive(:remote_file).and_return("file")
+    end
+
+    # folder changes due to NOAA server storing files in UTC time and we are in CST
+    it "should call fetch_grib with correct UTC date" do
+      allow(dc).to receive(:fetch_grib).and_return 1
+      expect(dc).to receive(:fetch_grib).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
+      expect(dc).to receive(:fetch_grib).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
+      dc.download_gribs(date)
+    end
+
+    it "should raise error if it fails to download gribs" do
+      allow(dc).to receive(:fetch_grib).and_return 0
+      expect { dc.download_gribs(date) }.to raise_error(StandardError)
+    end
+
+    it "should not raise error if it fails to download all the gribs but force: true" do
+      allow(dc).to receive(:fetch_grib).and_return(0, 1)
+      expect { dc.download_gribs(date, force: true) }.to_not raise_error
     end
   end
 
@@ -138,6 +159,12 @@ RSpec.describe GribMethods, type: :module do
       allow(dc).to receive(:download).and_raise(StandardError.new)
 
       expect(dc.fetch_grib(url, file)).to eq 0
+    end
+  end
+
+  describe ".download" do
+    it "downloads a file from a URL" do
+      true
     end
   end
 end

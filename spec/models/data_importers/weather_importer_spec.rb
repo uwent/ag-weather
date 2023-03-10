@@ -31,10 +31,10 @@ RSpec.describe WeatherImporter do
     end
   end
 
-  describe ".remote_file_name" do
+  describe ".remote_file" do
     it "should create the correct filename for each hour" do
-      expect(subject.remote_file_name(5)).to include(".t05z.")
-      expect(subject.remote_file_name(12)).to include(".t12z.")
+      expect(subject.remote_file(hour: 5)).to include(".t05z.")
+      expect(subject.remote_file(hour: 12)).to include(".t12z.")
     end
   end
 
@@ -49,6 +49,13 @@ RSpec.describe WeatherImporter do
       expect(subject).to receive(:download_gribs).once
       expect(subject).to receive(:persist_day_to_db).once
       expect(FileUtils).to receive(:rm_r).once
+      subject.fetch_day(date)
+    end
+
+    it "should create a new WeatherDay to store data" do
+      weather_day = instance_double("WeatherDay")
+      expect(WeatherDay).to receive(:new).and_return(weather_day)
+      expect(weather_day).to receive(:load_from)
       subject.fetch_day(date)
     end
 
@@ -72,45 +79,25 @@ RSpec.describe WeatherImporter do
       expect(subject).to receive(:fetch_grib).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
       subject.download_gribs(date)
     end
-
-    it "should raise error if it fails to download gribs" do
-      allow(subject).to receive(:fetch_grib).and_return 0
-      expect { subject.download_gribs(date) }.to raise_error(StandardError)
-    end
-
-    it "should not raise error if it fails to download all the gribs but force: true" do
-      allow(subject).to receive(:fetch_grib).and_return(0, 1)
-      expect { subject.download_gribs(date, force: true) }.to_not raise_error
-    end
   end
 
-  # describe "load the database for a date" do
-  #   let(:weather_day) { instance_double("WeatherDay") }
+  describe ".persist_day_to_db", skip: true do
+    before(:each) do
+      weather_day = WeatherDay.new(date:)
+      allow(weather_day).to receive(:observations_at).and_return(FactoryBot.build_list(:weather_observation, 2))
+    end
 
-  #   before(:each) do
-  #     allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(date))
-  #     allow(weather_day).to receive(:temperatures_at)
-  #     allow(weather_day).to receive(:obs_at)
-  #     allow(weather_day).to receive(:temperatures_at)
-  #     allow(weather_day).to receive(:dew_points_at)
-  #     allow(weather_day).to receive(:date)
-  #   end
+    it "should load a WeatherDay" do
+      expect(WeatherDay).to receive(:new).with(date).and_return(weather_day)
+      subject.persist_day_to_db(weather_day)
+    end
 
-  #   it "should load a WeatherDay" do
-  #     expect(WeatherDay).to receive(:new).with(date).and_return(weather_day)
-  #     WeatherImporter.import_weather_data(date)
-  #   end
-  # end
-
-  # describe "persist a day to the database" do
-  #   let(:weather_day) { instance_double("WeatherDay") }
-
-  #   it "should save the weather data" do
-  #     allow(weather_day).to receive(:obs_at).and_return([WeatherObservation.new(21, 18)])
-  #     allow(weather_day).to receive(:date).and_return(Date.yesterday)
-  #     expect { WeatherImporter.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
-  #   end
-  # end
+    # it "should save the weather data" do
+    #   allow(weather_day).to receive(:obs_at).and_return([WeatherObservation.new(21, 18)])
+    #   allow(weather_day).to receive(:date).and_return(Date.yesterday)
+    #   expect { subject.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
+    # end
+  end
 
   describe ".count_rh_over" do
     it "counts all if temperature is same as dewpoint (rel. humidity is 100)" do

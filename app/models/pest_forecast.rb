@@ -1,7 +1,7 @@
 class PestForecast < ApplicationRecord
   attribute :latitude, :float
   attribute :longitude, :float
-  
+
   extend PestModels
   extend GridMethods
   extend ImageMethods
