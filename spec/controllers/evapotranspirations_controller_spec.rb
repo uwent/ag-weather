@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe EvapotranspirationsController, type: :controller do
+  let(:data_class) { Evapotranspiration }
+  let(:import_class) { EvapotranspirationDataImport }
+
   let(:json) { JSON.parse(response.body, symbolize_names: true) }
   let(:lat) { 42.0 }
   let(:long) { -98.0 }
@@ -12,7 +15,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     before(:each) do
       earliest_date.upto(latest_date) do |date|
         FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
-        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+        import_class.succeed(date)
       end
     end
 
@@ -117,47 +120,43 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     let(:url) { "/#{image_name}" }
 
     before(:each) do
-      earliest_date.upto(latest_date) do |day|
-        FactoryBot.create(:evapotranspiration, date: day, latitude: lat, longitude: long)
-        FactoryBot.create(:evapotranspiration_data_import, readings_on: day)
+      earliest_date.upto(latest_date) do |date|
+        FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
+        import_class.succeed(date)
       end
     end
 
     context "when the request is valid" do
       it "is okay" do
-        get(:show, params: {id: date})
-
+        get(:map, params: {date:})
         expect(response).to have_http_status(:ok)
       end
 
       it "has the correct response structure" do
-        get(:show, params: {id: date})
-
-        expect(json.keys).to eq([:params, :compute_time, :map])
+        get(:map, params: {date:})
+        expect(json.keys).to eq([:info, :url])
       end
 
       it "responds with the correct map name if data loaded" do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
-        get(:show, params: {id: date})
-
-        expect(json[:map]).to eq(url)
+        get(:map, params: {date:})
+        expect(json[:url]).to eq(url)
       end
 
       it "returns the correct image when given starting date" do
         start_date = Date.current - 1.month
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
-        get(:show, params: {id: date, start_date:})
-
-        expect(json[:map]).to eq(url)
+        get(:map, params: {date:, start_date:})
+        expect(json[:url]).to eq(url)
       end
 
       it "responds to the units param" do
         new_unit = "mm"
-        new_image_name = Evapotranspiration.image_name(date, start_date, new_unit)
+        new_image_name = data_class.image_name(date, start_date, new_unit)
         allow(ImageCreator).to receive(:create_image).and_return(new_image_name)
-        get(:show, params: {id: date, units: new_unit})
+        get(:map, params: {date:, units: new_unit})
 
-        expect(json[:map]).to eq("/#{new_image_name}")
+        expect(json[:url]).to eq("/#{new_image_name}")
       end
 
       it "has the correct response of no map for date not loaded" do
@@ -192,8 +191,8 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     let(:date) { latest_date }
     before(:each) do
       earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:evapotranspiration, latitude: lat, longitude: long, date:)
-        FactoryBot.create(:evapotranspiration_data_import, readings_on: date)
+        FactoryBot.create(:evapotranspiration, date:, latitude: lat, longitude: long)
+        import_class.succeed(date)
       end
     end
 
