@@ -16,15 +16,18 @@ class InsolationImporter < DataImporter
   end
 
   def self.fetch_day(date, **args)
-    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     start_time = Time.now
+    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     import.start(date)
     url = "#{URL_BASE}.#{formatted_date(date)}"
     Rails.logger.info "InsolationImporter :: GET #{url}"
+
     response = HTTParty.get(url)
     import_insolation_data(response, date)
-    Insolation.create_image(date:) unless Rails.env.test?
+
+    Insolation.create_image(date:)
     Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
+    import.succeed(date)
   rescue => e
     Rails.logger.error "#{name} :: Unable to retrieve insolation data: #{e}"
     import.fail(date, e)
@@ -36,26 +39,20 @@ class InsolationImporter < DataImporter
       raise StandardError.new "404 Not Found"
     end
 
-    insolations = []
+    insols = []
     response.body.each_line do |line|
       val, lat, long = line.split
-      val = val.to_f / 100.0
-      lat = lat.to_f
-      long = long.to_f * -1
-      next if val < 0
-      next unless LandExtent.inside?(lat, long)
-      insolations << Insolation.new(
-        date:,
-        latitude: lat,
-        longitude: long,
-        insolation: val
-      )
+      insolation = val.to_f / 100.0
+      latitude = lat.to_f
+      longitude = long.to_f * -1
+      next if insolation < 0
+      next unless LandExtent.inside?(latitude, longitude)
+      insols << Insolation.new(date:, latitude:, longitude:, insolation:)
     end
 
     Insolation.transaction do
       Insolation.where(date:).delete_all
-      Insolation.import!(insolations)
-      import.succeed(date)
+      Insolation.import!(insols)
     end
   end
 end

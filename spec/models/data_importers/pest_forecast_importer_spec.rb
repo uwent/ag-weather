@@ -48,7 +48,7 @@ RSpec.describe PestForecastImporter, type: :module do
 
     context "when insolation and weather data are not present" do
       it "creates an unsuccessful data import record" do
-        expect { action }.to change(import.unsuccessful, :count).by 1
+        expect { action }.to change(import.failed, :count).by 1
       end
     end
   end
