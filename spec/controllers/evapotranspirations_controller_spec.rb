@@ -6,7 +6,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
   let(:json) { JSON.parse(response.body) }
   let(:info) { json["info"] }
-  let(:data) { json["data"]}
+  let(:data) { json["data"] }
 
   let(:lat) { 45.0 }
   let(:long) { -89.0 }
@@ -15,7 +15,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
   let(:empty_date) { "2000-01-01" }
 
   describe "GET /index" do
-    let(:params) { {lat:, long:, start_date:, end_date: } }
+    let(:params) { {lat:, long:, start_date:, end_date:} }
 
     before do
       start_date.upto(end_date) do |date|
@@ -181,7 +181,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
   end
 
-  describe "#grid" do
+  describe "GET /grid" do
     let(:date) { end_date }
 
     before do
@@ -239,7 +239,7 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
   end
 
-  describe "#info" do
+  describe "GET /info" do
     it "is ok" do
       FactoryBot.create(:evapotranspiration)
       get(:info)
