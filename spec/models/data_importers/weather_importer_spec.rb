@@ -101,7 +101,7 @@ RSpec.describe WeatherImporter do
 
   describe ".count_rh_over" do
     it "counts all if temperature is same as dewpoint (rel. humidity is 100)" do
-      obs = FactoryBot.build_list(:weather_observation, 20)
+      obs = FactoryBot.build_list(:weather_observation, 20, temperature: 300, dew_point: 300)
       expect(subject.count_rh_over(obs, 90.0)).to eq 20
     end
 

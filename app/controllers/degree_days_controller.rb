@@ -169,19 +169,14 @@ class DegreeDaysController < ApplicationController
   def dd_table
     params.require([:lat, :long])
 
-    start_time = Time.current
     status = "OK"
     total = 0
     data = {}
     weather_data = {}
     dd_data = {}
     dates = start_date..end_date
-    @units = params[:units] || "F"
-    valid_models = if models == ["all"]
-      DegreeDay.model_names
-    else
-      (models & DegreeDay.model_names)&.sort
-    end
+    @units = units
+    models = parse_models
     query = {date: dates, latitude: lat, longitude: long}
 
     weather = WeatherDatum.where(query).select(:date, :min_temp, :max_temp)
@@ -197,7 +192,7 @@ class DegreeDaysController < ApplicationController
         }
       end
 
-      valid_models.each do |m|
+      models.each do |m|
         total = 0
         dd_data[m] = {}
         dds.each do |dd|
@@ -213,7 +208,7 @@ class DegreeDaysController < ApplicationController
       # arrange weather and dds by date
       dates.each do |date|
         data[date] = weather_data[date] || {min_temp: nil, max_temp: nil}
-        valid_models.each do |m|
+        models.each do |m|
           data[date][m] = dd_data[m][date]
         end
       end
@@ -224,23 +219,19 @@ class DegreeDaysController < ApplicationController
     status = "missing days" if status == "OK" && days_requested != days_returned
 
     info = {
+      status:,
       lat:,
       long:,
       start_date:,
       end_date:,
       days_requested:,
       days_returned:,
-      models: valid_models,
+      models:,
       units: units_text,
-      compute_time: Time.current - start_time
+      compute_time: Time.current - @start_time
     }
 
-    response = {
-      status:,
-      info:,
-      data:
-    }
-
+    response = {info:, data:}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
@@ -333,13 +324,39 @@ class DegreeDaysController < ApplicationController
     params[:upper].present? ? parse_float(params[:upper]) : nil
   end
 
-  def method
-    DegreeDaysCalculator::METHODS.include?(params[:method]&.downcase) ? params[:method].downcase : DegreeDaysCalculator::METHOD
+  def valid_methods
+    DegreeDaysCalculator::METHODS
   end
 
-  def models
-    params[:models]&.downcase&.split(",")
-  rescue
-    nil
+  def method
+    val = params[:method]&.downcase
+    if val
+      if valid_methods.include?(val)
+        val
+      else
+        reject("Invalid method '#{val}'. Must be one of #{valid_methods.join(", ")}")
+      end
+    else
+      "sine"
+    end
+  end
+
+  def valid_models
+    DegreeDay.model_names
+  end
+
+  def parse_models
+    val = params[:models]&.downcase
+    if val == "all"
+      valid_models
+    elsif val.present?
+      vals = val.split(",")
+      valid = vals & valid_models
+      invalid = vals - valid
+      reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}") unless invalid.empty?
+      valid
+    else
+      ["dd_50_86"]
+    end
   end
 end
