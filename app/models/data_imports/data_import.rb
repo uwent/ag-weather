@@ -81,7 +81,7 @@ class DataImport < ApplicationRecord
     dates.each do |date|
       # initialize import record
       import_types.each do |import|
-        import.find_by(date:) || import.start(date)
+        import.find_by(date:) || import.create(date:, status: "pending")
       end
 
       # describe import states

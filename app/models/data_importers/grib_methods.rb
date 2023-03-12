@@ -38,10 +38,10 @@ module GribMethods
         import.succeed(date)
         next
       end
-      fetch_day(date, force: date < 2.days.ago)
+      fetch_day(date, force: date <= 5.days.ago)
     rescue => e
       msg = "Failed to retrieve data for #{date}: #{e.message}"
-      Rails.logger.warn "#{name} :: #{msg}"
+      Rails.logger.error "#{name} :: #{msg}"
       import.fail(date, msg)
       next
     end
@@ -50,17 +50,12 @@ module GribMethods
   end
 
   def download_gribs(date, force: false)
-    date = date.to_date
-    hours = (central_time(date, 0).to_i..central_time(date, 23).to_i)
     gribs = 0
-
-    hours.step(1.hour) do |time_in_central|
-      time = Time.at(time_in_central).utc
-      hour = Time.at(time_in_central).strftime("%H")
-      remote_file = remote_file(date:, hour: time.hour)
-      file_url = remote_url(time.to_date) + "/" + remote_file
+    0.upto(23) do |hour|
+      remote_file = remote_file(date:, hour:)
+      file_url = remote_url(date:, hour:) + "/" + remote_file
       local_file = "#{local_dir(date)}/#{date}.#{remote_file}"
-      gribs += fetch_grib(file_url, local_file, hour.to_s)
+      gribs += fetch_grib(file_url, local_file, "%.02d" % hour)
     end
 
     if gribs == 0

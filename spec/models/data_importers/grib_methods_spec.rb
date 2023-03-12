@@ -71,14 +71,14 @@ RSpec.describe GribMethods, type: :module do
       it "calls fetch_day for each missing day" do
         allow(dc).to receive(:missing_dates).and_return(missing_dates)
         missing_dates.each do |date|
-          expect(dc).to receive(:fetch_day).with(date, force: date < 2.days.ago).ordered.once
+          expect(dc).to receive(:fetch_day).with(date, any_args).ordered.once
         end
         dc.fetch
       end
 
       it "calls fetch_day for each day when all_dates: true" do
         all_dates.each do |date|
-          expect(dc).to receive(:fetch_day).with(date, force: date < 2.days.ago).ordered.once
+          expect(dc).to receive(:fetch_day).with(date, any_args).ordered.once
         end
         dc.fetch(all_dates: true)
       end

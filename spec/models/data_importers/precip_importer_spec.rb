@@ -39,7 +39,7 @@ RSpec.describe PrecipImporter do
   describe ".remote_url" do
     it "should specify the correct remote directory" do
       url = subject::REMOTE_URL_BASE + "/pcpanl.#{datestring}"
-      expect(subject.remote_url(date)).to eq url
+      expect(subject.remote_url(date:, hour: nil)).to eq url
     end
   end
 
@@ -47,6 +47,7 @@ RSpec.describe PrecipImporter do
     it "should create the correct remote filename" do
       expect(subject.remote_file(date:, hour: 1)).to eq "st4_conus.#{datestring}01.01h.grb2"
       expect(subject.remote_file(date:, hour: 12)).to eq "st4_conus.#{datestring}12.01h.grb2"
+      expect(subject.remote_file(date:, hour: 23)).to eq "st4_conus.#{datestring}23.01h.grb2"
     end
   end
 

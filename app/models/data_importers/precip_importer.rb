@@ -18,12 +18,13 @@ class PrecipImporter < DataImporter
     dir
   end
 
-  def self.remote_url(date)
+  def self.remote_url(date:, hour: nil)
     "#{REMOTE_URL_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
   end
 
+  # precips are named by central time
   def self.remote_file(date:, hour:)
-    "st4_conus.#{date.to_formatted_s(:number)}#{hour.to_s.rjust(2, "0")}.01h.grb2"
+    "st4_conus.#{date.to_formatted_s(:number)}#{"%.02d" % hour}.01h.grb2"
   end
 
   def self.fetch_day(date, force: false)

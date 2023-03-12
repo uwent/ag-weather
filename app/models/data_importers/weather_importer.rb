@@ -18,12 +18,16 @@ class WeatherImporter < DataImporter
     savedir
   end
 
-  def self.remote_url(date)
-    "#{REMOTE_URL_BASE}/rtma2p5.#{date.to_formatted_s(:number)}"
+  # convert central date and hour to UTC date
+  def self.remote_url(date:, hour:)
+    utc_date = central_time(date, hour).utc.strftime("%Y%m%d")
+    "#{REMOTE_URL_BASE}/rtma2p5.#{utc_date}"
   end
 
-  def self.remote_file(hour:, date: nil)
-    "rtma2p5.t%02dz.2dvaranl_ndfd.grb2_wexp" % hour
+  # convert central date and hour to UTC hour
+  def self.remote_file(date:, hour:)
+    utc_hour = central_time(date, hour).utc.strftime("%H")
+    "rtma2p5.t#{utc_hour}z.2dvaranl_ndfd.grb2_wexp"
   end
 
   def self.fetch_day(date, force: false)

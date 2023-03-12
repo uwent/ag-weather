@@ -3,7 +3,6 @@ require "rails_helper"
 RSpec.describe WeatherImporter do
   subject { WeatherImporter }
   let(:date) { "2023-1-1".to_date }
-  let(:datestring) { date.to_formatted_s(:number) }
 
   before do
     allow(WeatherDatum).to receive(:create_image)
@@ -13,12 +12,12 @@ RSpec.describe WeatherImporter do
     let(:dir) { subject::LOCAL_DIR }
 
     it "should return the local directory to store the weather files" do
-      expect(subject.local_dir(date)).to eq("#{dir}/#{datestring}")
+      expect(subject.local_dir(date)).to eq("#{dir}/20230101")
     end
 
     it "should create local directories if they don't exist" do
       allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkdir_p).with("#{dir}/#{datestring}").once
+      expect(FileUtils).to receive(:mkdir_p).with("#{dir}/20230101").once
       subject.local_dir(date)
     end
   end
@@ -26,15 +25,18 @@ RSpec.describe WeatherImporter do
   describe ".remote_url" do
     let(:uri) { subject::REMOTE_URL_BASE }
 
-    it "should get the proper remote directory given a date" do
-      expect(subject.remote_url(date)).to eq("#{uri}/rtma2p5.#{datestring}")
+    it "should get the proper UTC date remote directory given a central time date and hour" do
+      expect(subject.remote_url(date:, hour: 0)).to eq("#{uri}/rtma2p5.20230101")
+      expect(subject.remote_url(date:, hour: 10)).to eq("#{uri}/rtma2p5.20230101")
+      expect(subject.remote_url(date:, hour: 23)).to eq("#{uri}/rtma2p5.20230102")
     end
   end
 
   describe ".remote_file" do
-    it "should create the correct filename for each hour" do
-      expect(subject.remote_file(hour: 5)).to include(".t05z.")
-      expect(subject.remote_file(hour: 12)).to include(".t12z.")
+    it "should create the correct filename for each hour given central date and hour" do
+      expect(subject.remote_file(date:, hour: 5)).to include(".t11z.")
+      expect(subject.remote_file(date:, hour: 12)).to include(".t18z.")
+      expect(subject.remote_file(date:, hour: 23)).to include(".t05z.")
     end
   end
 
