@@ -67,8 +67,8 @@ RSpec.describe WeatherImporter do
       subject.fetch_day(date)
     end
 
-    it "should try to create an image" do
-      expect(WeatherDatum).to receive(:create_image).with(date:).once
+    it "should try to create an image in Fahrenheit" do
+      expect(WeatherDatum).to receive(:create_image).with(date:, units: "F").once
       subject.fetch_day(date)
     end
   end

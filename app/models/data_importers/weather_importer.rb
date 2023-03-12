@@ -43,7 +43,7 @@ class WeatherImporter < DataImporter
     persist_day_to_db(weather_day)
     FileUtils.rm_r grib_dir unless keep_grib
 
-    WeatherDatum.create_image(date:)
+    WeatherDatum.create_image(date:, units: "F")
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
     import.succeed(date)
   rescue => e
