@@ -227,7 +227,7 @@ class ApplicationController < ActionController::Base
   end
 
   def units_text
-    @unit.to_s
+    @units.to_s
   end
 
   def extent
@@ -267,6 +267,7 @@ class ApplicationController < ActionController::Base
       base: @base,
       upper: @upper,
       method: @method,
+      pest: @pest,
       units: @units_text,
       min_value: @values&.min,
       max_value: @values&.max,
@@ -297,6 +298,7 @@ class ApplicationController < ActionController::Base
       long_range: "#{@long_range&.min},#{@long_range&.max}",
       grid_points: @data&.size,
       model: @model_text,
+      pest: @pest,
       units: @units_text,
       stat: @stat,
       min_value: @values&.min,

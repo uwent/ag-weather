@@ -87,7 +87,7 @@ class EvapotranspirationsController < ApplicationController
   #   start_date - optional, default first of year if end_date provided
   #   lat_range - optional, default full extent, format min,max
   #   long_range - optional, default full extent, format min,max
-  #   units - 'MJ' (default) or 'KWh'
+  #   units - 'in' (default) or 'mm'
 
   def grid
     parse_date_or_dates || default_single_date
