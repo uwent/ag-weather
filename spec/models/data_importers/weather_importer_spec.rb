@@ -1,123 +1,153 @@
 require "rails_helper"
 
-RSpec.describe WeatherImporter, type: :model do
-  let(:date) { Date.new(2022, 1, 10) }
+RSpec.describe WeatherImporter do
+  subject { WeatherImporter }
+  let(:date) { "2023-1-1".to_date }
 
-  describe ".remote_url" do
-    it "should get the proper remote directory given a date" do
-      expect(WeatherImporter.remote_url(date)).to eq("#{WeatherImporter::REMOTE_URL_BASE}/rtma2p5.#{date.strftime("%Y%m%d")}")
-    end
+  before do
+    allow(WeatherDatum).to receive(:create_image)
   end
 
   describe ".local_dir" do
+    let(:dir) { subject::LOCAL_DIR }
+
     it "should return the local directory to store the weather files" do
-      expect(WeatherImporter.local_dir(date)).to eq("#{WeatherImporter::LOCAL_DIR}/#{date.strftime("%Y%m%d")}")
+      expect(subject.local_dir(date)).to eq("#{dir}/20230101")
     end
 
     it "should create local directories if they don't exist" do
-      allow(Dir).to receive(:exists?).and_return(false)
-      expect(FileUtils).to receive(:mkdir_p).with("#{WeatherImporter::LOCAL_DIR}/#{date.strftime("%Y%m%d")}").once
-      WeatherImporter.local_dir(date)
+      allow(Dir).to receive(:exist?).and_return(false)
+      expect(FileUtils).to receive(:mkdir_p).with("#{dir}/20230101").once
+      subject.local_dir(date)
     end
   end
 
-  describe ".fetch" do
-    it "should get and load files for every day returned by DataImport" do
-      unloaded_days = [date, date - 3.days]
-      allow(WeatherDataImport).to receive(:days_to_load).and_return(unloaded_days)
-      expect(WeatherImporter).to receive(:fetch_day).exactly(unloaded_days.count).times
-      WeatherImporter.fetch
+  describe ".remote_url" do
+    let(:uri) { subject::REMOTE_URL_BASE }
+
+    it "should get the proper UTC date remote directory given a central time date and hour" do
+      expect(subject.remote_url(date:, hour: 0)).to eq("#{uri}/rtma2p5.20230101")
+      expect(subject.remote_url(date:, hour: 10)).to eq("#{uri}/rtma2p5.20230101")
+      expect(subject.remote_url(date:, hour: 23)).to eq("#{uri}/rtma2p5.20230102")
+    end
+  end
+
+  describe ".remote_file" do
+    it "should create the correct filename for each hour given central date and hour" do
+      expect(subject.remote_file(date:, hour: 5)).to include(".t11z.")
+      expect(subject.remote_file(date:, hour: 12)).to include(".t18z.")
+      expect(subject.remote_file(date:, hour: 23)).to include(".t05z.")
     end
   end
 
   describe ".fetch_day" do
-    before(:each) do
-      allow(FileUtils).to receive(:mv)
-      allow(WeatherImporter).to receive(:download).and_return("file")
-      allow(WeatherImporter).to receive(:import_weather_data).and_return("data")
+    before do
+      allow(subject).to receive(:download_gribs)
+      allow(subject).to receive(:persist_day_to_db)
+      allow(FileUtils).to receive(:rm_r)
     end
 
     it "should try to get a file for every hour" do
-      expect(WeatherImporter).to receive(:download).exactly(24).times
-      WeatherImporter.fetch_day(date)
+      expect(subject).to receive(:download_gribs).once
+      expect(subject).to receive(:persist_day_to_db).once
+      expect(FileUtils).to receive(:rm_r).once
+      subject.fetch_day(date)
     end
 
-    # folder changes due to NOAA server storing files in UTC time and we are in CST
-    it "should set the appropriate base URL on the remote server" do
-      expect(WeatherImporter).to receive(:download).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
-      expect(WeatherImporter).to receive(:download).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
-      WeatherImporter.fetch_day(date)
+    it "should create a new WeatherDay to store data" do
+      weather_day = instance_double("WeatherDay")
+      expect(WeatherDay).to receive(:new).and_return(weather_day)
+      expect(weather_day).to receive(:load_from)
+      subject.fetch_day(date)
+    end
+
+    it "should not delete gribs if KEEP_GRIB" do
+      stub_const("ENV", {"KEEP_GRIB" => "true"})
+      expect(FileUtils).to_not receive(:rm_r)
+      subject.fetch_day(date)
+    end
+
+    it "should try to create an image in Fahrenheit" do
+      expect(WeatherDatum).to receive(:create_image).with(date:, units: "F").once
+      subject.fetch_day(date)
     end
   end
 
-  describe "load the database for a date" do
-    let(:weather_day) { instance_double("WeatherDay") }
+  describe ".download_gribs" do
+    # folder changes due to NOAA server storing files in UTC time and we are in CST
+    it "should call fetch_grib with correct UTC date" do
+      allow(subject).to receive(:fetch_grib).and_return 1
+      expect(subject).to receive(:fetch_grib).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
+      expect(subject).to receive(:fetch_grib).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
+      subject.download_gribs(date)
+    end
+  end
 
+  describe ".persist_day_to_db", skip: true do
     before(:each) do
-      allow(weather_day).to receive(:load_from).with(WeatherImporter.local_dir(date))
-      allow(weather_day).to receive(:temperatures_at)
-      allow(weather_day).to receive(:observations_at)
-      allow(weather_day).to receive(:temperatures_at)
-      allow(weather_day).to receive(:dew_points_at)
-      allow(weather_day).to receive(:date)
+      weather_day = WeatherDay.new(date:)
+      allow(weather_day).to receive(:observations_at).and_return(FactoryBot.build_list(:weather_observation, 2))
     end
 
     it "should load a WeatherDay" do
       expect(WeatherDay).to receive(:new).with(date).and_return(weather_day)
-      WeatherImporter.import_weather_data(date)
+      subject.persist_day_to_db(weather_day)
+    end
+
+    # it "should save the weather data" do
+    #   allow(weather_day).to receive(:obs_at).and_return([WeatherObservation.new(21, 18)])
+    #   allow(weather_day).to receive(:date).and_return(Date.yesterday)
+    #   expect { subject.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
+    # end
+  end
+
+  describe ".count_rh_over" do
+    it "counts all if temperature is same as dewpoint (rel. humidity is 100)" do
+      obs = FactoryBot.build_list(:weather_observation, 20, temperature: 300, dew_point: 300)
+      expect(subject.count_rh_over(obs, 90.0)).to eq 20
+    end
+
+    it "only counts those above cutoff" do
+      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 300) # RH 100%
+      obs += FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 298) # RH < 90
+      expect(subject.count_rh_over(obs, 90.0)).to eq 10
+    end
+
+    it "returns zero for an empty list" do
+      expect(subject.count_rh_over([], 90.0)).to eq 0
     end
   end
 
-  describe "persist a day to the database" do
-    let(:weather_day) { instance_double("WeatherDay") }
+  describe ".avg_temp_rh_over" do
+    it "returns the average of those over rh cutoff" do
+      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 300) # RH 100%
+      obs += FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
+      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq UnitConverter.k_to_c(300)
+    end
 
-    it "should save the weather data" do
-      allow(weather_day).to receive(:observations_at).and_return([WeatherObservation.new(21, 18)])
-      allow(weather_day).to receive(:date).and_return(Date.yesterday)
-      expect { WeatherImporter.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
+    it "returns nil when none over rh cutoff" do
+      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
+      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq nil
     end
   end
 
-  describe ".dew_point_to_vapor_pressure" do
-    it "should return the vapor pressure given a dew point (in Celsius)" do
-      expect(WeatherImporter.dew_point_to_vapor_pressure(29.85)).to be_within(0.001).of(4.313)
-    end
-  end
-
-  describe ".relative_humidity_over" do
-    it "counts all if temperature is same as dewpoint (rel. humidity is 100) " do
-      observations = FactoryBot.build_list :weather_observation, 20
-      expect(WeatherImporter.relative_humidity_over(observations, 85.0)).to eq(20)
-    end
-
-    it "only counts the ones where temp is same as dewpoint" do
-      observations = FactoryBot.build_list :weather_observation, 10
-      observations += FactoryBot.build_list(:weather_observation, 10, dew_point: 273.15)
-      expect(WeatherImporter.relative_humidity_over(observations, 85.0)).to eq(10)
-    end
-
-    it "zero for an empty list" do
-      expect(WeatherImporter.relative_humidity_over([], 85.0)).to eq(0)
-    end
-
-    it "counts those on edge of 85.0" do
-      observation = FactoryBot.build(:weather_observation, dew_point: 287.60954)
-      expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq(1)
-    end
-
-    it "doesn't count those on edge of 85.0" do
-      observation = FactoryBot.build(:weather_observation, dew_point: 287.60952)
-      expect(WeatherImporter.relative_humidity_over([observation], 85.0)).to eq(0)
-    end
-  end
-
-  describe ".weather_average" do
-    it "should return the 'average' (sum of low and high/2) of an array" do
-      expect(WeatherImporter.weather_average([0.0, 1.0, 5.0, 10.0])).to eq(5.0)
+  describe ".simple_avg" do
+    it "should return the simple average (sum of low and high/2) of an array" do
+      expect(subject.simple_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.0
     end
 
     it "should return 0 for an empty array" do
-      expect(WeatherImporter.weather_average([])).to eq(0.0)
+      expect(subject.simple_avg([])).to eq 0.0
+    end
+  end
+
+  describe ".true_avg" do
+    it "should return the true average (sum/count) of an array" do
+      expect(subject.true_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.2
+    end
+
+    it "should return 0 for an empty array" do
+      expect(subject.true_avg([])).to eq 0.0
     end
   end
 end

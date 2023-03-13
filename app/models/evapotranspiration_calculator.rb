@@ -1,4 +1,4 @@
-class EvapotranspirationCalculator
+module EvapotranspirationCalculator
   # This is an implementation of evapotranspiration based on the formula in
   # the paper:  http://wisp.cals.wisc.edu/diakEtal1998.pdf.
 
@@ -79,22 +79,60 @@ class EvapotranspirationCalculator
     end
   end
 
-  # Clear-sky emissivity using adjusted coefficients per Desai & Talib, 2022 (unpublished)
-  def self.sky_emiss_adj(avg_v_press, avg_temp)
-    a1 = 0.544
-    a2 = 6.4e-4
-    # a1 = 0.7
-    # a2 = 5.95e-4
-    if avg_v_press > 0.5
-      a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
-    else
-      (1 - 0.261 * Math.exp(-0.000777 * avg_temp**2))
-    end
-  end
-
   # This calculates (1 minus clear-sky emissivity) factor of L_nc in paper.
   def self.angstrom(avg_v_press, avg_temp)
     1.0 - sky_emiss(avg_v_press, avg_temp) / SFCEMISS
+  end
+
+  # The ratio of the measured insolation divided by the theoretical value
+  # calculated for clear-air conditions.
+  def self.clr_ratio(insol, day_of_year, lat)
+    tc = to_clr(day_of_year, lat)
+    # Never return higher than 1
+    [insol / tc, 1.0].min
+  end
+
+  # This is the net thermal infrared flux term (Ln) of the total net
+  # radiation consisting of the two directional terms upwelling and downwelling.
+  def self.lwnet(avg_v_press, avg_temp, insol, day_of_year, lat)
+    angstrom(avg_v_press, avg_temp) *
+      lwu(avg_temp) *
+      clr_ratio(insol, day_of_year, lat)
+  end
+
+  # temperatures are in Celsius
+  # avg_v_pressure is in kPa (kilopascals)
+  # insol is insolation reading in MJ/day (Megajoules/day)
+  # lat is latitude in fractional degrees
+  def self.et(avg_temp:, avg_v_press:, insol:, day_of_year:, lat:)
+    # calculates L_n in the paper (represents L_u - L_d)
+    lwnet = lwnet(avg_v_press, avg_temp, insol, day_of_year, lat)
+
+    # calculates R_n in paper
+    net_radiation = (1.0 - ALBEDO) * insol - lwnet
+
+    # Potential evapotranspiration
+    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
+
+    # Assume the 62.3 is a conversion factor, but unable to determine.
+    # In winter, at high latitudes, et was coming out as a small negative number. Clamp to zero.
+    [pot_et / 62.3, 0].max
+  end
+
+  ## Adjusted ET Method using new sky emissivity constants ##
+  def self.et_adj(avg_temp:, avg_v_press:, insol:, day_of_year:, lat:)
+    lwnet = lwnet_adj(avg_v_press, avg_temp, insol, day_of_year, lat)
+    net_radiation = (1.0 - ALBEDO) * insol - lwnet
+    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
+    # pot_et / 62.3
+    [pot_et / 62.3, 0].max
+  end
+
+  # used adjusted emissivity
+  def self.lwnet_adj(avg_v_press, avg_temp, insol, day_of_year, lat)
+    angstrom_adj(avg_v_press, avg_temp) *
+      lwu(avg_temp) *
+      clr_ratio(insol, day_of_year, lat)
   end
 
   # uses adjusted emissivity
@@ -102,51 +140,20 @@ class EvapotranspirationCalculator
     1.0 - sky_emiss_adj(avg_v_press, avg_temp) / SFCEMISS
   end
 
-  # The ratio of the measured insolation divided by the theoretical value
-  # calculated for clear-air conditions.
-  def self.clr_ratio(d_to_sol, day_of_year, lat)
-    tc = to_clr(day_of_year, lat)
-    # Never return higher than 1
-    [d_to_sol / tc, 1.0].min
-  end
+  # Clear-sky emissivity using adjusted coefficients per Desai & Talib, 2022 (unpublished)
+  def self.sky_emiss_adj(avg_v_press, avg_temp)
+    # old constants
+    # a1 = 0.7
+    # a2 = 5.95e-4
 
-  # This is the net thermal infrared flux term (Ln) of the total net
-  # radiation consisting of the two directional terms upwelling and downwelling.
-  def self.lwnet(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
-    angstrom(avg_v_press, avg_temp) *
-      lwu(avg_temp) *
-      clr_ratio(d_to_sol, day_of_year, lat)
-  end
+    # new constants
+    a1 = 0.544
+    a2 = 6.4e-4
 
-  # used adjusted emissivity
-  def self.lwnet_adj(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
-    angstrom_adj(avg_v_press, avg_temp) *
-      lwu(avg_temp) *
-      clr_ratio(d_to_sol, day_of_year, lat)
-  end
-
-  # temperatures are in Celsius
-  # avg_v_pressure is in kPa (kilopascals)
-  # d_to_sol is insolation reading in MJ/day (Megajoules/day)
-  # lat is latitude in fractional degrees
-  def self.et(avg_temp, avg_v_press, d_to_sol, day_of_year, lat)
-    # calculates L_n in the paper (represents L_u - L_d)
-    lwnet = lwnet(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
-    # calculates R_n in paper
-    net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
-    # Evapotranspiration. Unsure why 1.28, not 1.26 as written in the paper
-    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
-    # Assume the 62.3 is a conversion factor, but unable to determine.
-    [pot_et / 62.3, 0].max
-    # In winter, at high latitudes, et was coming out as a small negative number
-  end
-
-  # using the adjusted emissivity coefficients
-  def self.et_adj(avg_temp, avg_v_press, d_to_sol, day_of_year, lat)
-    lwnet = lwnet_adj(avg_v_press, avg_temp, d_to_sol, day_of_year, lat)
-    net_radiation = (1.0 - ALBEDO) * d_to_sol - lwnet
-    pot_et = 1.26 * sfactor(avg_temp) * net_radiation
-    # pot_et / 62.3
-    [pot_et / 62.3, 0].max
+    if avg_v_press > 0.5
+      a1 + a2 * avg_v_press * Math.exp(1500 / (273 + avg_temp))
+    else
+      (1 - 0.261 * Math.exp(-0.000777 * avg_temp**2))
+    end
   end
 end

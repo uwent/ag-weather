@@ -3,19 +3,17 @@ source "https://rubygems.org"
 gem "rails", "~> 7.0"
 gem "railties", "~> 7.0"
 gem "activesupport", "~> 7.0"
-gem "pg", "~> 1.3"
-gem "activerecord-import", "~> 1.4"
-gem "agwx_biophys", "0.0.4"
-gem "httparty", "~> 0.20"
-gem "jbuilder", "~> 2.11"
-gem "json", "~> 2.6"
-gem "sassc-rails", "~> 2.1"
-gem "whenever", "~> 1.0"
-gem "tzinfo", "~> 2.0"
-gem "activerecord-analyze" # query analysis
+gem "activerecord-import" # bulk import
+gem "pg" # postgres
+gem "sassc-rails" # sass css
+gem "httparty"
+gem "json"
+gem "whenever" # task scheduling
+gem "tzinfo" # timezone
 
 group :development do
   gem "puma", "~> 5" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
+  gem "pry-rails"
   gem "capistrano"
   gem "capistrano-rbenv"
   gem "capistrano-rails"
@@ -23,7 +21,10 @@ group :development do
   gem "letter_opener"
   gem "letter_opener_web"
   gem "web-console"
-  gem "standard"
+  gem "standard" # linter
+  gem "activerecord-analyze" # query analysis
+  gem "brakeman" # security analysis https://brakemanscanner.org/
+  gem "bundler-audit" # patch-level verification
 end
 
 group :development, :test do
@@ -31,7 +32,6 @@ group :development, :test do
   gem "dredd-rack"
   gem "factory_bot_rails"
   gem "guard-rspec"
-  gem "pry-rails"
   gem "rspec_junit_formatter"
   gem "rspec-rails"
   gem "spring"
@@ -39,6 +39,7 @@ group :development, :test do
 end
 
 group :test do
+  gem "database_cleaner-active_record"
   gem "webmock"
   gem "simplecov"
 end

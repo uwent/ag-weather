@@ -1,39 +1,54 @@
 require "rails_helper"
 
-RSpec.describe PestForecastImporter, type: :model do
+RSpec.describe PestForecastImporter, type: :module do
+  subject { PestForecastImporter }
+  let(:import) { PestForecastDataImport }
   let(:date) { Date.yesterday }
 
-  describe ".create_forecast_data" do
-    it "calls pest forecasts for every day returned by DataImport" do
-      unloaded_days = [date, date - 2.days]
-      allow(PestForecastDataImport).to receive(:days_to_load).and_return(unloaded_days)
-      expect(PestForecastImporter).to receive(:calculate_forecast_for_date).exactly(unloaded_days.count).times
+  describe ".data_class" do
+    it { expect(subject.data_class).to eq PestForecast }
+  end
 
-      PestForecastImporter.create_forecast_data
+  describe ".import" do
+    it { expect(subject.import).to eq import }
+  end
+
+  describe ".data_sources_loaded?" do
+    context "when data missing" do
+      it { expect(subject.data_sources_loaded?(date)).to be_falsey }
+    end
+
+    context "when data present" do
+      it "should be truthy" do
+        WeatherDataImport.succeed(date)
+        expect(subject.data_sources_loaded?(date)).to be_truthy
+      end
     end
   end
 
-  describe ".calculate_forecast_for_date" do
-    let(:action) { PestForecastImporter.calculate_forecast_for_date(date) }
+  describe ".create_data_for_date" do
+    let(:action) { subject.create_data_for_date(date) }
 
-    context "when weather data is present" do
+    context "when insolation and weather data are present" do
       before do
-        FactoryBot.create(:weather_datum, date:)
+        FactoryBot.create(:weather_datum, date:, latitude: 45, longitude: -89)
+        FactoryBot.create(:insolation, date:, latitude: 45, longitude: -89)
         WeatherDataImport.succeed(date)
+        InsolationDataImport.succeed(date)
       end
 
       it "adds a data_import record" do
-        expect { action }.to change(PestForecastDataImport.successful, :count).by 1
+        expect { action }.to change(import.successful, :count).by 1
       end
 
-      it "adds a new pest forecast record" do
-        expect { action }.to change(PestForecast, :count)
+      it "adds a new evapotranspiration record" do
+        expect { action }.to change(PestForecast, :count).by 1
       end
     end
 
-    context "when weather data is not present" do
-      it "will create an unsuccessful data import record" do
-        expect { action }.to change(PestForecastDataImport.unsuccessful, :count)
+    context "when insolation and weather data are not present" do
+      it "creates an unsuccessful data import record" do
+        expect { action }.to change(import.failed, :count).by 1
       end
     end
   end

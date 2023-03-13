@@ -1,66 +1,39 @@
 class Insolation < ApplicationRecord
-  UNITS = ["MJ", "KWh"]
-  DEFAULT_MAX_MJ = 30
-  DEFAULT_MAX_KW = 10
+  attribute :latitude, :float
+  attribute :longitude, :float
 
-  def self.land_grid_for_date(date)
-    grid = LandGrid.new
-    where(date:).each do |insol|
-      lat, long = insol.latitude, insol.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = insol.insolation
-    end
-    grid
+  extend GridMethods
+  extend ImageMethods
+
+  def self.default_col
+    :insolation
   end
 
-  def self.create_image(date, start_date: nil, units: "MJ")
-    if start_date.nil?
-      data = where(date:)
-      raise StandardError.new("No data") if data.size == 0
-      date = data.distinct.pluck(:date).max
-      min = 0
-      max = (units == "KWh") ? DEFAULT_MAX_KW : DEFAULT_MAX_MJ
-    else
-      data = where(date: start_date..date)
-      raise StandardError.new("No data") if data.size == 0
-      dates = data.distinct.pluck(:date)
-      start_date = dates.min
-      date = dates.max
-      data = data.group(:latitude, :longitude)
-        .select(:latitude, :longitude, "sum(insolation) as insolation")
-      min = max = nil
-    end
-    title = image_title(date, start_date, units)
-    file = image_name(date, start_date, units)
-    Rails.logger.info "Insolation :: Creating image ==> #{file}"
-    grid = create_image_data(LandGrid.new, data, units)
-    ImageCreator.create_image(grid, title, file, min_value: min, max_value: max)
-  rescue => e
-    Rails.logger.warn "Insolation :: Failed to create image for #{date}: #{e.message}"
-    "no_data.png"
+  # per day per m^2
+  def self.valid_units
+    ["MJ", "KWh"].freeze
   end
 
-  def self.image_name(date, start_date = nil, units = "MJ")
-    name = "insolation-#{units.downcase}-#{date.to_formatted_s(:number)}"
-    name += "-#{start_date.to_formatted_s(:number)}" unless start_date.nil?
-    name + ".png"
+  # value stored in MJ, converts if "KWh" requested
+  def self.convert(value:, units:, **args)
+    check_units(units)
+    (units == "KWh") ? UnitConverter.mj_to_kwh(value) : value
   end
 
-  def self.image_title(date, start_date = nil, units = "MJ")
-    if start_date.nil?
-      "Daily insolation (#{units}/m2/day) for #{date.strftime("%-d %B %Y")}"
-    else
-      fmt = (start_date.year != date.year) ? "%b %-d, %Y" : "%b %-d"
-      "Total insolation (#{units}/m2) for #{start_date.strftime(fmt)} - #{date.strftime("%b %-d, %Y")}"
-    end
+  def self.image_subdir
+    "insol"
   end
 
-  def self.create_image_data(grid, data, units = "MJ")
-    data.each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = (units == "KWh") ? UnitConverter.mj_to_kwh(point.insolation) : point.insolation
-    end
-    grid
+  def self.default_scale(units:, **args)
+    check_units(units)
+    (units == "KWh") ? [0, 10] : [0, 30]
+  end
+
+  def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
+    end_date ||= date
+    raise ArgumentError.new "Must provide either 'date' or 'end_date'" unless end_date
+    check_units(units)
+    datestring = image_title_date(start_date:, end_date:)
+    "Solar insolation (#{units}/m2) for #{datestring}"
   end
 end

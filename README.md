@@ -25,16 +25,16 @@ git -C "$(rbenv root)"/plugins/ruby-build pull
 git config --global url."https://github.com/".insteadOf git://github.com/
 
 # install ruby with rbenv
-rbenv install 3.1.3 # or latest version
+rbenv install 3.2.1 # or latest version
 
 # update bundler to latest
 gem install bundler
 ```
 
-`Postgres 14` and `gem pg`
+`Postgres 15` and `gem pg`
 ```bash
 # install postgres
-sudo apt -y install postgresql-14 postgresql-client-14 libpq-dev
+sudo apt -y install postgresql-15 postgresql-client-15 libpq-dev
 sudo service postgresql start
 
 # install gem pg

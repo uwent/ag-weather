@@ -1,40 +1,52 @@
-class DegreeDaysCalculator
+module DegreeDaysCalculator
   INVERSE_PI = 1 / Math::PI
-  BASE_F = 50
-  UPPER_F = 86
-  BASE_C = 10
-  UPPER_C = 30
+  BASE_F = 50.0
+  UPPER_F = 86.0
+  BASE_C = 10.0
+  UPPER_C = 30.0
   METHODS = ["sine", "average", "modified"]
   METHOD = "sine"
 
-  # Min, max in Fahrenheit
-  def self.calculate_f(min, max, base: BASE_F, upper: UPPER_F, method: METHOD)
-    calculate(UnitConverter.f_to_c(min), UnitConverter.f_to_c(max), base:, upper:, method:)
+  def self.calculate_f(min:, max:, base: BASE_F, upper: UPPER_F, method: METHOD)
+    calculate(min:, max:, base:, upper:, method:)
   end
 
-  # Min, max in Celcius
-  def self.calculate(min, max, base: BASE_C, upper: UPPER_C, method: METHOD)
-    case method.downcase
+  # Temperatures in C by default
+  def self.calculate(min:, max:, base: BASE_C, upper: UPPER_C, method: METHOD)
+    min = min.to_f
+    max = max.to_f
+    base = base.to_f
+    upper = (upper || 150.0).to_f
+    method ||= METHOD
+    dd = case method&.downcase
     when "average"
       average_degree_days(min, max, base)
-    when "modified"
+    when "modified" # uses upper threshold cutoff
       modified_degree_days(min, max, base, upper)
     when "sine"
       sine_degree_days(min, max, base, upper)
     else
       raise ArgumentError, "method must be average, modified, or sine"
     end
+    [dd, 0.0].max if dd
   end
 
+  # simple average
   def self.average_degree_days(min, max, base)
-    degree_days = ((max + min) / 2.0) - base
-    [degree_days, 0.0].max
+    raise ArgumentError.new "min must be < max" if min > max
+
+    return 0.0 if min <= base && max <= base
+    avg = (max + min) / 2.0
+    avg - base
   end
 
+  # simple average with horizontal cutoffs
   def self.modified_degree_days(min, max, base, upper)
-    min = base if base > min
-    max = base if base > max
+    raise ArgumentError.new "min must be <= max" if min > max
+    raise ArgumentError.new "base must be <= upper" if base > upper
 
+    return 0.0 if min <= base && max <= base
+    min = base if base > min
     min = upper if upper < min
     max = upper if upper < max
 
@@ -43,49 +55,52 @@ class DegreeDaysCalculator
 
   # Reference: http://libcatalog.cimmyt.org/download/reprints/97465.pdf
   def self.sine_degree_days(min, max, base, upper)
-    average = (min + max) / 2.0
+    raise ArgumentError.new "min must be <= max" if min > max
+    raise ArgumentError.new "base must be <= upper" if base > upper
+
+    # both min and max less than base
+    return 0.0 if max <= base
 
     # both min and max greater than upper
     return upper - base if min >= upper
 
-    # both min and max less than base
-    return 0 if max <= base
+    avg = (min + max) / 2.0
 
     # both min and max between base and upper
-    return average - base if max <= upper && min >= base
+    return avg - base if max <= upper && min >= base
 
     alpha = (max - min) / 2.0
 
     # max is between base and upper, min is less than base
     if max <= upper && min < base
-      base_radians = Math.asin((base - average) / alpha)
-      a = average - base
-      b = Math::PI / 2.0 - base_radians
-      c = alpha * Math.cos(base_radians)
-      INVERSE_PI * (a * b + c)
-    # INVERSE_PI *
-    #   ((average - base) * (Math::PI / 2 - time_of_base_threshold_in_radians) +
-    #    alpha * Math.cos(time_of_base_threshold_in_radians))
+      btr = Math.asin((base - avg) / alpha) # time of base threshold in radians
+      a = avg - base
+      b = Math::PI / 2.0 - btr
+      c = alpha * Math.cos(btr)
+      return (a * b + c) / Math::PI
+    end
 
     # max is greater than upper and min is between base and upper
-    elsif max > upper && min >= base
-      time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
-      INVERSE_PI * (
-        (average - base) * (time_of_upper_threshold_in_radians + Math::PI / 2) +
-        (upper - base) * (Math::PI / 2 - time_of_upper_threshold_in_radians) -
-        alpha * Math.cos(time_of_upper_threshold_in_radians)
-      )
+    if max > upper && min >= base
+      btr = Math.asin((upper - avg) / alpha) # time of base threshold in radians
+      a = avg - base
+      b = btr + Math::PI / 2
+      c = upper - base
+      d = (Math::PI / 2 - btr)
+      e = alpha * Math.cos(btr)
+      return (a * b + c * d - e) / Math::PI
+    end
 
     # max is greater than upper and min is less than base
-    elsif max > upper && min < base
-      time_of_base_threshold_in_radians = Math.asin((base - average) / alpha)
-      time_of_upper_threshold_in_radians = Math.asin((upper - average) / alpha)
-      INVERSE_PI *
-        ((average - base) *
-         (time_of_upper_threshold_in_radians - time_of_base_threshold_in_radians) +
-         alpha * (Math.cos(time_of_base_threshold_in_radians) -
-                  Math.cos(time_of_upper_threshold_in_radians)) +
-         (upper - base) * (Math::PI / 2 - time_of_upper_threshold_in_radians))
+    if max > upper && min < base
+      btr = Math.asin((base - avg) / alpha) # time of base threshold in radians
+      utr = Math.asin((upper - avg) / alpha) # time of upper threshold in radians
+      a = avg - base
+      b = utr - btr
+      c = alpha * (Math.cos(btr) - Math.cos(utr))
+      d = upper - base
+      e = Math::PI / 2 - utr
+      (a * b + c + d * e) / Math::PI
     end
   end
 end

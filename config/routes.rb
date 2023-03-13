@@ -1,57 +1,61 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
-  resources :degree_days, only: [:index] do
+  resources :degree_days, only: :index do
     collection do
-      get "info"
+      get "grid"
+      get "map"
       get "dd_table"
-    end
-  end
-
-  resources :evapotranspirations, only: [:show, :index] do
-    collection do
       get "info"
-      get "all_for_date"
-      get "calculate_et"
     end
   end
 
-  resources :insolations, only: [:show, :index] do
+  resources :evapotranspirations, only: :index do
     collection do
+      get "grid"
+      get "map"
       get "info"
-      get "all_for_date"
     end
   end
 
-  resources :precips, only: [:show, :index] do
+  resources :insolations, only: :index do
     collection do
+      get "grid"
+      get "map"
       get "info"
-      get "all_for_date"
     end
   end
 
-  resources :pest_forecasts, only: [:show, :index] do
+  resources :precips, only: :index do
     collection do
-      get "custom"
-      get "point_details"
-      get "custom_point_details"
+      get "grid"
+      get "map"
+      get "info"
+    end
+  end
+
+  resources :pest_forecasts, only: :index do
+    collection do
+      get "grid"
+      get "map"
       get "pvy"
-      get "freeze"
       get "info"
     end
   end
 
-  resources :weather, only: [:show, :index] do
+  resources :weather, only: :index do
     collection do
-      get "info"
-      get "all_for_date"
+      get "grid"
+      get "map"
       get "forecast"
       get "forecast_nws"
+      get "freeze_grid"
+      get "info"
     end
   end
 
-  resources :station_observations, only: [:index]
-  resources :stations, only: [:index]
+  # resources :station_observations, only: [:index]
+  # resources :stations, only: [:index]
 
   root to: "application#index"
 

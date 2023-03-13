@@ -41,6 +41,6 @@ set cntrparam bspline
 set cntrparam level 10
 set for [i=1:12] linetype i dt 4 lc rgb "#000000"
 set style increment user
-set cntrlabel start 1 interval 1000
+set cntrlabel start 1 interval 1000 format "%.4g"
 splot '' using 2:1:3 with lines lw 0.5 nosurface
 splot '' using 2:1:3 every :10 with labels

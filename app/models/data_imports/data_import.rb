@@ -1,24 +1,35 @@
 class DataImport < ApplicationRecord
   DAYS_BACK_WINDOW = (ENV["DAYS_BACK_WINDOW"] || 7).to_i
 
+  def self.import_types
+    [
+      PrecipDataImport,
+      WeatherDataImport,
+      InsolationDataImport,
+      EvapotranspirationDataImport,
+      PestForecastDataImport,
+      DegreeDayDataImport
+    ].freeze
+  end
+
   def self.latest_date
     Time.now.in_time_zone("US/Central").yesterday.to_date
   end
 
   def self.earliest_date
-    (Time.now.in_time_zone("US/Central") - DAYS_BACK_WINDOW.days).to_date
+    Time.now.in_time_zone("US/Central").to_date - DAYS_BACK_WINDOW.days
   end
 
   def self.days_to_load
-    successful_dates = successful.pluck(:readings_on)
+    successful_dates = successful.pluck(:date)
 
     earliest_date.upto(latest_date).reject do |date|
       successful_dates.include?(date)
     end
   end
 
-  def self.on(date)
-    where(readings_on: date)
+  def self.pending
+    where(status: "pending")
   end
 
   def self.started
@@ -29,77 +40,74 @@ class DataImport < ApplicationRecord
     where(status: "successful")
   end
 
-  def self.unsuccessful
-    where(status: "unsuccessful")
+  def self.failed
+    where(status: "failed")
   end
 
   def self.start(date, message = nil)
-    status = on(date)
-    if status.exists?
-      status.update(status: "started", message:)
-    else
-      started.on(date).create!
-    end
+    status = where(date:)
+    opts = {status: "started", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
   end
 
   def self.succeed(date, message = nil)
-    status = on(date)
-    if status.exists?
-      status.update(status: "successful", message:)
-    else
-      successful.on(date).create!
-    end
+    Rails.logger.info "#{name} :: Import completed successfully for #{date}"
+    status = where(date:)
+    opts = {status: "successful", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
   end
 
   def self.fail(date, message = nil)
     message ||= "No reason given"
     Rails.logger.warn "#{name} :: Import failed for #{date}: #{message}"
-    status = on(date)
-    if status.exists?
-      status.update(status: "unsuccessful", message:)
-    else
-      create!(readings_on: date, status: "unsuccessful", message:)
-    end
+    status = where(date:)
+    opts = {status: "failed", message:}
+    status.exists? ? status.update!(opts) : status.create!(opts)
+  end
+
+  def self.create_pending(date)
+    import_types.each { |i| i.create!(date:, status: "pending") }
   end
 
   # run this from console
   def self.check_statuses(start_date = earliest_date, end_date = latest_date)
-    initial_log_level = ActiveRecord::Base.logger.level
-    ActiveRecord::Base.logger.level = 1
+    ActiveRecord::Base.logger.level = :info
 
-    message = []
+    dates = start_date.to_date..end_date.to_date
     count = 0
+    message = []
     message << "Data load statuses for #{start_date} thru #{end_date}:"
 
-    (start_date..end_date).each do |date|
-      statuses = DataImport.on(date)
-      if statuses.empty?
-        count += 1
-        message << "  #{date}: Data load not attempted."
-      elsif statuses.unsuccessful.count > 0 || statuses.started.count > 0
-        message << "  #{date}: PROBLEM"
-        statuses.order(:updated_at).each do |status|
-          case status.status
-          when "unsuccessful"
-            count += 1
-            message << "    #{status.type} ==> FAIL: #{status.message}"
-          when "started"
-            count += 1
-            message << "    #{status.type} ==> STARTED: #{DataImporter.elapsed(status.updated_at)} ago"
-          when "successful"
+    dates.each do |date|
+      # initialize import record
+      import_types.each do |import|
+        import.find_by(date:) || import.create(date:, status: "pending")
+      end
+
+      # describe import states
+      statuses = DataImport.where(date:)
+      if statuses.successful.size == import_types.size
+        message << "  #{date}: OK"
+      elsif statuses.pending.size == import_types.size
+        count += import_types.size
+        message << "  #{date}: PENDING"
+      else
+        message << "  #{date}"
+        import_types.each do |type|
+          status = type.find_by(date:)
+          if status.status == "successful"
             message << "    #{status.type} ==> OK"
           else
             count += 1
-            message << "    #{status.type} ==> UNKNOWN"
+            msg = "    #{status.type} ==> #{status.status.upcase}"
+            msg += ": #{status.message}" if status.message
+            message << msg
           end
         end
-      else
-        message << "  #{date}: OK"
       end
     end
 
-    ActiveRecord::Base.logger.level = initial_log_level
-
+    ActiveRecord::Base.logger.level = Rails.configuration.log_level
     message.each { |m| Rails.logger.info m }
     {count:, message:}
   end

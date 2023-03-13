@@ -1,11 +1,11 @@
 class LandExtent
   STEP = 0.1
 
-  def self.latitudes
+  def self.lat_range
     38.0..50.0
   end
 
-  def self.longitudes
+  def self.long_range
     -98.0..-82.0
   end
 
@@ -13,41 +13,65 @@ class LandExtent
     STEP
   end
 
+  def self.latitudes
+    lat_range.step(step)
+  end
+
+  def self.longitudes
+    long_range.step(step)
+  end
+
   def self.min_lat
-    latitudes.min.to_d.round(1)
+    lat_range.min
   end
 
   def self.max_lat
-    latitudes.max.to_d.round(1)
+    lat_range.max
   end
 
   def self.min_long
-    longitudes.min.to_d.round(1)
+    long_range.min
   end
 
   def self.max_long
-    longitudes.max.to_d.round(1)
+    long_range.max
   end
 
-  def self.random_point
-    lat = rand(latitudes).round(1)
-    long = rand(longitudes).round(1)
-    [lat, long]
+  def self.num_latitudes
+    latitudes.count
   end
 
-  def self.inside?(lat, long)
-    (latitudes === lat) && (longitudes === long)
+  def self.num_longitudes
+    longitudes.count
   end
 
   def self.num_points
-    latitudes.step(step).count * longitudes.step(step).count
+    num_latitudes * num_longitudes
   end
 
-  def self.each_point(step = STEP)
-    latitudes.step(step).each do |lat|
-      longitudes.step(step).each do |long|
+  def self.inside?(lat, long)
+    (lat_range === lat) && (long_range === long)
+  end
+
+  def self.random_point
+    lat = rand(lat_range).round(1)
+    long = rand(long_range).round(1)
+    [lat, long]
+  end
+
+  def self.each_point
+    latitudes.each do |lat|
+      longitudes.each do |long|
         yield(lat, long)
       end
     end
+  end
+
+  def self.create_grid(default_value = nil)
+    hash = {}
+    each_point do |lat, long|
+      hash[[lat, long]] = default_value
+    end
+    hash
   end
 end

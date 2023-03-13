@@ -1,241 +1,185 @@
 class EvapotranspirationsController < ApplicationController
   # GET: returns ets for lat, long, date range
   # params:
-  #   lat (required)
-  #   long (required)
-  #   start_date - default 1st of year
-  #   end_date - default today
+  #   lat - required, point latitude
+  #   long - required, point longitude
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, either 'in' (default) or 'mm'
 
   def index
     params.require([:lat, :long])
+    parse_date_or_dates || default_date_range
+    index_params
+    @method = params[:method]
+    cumulative_value = 0
 
-    start_time = Time.current
-    status = "OK"
-    data = []
-
-    conditions = {date: start_date..end_date, latitude: lat, longitude: long}
-
-    if params[:method] == "adjusted"
+    # have to calculate from weather & insol
+    if @method == "adjusted"
       weather = {}
       insols = {}
-      WeatherDatum.where(conditions)
-        .order(:date).each { |w| weather[w.date] = w }
-      Insolation.where(conditions)
-        .order(:date).each { |i| insols[i.date] = i }
+      WeatherDatum.where(@query).each { |w| weather[w.date] = w }
+      Insolation.where(@query).each { |i| insols[i.date] = i }
 
-      if weather.empty? || insols.empty?
-        status = "no data"
+      if weather.empty? && insols.empty?
+        @status = "no data"
       else
-        data = []
-        cumulative_value = 0
-        start_date.upto(end_date) do |date|
-          next if weather[date].nil? || insols[date].nil?
-          t = weather[date].avg_temperature
-          vp = weather[date].vapor_pressure
-          i = insols[date].insolation
-          d = date.yday
-          l = lat
-
-          reg = EvapotranspirationCalculator.et(t, vp, i, d, l)
-          adj = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
-          # Rails.logger.debug "> classic: #{reg}\n> adjusted: #{adj}\n> diff: #{(100 * (adj - reg) / reg).round(1)}%"
-
-          value = (params[:method] == "adjusted") ? adj : reg
+        @dates.each do |date|
+          if weather[date].nil? || insols[date].nil?
+            value = 0
+          else
+            t = weather[date].avg_temp
+            vp = weather[date].vapor_pressure
+            i = insols[date].insolation
+            d = date.yday
+            l = lat
+            value = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+          end
+          value = convert(value)
           cumulative_value += value
-          data << {date:, value:, cumulative_value:}
+          @data << {
+            date:,
+            value: value.round(5),
+            cumulative_value: cumulative_value.round(5)
+          }
         end
       end
     else
-      ets = Evapotranspiration.where(conditions).order(:date)
+      ets = Evapotranspiration.where(@query)
 
       if ets.empty?
-        status = "no data"
+        @status = "no data"
       else
-        cumulative_value = 0
-        data = ets.collect do |et|
-          date = et.date.to_formatted_s
-          value = et.potential_et
+        @data = ets.collect do |et|
+          date = et.date.to_s
+          value = convert(et.potential_et)
           cumulative_value += value
-          {date:, value:, cumulative_value:}
+          {
+            date:,
+            value: value.round(5),
+            cumulative_value: cumulative_value.round(5)
+          }
         end
       end
     end
 
-    values = data.map { |day| day[:value] }
-    days_requested = (start_date..end_date).count
-    days_returned = values.size
+    @total = cumulative_value
+    @values = @data.collect { |day| day[:value] }
+    @days_returned = @values.size
+    @status ||= "missing days" if @days_requested != @days_returned
+    @info = index_info
 
-    info = {
-      lat: lat.to_f,
-      long: long.to_f,
-      start_date:,
-      end_date:,
-      days_requested:,
-      days_returned:,
-      min_value: values.min,
-      max_value: values.max,
-      units: "in/day",
-      compute_time: Time.current - start_time
-    }
-
-    status = "missing days" if status == "OK" && days_requested != days_returned
-
-    response = {status:, info:, data:}
-
+    response = {info: @info, data: @data}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
+        headers = @info unless params[:headers] == "false"
         filename = "et data for #{lat}, #{long}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
+        send_data(to_csv(@data, headers), filename:)
       end
-    end
-  end
-
-  # GET: create map and return url to it
-
-  def show
-    start_time = Time.current
-
-    @date = [date_from_id, default_date].min
-    if params[:start_date].present?
-      latest_date = Evapotranspiration.latest_date || default_date
-      @date = [@date, latest_date].min
-      @start_date = [[start_date, earliest_date].max, @date].min
-      @start_date = nil if @start_date == @date
-    end
-    @units = units
-
-    image_name = Evapotranspiration.image_name(@date, @start_date, @units)
-    image_filename = File.join(ImageCreator.file_dir, image_name)
-
-    if File.exist?(image_filename)
-      url = File.join(ImageCreator.url_path, image_name)
-    else
-      image_name = Evapotranspiration.create_image(@date, start_date: @start_date, units: @units)
-      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
-    end
-
-    if request.format.png?
-      render html: "<img src=#{url} height=100%>".html_safe
-    else
-      render json: {
-        params: {
-          start_date: @start_date,
-          end_date: @date,
-          units: @units
-        },
-        compute_time: Time.current - start_time,
-        map: url
-      }
     end
   end
 
   # GET: return grid of all values for date
   # params:
-  #   date - default most recent date
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default first of year if end_date provided
+  #   lat_range - optional, default full extent, format min,max
+  #   long_range - optional, default full extent, format min,max
+  #   units - 'in' (default) or 'mm'
 
-  def all_for_date
-    start_time = Time.current
-    status = "OK"
-    info = {}
-    data = []
+  def grid
+    parse_date_or_dates || default_single_date
+    grid_params
+    @data = {}
 
-    @date = date
-
-    ets = Evapotranspiration.where(date: @date)
-
-    if ets.empty?
-      status = "no data"
+    ets = Evapotranspiration.where(@query)
+    if ets.exists?
+      @data = ets.grid_summarize.sum(:potential_et)
+      @data.each { |k, v| @data[k] = convert(v) } if @units == "mm"
     else
-      data = ets.collect do |et|
-        {
-          lat: et.latitude.to_f.round(1),
-          long: et.longitude.to_f.round(1),
-          value: et.potential_et.round(3)
-        }
-      end
+      @status = "no data"
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
+    @values = @data.values
+    @info = grid_info
 
-    info = {
-      date:,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      grid_points: lats.count * longs.count,
-      min_value: values.min,
-      max_value: values.max,
-      units: "Potential evapotranspiration (in/day)",
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      status:,
-      info:,
-      data:
-    }
-
+    response = {info: @info, data: @data}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = "et data grid for #{@date}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
+        csv_data = @data.map do |key, value|
+          {latitude: key[0], longitude: key[1], value:}
+        end
+        headers = @info unless params[:headers] == "false"
+        filename = "et data grid (#{@units}) for #{@date}.csv"
+        send_data(to_csv(csv_data, headers), filename:)
       end
     end
   end
 
-  # GET: calculate et with arguments
+  # GET: create map and return url to it
+  # params:
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, 'F' or 'C'
+  #   scale - optional, 'min,max' for image scalebar
+  #   extent - optional, omit or 'wi' for Wisconsin only
+  #   stat - optional, summarization statistic, must be sum, min, max, avg
 
-  def calculate_et
-    render json: {
-      inputs: params,
-      value: Evapotranspiration.new.potential_et
-    }
+  def map
+    parse_date_or_dates || default_single_date
+    map_params
+
+    image_name = Evapotranspiration.image_name(**@image_args)
+    image_filename = Evapotranspiration.image_path(image_name)
+    image_url = Evapotranspiration.image_url(image_name)
+
+    if File.exist?(image_filename)
+      @url = image_url
+      @status = "already exists"
+    else
+      image_name = Evapotranspiration.guess_image(**@image_args)
+      if image_name
+        @url = image_url
+        @status = "image created"
+      end
+    end
+
+    @status ||= "unable to create image, invalid query or no data"
+
+    response = {info: map_info, filename: image_name, url: @url}
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.png { render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status }
+    end
   end
 
   # GET: Returns info about et database
 
   def info
-    start_time = Time.current
-    t = Evapotranspiration
-    min_date = t.minimum(:date) || 0
-    max_date = t.maximum(:date) || 0
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.distinct.pluck(:date).to_a
-    response = {
-      table_cols: t.column_names,
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:potential_et), t.maximum(:potential_et)],
-      date_range: [min_date.to_s, max_date.to_s],
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      missing_days: all_dates - actual_dates,
-      compute_time: Time.current - start_time
-    }
-    render json: response
+    render json: get_info(Evapotranspiration)
   end
 
   private
 
-  def earliest_date
-    Evapotranspiration.earliest_date || Date.current.beginning_of_year
+  def default_date
+    EvapotranspirationDataImport.latest_date || Date.yesterday
   end
 
-  def units
-    valid_units = Evapotranspiration::UNITS
-    if valid_units.include?(params[:units])
-      params[:units]
-    elsif !params[:units].present?
-      valid_units.first
-    else
-      raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
-    end
+  def valid_units
+    Evapotranspiration.valid_units
+  end
+
+  def units_text
+    "#{@units}/day"
+  end
+
+  # stored in 'in'
+  def convert(val)
+    (@units == "mm") ? UnitConverter.in_to_mm(val) : val
   end
 end

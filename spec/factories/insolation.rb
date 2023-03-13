@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :insolation do
-    latitude { 43.0 }
-    longitude { -89.7 }
     date { Date.yesterday }
-    insolation { 561 }
+    latitude { 45.0 }
+    longitude { -89.0 }
+    insolation { rand(0.0..30.0) }
   end
 end

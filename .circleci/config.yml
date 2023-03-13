@@ -5,7 +5,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.1.3-node
+      - image: cimg/ruby:3.2.1-node
         environment:
           PG_HOST: localhost
           PG_USER: postgres
@@ -24,7 +24,7 @@ jobs:
           key: gems-v1
       - run:
           name: Install Dredd
-          command: npm install dredd
+          command: sudo npm install dredd --global
       - run:
           name: Install gnuplot and imagemagick
           command: |

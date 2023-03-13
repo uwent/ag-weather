@@ -1,164 +1,150 @@
 require "rails_helper"
 
-RSpec.describe WeatherDatum, type: :model do
-  describe ".calculate_all_degree_days_for_date_range" do
-    it "calculates a degree day value for date range" do
-      latitude = Wisconsin.min_lat
-      longitude = Wisconsin.min_long
-      key = [latitude, longitude]
-      1.upto(10) { |i|
-        FactoryBot.create(
-          :weather_datum,
-          date: Date.current - i.days,
-          latitude:,
-          longitude:
-        )
-      }
+RSpec.describe WeatherDatum do
+  subject { WeatherDatum }
+  unit1 = "C"
+  unit2 = "F"
 
-      grid = WeatherDatum.calculate_all_degree_days_for_date_range(
-        lat_range: Wisconsin.latitudes,
-        long_range: Wisconsin.longitudes,
-        start_date: Date.current - 12.days,
-        end_date: Date.current
-      )
+  describe "static configurations" do
+    describe ".default_col" do
+      it { expect(subject.default_col).to be_in(subject.data_cols) }
+    end
 
-      expect(grid[key].round(1)).to eq 17.4
+    describe ".default_stat" do
+      it { expect(subject.default_stat).to be_in(subject.valid_stats) }
+    end
+
+    describe ".image_subdir" do
+      it { expect(subject.image_subdir).to eq "weather" }
+    end
+
+    describe ".col_attr" do
+      it { expect(subject.col_attr).to be_an(Hash) }
+      it { expect(subject.col_attr.keys).to match_array(subject.data_cols) }
     end
   end
 
-  describe "construct land grid with weather data for given date" do
-    it "should constuct a land grid" do
-      expect(WeatherDatum.land_grid_for_date(Date.current)).to be_kind_of(LandGrid)
-    end
-
-    it "should have weather data stored in the grid" do
-      date = Date.current
-      latitude = Wisconsin.max_lat
-      longitude = Wisconsin.min_long
-      FactoryBot.create(
-        :weather_datum,
-        date:,
-        latitude:,
-        longitude:
-      )
-      land_grid = WeatherDatum.land_grid_for_date(date)
-      expect(land_grid[latitude, longitude]).to be_kind_of(WeatherDatum)
-    end
-
-    it "should store nil in grid for points without values" do
-      land_grid = WeatherDatum.land_grid_for_date(Date.current)
-      expect(land_grid[Wisconsin.max_lat, Wisconsin.max_long]).to be_nil
-    end
-  end
-
-  describe "construct land grid with weather data since a given date" do
-    it "should have arrays of weather data in the grid" do
-      latitude = Wisconsin.max_lat
-      longitude = Wisconsin.min_long
-      1.upto(10) do |i|
-        FactoryBot.create(
-          :weather_datum,
-          date: Date.current - i.days,
-          latitude:,
-          longitude:
-        )
-      end
-      land_grid = WeatherDatum.land_grid_since(Date.current - 12.days)
-      expect(land_grid[latitude, longitude]).to be_kind_of(Array)
-      expect(land_grid[latitude, longitude].length).to eq 10
-    end
-
-    it "should store nil in grid for points without values" do
-      land_grid = WeatherDatum.land_grid_since(10.days.ago)
-      expect(land_grid[Wisconsin.max_lat, Wisconsin.min_long]).to be_nil
-    end
-  end
-
-  describe "degree days" do
-    it "should get degree days with its base/upper in Fahrenheit" do
-      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
-      expect(DegreeDaysCalculator).to receive(:calculate)
-        .with(
-          UnitConverter.c_to_f(weather.min_temperature),
-          UnitConverter.c_to_f(weather.max_temperature),
-          base: 50, upper: 86, method: "sine"
-        )
-      weather.degree_days(50, 86, "sine")
-    end
-
-    it "should get degree days with its base/upper in Fahrenheit" do
-      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
-      expect(weather.degree_days(50, 86, "sine")).to eq 7.834757752132984
-    end
-
-    it "should get degree days with its base/upper in Celsius" do
-      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
-      expect(DegreeDaysCalculator).to receive(:calculate)
-        .with(
-          weather.min_temperature,
-          weather.max_temperature,
-          base: 10, upper: 30, method: "sine"
-        )
-      weather.degree_days(10, 30, "sine", false)
-    end
-
-    it "should get degree days with its base/upper in Celsius" do
-      weather = FactoryBot.create(:weather_datum, min_temperature: 8.0, max_temperature: 20.0)
-      expect(weather.degree_days(10, 30, "sine", false)).to eq(4.352643195629435)
-    end
-  end
-
-  describe "calculate all degree days" do
-    it "should return a land grid" do
-      expect(WeatherDatum.calculate_all_degree_days(Date.current)).to be_kind_of(LandGrid)
-    end
-
-    it "should call degree days for each point with data" do
-      FactoryBot.create(:weather_datum, latitude: 42, longitude: -93, date: Date.yesterday)
-      FactoryBot.create(:weather_datum, latitude: 45, longitude: -90, date: Date.yesterday)
-
-      expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
-      WeatherDatum.calculate_all_degree_days(10.days.ago)
-    end
-
-    it "should call degree days for each point for each day of data" do
-      FactoryBot.create(:weather_datum, date: Date.yesterday, latitude: 42, longitude: -93)
-      FactoryBot.create(:weather_datum, date: 2.days.ago, latitude: 42, longitude: -93)
-
-      expect(DegreeDaysCalculator).to receive(:calculate).and_return(17).exactly(2).times
-      WeatherDatum.calculate_all_degree_days(10.days.ago)
-    end
-  end
-
-  describe "create image for date" do
-    let(:earliest_date) { Date.current - 1.weeks }
-    let(:latest_date) { Date.current }
-    let(:empty_date) { earliest_date - 1.week }
-    let(:lat) { 45.0 }
-    let(:long) { -89.0 }
-
-    before(:each) do
-      earliest_date.upto(latest_date) do |date|
-        FactoryBot.create(:weather_datum, date:, latitude: lat, longitude: long, avg_temperature: 42.0)
-        FactoryBot.create(:weather_data_import, readings_on: date)
+  describe "dynamic configurations" do
+    describe ".col_name" do
+      it "gets the title for a given column" do
+        expect(subject.col_name(:max_temp)).to eq "Max air temp"
+        expect(subject.col_name(:vapor_pressure)).to eq "Vapor pressure"
+        expect(subject.col_name(:frost)).to eq "Frost days"
       end
     end
 
-    it "should call ImageCreator when data present" do
-      expect(WeatherDatum).to receive(:create_image_data).exactly(1).times
-      expect(ImageCreator).to receive(:create_image).exactly(1).times
-      WeatherDatum.create_image(latest_date)
+    describe ".valid_units" do
+      it "returns a units array if col_attr has one" do
+        expect(subject.valid_units(:min_temp)).to eq ["F", "C"]
+      end
+
+      it "returns default unit if col_attr doesn't have valid_units" do
+        expect(subject.valid_units(:min_rh)).to eq ["%"]
+      end
+
+      it "returns a nil array if no units" do
+        expect(subject.valid_units(:frost)).to eq [nil]
+      end
+
+      it "raises error if col is invalid" do
+        expect { subject.valid_units("foo") }.to raise_error(ArgumentError)
+      end
     end
 
-    it "should construct a data grid and convert units" do
-      weather = WeatherDatum.where(date: latest_date)
-      grid_f = WeatherDatum.create_image_data(LandGrid.new, weather) # default units = F
-      grid_c = WeatherDatum.create_image_data(LandGrid.new, weather, "C")
-      expect(grid_f[lat, long].round(3)).to eq(UnitConverter.c_to_f(grid_c[lat, long]).round(3))
+    describe ".default_units" do
+      it "gets the default unit given a column" do
+        expect(subject.default_units(:min_temp)).to eq "C"
+        expect(subject.default_units(:min_rh)).to eq "%"
+        expect(subject.default_units(:frost)).to be_nil
+      end
     end
 
-    it "should return 'no_data.png' when data sources not loaded" do
-      expect(WeatherDatum.create_image(empty_date)).to eq("no_data.png")
+    describe ".default_scale" do
+      it "gets the gnuplot scale given column and units" do
+        expect(subject.default_scale(col: :min_temp, units: "F")).to eq [0, 100]
+        expect(subject.default_scale(col: :min_temp, units: "C")).to eq [-20, 40]
+      end
+
+      it "returns nil if no defined scale" do
+        expect(subject.default_scale(col: :dew_point)).to be_nil
+      end
+    end
+  end
+
+  # only converts temperature
+  describe ".convert" do
+    context "when col has unit options" do
+      let(:col) { :avg_temp }
+
+      it "returns given value if units omitted" do
+        expect(subject.convert(col:, value: 10)).to eq 10
+      end
+
+      it "returns given value if units: #{unit1}" do
+        expect(subject.convert(col:, value: 10, units: unit1)).to eq 10
+      end
+
+      it "converts value if units: #{unit2}" do
+        expect(subject.convert(col:, value: 10, units: unit2)).to eq UnitConverter.c_to_f(10)
+      end
+
+      it "raises error on invalid units" do
+        expect { subject.convert(col:, value: 1, units: "foo") }.to raise_error(ArgumentError)
+      end
+    end
+
+    context "when col has no unit options" do
+      let(:col) { :min_rh }
+
+      it "returns given value if units omitted" do
+        expect(subject.convert(col:, value: 10))
+      end
+
+      it "returns given value if default unit" do
+        expect(subject.convert(col:, value: 10, units: "%"))
+      end
+    end
+  end
+
+  describe ".image_title" do
+    let(:col) { subject.default_col }
+    let(:start_date) { "2023-1-1".to_date }
+    let(:date) { "2023-2-1".to_date }
+    let(:units) { unit1 }
+    let(:args) { {col:, date:, start_date:, end_date: date, units:} }
+
+    context "with defaults" do
+      it { expect(subject.image_title(**args)).to be_an(String) }
+
+      it "should show units in title" do
+        expect(subject.image_title(**args)).to include(unit1)
+        args[:units] = unit2
+        expect(subject.image_title(**args)).to include(unit2)
+      end
+
+      context "when given start_date" do
+        it "should return string with start and end date" do
+          expect(subject.image_title(**args)).to include("for Jan 1 - Feb 1, 2023")
+        end
+      end
+
+      context "when not given start_date" do
+        it "should return string with end date" do
+          args.delete(:start_date)
+          expect(subject.image_title(**args)).to include("for Feb 1, 2023")
+        end
+      end
+
+      context "when start and end date are different years" do
+        it "should show year for both dates" do
+          args[:start_date] = "2022-1-1".to_date
+          expect(subject.image_title(**args)).to include("for Jan 1, 2022 - Feb 1, 2023")
+        end
+      end
+
+      context "when not given any date" do
+        it { expect { subject.image_title }.to raise_error(ArgumentError) }
+      end
     end
   end
 end

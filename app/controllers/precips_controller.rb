@@ -1,221 +1,138 @@
 class PrecipsController < ApplicationController
   # GET: returns precips for lat, long, date range
   # params:
-  #   lat (required)
-  #   long (required)
-  #   start_date - default 1st of year
-  #   end_date - default yesterday
-  #   units - either "mm" (default) or "in"
+  #   lat - required, point latitude
+  #   long - required, point longitude
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional either "mm" (default) or "in"
 
   def index
     params.require([:lat, :long])
+    parse_date_or_dates || default_date_range
+    index_params
+    cumulative_value = 0
 
-    start_time = Time.current
-    status = "OK"
-    data = []
-
-    precips = Precip.where(
-      date: start_date..end_date,
-      latitude: lat,
-      longitude: long
-    ).order(:date)
-
+    precips = Precip.where(@query)
     if precips.empty?
-      status = "no data"
+      @status = "no data"
     else
-      cum_value = 0
-      data = precips.collect do |precip|
+      @data = precips.collect do |precip|
         value = convert(precip.precip)
-        cum_value += value
+        cumulative_value += value
         {
-          date: precip.date.to_formatted_s,
-          value: value,
-          cumulative_value: cum_value
+          date: precip.date.to_s,
+          value: value.round(5),
+          cumulative_value: cumulative_value.round(4)
         }
       end
     end
 
-    values = data.map { |day| day[:value] }
+    @total = cumulative_value
+    @values = @data.collect { |day| day[:value] }
+    @days_returned = @values.size
+    @status ||= "missing days" if @days_requested != @days_returned
+    @info = index_info
 
-    info = {
-      lat: lat.to_f,
-      long: long.to_f,
-      start_date: start_date,
-      end_date: end_date,
-      days_requested: (start_date..end_date).count,
-      days_returned: values.count,
-      min_value: values.min,
-      max_value: values.max,
-      units: units,
-      compute_time: Time.current - start_time
-    }
-
-    status = "missing days" if status == "OK" && info[:days_requested] != info[:days_returned]
-
-    response = {
-      status: status,
-      info: info,
-      data: data
-    }
-
+    response = {info: @info, data: @data}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
       format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = "precip data for #{lat}, #{long}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
+        headers = @info unless params[:headers] == "false"
+        filename = "precip data (#{@units}) for #{lat}, #{long}.csv"
+        send_data(to_csv(@data, headers), filename:)
+      end
+    end
+  end
+
+  # GET: return grid of all values for date
+  # params:
+  #   date or end_date - defaults to most recent data
+  #   start_date - optional, provides a sum across dates if given
+  #   lat_range - optional, constrain latitudes i.e. '45,50'
+  #   long_range - optional, constrain longitudes i.e. '-89,-85'
+  #   units - optional, either 'mm' (default) or 'in'
+
+  def grid
+    parse_date_or_dates || default_single_date
+    grid_params
+
+    precips = Precip.where(@query)
+    if precips.exists?
+      @data = precips.grid_summarize.sum(:precip)
+      @data.each { |k, v| @data[k] = convert(v) } if @units != "mm"
+    else
+      @status = "no data"
+    end
+
+    @values = @data.values
+    @info = grid_info
+
+    response = {info: @info, data: @data}
+    respond_to do |format|
+      format.html { render json: response, content_type: "application/json; charset=utf-8" }
+      format.json { render json: response }
+      format.csv do
+        csv_data = @data.map do |key, value|
+          {latitude: key[0], longitude: key[1], value:}
+        end
+        headers = @info unless params[:headers] == "false"
+        filename = "precip data grid (#{@units}) for #{@date}.csv"
+        send_data(to_csv(csv_data, headers), filename:)
       end
     end
   end
 
   # GET: create map and return url to it
 
-  def show
-    start_time = Time.current
+  def map
+    parse_date_or_dates || default_single_date
+    map_params
 
-    @date = [date_from_id, default_date].min
-    if params[:start_date].present?
-      latest_date = Precip.latest_date || default_date
-      @date = [@date, latest_date].min
-      @start_date = [[start_date, earliest_date].max, @date].min
-      @start_date = nil if @start_date == @date
-    end
-    @units = units
-
-    image_name = Precip.image_name(@date, @start_date, @units)
-    image_filename = File.join(ImageCreator.file_dir, image_name)
+    image_name = Precip.image_name(**@image_args)
+    image_filename = Precip.image_path(image_name)
+    image_url = Precip.image_url(image_name)
 
     if File.exist?(image_filename)
-      url = File.join(ImageCreator.url_path, image_name)
+      @url = image_url
+      @status = "already exists"
     else
-      image_name = Precip.create_image(@date, start_date: @start_date, units: @units)
-      url = (image_name == "no_data.png") ? "/no_data.png" : File.join(ImageCreator.url_path, image_name)
-    end
-
-    if request.format.png?
-      render html: "<img src=#{url} height=100%>".html_safe
-    else
-      render json: {
-        params: {
-          start_date: @start_date,
-          end_date: @date,
-          units: @units
-        },
-        compute_time: Time.current - start_time,
-        map: url
-      }
-    end
-  end
-
-  # GET: return grid of all values for date
-  # params:
-  #   date - default to most recent data
-
-  def all_for_date
-    start_time = Time.current
-    status = "OK"
-    info = {}
-    data = []
-
-    @date = date
-
-    precips = Precip.where(date: @date)
-
-    if precips.empty?
-      status = "no data"
-    else
-      data = precips.collect do |precip|
-        {
-          lat: precip.latitude.round(1),
-          long: precip.longitude.round(1),
-          value: convert(precip.precip)
-        }
+      image_name = Precip.guess_image(**@image_args)
+      if image_name
+        @url = image_url
+        @status = "image created"
       end
-      status = "OK"
     end
 
-    lats = data.map { |d| d[:lat] }.uniq
-    longs = data.map { |d| d[:long] }.uniq
-    values = data.map { |d| d[:value] }
+    @status ||= "unable to create image, invalid query or no data"
 
-    info = {
-      date: @date,
-      lat_range: [lats.min, lats.max],
-      long_range: [longs.min, longs.max],
-      points: lats.count * longs.count,
-      min_value: values.min,
-      max_value: values.max,
-      units: units,
-      compute_time: Time.current - start_time
-    }
-
-    response = {
-      status: status,
-      info: info,
-      data: data
-    }
-
+    response = {info: map_info, filename: image_name, url: @url}
     respond_to do |format|
       format.html { render json: response, content_type: "application/json; charset=utf-8" }
       format.json { render json: response }
-      format.csv do
-        headers = {status:}.merge(info) unless params[:headers] == "false"
-        filename = "precip data grid for #{@date}.csv"
-        send_data(to_csv(response[:data], headers), filename:)
-      end
+      format.png { render html: @url ? "<img src=#{@url} height=100%>".html_safe : @status }
     end
   end
 
   # GET: Returns info about precips db
 
   def info
-    start_time = Time.current
-    t = Precip
-    min_date = t.minimum(:date) || 0
-    max_date = t.maximum(:date) || 0
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.distinct.pluck(:date).to_a
-    response = {
-      table_cols: t.column_names,
-      lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
-      long_range: [t.minimum(:longitude), t.maximum(:longitude)],
-      value_range: [t.minimum(:precip), t.maximum(:precip)],
-      date_range: [min_date.to_s, max_date.to_s],
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      missing_days: all_dates - actual_dates,
-      compute_time: Time.current - start_time
-    }
-    render json: response
+    render json: get_info(Precip)
   end
 
   private
 
-  def earliest_date
-    Precip.earliest_date || Date.current.beginning_of_year
+  def default_date
+    PrecipDataImport.latest_date || Date.yesterday
   end
 
-  def units
-    valid_units = Precip::UNITS
-    if params[:units].present?
-      unit = params[:units].downcase
-      if valid_units.include?(unit)
-        unit
-      else
-        raise ActionController::BadRequest.new("Invalid unit '#{params[:units]}'. Must be one of #{valid_units.join(", ")}.")
-      end
-    else
-      valid_units[0]
-    end
+  def valid_units
+    Precip.valid_units
   end
 
   # precips stored in mm
-  def convert(precip)
-    if units == "in"
-      precip / 25.4
-    else
-      precip
-    end
+  def convert(val)
+    (@units == "in") ? UnitConverter.mm_to_in(val) : val
   end
 end

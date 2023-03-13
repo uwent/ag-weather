@@ -1,18 +1,22 @@
-class RunTasks
+module RunTasks
   def self.all
     start_time = Time.now
-
+    ActiveRecord::Base.logger.level = :info
     DataImport.check_statuses
 
     # fetch remote data
     InsolationImporter.fetch
     PrecipImporter.fetch
     WeatherImporter.fetch
-    EvapotranspirationImporter.create_et_data
-    PestForecastImporter.create_forecast_data
+
+    # calculate local data
+    EvapotranspirationImporter.create_data
+    PestForecastImporter.create_data
+    DegreeDayImporter.create_data
 
     # display status of import attempts
     DataImport.check_statuses
+    ActiveRecord::Base.logger.level = Rails.configuration.log_level
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
   end
 
@@ -159,8 +163,8 @@ class RunTasks
       if weather.size > 0
         frosts = {}
         freezes = {}
-        weather.where("min_temperature < ?", 0.0).each { |w| frosts[[w.latitude, w.longitude]] = true }
-        weather.where("min_temperature < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
+        weather.where("min_temp < ?", 0.0).each { |w| frosts[[w.latitude, w.longitude]] = true }
+        weather.where("min_temp < ?", -2.22).each { |w| freezes[[w.latitude, w.longitude]] = true }
         frost_ids = []
         freeze_ids = []
         PestForecast.where(date:).each do |pf|

@@ -7,11 +7,40 @@ Bundler.require(*Rails.groups)
 
 module AgWeather
   class MessageFormatter < ActiveSupport::Logger::SimpleFormatter
+    PAL = {
+      black: "\u001b[30m",
+      red: "\u001b[31m",
+      green: "\u001b[32m",
+      yellow: "\u001b[33m",
+      blue: "\u001b[34m",
+      magenta: "\u001b[35m",
+      cyan: "\u001b[36m",
+      white: "\u001b[37m",
+      reset: "\u001b[0m"
+    }
+
+    SEV = {
+      debug: "DBG",
+      info: "NFO",
+      warn: "WRN",
+      error: "ERR",
+      fatal: "FTL",
+      unknown: "UNK"
+    }
+
+    CLR = {
+      debug: PAL[:green],
+      info: PAL[:white],
+      warn: PAL[:yellow],
+      error: PAL[:red],
+      fatal: PAL[:red]
+    }
+
     def call(severity, time, progname, msg)
-      level = sprintf("%-5s", severity.to_s)
+      sev = severity.to_sym.downcase
       time = time.strftime("%Y-%m-%d %H:%M:%S")
-      msg = msg&.truncate(200, omission: "...#{msg.last(100)}")
-      "#{level} [#{time}] #{msg}\n"
+      msg = msg&.truncate(500, omission: "...")
+      "#{time} #{CLR[sev]}[#{SEV[sev]}] #{msg}#{PAL[:reset]}\n"
     end
   end
 
@@ -26,10 +55,10 @@ module AgWeather
     #
     # config.time_zone = "Central Time (US & Canada)"
 
-    config.eager_load = true
-    config.eager_load_paths << Rails.root.join("app/models/data_imports")
-    config.eager_load_paths << Rails.root.join("app/models/data_importers")
-    config.eager_load_paths << Rails.root.join("app/models/land_extents")
+    # config.eager_load = true
+    config.autoload_paths << Rails.root.join("app/models/data_imports")
+    config.autoload_paths << Rails.root.join("app/models/data_importers")
+    config.autoload_paths << Rails.root.join("app/models/land_extents")
 
     # Image generation and service configuration
     config.x.image.temp_directory = "tmp"
