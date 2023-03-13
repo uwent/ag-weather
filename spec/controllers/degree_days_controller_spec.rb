@@ -380,6 +380,91 @@ RSpec.describe DegreeDaysController, type: :controller do
     end
   end
 
+  describe "GET /map" do
+    let(:date) { end_date }
+    let(:default_col) { DegreeDay.default_col }
+    let(:url_base) { "/#{data_class.image_subdir}" }
+
+    context "with no params" do
+      before do
+        allow(ImageCreator).to receive(:create_image).and_return("foo.png")
+      end
+
+      it "is ok" do
+        expect(get(:map)).to have_http_status(:ok)
+      end
+
+      it "has the correct response structure" do
+        get(:map)
+        expect(json.keys).to eq(%w[info filename url])
+      end
+    end
+
+    context "when creating a new image" do
+      let(:units) { "f" }
+
+      it "returns the correct image with default params" do
+        params = {start_date:, end_date:, col: default_col, units: }
+        image_name = data_class.image_name(**params)
+        expect(image_name).to eq("degree-days-base-50-f-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}.png")
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params:)
+
+        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+      end
+
+      it "returns the correct image for a single date" do
+        params = {date:, col: default_col, units:}
+        image_name = data_class.image_name(**params)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params:)
+
+        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+      end
+
+      it "responds to the units param" do
+        units = "C"
+        params = {date:, col: default_col, units:}
+        image_name = data_class.image_name(**params)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params:)
+
+        expect(image_name).to include("-c-")
+        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+      end
+
+      it "returns nil url when no data" do
+        get(:map, params: {date: empty_date})
+
+        expect(json["url"]).to be_nil
+      end
+
+      it "shows the image in the browser when format=png" do
+        image_name = data_class.image_name(date:, col: "dd_50", units:)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params: {date:, format: :png})
+
+        expect(response.body).to include("<img src=#{"#{url_base}/#{image_name}"}")
+      end
+    end
+
+    context "when the request is invalid" do
+      it "returns error message on bad date" do
+        get(:map, params: {date: "foo"})
+
+        expect(json["message"]).to eq "Invalid date 'foo'"
+        expect(response.status).to eq 400
+      end
+
+      it "returns error message on bad units" do
+        get(:map, params: {date:, units: "foo"})
+
+        expect(json["message"]).to eq "Invalid unit 'foo'. Must be one of F, C"
+        expect(response.status).to eq 400
+      end
+    end
+  end
+
   describe "GET /info" do
     before do
       FactoryBot.create(:degree_day)

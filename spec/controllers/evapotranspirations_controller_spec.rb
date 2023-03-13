@@ -95,6 +95,64 @@ RSpec.describe EvapotranspirationsController, type: :controller do
     end
   end
 
+  describe "GET /grid" do
+    let(:date) { end_date }
+
+    before do
+      dates.each do |date|
+        FactoryBot.create(:evapotranspiration, date:)
+        import_class.succeed(date)
+      end
+    end
+
+    it "is okay" do
+      get(:grid, params: {date:})
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    context "when params are empty" do
+      it "defaults to latest date" do
+        get(:grid)
+
+        expect(json["info"]["date"]).to eq(end_date.to_s)
+      end
+    end
+
+    context "when the request is valid" do
+      it "has the correct response structure" do
+        get(:grid, params: {date:})
+
+        expect(json.keys).to match(%w[info data])
+        expect(json["info"]).to be_an(Hash)
+        expect(json["info"]["status"]).to eq("OK")
+        expect(json["data"]).to be_an(Hash)
+      end
+
+      it "returns valid data" do
+        get(:grid, params: {date:})
+
+        expect(json["data"].keys.first).to eq "[45.0, -89.0]"
+      end
+
+      it "can return a csv" do
+        get(:grid, params: {date:}, as: :csv)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.header["Content-Type"]).to include("text/csv")
+      end
+    end
+
+    context "when date is valid but has no data" do
+      it "returns empty data" do
+        get(:grid, params: {date: empty_date})
+
+        expect(json["info"]["date"]).to eq(empty_date.to_s)
+        expect(json["data"]).to be_empty
+      end
+    end
+  end
+
   describe "GET /map" do
     let(:date) { end_date }
     let(:url_base) { "/#{data_class.image_subdir}" }
@@ -175,64 +233,6 @@ RSpec.describe EvapotranspirationsController, type: :controller do
 
         expect(json["message"]).to eq "Invalid unit 'foo'. Must be one of in, mm"
         expect(response.status).to eq 400
-      end
-    end
-  end
-
-  describe "GET /grid" do
-    let(:date) { end_date }
-
-    before do
-      dates.each do |date|
-        FactoryBot.create(:evapotranspiration, date:)
-        import_class.succeed(date)
-      end
-    end
-
-    it "is okay" do
-      get(:grid, params: {date:})
-
-      expect(response).to have_http_status(:ok)
-    end
-
-    context "when params are empty" do
-      it "defaults to latest date" do
-        get(:grid)
-
-        expect(json["info"]["date"]).to eq(end_date.to_s)
-      end
-    end
-
-    context "when the request is valid" do
-      it "has the correct response structure" do
-        get(:grid, params: {date:})
-
-        expect(json.keys).to match(%w[info data])
-        expect(json["info"]).to be_an(Hash)
-        expect(json["info"]["status"]).to eq("OK")
-        expect(json["data"]).to be_an(Hash)
-      end
-
-      it "returns valid data" do
-        get(:grid, params: {date:})
-
-        expect(json["data"].keys.first).to eq "[45.0, -89.0]"
-      end
-
-      it "can return a csv" do
-        get(:grid, params: {date:}, as: :csv)
-
-        expect(response).to have_http_status(:ok)
-        expect(response.header["Content-Type"]).to include("text/csv")
-      end
-    end
-
-    context "when date is valid but has no data" do
-      it "returns empty data" do
-        get(:grid, params: {date: empty_date})
-
-        expect(json["info"]["date"]).to eq(empty_date.to_s)
-        expect(json["data"]).to be_empty
       end
     end
   end

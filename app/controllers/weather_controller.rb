@@ -365,13 +365,13 @@ class WeatherController < ApplicationController
       avg_temp: convert_temp(w.avg_temp),
       dew_point: convert_temp(w.dew_point),
       vapor_pressure: w.vapor_pressure&.round(4),
+      min_rh: w.min_rh&.round(2),
+      max_rh: w.max_rh&.round(2),
+      avg_rh: w.avg_rh&.round(2),
       hours_rh_over_90: w.hours_rh_over_90,
       avg_temp_rh_over_90: convert_temp(w.avg_temp_rh_over_90),
       frost: w.frost == 1,
-      freezing: w.freezing == 1,
-      min_rh: w.min_rh&.round(2),
-      max_rh: w.max_rh&.round(2),
-      avg_rh: w.avg_rh&.round(2)
+      freezing: w.freezing == 1
     }
   end
 

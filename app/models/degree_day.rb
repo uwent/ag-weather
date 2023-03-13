@@ -97,6 +97,8 @@ class DegreeDay < ApplicationRecord
 
   # must be sent :col and :units
   def self.image_name_prefix(col:, units:, stat:, **args)
+    raise ArgumentError.new "Must provide column and units" unless col && units
+    
     base, upper = parse_model(col, units)
     str = ""
     str += "#{stat}-" if stat && stat != default_stat
@@ -111,6 +113,9 @@ class DegreeDay < ApplicationRecord
 
   # model name format like "dd_42p8_86" in Fahrenheit
   def self.parse_model(model, units)
+    raise ArgumentError.new "Must supply a model name" unless model
+    raise ArgumentError.new "Model name must begin with 'dd_'" unless model[0..2] == "dd_"
+
     _, base, upper = model.to_s.tr("p", ".").split("_")
     if units.upcase == "C"
       base = "%g" % ("%.1f" % UnitConverter.f_to_c(base.to_f))

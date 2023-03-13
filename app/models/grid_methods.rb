@@ -109,7 +109,7 @@ module GridMethods
   end
 
   def check_col(col)
-    if !data_cols.include?(col) && !data_cols.include?(col.to_sym)
+    if !data_cols.include?(col) && !data_cols.include?(col&.to_sym)
       raise ArgumentError.new "'#{col.inspect}' is not a valid data column for #{name}. Must be one of #{data_cols.join(", ")}"
     end
   end
