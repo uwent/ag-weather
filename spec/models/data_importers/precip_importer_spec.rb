@@ -30,7 +30,7 @@ RSpec.describe PrecipImporter do
   describe ".local_dir" do
     it "should create the file directory if it doesn't exist" do
       local_dir = "#{subject::LOCAL_DIR}/#{datestring}"
-      allow(Dir).to receive(:exists?).and_return(false)
+      allow(Dir).to receive(:exist?).and_return(false)
       expect(FileUtils).to receive(:mkdir_p).with(local_dir).once
       subject.local_dir(date)
     end

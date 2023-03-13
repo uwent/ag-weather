@@ -132,14 +132,14 @@ RSpec.describe GribMethods, type: :module do
     let(:file) { "local.file" }
 
     it "should return 1 if file already exists" do
-      allow(File).to receive(:exists?).and_return(true)
+      allow(File).to receive(:exist?).and_return(true)
       allow(dc).to receive(:download)
 
       expect(dc.fetch_grib("url", "file")).to eq 1
     end
 
     it "should try to download the url if the local file does not exist" do
-      allow(File).to receive(:exists?).and_return(false)
+      allow(File).to receive(:exist?).and_return(false)
       allow(dc).to receive(:download)
 
       expect(dc).to receive(:download).with(url, file)
@@ -147,7 +147,7 @@ RSpec.describe GribMethods, type: :module do
     end
 
     it "should return 0 if the download fails" do
-      allow(File).to receive(:exists?).and_return(false)
+      allow(File).to receive(:exist?).and_return(false)
       allow(dc).to receive(:download).and_raise(StandardError.new)
 
       expect(dc.fetch_grib(url, file)).to eq 0

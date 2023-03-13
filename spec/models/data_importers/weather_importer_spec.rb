@@ -16,7 +16,7 @@ RSpec.describe WeatherImporter do
     end
 
     it "should create local directories if they don't exist" do
-      allow(Dir).to receive(:exists?).and_return(false)
+      allow(Dir).to receive(:exist?).and_return(false)
       expect(FileUtils).to receive(:mkdir_p).with("#{dir}/20230101").once
       subject.local_dir(date)
     end
