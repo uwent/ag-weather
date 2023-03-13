@@ -8,6 +8,7 @@ class EvapotranspirationsController < ApplicationController
   #   units - optional, either 'in' (default) or 'mm'
 
   def index
+    params.require([:lat, :long])
     parse_date_or_dates || default_date_range
     index_params
     @method = params[:method]

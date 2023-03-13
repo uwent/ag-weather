@@ -8,6 +8,7 @@ class InsolationsController < ApplicationController
   #   units - optional, either 'MJ' (default) or 'KWh'
 
   def index
+    params.require([:lat, :long])
     parse_date_or_dates || default_date_range
     index_params
     cumulative_value = 0

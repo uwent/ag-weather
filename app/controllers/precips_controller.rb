@@ -8,6 +8,7 @@ class PrecipsController < ApplicationController
   #   units - optional either "mm" (default) or "in"
 
   def index
+    params.require([:lat, :long])
     parse_date_or_dates || default_date_range
     index_params
     cumulative_value = 0
