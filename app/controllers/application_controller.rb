@@ -59,14 +59,12 @@ class ApplicationController < ActionController::Base
   ## PARSE PARAMS ##
 
   def parse_number(str)
-    (str.match(/^\d+$/)) ? str.to_i : nil
+    /^\d+$/.match?(str) ? str.to_i : nil
   end
 
   def parse_float(str, digits: nil)
-    if str&.match(/^\-?\d*\.?\d+$/)
+    if /^-?\d*\.?\d+$/.match?(str)
       digits ? str.to_f.round(digits) : str.to_f
-    else
-      str
     end
   end
 

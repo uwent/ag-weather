@@ -3,22 +3,20 @@ require "rails_helper"
 RSpec.describe PrecipsController, type: :controller do
   let(:data_class) { Precip }
   let(:import_class) { PrecipDataImport }
-
   let(:json) { JSON.parse(response.body) }
-  let(:info) { json["info"] }
-  let(:data) { json["data"] }
 
   let(:lat) { 45.0 }
   let(:long) { -89.0 }
   let(:end_date) { DataImport.latest_date }
   let(:start_date) { end_date - 1.week }
+  let(:dates) { start_date..end_date }
   let(:empty_date) { "2000-01-01" }
 
   describe "GET /index" do
     let(:params) { {lat:, long:, start_date:, end_date:} }
 
     before do
-      start_date.upto(end_date) do |date|
+      dates.each do |date|
         FactoryBot.create(:precip, latitude: lat, longitude: long, date:)
         import_class.succeed(date)
       end
@@ -35,29 +33,29 @@ RSpec.describe PrecipsController, type: :controller do
         get(:index, params:)
 
         expect(json.keys).to match_array(%w[info data])
-        expect(info).to be_an Hash
-        expect(data).to be_an Array
-        expect(data.first.keys).to match(%w[date value cumulative_value])
+        expect(json["info"]).to be_an Hash
+        expect(json["data"]).to be_an Array
+        expect(json["data"].first.keys).to match(%w[date value cumulative_value])
       end
 
       it "has the correct number of elements" do
         get(:index, params:)
 
-        expect(data.size).to eq((start_date..end_date).count)
+        expect(json["data"].size).to eq(dates.count)
       end
 
       it "defaults start_date to beginning of year" do
         params.delete(:start_date)
         get(:index, params:)
 
-        expect(info["start_date"]).to eq(end_date.beginning_of_year.to_s)
+        expect(json["info"]["start_date"]).to eq(end_date.beginning_of_year.to_s)
       end
 
       it "defaults end_date to latest date" do
         params.delete(:end_date)
         get(:index, params:)
 
-        expect(info["end_date"]).to eq(DataImport.latest_date.to_s)
+        expect(json["info"]["end_date"]).to eq(DataImport.latest_date.to_s)
       end
 
       it "rounds lat and long to the nearest 0.1 degree" do
@@ -66,8 +64,8 @@ RSpec.describe PrecipsController, type: :controller do
         params.update({lat:, long:})
         get(:index, params:)
 
-        expect(info["lat"]).to eq(lat.round(1))
-        expect(info["long"]).to eq(long.round(1))
+        expect(json["info"]["lat"]).to eq(lat.round(1))
+        expect(json["info"]["long"]).to eq(long.round(1))
       end
 
       it "can return a csv" do
@@ -168,7 +166,7 @@ RSpec.describe PrecipsController, type: :controller do
       it "returns error message on bad date" do
         get(:map, params: {date: "foo"})
 
-        expect(json["message"]).to eq "Invalid date: 'foo'"
+        expect(json["message"]).to eq "Invalid date 'foo'"
         expect(response.status).to eq 400
       end
 
@@ -185,7 +183,7 @@ RSpec.describe PrecipsController, type: :controller do
     let(:date) { end_date }
 
     before do
-      start_date.upto(end_date) do |date|
+      dates.each do |date|
         FactoryBot.create(:precip, date:, latitude: lat, longitude: long)
         import_class.succeed(date)
       end
@@ -201,7 +199,7 @@ RSpec.describe PrecipsController, type: :controller do
       it "defaults to latest date" do
         get(:grid)
 
-        expect(info["date"]).to eq(end_date.to_s)
+        expect(json["info"]["date"]).to eq(end_date.to_s)
       end
     end
 
@@ -210,9 +208,9 @@ RSpec.describe PrecipsController, type: :controller do
         get(:grid, params: {date:})
 
         expect(json.keys).to match(%w[info data])
-        expect(info).to be_an(Hash)
-        expect(info["status"]).to eq("OK")
-        expect(data).to be_an(Hash)
+        expect(json["info"]).to be_an(Hash)
+        expect(json["info"]["status"]).to eq("OK")
+        expect(json["data"]).to be_an(Hash)
       end
 
       it "returns valid data" do
@@ -233,8 +231,8 @@ RSpec.describe PrecipsController, type: :controller do
       it "returns empty data" do
         get(:grid, params: {date: empty_date})
 
-        expect(info["date"]).to eq(empty_date.to_s)
-        expect(data).to be_empty
+        expect(json["info"]["date"]).to eq(empty_date.to_s)
+        expect(json["data"]).to be_empty
       end
     end
   end

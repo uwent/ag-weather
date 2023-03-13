@@ -6,7 +6,7 @@ class DegreeDaysController < ApplicationController
   #   date or end_date - optional, default 1st of year. Use date for single day
   #   start_date - optional, default 1st of year
   #   Must specify one of:
-  #     model - name of degree day model column (default dd_50)
+  #     model - name of degree day model column (default dd_50_86)
   #   OR
   #     base - required, default 50F
   #     upper - optional, default none
@@ -32,8 +32,8 @@ class DegreeDaysController < ApplicationController
           min_temp: min.round(2),
           max_temp: max.round(2),
           avg_temp: avg.round(2),
-          value: dd.round(3),
-          cumulative_value: cumulative_value.round(2)
+          value: dd.round(4),
+          cumulative_value: cumulative_value.round(3)
         }
       end
     else
@@ -62,7 +62,7 @@ class DegreeDaysController < ApplicationController
   # will either return pre-calculated degree day accumulations or compute new ones
   # params:
   #   Must specify one of:
-  #     model - name of degree day model column (default dd_50)
+  #     model - name of degree day model column (default dd_50_86)
   #   OR
   #     base - default 50F, required
   #     upper - default 86F, optional
@@ -98,7 +98,7 @@ class DegreeDaysController < ApplicationController
       @status = "no data"
     end
 
-    @data.each { |k, v| @data[k] = convert_dds(v) }
+    @data.each { |k, v| @data[k] = convert_dds(v)&.round(4) }
     @values = @data.values
     @info = grid_info
 
@@ -125,7 +125,7 @@ class DegreeDaysController < ApplicationController
   #   scale - optional, 'min,max' for image scalebar
   #   extent - optional, omit or 'wi' for Wisconsin only
   #   stat - optional, summarization statistic, must be sum, min, max, avg
-  #   model - optional, which degree day column to render, default 'dd_50'
+  #   model - optional, which degree day column to render, default 'dd_50_86'
 
   def map
     parse_date_or_dates || default_date_range
@@ -199,8 +199,8 @@ class DegreeDaysController < ApplicationController
           value = convert_dds(dd.send(m)) || 0
           total += value
           dd_data[m][dd.date] = {
-            value: value.round(2),
-            total: total.round(2)
+            value: value.round(4),
+            total: total.round(3)
           }
         end
       end
@@ -356,7 +356,7 @@ class DegreeDaysController < ApplicationController
       reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}") unless invalid.empty?
       valid
     else
-      ["dd_50_86"]
+      [DegreeDay.default_col.to_s]
     end
   end
 end
