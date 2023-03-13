@@ -58,13 +58,16 @@ class ApplicationController < ActionController::Base
 
   ## PARSE PARAMS ##
 
-  def parse_number(s)
-    (!/\D/.match?(s)) ? s.to_i : nil
+  def parse_number(str)
+    (str.match(/^\d+$/)) ? str.to_i : nil
   end
 
-  def parse_float(val, digits: nil)
-    return if val.nil?
-    digits ? val.to_f.round(digits) : val.to_f
+  def parse_float(str, digits: nil)
+    if str&.match(/^\-?\d*\.?\d+$/)
+      digits ? str.to_f.round(digits) : str.to_f
+    else
+      str
+    end
   end
 
   def date
@@ -98,7 +101,7 @@ class ApplicationController < ActionController::Base
       begin
         Date.parse(date)
       rescue
-        reject("Invalid date: '#{date}'")
+        reject("Invalid date '#{date}'")
       end
     else
       default
@@ -124,31 +127,55 @@ class ApplicationController < ActionController::Base
   end
 
   def lat
-    val = parse_float(params[:lat], digits: 1)
-    val.in?(LandExtent.lat_range) ? val : reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.lat_range}")
+    check_lat(parse_float(params[:lat], digits: 1))
   end
 
   def long
-    val = parse_float(params[:long], digits: 1)
+    check_long(parse_float(params[:long], digits: 1))
+  end
+
+  def check_lat(val)
+    val.in?(LandExtent.lat_range) ? val : reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.lat_range}")
+  end
+
+  def check_long(val)
     val.in?(LandExtent.long_range) ? val : reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.long_range}")
   end
 
   def lat_range
-    parse_coords(params[:lat_range], LandExtent.lat_range)
+    param = params[:lat_range]
+    range = LandExtent.lat_range
+    if param.present?
+      coords = parse_coords(param)
+      coords.in?(range) ? coords : reject("Invalid latitude range '#{param}'. Must be formatted as e.g. 45.0,50.5 and in range #{range}")
+    else
+      range
+    end
   end
 
   def long_range
-    parse_coords(params[:long_range], LandExtent.long_range)
+    param = params[:long_range]
+    range = LandExtent.long_range
+    if param.present?
+      coords = parse_coords(param)
+      coords.in?(range) ? coords : reject("Invalid longitude range '#{param}'. Must be formatted as e.g. -89.0,-85.5 and in range #{range}")
+    else
+      range
+    end
+  end
+
+  def parse_coords(str)
+    return unless str.present?
+    split = str.split(",")
+    return unless split.size >= 2
+    arr = [split[0].to_f, split[1].to_f].sort
+    arr[0]..arr[1]
+  rescue
+    nil
   end
 
   def parse_coord(param, default)
     parse_float(param, digits: 1) || default
-  end
-
-  def parse_coords(param, default)
-    param.present? ? param.split(",").map(&:to_f).sort.inject { |a, b| a.round(1)..b.round(1) } : default
-  rescue
-    default
   end
 
   # scale should be given as 'min,max' or separate scale_min, scale_max params
