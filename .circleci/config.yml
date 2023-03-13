@@ -24,7 +24,7 @@ jobs:
           key: gems-v1
       - run:
           name: Install Dredd
-          command: npm install dredd --global
+          command: sudo npm install dredd --global
       - run:
           name: Install gnuplot and imagemagick
           command: |
