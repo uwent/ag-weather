@@ -286,10 +286,6 @@ class DegreeDaysController < ApplicationController
     @model_text += ", upper #{@upper}#{@units}" if @upper
   end
 
-  def default_date
-    DegreeDayImporter.latest_date || Date.yesterday
-  end
-
   def valid_units
     DegreeDay.valid_units
   end

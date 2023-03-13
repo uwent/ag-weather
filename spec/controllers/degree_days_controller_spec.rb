@@ -73,6 +73,20 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       context "with custom params" do
+        it "responds to start date" do
+          params[:start_date] = start_date
+          get(:index, params:)
+
+          expect(info["start_date"]).to eq(start_date.to_s)
+        end
+
+        it "responds to end date" do
+          params[:end_date] = end_date - 1.day
+          get(:index, params:)
+
+          expect(info["end_date"]).to eq((end_date - 1.day).to_s)
+        end
+
         it "responds to units param" do
           params[:units] = "C"
           get(:index, params:)
@@ -404,7 +418,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       let(:units) { "f" }
 
       it "returns the correct image with default params" do
-        params = {start_date:, end_date:, col: default_col, units: }
+        params = {start_date:, end_date:, col: default_col, units:}
         image_name = data_class.image_name(**params)
         expect(image_name).to eq("degree-days-base-50-f-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}.png")
         allow(ImageCreator).to receive(:create_image).and_return(image_name)

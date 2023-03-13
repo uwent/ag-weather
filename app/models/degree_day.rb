@@ -98,7 +98,7 @@ class DegreeDay < ApplicationRecord
   # must be sent :col and :units
   def self.image_name_prefix(col:, units:, stat:, **args)
     raise ArgumentError.new "Must provide column and units" unless col && units
-    
+
     base, upper = parse_model(col, units)
     str = ""
     str += "#{stat}-" if stat && stat != default_stat

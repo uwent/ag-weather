@@ -26,10 +26,10 @@ class PestForecastsController < ApplicationController
         cumulative_value += value
         {
           date: w.date,
-          min_temp: w.min_temp.round(2),
-          max_temp: w.max_temp.round(2),
-          avg_temp: w.avg_temp.round(2),
-          avg_temp_hi_rh: w.avg_temp_rh_over_90,
+          min_temp: convert_temp(w.min_temp).round(2),
+          max_temp: convert_temp(w.max_temp).round(2),
+          avg_temp: convert_temp(w.avg_temp).round(2),
+          avg_temp_hi_rh: convert_temp(w.avg_temp_rh_over_90),
           hours_hi_rh: w.hours_rh_over_90,
           value:,
           cumulative_value:
@@ -67,7 +67,7 @@ class PestForecastsController < ApplicationController
 
   def grid
     params.require(:pest)
-    parse_date_or_dates || default_single_date
+    parse_date_or_dates || default_date_range
     grid_params
     parse_pest
     @data = {}
@@ -98,7 +98,7 @@ class PestForecastsController < ApplicationController
           {latitude: key[0], longitude: key[1], total: value[:total], avg: value[:avg]}
         end
         headers = @info unless params[:headers] == "false"
-        filename = "pest data grid for #{pest}.csv"
+        filename = "pest data grid for #{@pest}.csv"
         send_data(to_csv(csv_data, headers), filename:)
       end
     end
@@ -186,7 +186,6 @@ class PestForecastsController < ApplicationController
   # params:
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
-  #   units - optional, 'F' or 'C'
   #   scale - optional, 'min,max' for image scalebar
   #   extent - optional, omit or 'wi' for Wisconsin only
   #   stat - optional, summarization statistic, must be sum, min, max, avg
@@ -197,6 +196,8 @@ class PestForecastsController < ApplicationController
     map_params
     parse_pest
     @image_args[:col] = @pest
+    @image_args.delete(:units)
+    @units = nil
 
     image_name = PestForecast.image_name(**@image_args)
     image_filename = PestForecast.image_path(image_name)
@@ -248,9 +249,20 @@ class PestForecastsController < ApplicationController
     PestForecast.default_col
   end
 
-  def units
+  def valid_units
+    ["F", "C"]
   end
 
-  def units_text
+  def in_f
+    @units == "F"
+  end
+
+  def units_text(*args)
+    {temp: @units}
+  end
+
+  # temps in C by default
+  def convert_temp(temp)
+    in_f ? UnitConverter.c_to_f(temp) : temp
   end
 end

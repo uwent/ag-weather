@@ -43,7 +43,7 @@ RSpec.describe WeatherController, type: :controller do
 
         it "has the correct response structure" do
           get(:index, params:)
-  
+
           expect(json.keys).to eq(%w[info data])
           expect(info).to be_an(Hash)
           expect(data).to be_an(Array)
@@ -379,7 +379,7 @@ RSpec.describe WeatherController, type: :controller do
       let(:units) { "f" }
 
       it "returns the correct image with default params" do
-        params = {start_date:, end_date:, col: default_col, units: }
+        params = {start_date:, end_date:, col: default_col, units:}
         image_name = data_class.image_name(**params)
         expect(image_name).to eq("avg-air-temp-f-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}.png")
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
