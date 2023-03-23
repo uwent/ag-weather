@@ -5,14 +5,8 @@ class StatusMailer < ActionMailer::Base
     "agweather@cals.wisc.edu"
   end
 
-  def admin_emails
-    User.where(admin: true).pluck(:email)
-  rescue
-    []
-  end
-
   def status_recipients
-    admin_emails << default_email
+    [default_email] << User.admin_emails
   end
 
   def status_mail(statuses)
@@ -20,7 +14,7 @@ class StatusMailer < ActionMailer::Base
     mail(
       to: status_recipients,
       from: default_email,
-      subject: "AgWeather data import problem"
+      subject: "Data import problem on #{ENV["AG_WEATHER_HOST"] || "unknown host"}"
     )
   end
 end

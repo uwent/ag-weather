@@ -113,9 +113,9 @@ class DataImport < ApplicationRecord
   end
 
   # sends status email if data loads have failed recently
-  def self.send_status_email
+  def self.send_status_email(force: false)
     status = check_statuses
-    if status[:count] > 0
+    if status[:count] > 0 || force
       Rails.logger.error "DataImport :: Abnormal data load detected, sending status email!"
       StatusMailer.status_mail(status[:message]).deliver
     else
