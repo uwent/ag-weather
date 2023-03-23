@@ -45,7 +45,7 @@ class EvapotranspirationsController < ApplicationController
         end
       end
     else
-      ets = Evapotranspiration.where(@query)
+      ets = Evapotranspiration.where(@query).order(:date)
 
       if ets.empty?
         @status = "no data"

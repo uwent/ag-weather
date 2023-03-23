@@ -15,7 +15,7 @@ class WeatherController < ApplicationController
     parse_date_or_dates || default_date_range
     index_params
 
-    weather = WeatherDatum.where(@query)
+    weather = WeatherDatum.where(@query).order(:date)
     if weather.exists?
       @data = weather.collect { |w| weather_hash(w) }
     else

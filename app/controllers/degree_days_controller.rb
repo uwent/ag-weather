@@ -19,7 +19,7 @@ class DegreeDaysController < ApplicationController
     parse_model_or_base_upper
     cumulative_value = 0
 
-    weather = WeatherDatum.where(@query)
+    weather = WeatherDatum.where(@query).order(:date)
     if weather.exists?
       @data = weather.collect do |w|
         dd = w.degree_days(base: @base, upper: @upper, method: @method, in_f:)
@@ -179,8 +179,8 @@ class DegreeDaysController < ApplicationController
     models = parse_models
     query = {date: dates, latitude: lat, longitude: long}
 
-    weather = WeatherDatum.where(query).select(:date, :min_temp, :max_temp)
-    dds = DegreeDay.where(query)
+    weather = WeatherDatum.where(query).select(:date, :min_temp, :max_temp).order(:date)
+    dds = DegreeDay.where(query).order(:date)
 
     if weather.empty? || dds.empty?
       status = "no data"

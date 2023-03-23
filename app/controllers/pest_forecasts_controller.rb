@@ -14,13 +14,13 @@ class PestForecastsController < ApplicationController
     parse_pest
     cumulative_value = 0
 
-    pfs = PestForecast.where(@query)
+    pfs = PestForecast.where(@query).order(:date)
     if pfs.exists?
       pest_data = pfs.collect do |pf|
         [pf.date, pf.send(@pest)]
       end.to_h
       pest_data.default = 0
-      weather = WeatherDatum.where(@query)
+      weather = WeatherDatum.where(@query).order(:date)
       @data = weather.collect do |w|
         value = pest_data[w.date]
         cumulative_value += value
@@ -122,7 +122,7 @@ class PestForecastsController < ApplicationController
     forecast = []
 
     dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: long)
-      .select(:date, :latitude, :longitude, :dd_39p2_86)
+      .select(:date, :latitude, :longitude, :dd_39p2_86).order(:date)
 
     if dds.exists?
       cum_dd = 0

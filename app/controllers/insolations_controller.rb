@@ -13,7 +13,7 @@ class InsolationsController < ApplicationController
     index_params
     cumulative_value = 0
 
-    insols = Insolation.where(@query)
+    insols = Insolation.where(@query).order(:date)
     if insols.empty?
       @status = "no data"
     else

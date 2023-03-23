@@ -13,7 +13,7 @@ class PrecipsController < ApplicationController
     index_params
     cumulative_value = 0
 
-    precips = Precip.where(@query)
+    precips = Precip.where(@query).order(:date)
     if precips.empty?
       @status = "no data"
     else
