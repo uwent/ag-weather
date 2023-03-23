@@ -31,4 +31,13 @@ class DataImporter
     end
     missing_dates
   end
+
+  def self.create_default_images(date:)
+    DegreeDay.create_image(date:)
+    Evapotranspiration.create_image(date:)
+    Insolation.create_image(date:)
+    PestForecast.create_image(date:)
+    Precip.create_image(date:)
+    WeatherDatum.create_image(date:, units: "F")
+  end
 end

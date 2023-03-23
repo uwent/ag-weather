@@ -27,7 +27,7 @@ class PestForecastImporter < DataImporter
       import.succeed(date)
     end
 
-    PestForecast.create_image(date:) unless Rails.env.test?
+    PestForecast.create_image(date:) unless date < 1.week.ago
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data for #{date}: #{e}"
     import.fail(date, e)

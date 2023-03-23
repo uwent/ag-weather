@@ -48,7 +48,7 @@ class EvapotranspirationImporter < DataImporter
       import.succeed(date)
     end
 
-    Evapotranspiration.create_image(date:) unless Rails.env.test?
+    Evapotranspiration.create_image(date:) unless date < 1.week.ago
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data #{date}: #{e}"
     import.fail(date, e)

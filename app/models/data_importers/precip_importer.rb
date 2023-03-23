@@ -43,11 +43,11 @@ class PrecipImporter < DataImporter
     Precip.transaction do
       Precip.where(date:).delete_all
       Precip.import!(precips)
+      import.succeed(date)
     end
-
+    
     Precip.create_image(date:)
     Rails.logger.info "#{name} :: Completed precip load for #{date} in #{elapsed(start_time)}."
-    import.succeed(date)
   rescue => e
     Rails.logger.error "#{name} :: Failed to load precip data for #{date}: #{e}"
     import.fail(date, e)
