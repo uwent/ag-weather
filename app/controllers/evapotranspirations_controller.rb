@@ -28,12 +28,12 @@ class EvapotranspirationsController < ApplicationController
           if weather[date].nil? || insols[date].nil?
             value = 0
           else
-            t = weather[date].avg_temp
-            vp = weather[date].vapor_pressure
-            i = insols[date].insolation
-            d = date.yday
-            l = lat
-            value = EvapotranspirationCalculator.et_adj(t, vp, i, d, l)
+            value = EvapotranspirationCalculator.et_adj(
+              avg_temp: weather[date].avg_temp,
+              avg_v_press: weather[date].vapor_pressure,
+              insol: insols[date].insolation,
+              day_of_year: date.yday,
+              lat:)
           end
           value = convert(value)
           cumulative_value += value
