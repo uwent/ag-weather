@@ -24,13 +24,8 @@ set :env_path, '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, ' cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ":task" :output '
 
 # Daily data import task
-every :day, at: ["6:00am", "8:00am"] do
+every :day, at: ["6:00am"] do
   runner "RunTasks.daily"
-end
-
-# Send status email, in case daily task hangs and never sends mail
-every :day, at: "7:00am" do
-  runner "DataImport.send_status_email"
 end
 
 # Clean up old (>1 month) map images
