@@ -20,7 +20,7 @@ class PestForecastsController < ApplicationController
         [pf.date, pf.send(@pest)]
       end.to_h
       pest_data.default = 0
-      weather = WeatherDatum.where(@query).order(:date)
+      weather = Weather.where(@query).order(:date)
       @data = weather.collect do |w|
         value = pest_data[w.date]
         cumulative_value += value

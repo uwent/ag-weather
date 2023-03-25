@@ -18,7 +18,7 @@ class EvapotranspirationsController < ApplicationController
     if @method == "adjusted"
       weather = {}
       insols = {}
-      WeatherDatum.where(@query).each { |w| weather[w.date] = w }
+      Weather.where(@query).each { |w| weather[w.date] = w }
       Insolation.where(@query).each { |i| insols[i.date] = i }
 
       if weather.empty? && insols.empty?

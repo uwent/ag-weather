@@ -5,7 +5,7 @@ RSpec.describe WeatherImporter do
   let(:date) { "2023-1-1".to_date }
 
   before do
-    allow(WeatherDatum).to receive(:create_image)
+    allow(Weather).to receive(:create_image)
   end
 
   describe ".local_dir" do
@@ -88,12 +88,6 @@ RSpec.describe WeatherImporter do
       expect(WeatherDay).to receive(:new).with(date).and_return(weather_day)
       subject.persist_day_to_db(weather_day)
     end
-
-    # it "should save the weather data" do
-    #   allow(weather_day).to receive(:obs_at).and_return([WeatherObservation.new(21, 18)])
-    #   allow(weather_day).to receive(:date).and_return(Date.yesterday)
-    #   expect { subject.persist_day_to_db(weather_day) }.to change { WeatherDatum.count }.by(LandExtent.num_points)
-    # end
   end
 
   describe ".count_rh_over" do

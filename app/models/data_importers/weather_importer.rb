@@ -5,7 +5,7 @@ class WeatherImporter < DataImporter
   LOCAL_DIR = "#{grib_dir}/rtma"
 
   def self.data_class
-    WeatherDatum
+    Weather
   end
 
   def self.import
@@ -44,7 +44,7 @@ class WeatherImporter < DataImporter
     FileUtils.rm_r grib_dir unless keep_grib
 
     import.succeed(date)
-    WeatherDatum.create_image(date:, units: "F")
+    Weather.create_image(date:, units: "F")
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
@@ -61,7 +61,7 @@ class WeatherImporter < DataImporter
       dew_points = observations.map(&:dew_point)
       dew_point = true_avg(dew_points)
 
-      weather_data << WeatherDatum.new(
+      weather_data << Weather.new(
         date: weather_day.date,
         latitude: lat,
         longitude: long,
@@ -78,9 +78,9 @@ class WeatherImporter < DataImporter
       )
     end
 
-    WeatherDatum.transaction do
-      WeatherDatum.where(date: weather_day.date).delete_all
-      WeatherDatum.import!(weather_data)
+    Weather.transaction do
+      Weather.where(date: weather_day.date).delete_all
+      Weather.import!(weather_data)
     end
   end
 

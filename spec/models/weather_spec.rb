@@ -1,7 +1,7 @@
 require "rails_helper"
 
-RSpec.describe WeatherDatum do
-  subject { WeatherDatum }
+RSpec.describe Weather do
+  subject { Weather }
   unit1 = "C"
   unit2 = "F"
 

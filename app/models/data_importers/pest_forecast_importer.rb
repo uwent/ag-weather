@@ -18,7 +18,7 @@ class PestForecastImporter < DataImporter
     import.start(date)
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
-    weather = WeatherDatum.all_for_date(date)
+    weather = Weather.all_for_date(date)
     pfs = weather.collect { |w| PestForecast.new_from_weather(w) }
 
     PestForecast.transaction do

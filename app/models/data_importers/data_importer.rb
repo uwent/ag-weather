@@ -38,6 +38,6 @@ class DataImporter
     Insolation.create_image(date:)
     PestForecast.create_image(date:)
     Precip.create_image(date:)
-    WeatherDatum.create_image(date:, units: "F")
+    Weather.create_image(date:, units: "F")
   end
 end

@@ -19,7 +19,7 @@ class DegreeDaysController < ApplicationController
     parse_model_or_base_upper
     cumulative_value = 0
 
-    weather = WeatherDatum.where(@query).order(:date)
+    weather = Weather.where(@query).order(:date)
     if weather.exists?
       @data = weather.collect do |w|
         dd = w.degree_days(base: @base, upper: @upper, method: @method, in_f:)
@@ -85,7 +85,7 @@ class DegreeDaysController < ApplicationController
         @data = dds.grid_summarize.sum(@model)
       elsif @compute
         @status = "calculated new degree day model"
-        weather = WeatherDatum.where(query)
+        weather = Weather.where(query)
         @data = Hash.new(0)
         weather.each do |w|
           key = [w.latitude, w.longitude]
@@ -179,7 +179,7 @@ class DegreeDaysController < ApplicationController
     models = parse_models
     query = {date: dates, latitude: lat, longitude: long}
 
-    weather = WeatherDatum.where(query).select(:date, :min_temp, :max_temp).order(:date)
+    weather = Weather.where(query).select(:date, :min_temp, :max_temp).order(:date)
     dds = DegreeDay.where(query).order(:date)
 
     if weather.empty? || dds.empty?

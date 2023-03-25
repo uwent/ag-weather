@@ -18,7 +18,7 @@ class EvapotranspirationImporter < DataImporter
     import.start(date)
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
-    weather = WeatherDatum.land_grid(date:)
+    weather = Weather.land_grid(date:)
     insols = Insolation.hash_grid(date:)
     ets = []
 

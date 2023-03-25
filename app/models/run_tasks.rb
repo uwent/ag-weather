@@ -37,7 +37,7 @@ module RunTasks
   end
 
   ## Command-line tools ##
-  # reports if WeatherDatum exists for each day in year
+  # reports if Weather exists for each day in year
   def self.check_weather(year = Date.current.year)
     start_date = Date.new(year, 1, 1)
     end_date = [Date.new(year, 12, 31), Date.today].min
@@ -45,7 +45,7 @@ module RunTasks
     msg = []
     missing = 0
     dates.each do |date|
-      if WeatherDatum.where(date:).exists?
+      if Weather.where(date:).exists?
         msg << "#{date} - ok"
       else
         msg << "#{date} - missing"
@@ -62,7 +62,7 @@ module RunTasks
     dates.each do |date|
       Insolation.create_image(date)
       Precip.create_image(date)
-      WeatherDatum.create_image(date)
+      Weather.create_image(date)
       Evapotranspiration.create_image(date)
     end
   end
@@ -76,7 +76,7 @@ module RunTasks
   end
 
   def self.redo_weather_images(start_date, end_date = Date.current)
-    (start_date..end_date).each { |date| WeatherDatum.create_image(date) }
+    (start_date..end_date).each { |date| Weather.create_image(date) }
   end
 
   def self.redo_et_images(start_date, end_date = Date.current)
@@ -109,7 +109,7 @@ module RunTasks
     del_count
   end
 
-  # re-generates pest forecasts for year from WeatherDatum
+  # re-generates pest forecasts for year from Weather
   # can be run if new models are added
   def self.redo_forecasts(year = Date.current.year)
     start_date = Date.new(year, 1, 1)
@@ -128,10 +128,10 @@ module RunTasks
   def self.redo_forecast(date)
     ActiveRecord::Base.logger.level = 1
 
-    if WeatherDatum.where(date:).size > 0
+    if Weather.where(date:).size > 0
       puts date.strftime + " - ready - recalculating..."
 
-      weather = WeatherDatum.land_grid_for_date(date)
+      weather = Weather.land_grid_for_date(date)
       forecasts = []
 
       LandExtent.each_point do |lat, long|
@@ -151,7 +151,7 @@ module RunTasks
   end
 
   # computed frost and freeze data for past weather when they were added to the db
-  def self.calc_frost(start_date = WeatherDatum.earliest_date, end_date = WeatherDatum.latest_date)
+  def self.calc_frost(start_date = Weather.earliest_date, end_date = Weather.latest_date)
     puts "Calculating freeze and frost data..."
     ActiveRecord::Base.logger.level = 1
     dates = start_date..end_date
@@ -159,7 +159,7 @@ module RunTasks
     days = (start_date..end_date).count
     dates.each do |date|
       day += 1
-      weather = WeatherDatum.where(date:).select(:latitude, :longitude)
+      weather = Weather.where(date:).select(:latitude, :longitude)
       if weather.size > 0
         frosts = {}
         freezes = {}
@@ -186,7 +186,7 @@ module RunTasks
   #   dates = PestForecast.select(:date).distinct.pluck(:date).to_a.sort
   #   dates.each do |date|
   #     puts date.to_s
-  #     weather = WeatherDatum.where(date:)
+  #     weather = Weather.where(date:)
   #     pfs = PestForecast.where(date: date)
   #     pfs.each do |pf|
   #       next unless pf.dd_38_75.nil?
