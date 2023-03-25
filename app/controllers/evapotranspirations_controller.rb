@@ -25,15 +25,16 @@ class EvapotranspirationsController < ApplicationController
         @status = "no data"
       else
         @dates.each do |date|
-          if weather[date].nil? || insols[date].nil?
-            value = 0
+          value = if weather[date].nil? || insols[date].nil?
+            0.0
           else
-            value = EvapotranspirationCalculator.et_adj(
+            EvapotranspirationCalculator.et_adj(
               avg_temp: weather[date].avg_temp,
               avg_v_press: weather[date].vapor_pressure,
               insol: insols[date].insolation,
               day_of_year: date.yday,
-              lat:)
+              lat:
+            )
           end
           value = convert(value)
           cumulative_value += value

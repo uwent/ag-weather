@@ -2,7 +2,6 @@ require "open-uri"
 require "open3"
 
 module GribMethods
-
   def grib_dir
     "/tmp/gribdata"
   end
@@ -92,6 +91,6 @@ module GribMethods
 
   # allow OpenURI to follow a redirect
   def OpenURI.redirectable?(uri1, uri2)
-    return true
+    true
   end
 end

@@ -29,7 +29,7 @@ class WeatherHour
 
   def store(lat, long, value, type)
     return if value.nil?
-    return unless key = data_key(type)
+    return unless (key = data_key(type))
     lat = lat.to_f.round(1)
     long = long.to_f.round(1)
     return unless @data[[lat, long]]

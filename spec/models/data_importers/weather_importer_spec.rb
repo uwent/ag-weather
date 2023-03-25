@@ -89,8 +89,8 @@ RSpec.describe WeatherImporter do
       # fake mini grid
       allow(LandExtent).to receive(:latitudes).and_return([45.0, 46.0])
       allow(LandExtent).to receive(:longitudes).and_return([-89.0, -88.0])
-      
-      expect { subject.persist_day_to_db(date, weather_day) }.to change {Weather.count}.by(4)
+
+      expect { subject.persist_day_to_db(date, weather_day) }.to change { Weather.count }.by(4)
     end
   end
 

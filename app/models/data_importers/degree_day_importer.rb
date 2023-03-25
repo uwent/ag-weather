@@ -25,7 +25,7 @@ class DegreeDayImporter < DataImporter
       DegreeDay.where(date:).delete_all
       DegreeDay.import!(dds)
     end
-    
+
     import.succeed(date)
     DegreeDay.create_image(date:) unless date < 1.week.ago
   rescue => e
