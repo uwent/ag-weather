@@ -23,21 +23,14 @@ jobs:
       - ruby/install-deps:
           key: gems-v1
       - run:
-          name: Install Dredd
-          command: sudo npm install dredd --global
-      - run:
-          name: Install gnuplot and imagemagick
-          command: |
-            sudo apt update
-            sudo apt -y install gnuplot-qt imagemagick-6.q16
-      - run:
           name: Set up database
           command: bundle exec rails db:setup
       - run:
-          name: Run specs
+          name: Rspec
           command: bundle exec rspec
       - run:
-          name: Run Dredd API test
+          name: Dredd API test
           command: |
+            sudo npm install dredd --global
             export PATH="$(npm bin):$PATH"
             RAILS_ENV=test bundle exec rake dredd

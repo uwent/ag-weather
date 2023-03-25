@@ -61,7 +61,7 @@ RSpec.describe WeatherHour do
     end
   end
 
-  context "load" do
+  context ".load_from" do
     it "should call popen3" do
       expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], [], []])
       weather_hour.load_from("file.name")
