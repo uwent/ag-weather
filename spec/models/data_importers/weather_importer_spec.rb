@@ -78,28 +78,26 @@ RSpec.describe WeatherImporter do
     end
   end
 
-  describe ".persist_day_to_db", skip: true do
-    before(:each) do
-      weather_day = WeatherDay.new(date:)
+  describe ".persist_day_to_db" do
+    let(:weather_day) { WeatherDay.new }
+
+    before do
       allow(weather_day).to receive(:observations_at).and_return(FactoryBot.build_list(:weather_observation, 2))
     end
 
-    it "should load a WeatherDay" do
-      expect(WeatherDay).to receive(:new).with(date).and_return(weather_day)
-      subject.persist_day_to_db(weather_day)
+    it "should load a WeatherDay and save Weather to db" do
+      # fake mini grid
+      allow(LandExtent).to receive(:latitudes).and_return([45.0, 46.0])
+      allow(LandExtent).to receive(:longitudes).and_return([-89.0, -88.0])
+      
+      expect { subject.persist_day_to_db(date, weather_day) }.to change {Weather.count}.by(4)
     end
   end
 
   describe ".count_rh_over" do
-    it "counts all if temperature is same as dewpoint (rel. humidity is 100)" do
-      obs = FactoryBot.build_list(:weather_observation, 20, temperature: 300, dew_point: 300)
-      expect(subject.count_rh_over(obs, 90.0)).to eq 20
-    end
-
-    it "only counts those above cutoff" do
-      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 300) # RH 100%
-      obs += FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 298) # RH < 90
-      expect(subject.count_rh_over(obs, 90.0)).to eq 10
+    it "counts number in list greater than cutoff" do
+      vals = [10, 50, 90, 100]
+      expect(subject.count_rh_over(vals, 90.0)).to eq(2)
     end
 
     it "returns zero for an empty list" do

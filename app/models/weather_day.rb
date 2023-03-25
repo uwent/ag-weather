@@ -1,20 +1,20 @@
 class WeatherDay
-  attr_accessor :date, :data
+  attr_accessor :data
 
-  def initialize(date)
-    @date = date
-    @data = LandGrid.new
+  def initialize
+    @data = {}
     LandExtent.each_point do |lat, long|
-      @data[lat, long] = []
+      @data[[lat, long]] = []
     end
   end
 
   def load_from(dirname)
     day_start = Time.current
     Rails.logger.info "WeatherDay :: Loading weather hour grib files from #{dirname}"
-    Dir["#{dirname}/*.grb2_wexp"].each_with_index do |filename, i|
-      Rails.logger.info "WeatherDay :: Loading hour #{i}..."
+    files = Dir["#{dirname}/*.grb2_wexp"]
+    files.each_with_index do |filename, i|
       hour_start = Time.current
+      Rails.logger.info "WeatherDay :: Loading hour #{i}..."
       wh = WeatherHour.new
       wh.load_from(filename)
       add_data_from_weather_hour(wh)
@@ -23,25 +23,16 @@ class WeatherDay
     Rails.logger.info "WeatherDay :: Loading weather hours completed in #{DataImporter.elapsed(day_start)}"
   end
 
-  def observations_at(lat, long)
-    @data[lat, long]
-  end
-
-  def temperatures_at(lat, long)
-    @data[lat, long].map(&:temperature)
-  end
-
-  def dew_points_at(lat, long)
-    @data[lat, long].map(&:dew_point)
-  end
-
-  def add_data_from_weather_hour(hour)
+  # assumes the data passed in is in Kelvin
+  def add_data_from_weather_hour(wh)
     LandExtent.each_point do |lat, long|
-      @data[lat, long] <<
-        WeatherObservation.new(
-          hour.temperature_at(lat, long),
-          hour.dew_point_at(lat, long)
-        )
+      temp = wh.temperature_at(lat, long)
+      dew_point = wh.dew_point_at(lat, long)
+      @data[[lat, long]] << WeatherObservation.new(temp, dew_point)
     end
+  end
+
+  def observations_at(lat, long)
+    @data[[lat, long]]
   end
 end
