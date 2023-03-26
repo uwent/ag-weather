@@ -50,6 +50,7 @@ module GribMethods
   end
 
   def download_gribs(date, force: false)
+    start_time = Time.now
     gribs = 0
     0.upto(23) do |hour|
       remote_file = remote_file(date:, hour:)
@@ -63,6 +64,7 @@ module GribMethods
     elsif gribs < 24 && !force
       raise StandardError.new "Failed to retrieve all grib files for #{date}, found #{gribs}. Override with force: true"
     end
+    Rails.logger.info "#{name} :: Downloads completed in #{elapsed(start_time)}."
   end
 
   # returns 1 if it downloaded a file or one already existed

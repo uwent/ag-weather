@@ -33,14 +33,16 @@ class WeatherImporter < DataImporter
   def self.fetch_day(date, force: false)
     start_time = Time.current
     import.start(date)
-    Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
 
+    Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
     download_gribs(date, force:)
+
+    Rails.logger.info "#{name} :: Loading files..."
     wd = WeatherDay.new
     wd.load_from(local_dir(date))
     persist_day_to_db(date, wd)
     FileUtils.rm_r grib_dir unless keep_grib
-
+    import.succeed(date)
     Weather.create_image(date:, units: "F")
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
@@ -80,8 +82,6 @@ class WeatherImporter < DataImporter
       Weather.where(date:).delete_all
       Weather.import!(weather)
     end
-
-    import.succeed(date)
   end
 
   def self.count_rh_over(humidities, rh_cutoff)

@@ -29,12 +29,14 @@ class PrecipImporter < DataImporter
 
   def self.fetch_day(date, force: false)
     start_time = Time.current
-    date = date.to_date
-    Rails.logger.info "#{name} :: Fetching precip data for #{date}..."
     import.start(date)
 
+    Rails.logger.info "#{name} :: Fetching precip data for #{date}..."
     download_gribs(date, force:)
+
+    Rails.logger.info "#{name} :: Loading files..."
     grid = load_from(local_dir(date))
+
     precips = grid.collect do |key, precip|
       latitude, longitude = key
       Precip.new(date:, latitude:, longitude:, precip:)
@@ -93,8 +95,8 @@ class PrecipImporter < DataImporter
     end
 
     # average all pts in a cell
-    grid.each do |key, value|
-      grid[key] = value.empty? ? 0.0 : value.sum(0.0) / value.size
+    grid.each do |key, vals|
+      grid[key] = vals.empty? ? 0.0 : vals.sum(0.0) / vals.size
     end
 
     grid
