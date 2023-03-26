@@ -35,7 +35,7 @@ RSpec.describe PestForecast do
 
   describe ".new_from_weather" do
     before do
-      @weather = FactoryBot.build(:weather_datum)
+      @weather = FactoryBot.build(:weather)
       @pf = subject.new_from_weather(@weather)
     end
 

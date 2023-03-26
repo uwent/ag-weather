@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe WeatherController, type: :controller do
-  let(:data_class) { WeatherDatum }
+  let(:data_class) { Weather }
   let(:import_class) { WeatherDataImport }
 
   let(:json) { JSON.parse(response.body) }
@@ -22,7 +22,7 @@ RSpec.describe WeatherController, type: :controller do
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather_datum, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
       end
     end
 
@@ -141,7 +141,7 @@ RSpec.describe WeatherController, type: :controller do
     before do
       latitudes.each do |latitude|
         longitudes.each do |longitude|
-          FactoryBot.create(:weather_datum, date: latest_date, latitude:, longitude:, min_temp: 10.0, max_temp: 30.0)
+          FactoryBot.create(:weather, date: latest_date, latitude:, longitude:, min_temp: 10.0, max_temp: 30.0)
         end
       end
     end
@@ -257,7 +257,7 @@ RSpec.describe WeatherController, type: :controller do
       dates.each do |date|
         latitudes.each do |latitude|
           longitudes.each do |longitude|
-            FactoryBot.create(:weather_datum, date:, latitude:, longitude:, min_temp: -10.0)
+            FactoryBot.create(:weather, date:, latitude:, longitude:, min_temp: -10.0)
           end
         end
       end
@@ -442,7 +442,7 @@ RSpec.describe WeatherController, type: :controller do
 
   describe "GET /info" do
     it "is ok" do
-      FactoryBot.create(:weather_datum)
+      FactoryBot.create(:weather)
       get(:info)
 
       expect(response).to have_http_status(:ok)

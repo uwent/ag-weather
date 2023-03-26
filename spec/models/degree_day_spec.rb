@@ -10,7 +10,7 @@ RSpec.describe DegreeDay do
 
   describe ".new_from_weather" do
     before do
-      @weather = FactoryBot.build(:weather_datum)
+      @weather = FactoryBot.build(:weather)
       @new = subject.new_from_weather(@weather)
     end
 

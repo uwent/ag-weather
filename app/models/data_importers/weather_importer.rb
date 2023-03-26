@@ -5,7 +5,7 @@ class WeatherImporter < DataImporter
   LOCAL_DIR = "#{grib_dir}/rtma"
 
   def self.data_class
-    WeatherDatum
+    Weather
   end
 
   def self.import
@@ -32,60 +32,60 @@ class WeatherImporter < DataImporter
 
   def self.fetch_day(date, force: false)
     start_time = Time.current
-
-    Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
     import.start(date)
 
-    grib_dir = local_dir(date)
+    Rails.logger.info "#{name} :: Fetching grib files for #{date}..."
     download_gribs(date, force:)
-    weather_day = WeatherDay.new(date)
-    weather_day.load_from(grib_dir)
-    persist_day_to_db(weather_day)
-    FileUtils.rm_r grib_dir unless keep_grib
 
+    Rails.logger.info "#{name} :: Loading files..."
+    wd = WeatherDay.new
+    wd.load_from(local_dir(date))
+    persist_day_to_db(date, wd)
+    FileUtils.rm_r grib_dir unless keep_grib
     import.succeed(date)
-    WeatherDatum.create_image(date:, units: "F")
+    Weather.create_image(date:, units: "F")
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
     import.fail(date, e)
   end
 
-  def self.persist_day_to_db(weather_day)
-    weather_data = []
+  def self.persist_day_to_db(date, day)
+    weather = []
 
     LandExtent.each_point do |lat, long|
-      observations = weather_day.observations_at(lat, long) || next
-      temperatures = observations.map(&:temperature)
-      humidities = observations.map(&:relative_humidity)
+      observations = day.observations_at(lat, long) || next
+      temps = observations.map(&:temperature)
       dew_points = observations.map(&:dew_point)
+      humidities = observations.map(&:relative_humidity)
       dew_point = true_avg(dew_points)
+      vapor_pressure = UnitConverter.temp_to_vp(dew_point)
 
-      weather_data << WeatherDatum.new(
-        date: weather_day.date,
+      weather << Weather.new(
+        date:,
         latitude: lat,
         longitude: long,
-        min_temp: temperatures.min,
-        max_temp: temperatures.max,
-        avg_temp: true_avg(temperatures),
-        min_rh: humidities.min.clamp(0, 100),
-        max_rh: humidities.max.clamp(0, 100),
-        avg_rh: true_avg(humidities).clamp(0, 100),
+        min_temp: temps.min,
+        max_temp: temps.max,
+        avg_temp: true_avg(temps),
         dew_point:,
-        vapor_pressure: UnitConverter.temp_to_vp(dew_point),
-        hours_rh_over_90: count_rh_over(observations, 90.0),
+        vapor_pressure:,
+        min_rh: humidities.min,
+        max_rh: humidities.max,
+        avg_rh: true_avg(humidities),
+        hours_rh_over_90: count_rh_over(humidities, 90.0),
         avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
       )
     end
 
-    WeatherDatum.transaction do
-      WeatherDatum.where(date: weather_day.date).delete_all
-      WeatherDatum.import!(weather_data)
+    Weather.transaction do
+      Weather.where(date:).delete_all
+      Weather.import!(weather)
     end
   end
 
-  def self.count_rh_over(observations, rh_cutoff)
-    observations.map(&:relative_humidity).count { |x| x >= rh_cutoff }
+  def self.count_rh_over(humidities, rh_cutoff)
+    humidities.count { |x| x >= rh_cutoff }
   end
 
   def self.avg_temp_rh_over(observations, rh_cutoff)

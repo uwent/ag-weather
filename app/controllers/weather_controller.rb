@@ -15,7 +15,7 @@ class WeatherController < ApplicationController
     parse_date_or_dates || default_date_range
     index_params
 
-    weather = WeatherDatum.where(@query).order(:date)
+    weather = Weather.where(@query).order(:date)
     if weather.exists?
       @data = weather.collect { |w| weather_hash(w) }
     else
@@ -56,7 +56,7 @@ class WeatherController < ApplicationController
     grid_params
     @data = {}
 
-    weather = WeatherDatum.where(@query)
+    weather = Weather.where(@query)
     if weather.exists?
       weather.each do |w|
         key = [w.latitude, w.longitude]
@@ -102,7 +102,7 @@ class WeatherController < ApplicationController
     grid_params
     @units_text = "freezing days"
     @data = {}
-    weather = WeatherDatum.where(@query)
+    weather = Weather.where(@query)
     if weather.exists?
       @data = weather.grid_summarize.sum(:freezing)
     else
@@ -128,15 +128,15 @@ class WeatherController < ApplicationController
     map_params
     @image_args[:col] = @col
 
-    image_name = WeatherDatum.image_name(**@image_args)
-    image_filename = WeatherDatum.image_path(image_name)
-    image_url = WeatherDatum.image_url(image_name)
+    image_name = Weather.image_name(**@image_args)
+    image_filename = Weather.image_path(image_name)
+    image_url = Weather.image_url(image_name)
 
     if File.exist?(image_filename)
       @url = image_url
       @status = "already exists"
     else
-      image_name = WeatherDatum.guess_image(**@image_args)
+      image_name = Weather.guess_image(**@image_args)
       if image_name
         @url = image_url
         @status = "image created"
@@ -316,7 +316,7 @@ class WeatherController < ApplicationController
   # GET: Returns info about weather db
 
   def info
-    render json: get_info(WeatherDatum)
+    render json: get_info(Weather)
   end
 
   private
@@ -324,9 +324,9 @@ class WeatherController < ApplicationController
   def parse_col
     col = params[:col]&.to_sym
     if col
-      reject("Invalid data column: '#{col}'. Must be one of #{WeatherDatum.data_cols.join(", ")}") unless WeatherDatum.data_cols.include?(col)
+      reject("Invalid data column: '#{col}'. Must be one of #{Weather.data_cols.join(", ")}") unless Weather.data_cols.include?(col)
     else
-      col = WeatherDatum.default_col
+      col = Weather.default_col
     end
     col
   end
@@ -342,8 +342,8 @@ class WeatherController < ApplicationController
   end
 
   def valid_units
-    @col ||= WeatherDatum.default_col
-    WeatherDatum.valid_units(@col)
+    @col ||= Weather.default_col
+    Weather.valid_units(@col)
   end
 
   def in_f

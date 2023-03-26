@@ -21,7 +21,7 @@ RSpec.describe PestForecastsController, type: :controller do
 
     before do
       dates.each do |date|
-        FactoryBot.create(:weather_datum, date:, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, min_temp: 10.0, max_temp: 30.0)
         FactoryBot.create(:pest_forecast, date:, potato_blight_dsv: 1)
       end
     end

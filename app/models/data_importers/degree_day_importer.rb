@@ -18,14 +18,14 @@ class DegreeDayImporter < DataImporter
     import.start(date)
     raise StandardError.new("Data sources not found") unless data_sources_loaded?(date)
 
-    weather = WeatherDatum.all_for_date(date)
+    weather = Weather.all_for_date(date)
     dds = weather.map { |w| DegreeDay.new_from_weather(w) }
 
     DegreeDay.transaction do
       DegreeDay.where(date:).delete_all
       DegreeDay.import!(dds)
     end
-    
+
     import.succeed(date)
     DegreeDay.create_image(date:) unless date < 1.week.ago
   rescue => e

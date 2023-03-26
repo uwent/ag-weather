@@ -22,7 +22,7 @@ RSpec.describe DegreeDaysController, type: :controller do
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather_datum, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
       end
     end
 
@@ -164,7 +164,7 @@ RSpec.describe DegreeDaysController, type: :controller do
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather_datum, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
         FactoryBot.create(:degree_day, date:, latitude: lat, longitude: long, dd_32: 5.0, dd_50: 10.0, dd_50_86: 10.0)
       end
     end

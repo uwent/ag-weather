@@ -8,6 +8,6 @@ class WeatherObservation
   end
 
   def relative_humidity
-    UnitConverter.compute_rh(@temperature, @dew_point)
+    UnitConverter.compute_rh(@temperature, @dew_point)&.clamp(0.0, 100.0)
   end
 end

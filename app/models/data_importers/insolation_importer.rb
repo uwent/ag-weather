@@ -24,7 +24,7 @@ class InsolationImporter < DataImporter
 
     response = HTTParty.get(url)
     import_insolation_data(response, date)
-    
+
     Insolation.create_image(date:)
     Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
   rescue => e

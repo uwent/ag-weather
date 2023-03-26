@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_22_200621) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -154,7 +154,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_22_200621) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "weather_data", force: :cascade do |t|
+  create_table "weather", force: :cascade do |t|
     t.float "max_temp"
     t.float "min_temp"
     t.float "avg_temp"
@@ -171,9 +171,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_22_200621) do
     t.float "max_rh"
     t.float "avg_rh"
     t.index ["date", "latitude", "longitude"], name: "weather_data_unique_key", unique: true
-    t.index ["date"], name: "index_weather_data_on_date"
-    t.index ["latitude"], name: "index_weather_data_on_latitude"
-    t.index ["longitude"], name: "index_weather_data_on_longitude"
+    t.index ["date"], name: "index_weather_on_date"
+    t.index ["latitude"], name: "index_weather_on_latitude"
+    t.index ["longitude"], name: "index_weather_on_longitude"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

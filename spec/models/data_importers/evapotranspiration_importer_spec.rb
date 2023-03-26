@@ -32,7 +32,7 @@ RSpec.describe EvapotranspirationImporter, type: :module do
 
     context "when insolation and weather data are present" do
       before do
-        FactoryBot.create(:weather_datum, date:, latitude: 45, longitude: -89)
+        FactoryBot.create(:weather, date:, latitude: 45, longitude: -89)
         FactoryBot.create(:insolation, date:, latitude: 45, longitude: -89)
         WeatherDataImport.succeed(date)
         InsolationDataImport.succeed(date)

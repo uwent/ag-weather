@@ -1,4 +1,4 @@
-class WeatherDatum < ApplicationRecord
+class Weather < ApplicationRecord
   attribute :latitude, :float
   attribute :longitude, :float
 

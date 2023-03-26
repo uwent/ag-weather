@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :weather_datum do
+  factory :weather do
     date { Date.yesterday }
     latitude { 45.0 }
     longitude { -89.0 }
