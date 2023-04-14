@@ -247,7 +247,7 @@ class DegreeDaysController < ApplicationController
   private
 
   def parse_model
-    @model = params[:model]&.to_sym
+    @model = params[:model]&.to_s
     if @model
       if !DegreeDay.model_names.include?(@model)
         reject("Invalid model: '#{@model}'. Must be one of #{DegreeDay.model_names.join(", ")}")

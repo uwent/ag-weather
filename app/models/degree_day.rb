@@ -78,7 +78,7 @@ class DegreeDay < ApplicationRecord
   end
 
   def self.default_col
-    :dd_50
+    :dd_50_86
   end
 
   def self.default_stat

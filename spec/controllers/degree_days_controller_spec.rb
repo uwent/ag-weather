@@ -227,7 +227,7 @@ RSpec.describe DegreeDaysController, type: :controller do
         params.delete(:models)
         get(:dd_table, params:)
 
-        expect(info["models"]).to eq(["dd_50"])
+        expect(info["models"]).to eq(["dd_50_86"])
       end
     end
 
@@ -420,7 +420,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       it "returns the correct image with default params" do
         params = {start_date:, end_date:, col: default_col, units:}
         image_name = data_class.image_name(**params)
-        expect(image_name).to eq("degree-days-base-50-f-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}.png")
+        expect(image_name).to eq("degree-days-base-50-upper-86-f-#{start_date.to_formatted_s(:number)}-#{end_date.to_formatted_s(:number)}.png")
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
@@ -454,7 +454,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it "shows the image in the browser when format=png" do
-        image_name = data_class.image_name(date:, col: "dd_50", units:)
+        image_name = data_class.image_name(date:, col: "dd_50_86", units:)
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params: {date:, format: :png})
 
