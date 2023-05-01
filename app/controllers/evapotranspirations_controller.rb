@@ -89,22 +89,52 @@ class EvapotranspirationsController < ApplicationController
   #   lat_range - optional, default full extent, format min,max
   #   long_range - optional, default full extent, format min,max
   #   units - 'in' (default) or 'mm'
+  #   et_method - if 'adjusted', uses new coefficients
 
   def grid
     parse_date_or_dates || default_single_date
     grid_params
+    @adjusted_method = params[:et_method] == "adjusted"
     @data = {}
 
-    ets = Evapotranspiration.where(@query)
-    if ets.exists?
-      @data = ets.grid_summarize.sum(:potential_et)
-      @data.each { |k, v| @data[k] = convert(v) } if @units == "mm"
+    if @adjusted_method
+      weather = {}
+      insols = {}
+      Weather.where(@query).each { |pt| weather[[pt.latitude, pt.longitude]] = pt }
+      Insolation.where(@query).each { |pt| insols[[pt.latitude, pt.longitude]] = pt }
+
+      if weather.empty? && insols.empty?
+        @status = "no data"
+      else
+        LandExtent.each_point do |lat, long|
+          key = [lat, long]
+          value = if weather[key].nil? || insols[key].nil?
+            0.0
+          else
+            EvapotranspirationCalculator.et_adj(
+              avg_temp: weather[key].avg_temp,
+              avg_v_press: weather[key].vapor_pressure,
+              insol: insols[key].insolation,
+              day_of_year: weather[key].date.yday,
+              lat:
+            )
+          end
+          @data[key] = convert(value).round(5)
+        end
+      end
     else
-      @status = "no data"
+      ets = Evapotranspiration.where(@query)
+      if ets.exists?
+        @data = ets.grid_summarize.sum(:potential_et)
+        @data.each { |k, v| @data[k] = convert(v) } if @units == "mm"
+      else
+        @status = "no data"
+      end
     end
 
     @values = @data.values
     @info = grid_info
+    @info[:calculation_method] = @adjusted_method ? "adjusted" : "classic"
 
     response = {info: @info, data: @data}
     respond_to do |format|
