@@ -24,7 +24,7 @@ set :env_path, '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, ' cd :path && PATH=:env_path:"$PATH" bin/rails runner -e :environment ":task" :output '
 
 # Daily data import task
-every :day, at: ["6:00am"] do
+every :day, at: ["6:00am", "6:30am"] do
   runner "RunTasks.daily"
 end
 
