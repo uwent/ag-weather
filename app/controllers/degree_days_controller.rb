@@ -138,12 +138,12 @@ class DegreeDaysController < ApplicationController
     image_url = DegreeDay.image_url(image_name)
 
     if File.exist?(image_filename)
-      @url = image_url
+      @url = DegreeDay.image_url(image_name)
       @status = "already exists"
     else
       image_name = DegreeDay.guess_image(**@image_args)
       if image_name
-        @url = image_url
+        @url = DegreeDay.image_url(image_name)
         @status = "image created"
       end
     end

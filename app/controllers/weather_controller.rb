@@ -130,15 +130,14 @@ class WeatherController < ApplicationController
 
     image_name = Weather.image_name(**@image_args)
     image_filename = Weather.image_path(image_name)
-    image_url = Weather.image_url(image_name)
 
     if File.exist?(image_filename)
-      @url = image_url
+      @url = Weather.image_url(image_name)
       @status = "already exists"
     else
       image_name = Weather.guess_image(**@image_args)
       if image_name
-        @url = image_url
+        @url = Weather.image_url(image_name)
         @status = "image created"
       end
     end

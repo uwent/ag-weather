@@ -201,15 +201,14 @@ class PestForecastsController < ApplicationController
 
     image_name = PestForecast.image_name(**@image_args)
     image_filename = PestForecast.image_path(image_name)
-    image_url = PestForecast.image_url(image_name)
 
     if File.exist?(image_filename)
-      @url = image_url
+      @url = PestForecast.image_url(image_name)
       @status = "already exists"
     else
       image_name = PestForecast.guess_image(**@image_args)
       if image_name
-        @url = image_url
+        @url = PestForecast.image_url(image_name)
         @status = "image created"
       end
     end

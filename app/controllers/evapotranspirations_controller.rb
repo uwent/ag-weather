@@ -166,15 +166,14 @@ class EvapotranspirationsController < ApplicationController
 
     image_name = Evapotranspiration.image_name(**@image_args)
     image_filename = Evapotranspiration.image_path(image_name)
-    image_url = Evapotranspiration.image_url(image_name)
 
     if File.exist?(image_filename)
-      @url = image_url
+      @url = Evapotranspiration.image_url(image_name)
       @status = "already exists"
     else
       image_name = Evapotranspiration.guess_image(**@image_args)
       if image_name
-        @url = image_url
+        @url = Evapotranspiration.image_url(image_name)
         @status = "image created"
       end
     end

@@ -427,6 +427,20 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(json["url"]).to eq "#{url_base}/#{image_name}"
       end
 
+      it "returns the correct image when end_date is beyond latest data" do
+        latest_date = end_date - 2.days
+        allow_any_instance_of(ApplicationController).to receive(:default_date).and_return(latest_date)
+        params = {start_date:, end_date:, col: default_col, units:}
+        adjusted_params = {start_date:, end_date: latest_date, col: default_col, units:}
+        image_name = data_class.image_name(**adjusted_params)
+        image_filename = data_class.image_path(image_name)
+        allow(File).to receive(:exist?).with(image_filename).and_return(true)
+        get(:map, params:)
+
+        expect(image_name).to eq("degree-days-base-50-upper-86-f-#{start_date.to_formatted_s(:number)}-#{latest_date.to_formatted_s(:number)}.png")
+        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+      end
+
       it "returns the correct image for a single date" do
         params = {date:, col: default_col, units:}
         image_name = data_class.image_name(**params)

@@ -81,7 +81,7 @@ class ApplicationController < ActionController::Base
   end
 
   def default_date
-    DataImport.latest_date
+    DataImport.maximum(:date) || DataImport.latest_date
   end
 
   def default_single_date
@@ -109,8 +109,9 @@ class ApplicationController < ActionController::Base
   def parse_date_or_dates
     if params[:start_date] || params[:end_date]
       @end_date = params[:date] ? date : end_date
+      @end_date = [@end_date, default_date].min if default_date
       @start_date = start_date(@end_date.beginning_of_year)
-      if @start_date == @end_date
+      if @start_date >= @end_date
         @date = @end_date
         @start_date = @end_date = nil
       else

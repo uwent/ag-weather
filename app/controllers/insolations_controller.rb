@@ -96,15 +96,14 @@ class InsolationsController < ApplicationController
 
     image_name = Insolation.image_name(**@image_args)
     image_filename = Insolation.image_path(image_name)
-    image_url = Insolation.image_url(image_name)
 
     if File.exist?(image_filename)
-      @url = image_url
+      @url = Insolation.image_url(image_name)
       @status = "already exists"
     else
       image_name = Insolation.guess_image(**@image_args)
       if image_name
-        @url = image_url
+        @url = Insolation.image_url(image_name)
         @status = "image created"
       end
     end
