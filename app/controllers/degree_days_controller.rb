@@ -135,7 +135,6 @@ class DegreeDaysController < ApplicationController
 
     image_name = DegreeDay.image_name(**@image_args)
     image_filename = DegreeDay.image_path(image_name)
-    image_url = DegreeDay.image_url(image_name)
 
     if File.exist?(image_filename)
       @url = DegreeDay.image_url(image_name)
