@@ -34,7 +34,7 @@ RSpec.describe InsolationImporter do
 
     context "when valid data is found" do
       before do
-        stub_request(:get, /prodserv1.ssec.wisc.edu\/insolation.*/)
+        stub_request(:get, /prodserv1\.ssec\.wisc\.edu\/insolation\.*/)
           .to_return(body:
             "  1325       44.60        90.90/n" + # point within land extent
             "  1267       10.00        90.80/n" + # point outside land extent
@@ -57,7 +57,7 @@ RSpec.describe InsolationImporter do
 
     context "when response is 404" do
       before do
-        stub_request(:get, /prodserv1.ssec.wisc.edu\/insolation.*/).to_return(body: "404")
+        stub_request(:get, /prodserv1\.ssec\.wisc\.edu\/insolation\.*/).to_return(body: "404")
       end
 
       it "raises error" do

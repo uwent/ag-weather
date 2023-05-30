@@ -53,7 +53,7 @@ class DegreeDaysController < ApplicationController
       format.csv do
         headers = @info unless params[:headers] == "false"
         filename = "#{@model_text} degree day data for #{lat}, #{long}.csv"
-        send_data to_csv(@data, headers), filename:
+        send_data(to_csv(@data, headers), filename:)
       end
     end
   end
@@ -195,7 +195,7 @@ class DegreeDaysController < ApplicationController
         total = 0
         dd_data[m] = {}
         dds.each do |dd|
-          value = convert_dds(dd.send(m)) || 0
+          value = convert_dds(dd.public_send(m)) || 0
           total += value
           dd_data[m][dd.date] = {
             value: value.round(4),

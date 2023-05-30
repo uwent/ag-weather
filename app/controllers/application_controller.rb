@@ -1,7 +1,4 @@
 class ApplicationController < ActionController::Base
-  # Prevent CSRF attacks by raising an exception.
-  # For APIs, you may want to use :null_session instead.
-  protect_from_forgery with: :null_session
 
   before_action { @start_time = Time.now }
 
@@ -62,7 +59,10 @@ class ApplicationController < ActionController::Base
     /^\d+$/.match?(str) ? str.to_i : nil
   end
 
+  # parse a numeric param from a string (truncated at 10 characters)
+  # resultant number is rounded to n digits
   def parse_float(str, digits: nil)
+    str = str.to_s[0..10]
     if /^-?\d*\.?\d+$/.match?(str)
       digits ? str.to_f.round(digits) : str.to_f
     end

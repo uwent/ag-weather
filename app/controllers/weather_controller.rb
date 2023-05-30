@@ -274,12 +274,12 @@ class WeatherController < ApplicationController
     grid_url = "https://api.weather.gov/points/#{lat},#{long}"
     grid_res = JSON.parse(HTTParty.get(grid_url), symbolize_names: true)
     reject("Unable to get forecast for #{lat}, #{long}: #{grid_res[:detail]}") unless grid_res[:properties]
-
+    
     # get forecast
-    forecast_url = grid_res[:properties]&.dig(:forecastHourly)
+    forecast_url = grid_res[:properties][:forecastHourly]
     forecast_res = JSON.parse(HTTParty.get(forecast_url), symbolize_names: true)
     reject("Unable to get forecast for #{lat}, #{long}: #{forecast_res[:detail]}") unless forecast_res[:properties]
-    forecasts = forecast_res[:properties]&.dig(:periods)
+    forecasts = forecast_res[:properties][:periods]
 
     if params[:raw] == "true"
       return render json: forecast_res
