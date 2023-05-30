@@ -62,7 +62,7 @@ class ApplicationController < ActionController::Base
   # parse a numeric param from a string (truncated at 10 characters)
   # resultant number is rounded to n digits
   def parse_float(str, digits: nil)
-    str = str.to_s[0..10]
+    str = str.to_s[0..9]
     if /^-?\d*\.?\d+$/.match?(str)
       digits ? str.to_f.round(digits) : str.to_f
     end
