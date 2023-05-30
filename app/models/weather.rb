@@ -93,7 +93,7 @@ class Weather < ApplicationRecord
     raise ArgumentError.new(log_prefix + "Must provide either 'date' or 'end_date'") unless end_date
     title = col_name(col)
     title = "#{stat.to_s.humanize} #{title.downcase}" if stat && stat.to_s.humanize != title.split(" ")[0]
-    title += " (#{units}) " if units
+    title += " (#{units})" if units
     datestring = image_title_date(start_date:, end_date:)
     "#{title} for #{datestring}"
   end
