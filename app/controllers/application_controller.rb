@@ -63,9 +63,8 @@ class ApplicationController < ActionController::Base
   # resultant number is rounded to n digits
   def parse_float(str, digits: nil)
     str = str.to_s[0..9]
-    if /^-?\d*\.?\d+$/.match?(str)
-      digits ? str.to_f.round(digits) : str.to_f
-    end
+    return unless /^-?(?:\d+(?:\.\d+)?|\.\d+)$/.match?(str)
+    digits ? str.to_f.round(digits) : str.to_f
   end
 
   def date
