@@ -182,6 +182,67 @@ class PestForecastsController < ApplicationController
     render json: response
   end
 
+  # GET: returns array of weather and pest info for vegetable pathology website charts
+  # params:
+  #   lat - required, decimal latitude of location
+  #   long - required, decimal longitude of location
+  #   start_date - optional, default May 1
+
+  def vegpath
+    params.require([:lat, :long])
+    @lat = lat
+    @long = long
+    @end_date = parse_date(params[:date], default: Date.yesterday)
+
+    # at least 1 month lookback, pinning at May 1
+    @start_date = if @end_date.month < 5
+      @end_date - 1.month
+    else
+      [@end_date - 1.month, Date.new(@end_date.year, 5, 1)].min
+    end
+    @date_range = @start_date..@end_date
+    query = {
+      latitude: @lat,
+      longitude: @long,
+      date: @date_range,
+    }
+
+    # create template
+    data = {}
+    vars = %i(MinTempF MaxTempF MinRH MaxRH PrecipIn DSV CumDSV PDay CumPDay)
+    day = 0
+    @date_range.each do |date|
+      data[date] = {Date: date, Day: day += 1}
+      vars.each { |v| data[date][v] = nil}
+    end
+
+    # add weather data
+    Weather.where(query).order(:date).each do |w|
+      data[w.date][:MinTempF] = UnitConverter.c_to_f(w.min_temp)&.round(2)
+      data[w.date][:MaxTempF] = UnitConverter.c_to_f(w.max_temp)&.round(2)
+      data[w.date][:MinRH] = w.min_rh&.round(1)
+      data[w.date][:MaxRH] = w.max_rh&.round(1)
+    end
+
+    # add precip
+    Precip.where(query).order(:date).each do |precip|
+      data[precip.date][:PrecipIn] = UnitConverter.mm_to_in(precip.precip).round(3)
+    end
+
+    # add dsv and pdays
+    cum_dsv = 0
+    cum_pday = 0
+    PestForecast.where(query).order(:date).each do |pf|
+      data[pf.date][:DSV] = pf.potato_blight_dsv
+      data[pf.date][:CumDSV] = (cum_dsv += pf.potato_blight_dsv || 0)
+      data[pf.date][:PDay] = pf.potato_p_days&.round(2)
+      data[pf.date][:CumPDay] = (cum_pday += pf.potato_p_days || 0)&.round(2)
+    end
+
+    render json: data.values
+  end
+
+
   # GET: create map and return url to it
   # params:
   #   date or end_date - optional, default yesterday
