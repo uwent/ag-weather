@@ -209,7 +209,7 @@ class PestForecastsController < ApplicationController
 
     # create template
     data = {}
-    vars = %i(MinTempF MaxTempF MinRH MaxRH PrecipIn InsolationKWh EvapotranspirationIn DSV CumDSV PDay CumPDay)
+    vars = %i(MinTempF MaxTempF AvgTempF MinRH MaxRH AvgRH PrecipIn InsolationKWh EvapotranspirationIn DSV CumDSV PDay CumPDay)
     day = 0
     @date_range.each do |date|
       data[date] = {Date: date, Day: day += 1}
@@ -220,8 +220,10 @@ class PestForecastsController < ApplicationController
     Weather.where(query).order(:date).each do |w|
       data[w.date][:MinTempF] = UnitConverter.c_to_f(w.min_temp)&.round(2)
       data[w.date][:MaxTempF] = UnitConverter.c_to_f(w.max_temp)&.round(2)
+      data[w.date][:AvgTempF] = UnitConverter.c_to_f(w.avg_temp)&.round(2)
       data[w.date][:MinRH] = w.min_rh&.round(1)
       data[w.date][:MaxRH] = w.max_rh&.round(1)
+      data[w.date][:AvgRH] = w.avg_rh&.round(1)
     end
 
     # add precip
