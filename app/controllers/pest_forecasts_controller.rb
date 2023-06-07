@@ -204,16 +204,21 @@ class PestForecastsController < ApplicationController
     query = {
       latitude: @lat,
       longitude: @long,
-      date: @date_range,
+      date: @date_range
     }
 
     # create template
     data = {}
-    vars = %i(MinTempF MaxTempF AvgTempF MinRH MaxRH AvgRH PrecipIn InsolationKWh EvapotranspirationIn DSV CumDSV PDay CumPDay)
+    vars = %i[MinTempF MaxTempF AvgTempF MinRH MaxRH AvgRH PrecipIn InsolationKWh EvapotranspirationIn DSV CumDSV PDay CumPDay]
     day = 0
     @date_range.each do |date|
-      data[date] = {Date: date, Day: day += 1}
-      vars.each { |v| data[date][v] = nil}
+      data[date] = {
+        Lat: lat,
+        Long: long,
+        Date: date,
+        Day: day += 1
+      }
+      vars.each { |v| data[date][v] = nil }
     end
 
     # add weather data
@@ -253,7 +258,6 @@ class PestForecastsController < ApplicationController
 
     render json: data.values
   end
-
 
   # GET: create map and return url to it
   # params:

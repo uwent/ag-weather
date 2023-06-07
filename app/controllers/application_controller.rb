@@ -1,5 +1,4 @@
 class ApplicationController < ActionController::Base
-
   before_action { @start_time = Time.now }
 
   rescue_from ActionController::ParameterMissing,
