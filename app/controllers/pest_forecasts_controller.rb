@@ -192,7 +192,7 @@ class PestForecastsController < ApplicationController
     params.require([:lat, :long])
     @lat = lat
     @long = long
-    @end_date = parse_date(params[:date], default: Date.yesterday)
+    @end_date = parse_date(params[:date], default: default_date)
 
     # at least 1 month lookback, pinning at May 1
     @start_date = if @end_date.month < 5
@@ -210,13 +210,12 @@ class PestForecastsController < ApplicationController
     # create template
     data = {}
     vars = %i[MinTempF MaxTempF AvgTempF MinRH MaxRH AvgRH PrecipIn InsolationKWh EvapotranspirationIn DSV CumDSV PDay CumPDay]
-    day = 0
     @date_range.each do |date|
       data[date] = {
         Lat: lat,
         Long: long,
         Date: date,
-        Day: day += 1
+        DOY: date.yday
       }
       vars.each { |v| data[date][v] = nil }
     end
