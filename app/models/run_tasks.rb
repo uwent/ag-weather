@@ -128,25 +128,21 @@ module RunTasks
   def self.redo_forecast(date)
     ActiveRecord::Base.logger.level = 1
 
-    if Weather.where(date:).size > 0
-      puts date.strftime + " - ready - recalculating..."
-
-      weather = Weather.land_grid_for_date(date)
-      forecasts = []
-
-      LandExtent.each_point do |lat, long|
-        next unless LandExtent.inside?(lat, long)
-        next if weather[lat, long].nil?
-        forecasts << PestForecast.new_from_weather(weather[lat, long])
-      end
-
-      PestForecast.transaction do
-        PestForecast.where(date:).delete_all
-        PestForecast.import(forecasts)
-      end
-      PestForecastDataImport.succeed(date)
-    else
+    weather = Weather.land_grid(date:)
+    forecasts = []
+    if weather.empty?
       puts date.strftime + " - no data"
+      return
+    end
+    puts date.strftime + " - ready - recalculating..."
+    LandExtent.each_point do |lat, long|
+      next if weather[lat, long].nil?
+      forecasts << PestForecast.new_from_weather(weather[lat, long])
+    end
+    PestForecast.transaction do
+      PestForecast.where(date:).delete_all
+      PestForecast.import(forecasts)
+      PestForecastDataImport.succeed(date)
     end
   end
 
