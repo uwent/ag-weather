@@ -40,21 +40,21 @@ module PestModels
   def late_blight_logic(temp, hours)
     if temp.in? 7.2...11.6
       return 0 if hours < 16
-      return 1 if hours.in? 16..18
-      return 2 if hours.in? 19..21
-      return 3 if hours > 21
+      return 1 if hours <= 18
+      return 2 if hours <= 21
+      return 3
     elsif temp.in? 11.6...15.0
       return 0 if hours < 13
-      return 1 if hours.in? 13..15
-      return 2 if hours.in? 16..18
-      return 3 if hours.in? 19..21
-      return 4 if hours > 21
+      return 1 if hours <= 15
+      return 2 if hours <= 18
+      return 3 if hours <= 21
+      return 4
     elsif temp.in? 15.0...26.6
       return 0 if hours < 10
-      return 1 if hours.in? 10..12
-      return 2 if hours.in? 13..15
-      return 3 if hours.in? 16..18
-      return 4 if hours > 18
+      return 1 if hours <= 12
+      return 2 if hours <= 15
+      return 3 if hours <= 18
+      return 4
     end
     0
   end
