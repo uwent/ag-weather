@@ -4,8 +4,7 @@ RSpec.describe PrecipImporter do
   subject { PrecipImporter }
   let(:data_class) { Precip }
   let(:import_class) { PrecipDataImport }
-  let(:date) { Date.current }
-  let(:datestring) { date.to_formatted_s(:number) }
+  let(:date) { "2023-1-1".to_date }
   let(:mock_data) {
     {
       [45.0, -89.0] => 1.0,
@@ -29,7 +28,7 @@ RSpec.describe PrecipImporter do
 
   describe ".local_dir" do
     it "should create the file directory if it doesn't exist" do
-      local_dir = "#{subject::LOCAL_DIR}/#{datestring}"
+      local_dir = "#{subject::LOCAL_DIR}/20230101"
       allow(Dir).to receive(:exist?).and_return(false)
       expect(FileUtils).to receive(:mkdir_p).with(local_dir).once
       subject.local_dir(date)
@@ -38,16 +37,16 @@ RSpec.describe PrecipImporter do
 
   describe ".remote_url" do
     it "should specify the correct remote directory" do
-      url = subject::REMOTE_URL_BASE + "/pcpanl.#{datestring}"
+      url = subject::REMOTE_URL_BASE + "/rtma2p5.20230101"
       expect(subject.remote_url(date:, hour: nil)).to eq url
     end
   end
 
   describe ".remote_file" do
-    it "should create the correct remote filename" do
-      expect(subject.remote_file(date:, hour: 1)).to eq "st4_conus.#{datestring}01.01h.grb2"
-      expect(subject.remote_file(date:, hour: 12)).to eq "st4_conus.#{datestring}12.01h.grb2"
-      expect(subject.remote_file(date:, hour: 23)).to eq "st4_conus.#{datestring}23.01h.grb2"
+    it "should create the correct remote filename for each date given central date and hour" do
+      expect(subject.remote_file(date:, hour: 1)).to eq "rtma2p5.2023010107.pcp.184.grb2"
+      expect(subject.remote_file(date:, hour: 12)).to eq "rtma2p5.2023010118.pcp.184.grb2"
+      expect(subject.remote_file(date:, hour: 23)).to eq "rtma2p5.2023010205.pcp.184.grb2"
     end
   end
 
@@ -64,11 +63,11 @@ RSpec.describe PrecipImporter do
   end
 
   describe ".download_gribs" do
-    it "should call fetch_grib with correct file timestamp" do
+    # folder changes due to NOAA server storing files in UTC time and we are in CST
+    it "should call fetch_grib with correct UTC date" do
       allow(subject).to receive(:fetch_grib).and_return 1
-      0.upto(23) do |hour|
-        expect(subject).to receive(:fetch_grib).with(/#{date.to_formatted_s(:number)}#{hour.to_s.rjust(2, "0")}/, any_args).once
-      end
+      expect(subject).to receive(:fetch_grib).with(/#{date.to_formatted_s(:number)}/, any_args).exactly(18).times
+      expect(subject).to receive(:fetch_grib).with(/#{(date + 1.day).to_formatted_s(:number)}/, any_args).exactly(6).times
       subject.download_gribs(date)
     end
   end
