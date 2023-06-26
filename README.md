@@ -1,6 +1,6 @@
 # Agricultural Weather API
 
-[![Circle CI](https://circleci.com/gh/uwent/ag-weather.svg?style=svg&circle-token=467dfd3ec0f5d33330548a6d939f94d52d3f07ec)](https://circleci.com/gh/uwent/ag-weather)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/uwent/ag-weather/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/uwent/ag-weather/tree/main)
 
 ## Description
 
@@ -25,7 +25,7 @@ git -C "$(rbenv root)"/plugins/ruby-build pull
 git config --global url."https://github.com/".insteadOf git://github.com/
 
 # install ruby with rbenv
-rbenv install 3.2.1 # or latest version
+rbenv install 3.2.2 # or latest version
 
 # update bundler to latest
 gem install bundler
