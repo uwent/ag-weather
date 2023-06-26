@@ -1,7 +1,21 @@
 class PrecipImporter < DataImporter
   extend GribMethods
 
-  REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
+  # these use the pcpanl product, vs the rtma product
+
+  # REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
+  
+  # def self.remote_url(date:, hour: nil)
+  #   "#{REMOTE_URL_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
+  # end
+  
+  # # precips are named by central time
+  # def self.remote_file(date:, hour:)
+  #   "st4_conus.#{date.to_formatted_s(:number)}#{"%.02d" % hour}.01h.grb2"
+  # end
+
+
+  REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/rtma/prod"
   LOCAL_DIR = "#{grib_dir}/precip"
 
   def self.data_class
@@ -18,13 +32,16 @@ class PrecipImporter < DataImporter
     dir
   end
 
-  def self.remote_url(date:, hour: nil)
-    "#{REMOTE_URL_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
+  # convert central date and hour to UTC date
+  def self.remote_url(date:, hour:)
+    utc_date = central_time(date, hour).utc.strftime("%Y%m%d")
+    "#{REMOTE_URL_BASE}/rtma2p5.#{utc_date}"
   end
 
-  # precips are named by central time
+  # convert central date and hour to UTC hour
   def self.remote_file(date:, hour:)
-    "st4_conus.#{date.to_formatted_s(:number)}#{"%.02d" % hour}.01h.grb2"
+    utc_time = central_time(date, hour).utc.strftime("%Y%m%d%H")
+    "rtma2p5.#{utc_time}.pcp.184.grb2"
   end
 
   def self.fetch_day(date, force: false)
