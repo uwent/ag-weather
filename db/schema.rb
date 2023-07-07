@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_07_211756) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -74,6 +74,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.float "dd_52"
     t.float "dd_52_86"
     t.float "dd_55_92"
+    t.index ["date", "latitude", "longitude"], name: "index_degree_days_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_degree_days_on_lat_long"
   end
 
   create_table "evapotranspirations", force: :cascade do |t|
@@ -81,6 +83,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
+    t.index ["date", "latitude", "longitude"], name: "index_evapotranspirations_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_evapotranspirations_on_lat_long"
   end
 
   create_table "insolations", force: :cascade do |t|
@@ -88,6 +92,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.date "date", null: false
+    t.index ["date", "latitude", "longitude"], name: "index_insolations_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_insolations_on_lat_long"
   end
 
   create_table "pest_forecasts", force: :cascade do |t|
@@ -99,6 +105,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.float "potato_p_days"
     t.integer "cercospora_div"
     t.integer "botcast_dsi", default: 0
+    t.index ["date", "latitude", "longitude"], name: "index_pest_forecasts_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_pest_forecasts_on_lat_long"
   end
 
   create_table "precips", force: :cascade do |t|
@@ -106,6 +114,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.decimal "latitude", precision: 5, scale: 2, null: false
     t.decimal "longitude", precision: 5, scale: 2, null: false
     t.float "precip"
+    t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_precips_on_lat_long"
   end
 
   create_table "station_hourly_observations", force: :cascade do |t|
@@ -149,6 +159,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_25_002141) do
     t.float "min_rh"
     t.float "max_rh"
     t.float "avg_rh"
+    t.index ["date", "latitude", "longitude"], name: "index_weather_on_date_lat_long", unique: true
+    t.index ["latitude", "longitude"], name: "index_weather_on_lat_long"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
