@@ -74,7 +74,7 @@ class PestForecastsController < ApplicationController
 
     pfs = PestForecast.where(@query)
     if pfs.exists?
-      sql = "sum(#{@pest}) as total, count(date) as count"
+      sql = "sum(#{@pest}) as total, count(*) as count"
       pfs.grid_summarize(sql).each do |point|
         key = [point.latitude, point.longitude]
         @data[key] = {
