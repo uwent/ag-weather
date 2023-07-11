@@ -38,7 +38,7 @@ module GribMethods
         import.succeed(date)
         next
       end
-      fetch_day(date, force: date <= 5.days.ago)
+      fetch_day(date, force: date <= 2.days.ago)
     rescue => e
       msg = "Failed to retrieve data for #{date}: #{e.message}"
       Rails.logger.error "#{name} :: #{msg}"
@@ -82,7 +82,7 @@ module GribMethods
   end
 
   def download(url, path)
-    case io = OpenURI.open_uri(url, open_timeout: 10, read_timeout: 60)
+    case io = OpenURI.open_uri(url, open_timeout: 5, read_timeout: 30)
     when StringIO
       File.write(path, io.read)
     when Tempfile

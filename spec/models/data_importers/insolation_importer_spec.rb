@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe InsolationImporter do
+RSpec.describe InsolationImporter, type: :module do
   subject { InsolationImporter }
   let(:data_class) { Insolation }
   let(:import_class) { InsolationDataImport }

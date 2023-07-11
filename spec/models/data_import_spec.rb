@@ -155,7 +155,6 @@ RSpec.describe DataImport do
   describe ".create_pending" do
     it "creates a pending record for each import type" do
       subject.create_pending(date)
-      puts subject.pending
       expect(subject.pending.size).to eq 6
     end
   end
