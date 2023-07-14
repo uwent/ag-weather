@@ -4,16 +4,15 @@ class PrecipImporter < DataImporter
   # these use the pcpanl product, vs the rtma product
 
   # REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/pcpanl/prod"
-  
+
   # def self.remote_url(date:, hour: nil)
   #   "#{REMOTE_URL_BASE}/pcpanl.#{date.to_formatted_s(:number)}"
   # end
-  
+
   # # precips are named by central time
   # def self.remote_file(date:, hour:)
   #   "st4_conus.#{date.to_formatted_s(:number)}#{"%.02d" % hour}.01h.grb2"
   # end
-
 
   REMOTE_URL_BASE = "https://nomads.ncep.noaa.gov/pub/data/nccf/com/rtma/prod"
   LOCAL_DIR = "#{grib_dir}/precip"
