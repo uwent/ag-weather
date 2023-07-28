@@ -55,51 +55,16 @@ class WeatherImporter < DataImporter
 
     LandExtent.each_point do |lat, long|
       observations = day.observations_at(lat, long) || next
-      temps = observations.map(&:temperature)
-      dew_points = observations.map(&:dew_point)
-      humidities = observations.map(&:relative_humidity)
-      dew_point = true_avg(dew_points)
-      vapor_pressure = UnitConverter.temp_to_vp(dew_point)
-
-      weather << Weather.new(
-        date:,
-        latitude: lat,
-        longitude: long,
-        min_temp: temps.min,
-        max_temp: temps.max,
-        avg_temp: true_avg(temps),
-        dew_point:,
-        vapor_pressure:,
-        min_rh: humidities.min,
-        max_rh: humidities.max,
-        avg_rh: true_avg(humidities),
-        hours_rh_over_90: count_rh_over(humidities, 90.0),
-        avg_temp_rh_over_90: avg_temp_rh_over(observations, 90.0)
-      )
+      w = Weather.new_from_observations(observations)
+      w.date = date
+      w.latitude = lat
+      w.longitude = long
+      weather << w
     end
 
     Weather.transaction do
       Weather.where(date:).delete_all
       Weather.import!(weather)
     end
-  end
-
-  def self.count_rh_over(humidities, rh_cutoff)
-    humidities.count { |x| x >= rh_cutoff }
-  end
-
-  def self.avg_temp_rh_over(observations, rh_cutoff)
-    rh_obs = observations.select { |obs| obs.relative_humidity >= rh_cutoff }
-    (rh_obs.map(&:temperature).sum / rh_obs.size) if rh_obs.size >= 1
-  end
-
-  def self.simple_avg(array)
-    return 0.0 if array.empty?
-    (array.max + array.min) / 2.0
-  end
-
-  def self.true_avg(array)
-    return 0.0 if array.empty?
-    array.compact.sum.to_f / array.size
   end
 end

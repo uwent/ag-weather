@@ -21,14 +21,14 @@ RSpec.describe WeatherObservation do
     end
 
     context "with bad data" do
-      it "will default the temperature to 0.0 if nil" do
+      it "will handle nil temperature for an hourly observation" do
         obs = subject.new(nil, 290.0)
-        expect(obs.temperature).to eq 0.0
+        expect(obs.temperature).to be_nil
       end
 
-      it "will default the dew point to 0.0 if nil" do
+      it "will handle nil dewpoint for an hourly observation" do
         obs = subject.new(290.0, nil)
-        expect(obs.dew_point).to eq 0.0
+        expect(obs.dew_point).to be_nil
       end
     end
   end

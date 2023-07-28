@@ -82,59 +82,14 @@ RSpec.describe WeatherImporter do
     let(:weather_day) { WeatherDay.new }
 
     before do
+      # fake mini grid
+      allow(LandExtent).to receive(:latitudes).and_return([45.0, 46.0])
+      allow(LandExtent).to receive(:longitudes).and_return([-89.0, -88.0])
       allow(weather_day).to receive(:observations_at).and_return(FactoryBot.build_list(:weather_observation, 2))
     end
 
     it "should load a WeatherDay and save Weather to db" do
-      # fake mini grid
-      allow(LandExtent).to receive(:latitudes).and_return([45.0, 46.0])
-      allow(LandExtent).to receive(:longitudes).and_return([-89.0, -88.0])
-
       expect { subject.persist_day_to_db(date, weather_day) }.to change { Weather.count }.by(4)
-    end
-  end
-
-  describe ".count_rh_over" do
-    it "counts number in list greater than cutoff" do
-      vals = [10, 50, 90, 100]
-      expect(subject.count_rh_over(vals, 90.0)).to eq(2)
-    end
-
-    it "returns zero for an empty list" do
-      expect(subject.count_rh_over([], 90.0)).to eq 0
-    end
-  end
-
-  describe ".avg_temp_rh_over" do
-    it "returns the average of those over rh cutoff" do
-      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 300) # RH 100%
-      obs += FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
-      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq UnitConverter.k_to_c(300)
-    end
-
-    it "returns nil when none over rh cutoff" do
-      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
-      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq nil
-    end
-  end
-
-  describe ".simple_avg" do
-    it "should return the simple average (sum of low and high/2) of an array" do
-      expect(subject.simple_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.0
-    end
-
-    it "should return 0 for an empty array" do
-      expect(subject.simple_avg([])).to eq 0.0
-    end
-  end
-
-  describe ".true_avg" do
-    it "should return the true average (sum/count) of an array" do
-      expect(subject.true_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.2
-    end
-
-    it "should return 0 for an empty array" do
-      expect(subject.true_avg([])).to eq 0.0
     end
   end
 end

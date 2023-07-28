@@ -147,4 +147,99 @@ RSpec.describe Weather do
       end
     end
   end
+
+  describe ".new_from_observations" do
+    let(:weather) { subject.new_from_observations(weather_obs) }
+
+    context "with good data" do
+      let(:weather_obs) { FactoryBot.build_list(:weather_observation, 12) }
+
+      it "creates weather from observations" do
+        expect(weather).to be_an subject
+      end
+
+      it "fills in values" do
+        expect(weather.min_temp).to_not be_nil
+        expect(weather.vapor_pressure).to_not be_nil
+        expect(weather.dew_point).to_not be_nil
+      end
+
+      it "initializes with empty date, latitude, longitude" do
+        expect(weather.date).to be_nil
+        expect(weather.latitude).to be_nil
+        expect(weather.longitude).to be_nil
+      end
+    end
+
+    context "with some nil data" do
+      let(:weather_obs) { [
+        WeatherObservation.new(280, 280),
+        WeatherObservation.new(285, 280),
+        WeatherObservation.new(290, 280),
+        WeatherObservation.new(nil, nil)
+      ] }
+
+      it "ignores the nil data in calculations" do
+        expect(weather.min_temp).to_not be_nil
+        expect(weather.min_rh).to_not be_nil
+      end
+    end
+
+    context "with all nil data" do
+      let(:weather_obs) { [WeatherObservation.new(nil, nil)] }
+
+      it "returns weather with nil values" do
+        expect(weather.min_temp).to be_nil
+        expect(weather.min_rh).to be_nil
+      end
+    end
+  end
+
+  describe ".count_rh_over" do
+    it "counts number in list greater than cutoff" do
+      vals = [10, 50, 90, 100]
+      expect(subject.count_rh_over(vals, 90.0)).to eq(2)
+    end
+
+    it "returns zero for an empty list" do
+      expect(subject.count_rh_over([], 90.0)).to eq 0
+    end
+  end
+
+  describe ".avg_temp_rh_over" do
+    it "returns the average of those over rh cutoff" do
+      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 300, dew_point: 300) # RH 100%
+      obs += FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
+      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq UnitConverter.k_to_c(300)
+    end
+
+    it "returns nil when none over rh cutoff" do
+      obs = FactoryBot.build_list(:weather_observation, 10, temperature: 275, dew_point: 250) # RH < 90
+      expect(subject.avg_temp_rh_over(obs, 90.0)).to eq nil
+    end
+  end
+
+  describe ".simple_avg" do
+    it "should return the simple average (sum of low and high/2) of an array" do
+      expect(subject.simple_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.0
+    end
+
+    it "should return nil for an empty array" do
+      expect(subject.simple_avg([])).to eq nil
+    end
+  end
+
+  describe ".true_avg" do
+    it "should return the true average (sum/count) of an array" do
+      expect(subject.true_avg([10.0, 0.0, 1.0, 5.0, 10.0])).to eq 5.2
+    end
+
+    it "should strip out nil values from array" do
+      expect(subject.true_avg([10.0, 0.0, 1.0, 5.0, 10.0, nil])).to eq 5.2
+    end
+
+    it "should return nil for an empty array" do
+      expect(subject.true_avg([])).to eq nil
+    end
+  end
 end
