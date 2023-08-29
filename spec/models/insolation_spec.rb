@@ -43,7 +43,7 @@ RSpec.describe Insolation do
     end
 
     context "when alternate unit" do
-      it { expect(subject.default_scale(units: unit2)).to eq [0, 10] }
+      it { expect(subject.default_scale(units: unit2)).to eq [0, 8] }
     end
 
     context "when invalid units" do

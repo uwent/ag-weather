@@ -276,7 +276,7 @@ class PestForecastsController < ApplicationController
     @units = nil
 
     image_name = PestForecast.image_name(**@image_args)
-    image_type = "cumulative"
+    image_type = @start_date ? "cumulative" : "daily"
     image_filename = PestForecast.image_path(image_name, image_type)
 
     if File.exist?(image_filename)

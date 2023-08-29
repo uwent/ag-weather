@@ -317,7 +317,6 @@ RSpec.describe PestForecastsController, type: :controller do
 
   describe "GET /map" do
     let(:date) { end_date }
-    let(:url_base) { "/#{data_class.image_subdir}" }
 
     context "with no params" do
       before do
@@ -342,7 +341,7 @@ RSpec.describe PestForecastsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/cumulative/pest_models/#{image_name}"
       end
 
       it "returns the correct image for a single date" do
@@ -351,7 +350,7 @@ RSpec.describe PestForecastsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/daily/pest_models/#{image_name}"
       end
 
       it "returns nil url when no data" do
@@ -365,7 +364,7 @@ RSpec.describe PestForecastsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params: {date:, format: :png})
 
-        expect(response.body).to include("<img src=#{"#{url_base}/#{image_name}"}")
+        expect(response.body).to include("<img src=#{"/daily/pest_models/#{image_name}"}")
       end
     end
 

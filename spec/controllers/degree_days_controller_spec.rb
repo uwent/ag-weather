@@ -397,7 +397,7 @@ RSpec.describe DegreeDaysController, type: :controller do
   describe "GET /map" do
     let(:date) { end_date }
     let(:default_col) { DegreeDay.default_col }
-    let(:url_base) { "/#{data_class.image_subdir}" }
+    let(:url_base) { "/cumulative/#{data_class.image_subdir}" }
 
     context "with no params" do
       before do
@@ -433,7 +433,7 @@ RSpec.describe DegreeDaysController, type: :controller do
         params = {start_date:, end_date:, col: default_col, units:}
         adjusted_params = {start_date:, end_date: latest_date, col: default_col, units:}
         image_name = data_class.image_name(**adjusted_params)
-        image_filename = data_class.image_path(image_name)
+        image_filename = data_class.image_path(image_name, "cumulative")
         allow(File).to receive(:exist?).with(image_filename).and_return(true)
         get(:map, params:)
 

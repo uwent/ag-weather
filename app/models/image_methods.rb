@@ -1,12 +1,13 @@
 module ImageMethods
   def image_subdir
+    ""
   end
 
-  def image_path(file, image_type)
+  def image_path(file, image_type = "")
     File.join(ImageCreator.file_dir, image_type, image_subdir, file)
   end
 
-  def image_url(file, image_type)
+  def image_url(file, image_type = "")
     File.join(ImageCreator.url_path, image_type, image_subdir, file)
   end
 

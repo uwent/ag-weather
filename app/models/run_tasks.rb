@@ -21,13 +21,14 @@ module RunTasks
   end
 
   def self.create_latest_images(date = DataImporter.latest_date || Date.yesterday)
-    create_weather_images(date)
-    create_precip_images(date)
-    create_et_images(date)
-    create_insol_images(date)
-    
-    DegreeDay.create_cumulative_image(start_date: date.beginning_of_year, end_date: date)
-    PestForecast.create_image(date:)
+    images = []
+    images << create_weather_images(date)
+    images << create_precip_images(date)
+    images << create_et_images(date)
+    images << create_insol_images(date)
+    images << DegreeDay.create_cumulative_image(start_date: date.beginning_of_year, end_date: date)
+    images << PestForecast.create_image(date:)
+    images
   end
 
   def self.create_weather_images(date = DataImporter.latest_date || Date.yesterday)
@@ -147,10 +148,11 @@ module RunTasks
   end
 
   def self.purge_old_images(delete: false)
+    dir = ImageCreator.file_dir
     puts "\n### DAILY MAPS ###"
-    purge_images(ImageCreator.file_dir, 1.month, delete)
-    puts "\n### PEST MAPS ###"
-    purge_images(File.join(ImageCreator.file_dir, PestForecast.pest_map_dir), 1.week, delete)
+    purge_images(File.join(dir, "daily"), 1.month, delete)
+    puts "\n### CUMULATIVE MAPS ###"
+    purge_images(File.join(dir, "cumulative"), 1.week, delete)
   end
 
   def self.purge_images(dir, age, delete)
