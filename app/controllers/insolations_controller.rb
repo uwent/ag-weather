@@ -95,15 +95,16 @@ class InsolationsController < ApplicationController
     map_params
 
     image_name = Insolation.image_name(**@image_args)
-    image_filename = Insolation.image_path(image_name)
+    image_type = @start_date ? "cumulative" : "daily"
+    image_filename = Insolation.image_path(image_name, image_type)
 
     if File.exist?(image_filename)
-      @url = Insolation.image_url(image_name)
+      @url = Insolation.image_url(image_name, image_type)
       @status = "already exists"
     else
       image_name = Insolation.guess_image(**@image_args)
       if image_name
-        @url = Insolation.image_url(image_name)
+        @url = Insolation.image_url(image_name, image_type)
         @status = "image created"
       end
     end

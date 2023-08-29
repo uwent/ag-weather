@@ -34,35 +34,36 @@ class ImageCreator
     [min, max]
   end
 
-  def self.create_image(grid, title, image_name, subdir: "", scale: nil)
-    raise StandardError.new("No data") if grid.empty?
+  def self.create_image(data:, title:, file:, subdir: "", scale: nil)
+    raise StandardError.new("No data") if data.empty?
 
+    Rails.logger.info "SCALE ==> #{scale}"
     scale ||= [nil, nil]
     # get params from data
-    lats = grid.keys.map { |lat, long| lat }.uniq
-    longs = grid.keys.map { |lat, long| long }.uniq
+    lats = data.keys.map { |lat, long| lat }.uniq
+    longs = data.keys.map { |lat, long| long }.uniq
     extents = [longs.min, longs.max, lats.min, lats.max]
-    data_min = grid.values.min.round(3)
-    data_max = grid.values.max.round(3)
+    data_min = data.values.min.round(3)
+    data_max = data.values.max.round(3)
     auto_min, auto_max = get_min_max(data_min, data_max)
     min = scale.min || auto_min
     max = scale.max || auto_max
     max += 1 if min == max
 
     # echo params
-    Rails.logger.info "#{name} :: Creating image ==> #{image_name}"
+    Rails.logger.info "#{name} :: Creating image ==> #{file}"
     Rails.logger.debug "#{name} :: Gunplot data range: #{data_min} -> #{data_max} = #{data_max - data_min} (#{(data_max - data_min) / 10.0}/tick)"
     Rails.logger.debug "#{name} :: Gunplot auto range: #{auto_min} -> #{auto_max} = #{auto_max - auto_min} (#{(auto_max - auto_min) / 10.0}/tick)"
     Rails.logger.debug "#{name} :: Gunplot display range: #{min} -> #{max} = #{max - min} (#{(max - min) / 10.0}/tick)"
 
     # generate image
-    datafile_name = create_data_file(grid)
+    datafile_name = create_data_file(data)
     gnuplot_image = run_gnuplot(datafile_name:, title:, min:, max:, extents:)
-    image_name = run_composite(gnuplot_image:, image_name:, subdir:)
-    Rails.logger.debug "#{name} :: Created image #{image_name}"
-    image_name
+    file = run_composite(gnuplot_image:, file:, subdir:)
+    Rails.logger.debug "#{name} :: Created image #{file}"
+    file
   rescue => e
-    Rails.logger.error "#{name} :: Failed to create image '#{image_name}': #{e.message}"
+    Rails.logger.error "#{name} :: Failed to create image '#{file}': #{e.message}"
     nil
   end
 
@@ -95,17 +96,17 @@ class ImageCreator
     temp_image
   end
 
-  def self.run_composite(gnuplot_image:, image_name:, subdir: "")
+  def self.run_composite(gnuplot_image:, file:, subdir: "")
     image_dir = File.join(file_dir, subdir)
     FileUtils.mkdir_p(image_dir)
-    out_file = File.join(image_dir, image_name)
-    overlay_image = image_name.include?("-wi.png") ? "lib/wi_overlay.png" : "lib/map_overlay.png"
+    out_file = File.join(image_dir, file)
+    overlay_image = file.include?("-wi.png") ? "lib/wi_overlay.png" : "lib/map_overlay.png"
     image_cmd = "composite '#{overlay_image}' '#{gnuplot_image}' '#{out_file}'"
     Rails.logger.debug "ImageCreator >> imagemagick cmd: #{image_cmd}"
 
     success = system(image_cmd)
     raise StandardError.new "ImageMagick execution failed for cmd: #{image_cmg}" unless success
     FileUtils.rm_f(gnuplot_image)
-    image_name
+    file
   end
 end

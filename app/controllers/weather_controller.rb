@@ -129,15 +129,16 @@ class WeatherController < ApplicationController
     @image_args[:col] = @col
 
     image_name = Weather.image_name(**@image_args)
-    image_filename = Weather.image_path(image_name)
+    image_type = @start_date ? "cumulative" : "daily"
+    image_filename = Weather.image_path(image_name, image_type)
 
     if File.exist?(image_filename)
-      @url = Weather.image_url(image_name)
+      @url = Weather.image_url(image_name, image_type)
       @status = "already exists"
     else
       image_name = Weather.guess_image(**@image_args)
       if image_name
-        @url = Weather.image_url(image_name)
+        @url = Weather.image_url(image_name, image_type)
         @status = "image created"
       end
     end

@@ -23,11 +23,17 @@ class Precip < ApplicationRecord
     "precip"
   end
 
-  def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], **args)
+  def self.image_title(date: nil, start_date: nil, end_date: nil, units: valid_units[0], stat: nil, **args)
     end_date ||= date
     raise ArgumentError.new log_prefix + "Must provide either 'date' or 'end_date'" unless end_date
+    check_units(units)
+
+    title = "Daily precipitation"
+    stat = (stat == :sum) ? "total" : stat
+    title = "#{stat.to_s.humanize} #{title.downcase}" if stat && stat.to_s.humanize != title.split(" ")[0]
+    title += " (#{units})" if units
     datestring = image_title_date(start_date:, end_date:)
-    "Total precipitation (#{units}) for #{datestring}"
+    "#{title} for #{datestring}"
   end
 
   def self.stats(date)

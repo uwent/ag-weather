@@ -24,10 +24,8 @@ class DegreeDayImporter < DataImporter
     DegreeDay.transaction do
       DegreeDay.where(date:).delete_all
       DegreeDay.import!(dds)
+      import.succeed(date)
     end
-
-    import.succeed(date)
-    DegreeDay.create_cumulative_image(start_date: date.beginning_of_year, end_date: date) unless date < 1.week.ago
   rescue => e
     Rails.logger.error "#{name} :: Failed to calculate data for #{date}: #{e}"
     import.fail(date, e)
