@@ -37,7 +37,6 @@ class ImageCreator
   def self.create_image(data:, title:, file:, subdir: "", scale: nil)
     raise StandardError.new("No data") if data.empty?
 
-    Rails.logger.info "SCALE ==> #{scale}"
     scale ||= [nil, nil]
     # get params from data
     lats = data.keys.map { |lat, long| lat }.uniq
