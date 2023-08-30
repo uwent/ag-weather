@@ -20,8 +20,72 @@ module RunTasks
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
   end
 
+  def self.create_latest_images(date = DataImporter.latest_date || Date.yesterday)
+    images = []
+    images << create_weather_images(date)
+    images << create_precip_images(date)
+    images << create_et_images(date)
+    images << create_insol_images(date)
+    images << DegreeDay.create_cumulative_image(start_date: date.beginning_of_year, end_date: date)
+    images << PestForecast.create_image(date:)
+    images
+  end
+
+  def self.create_weather_images(date = DataImporter.latest_date || Date.yesterday)
+    images = []
+    ["wi", "all"].each do |extent|
+      ["F", "C"].each do |units|
+        [:avg, :min, :max].each do |stat|
+          col = "#{stat}_temp"
+          images << Weather.create_image(date:, units:, extent:, col:, stat:)
+          images << Weather.create_cumulative_image(start_date: date - 1.week, date:, units:, extent:, col:, stat:)
+        end
+      end
+    end
+    images
+  end
+
+  def self.create_precip_images(date = DataImporter.latest_date || Date.yesterday)
+    images = []
+    ["wi", "all"].each do |extent|
+      ["in", "mm"].each do |units|
+        images << Precip.create_image(date:, units:, extent:)
+        [:sum, :avg, :max].each do |stat|
+          images << Precip.create_cumulative_image(start_date: date - 1.week, date:, units:, extent:, stat:)
+        end
+      end
+    end
+  end
+
+  def self.create_et_images(date = DataImporter.latest_date || Date.yesterday)
+    images = []
+    ["wi", "all"].each do |extent|
+      ["in", "mm"].each do |units|
+        images << Evapotranspiration.create_image(date:, units:, extent:)
+        [:sum, :avg, :min, :max].each do |stat|
+          images << Evapotranspiration.create_cumulative_image(start_date: date - 1.week, date:, units:, extent:, stat:)
+        end
+      end
+    end
+    images
+  end
+
+  def self.create_insol_images(date = DataImporter.latest_date || Date.yesterday)
+    images = []
+    ["wi", "all"].each do |extent|
+      ["MJ", "KWh"].each do |units|
+        images << Insolation.create_image(date:, units:, extent:)
+        [:sum, :avg, :min, :max].each do |stat|
+          images << Insolation.create_cumulative_image(start_date: date - 1.week, date:, units:, extent:, stat:)
+        end
+      end
+    end
+    images
+  end
+
   def self.daily
-    RunTasks.all
+    all
+    create_latest_images
     DataImport.send_status_email
   rescue => e
     status = ["ERROR: Daily tasks failed to run with message: #{e.message}"]
@@ -84,10 +148,11 @@ module RunTasks
   end
 
   def self.purge_old_images(delete: false)
+    dir = ImageCreator.file_dir
     puts "\n### DAILY MAPS ###"
-    purge_images(ImageCreator.file_dir, 1.year, delete)
-    puts "\n### PEST MAPS ###"
-    purge_images(File.join(ImageCreator.file_dir, PestForecast.pest_map_dir), 1.week, delete)
+    purge_images(File.join(dir, "daily"), 1.month, delete)
+    puts "\n### CUMULATIVE MAPS ###"
+    purge_images(File.join(dir, "cumulative"), 1.week, delete)
   end
 
   def self.purge_images(dir, age, delete)

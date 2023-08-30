@@ -42,8 +42,6 @@ class WeatherImporter < DataImporter
     wd.load_from(local_dir(date))
     persist_day_to_db(date, wd)
     FileUtils.rm_r grib_dir unless keep_grib
-    import.succeed(date)
-    Weather.create_image(date:, units: "F")
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"
@@ -65,6 +63,7 @@ class WeatherImporter < DataImporter
     Weather.transaction do
       Weather.where(date:).delete_all
       Weather.import!(weather)
+      import.succeed(date)
     end
   end
 end

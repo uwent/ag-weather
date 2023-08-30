@@ -1,7 +1,7 @@
 require "rails_helper"
 
-def build_weather(**args)
-  FactoryBot.build(:weather, **args)
+def build_weather(**)
+  FactoryBot.build(:weather, **)
 end
 
 RSpec.describe PestModels do

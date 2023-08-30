@@ -97,7 +97,6 @@ RSpec.describe PrecipsController, type: :controller do
 
   describe "GET /map" do
     let(:date) { end_date }
-    let(:url_base) { "/#{data_class.image_subdir}" }
 
     context "with no params" do
       before do
@@ -123,7 +122,7 @@ RSpec.describe PrecipsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/daily/precip/#{image_name}"
       end
 
       it "returns the correct image when given starting date" do
@@ -133,7 +132,7 @@ RSpec.describe PrecipsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/cumulative/precip/#{image_name}"
       end
 
       it "responds to the units param" do
@@ -144,7 +143,7 @@ RSpec.describe PrecipsController, type: :controller do
         get(:map, params:)
 
         expect(image_name).to include("-mm-")
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/daily/precip/#{image_name}"
       end
 
       it "returns nil url when no data" do
@@ -158,7 +157,7 @@ RSpec.describe PrecipsController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params: {date:, format: :png})
 
-        expect(response.body).to include("<img src=#{"#{url_base}/#{image_name}"}")
+        expect(response.body).to include("<img src=#{"/daily/precip/#{image_name}"}")
       end
     end
 

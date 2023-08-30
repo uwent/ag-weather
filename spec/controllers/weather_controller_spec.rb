@@ -358,7 +358,6 @@ RSpec.describe WeatherController, type: :controller do
   describe "GET /map" do
     let(:date) { end_date }
     let(:default_col) { data_class.default_col }
-    let(:url_base) { "/#{data_class.image_subdir}" }
 
     context "with no params" do
       before do
@@ -385,7 +384,7 @@ RSpec.describe WeatherController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/cumulative/weather/#{image_name}"
       end
 
       it "returns the correct image for a single date" do
@@ -394,7 +393,17 @@ RSpec.describe WeatherController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params:)
 
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/daily/weather/#{image_name}"
+      end
+
+      it "returns the correct image when given starting date" do
+        start_date = end_date - 1.month
+        params = {start_date:, end_date:, col: default_col, units:}
+        image_name = data_class.image_name(**params)
+        allow(ImageCreator).to receive(:create_image).and_return(image_name)
+        get(:map, params:)
+
+        expect(json["url"]).to eq "/cumulative/weather/#{image_name}"
       end
 
       it "responds to the units param" do
@@ -405,7 +414,7 @@ RSpec.describe WeatherController, type: :controller do
         get(:map, params:)
 
         expect(image_name).to include("-c-")
-        expect(json["url"]).to eq "#{url_base}/#{image_name}"
+        expect(json["url"]).to eq "/daily/weather/#{image_name}"
       end
 
       it "returns nil url when no data" do
@@ -419,7 +428,7 @@ RSpec.describe WeatherController, type: :controller do
         allow(ImageCreator).to receive(:create_image).and_return(image_name)
         get(:map, params: {date:, format: :png})
 
-        expect(response.body).to include("<img src=#{"#{url_base}/#{image_name}"}")
+        expect(response.body).to include("<img src=#{"/daily/weather/#{image_name}"}")
       end
     end
 

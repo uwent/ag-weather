@@ -1,13 +1,14 @@
 module ImageMethods
   def image_subdir
+    ""
   end
 
-  def image_path(filename)
-    File.join(ImageCreator.file_dir, image_subdir, filename)
+  def image_path(file, image_type = "")
+    File.join(ImageCreator.file_dir, image_type, image_subdir, file)
   end
 
-  def image_url(filename)
-    File.join(ImageCreator.url_path, image_subdir, filename)
+  def image_url(file, image_type = "")
+    File.join(ImageCreator.url_path, image_type, image_subdir, file)
   end
 
   def default_units(col = nil)
@@ -98,7 +99,8 @@ module ImageMethods
     # call image creator
     title = image_title(date:, col:, units:)
     file = image_name(date:, col:, units:, extent:, scale:)
-    ImageCreator.create_image(data, title, file, subdir: image_subdir, scale:)
+    subdir = File.join("daily", image_subdir)
+    ImageCreator.create_image(data:, title:, file:, subdir:, scale:)
   end
 
   def create_cumulative_image(
@@ -126,6 +128,7 @@ module ImageMethods
     # call image creator
     title = image_title(start_date:, end_date:, col:, units:, stat:)
     file = image_name(start_date:, end_date:, col:, units:, extent:, scale:, stat:)
-    ImageCreator.create_image(data, title, file, subdir: image_subdir, scale:)
+    subdir = File.join("cumulative", image_subdir)
+    ImageCreator.create_image(data:, title:, file:, subdir:, scale:)
   end
 end

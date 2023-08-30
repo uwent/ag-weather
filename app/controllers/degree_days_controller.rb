@@ -134,15 +134,16 @@ class DegreeDaysController < ApplicationController
     @image_args[:col] = @model
 
     image_name = DegreeDay.image_name(**@image_args)
-    image_filename = DegreeDay.image_path(image_name)
+    image_type = "cumulative"
+    image_filename = DegreeDay.image_path(image_name, image_type)
 
     if File.exist?(image_filename)
-      @url = DegreeDay.image_url(image_name)
+      @url = DegreeDay.image_url(image_name, image_type)
       @status = "already exists"
     else
       image_name = DegreeDay.guess_image(**@image_args)
       if image_name
-        @url = DegreeDay.image_url(image_name)
+        @url = DegreeDay.image_url(image_name, image_type)
         @status = "image created"
       end
     end

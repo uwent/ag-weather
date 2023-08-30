@@ -38,7 +38,7 @@ class WeatherHour
 
   def data_key(type)
     return :temperatures if type == "2t"
-    return :dew_points if type == "2d"
+    :dew_points if type == "2d"
   end
 
   # averages all temperatures assigned to the lat/long cell

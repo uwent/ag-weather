@@ -125,8 +125,8 @@ class Weather < ApplicationRecord
 
   def self.avg_temp_rh_over(observations, rh_cutoff)
     rh_obs = observations.select do |obs|
-       obs.relative_humidity && obs.temperature &&
-       obs.relative_humidity >= rh_cutoff
+      obs.relative_humidity && obs.temperature &&
+        obs.relative_humidity >= rh_cutoff
     end
     (rh_obs.map(&:temperature).sum / rh_obs.size) if rh_obs.size >= 1
   end

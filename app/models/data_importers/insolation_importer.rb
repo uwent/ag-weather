@@ -21,11 +21,8 @@ class InsolationImporter < DataImporter
     import.start(date)
     url = "#{URL_BASE}.#{formatted_date(date)}"
     Rails.logger.info "InsolationImporter :: GET #{url}"
-
     response = HTTParty.get(url)
     import_insolation_data(response, date)
-
-    Insolation.create_image(date:)
     Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Unable to retrieve insolation data: #{e}"
@@ -52,9 +49,8 @@ class InsolationImporter < DataImporter
     Insolation.transaction do
       Insolation.where(date:).delete_all
       Insolation.import!(insols)
+      import.succeed(date)
     end
-
-    import.succeed(date)
   end
 
   def self.fetch_custom(date, url, force: false)

@@ -113,8 +113,8 @@ RSpec.describe ImageCreator do
 
   describe ".run_composite" do
     let(:gnuplot_image) { "temp.png" }
-    let(:image_name) { "final.png" }
-    let(:args) { {gnuplot_image:, image_name:} }
+    let(:file) { "final.png" }
+    let(:args) { {gnuplot_image:, file:} }
 
     context "on success" do
       before do
@@ -127,7 +127,7 @@ RSpec.describe ImageCreator do
       end
 
       it "should return filename on success" do
-        expect(subject.run_composite(**args)).to eq image_name
+        expect(subject.run_composite(**args)).to eq file
       end
 
       it "should place filename in subdir if specified" do

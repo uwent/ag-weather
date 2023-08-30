@@ -276,15 +276,16 @@ class PestForecastsController < ApplicationController
     @units = nil
 
     image_name = PestForecast.image_name(**@image_args)
-    image_filename = PestForecast.image_path(image_name)
+    image_type = @start_date ? "cumulative" : "daily"
+    image_filename = PestForecast.image_path(image_name, image_type)
 
     if File.exist?(image_filename)
-      @url = PestForecast.image_url(image_name)
+      @url = PestForecast.image_url(image_name, image_type)
       @status = "already exists"
     else
       image_name = PestForecast.guess_image(**@image_args)
       if image_name
-        @url = PestForecast.image_url(image_name)
+        @url = PestForecast.image_url(image_name, image_type)
         @status = "image created"
       end
     end

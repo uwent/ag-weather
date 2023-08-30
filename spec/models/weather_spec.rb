@@ -172,12 +172,14 @@ RSpec.describe Weather do
     end
 
     context "with some nil data" do
-      let(:weather_obs) { [
-        WeatherObservation.new(280, 280),
-        WeatherObservation.new(285, 280),
-        WeatherObservation.new(290, 280),
-        WeatherObservation.new(nil, nil)
-      ] }
+      let(:weather_obs) {
+        [
+          WeatherObservation.new(280, 280),
+          WeatherObservation.new(285, 280),
+          WeatherObservation.new(290, 280),
+          WeatherObservation.new(nil, nil)
+        ]
+      }
 
       it "ignores the nil data in calculations" do
         expect(weather.min_temp).to_not be_nil
