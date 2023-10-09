@@ -28,9 +28,3 @@ jobs:
       - run:
           name: Rspec
           command: bundle exec rspec
-      - run:
-          name: Dredd API test
-          command: |
-            sudo npm install dredd --global
-            export PATH="$(npm bin):$PATH"
-            RAILS_ENV=test bundle exec rake dredd

@@ -12,7 +12,7 @@ gem "whenever" # task scheduling
 gem "tzinfo" # timezone
 
 group :development do
-  gem "puma", "~> 5" # puma 6 breaks dredd-rack API testing, keep 5.x for now.
+  gem "puma"
   gem "pry-rails"
   gem "capistrano"
   gem "capistrano-rbenv"
@@ -29,7 +29,6 @@ end
 
 group :development, :test do
   gem "byebug"
-  gem "dredd-rack"
   gem "factory_bot_rails"
   gem "guard-rspec"
   gem "rspec_junit_formatter"
