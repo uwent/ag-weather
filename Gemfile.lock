@@ -93,7 +93,7 @@ GEM
       bundler (>= 1.2.0, < 3)
       thor (~> 1.0)
     byebug (11.1.3)
-    capistrano (3.17.3)
+    capistrano (3.18.0)
       airbrussh (>= 1.0.0)
       i18n
       rake (>= 10.0.0)
@@ -153,7 +153,7 @@ GEM
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     io-console (0.6.0)
-    irb (1.8.1)
+    irb (1.8.3)
       rdoc
       reline (>= 0.3.8)
     json (2.6.3)
@@ -215,7 +215,7 @@ GEM
       method_source (~> 1.0)
     pry-rails (0.3.9)
       pry (>= 0.10.4)
-    psych (5.1.1)
+    psych (5.1.1.1)
       stringio
     public_suffix (5.0.3)
     puma (6.4.0)
@@ -352,7 +352,7 @@ GEM
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.19.1)
     stringio (3.0.8)
-    thor (1.2.2)
+    thor (1.3.0)
     tilt (2.3.0)
     timeout (0.4.0)
     tzinfo (2.0.6)
@@ -381,7 +381,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-analyze
   activerecord-import
-  activesupport (~> 7.0)
+  activesupport (~> 7.1)
   brakeman
   bundler-audit
   byebug
@@ -399,8 +399,8 @@ DEPENDENCIES
   pg
   pry-rails
   puma
-  rails (~> 7.0)
-  railties (~> 7.0)
+  rails (~> 7.1)
+  railties (~> 7.1)
   rspec-rails
   rspec_junit_formatter
   sassc-rails
