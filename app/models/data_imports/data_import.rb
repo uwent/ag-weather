@@ -93,13 +93,14 @@ class DataImport < ApplicationRecord
         message << "  #{date}: PENDING"
       else
         message << "  #{date}"
-        import_types.each do |type|
-          status = type.find_by(date:)
+        import_types.each do |import_type|
+          status = import_type.find_by(date:)
+          status_name = status.type.to_s.gsub("DataImport", "")
           if status.status == "successful"
-            message << "    #{status.type} ==> OK"
+            message << "    #{status_name} ==> OK"
           else
             count += 1
-            msg = "    #{status.type} ==> #{status.status.upcase}"
+            msg = "    #{status_name} ==> #{status.status.upcase}"
             msg += ": #{status.message}" if status.message
             message << msg
           end

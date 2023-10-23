@@ -15,9 +15,10 @@ module RunTasks
     DegreeDayImporter.create_data
 
     # display status of import attempts
-    DataImport.check_statuses
     ActiveRecord::Base.logger.level = Rails.configuration.log_level
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
+    status = DataImport.check_statuses
+    status&.count == 0
   end
 
   def self.create_latest_images(date = DataImporter.latest_date || Date.yesterday)
