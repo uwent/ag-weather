@@ -18,7 +18,7 @@ module RunTasks
     ActiveRecord::Base.logger.level = Rails.configuration.log_level
     Rails.logger.info "Data tasks completed in #{DataImporter.elapsed(start_time)}"
     status = DataImport.check_statuses
-    status&.dig(:count).zero? # return true if no errors
+    status[:count].zero? # return true if no errors
   end
 
   def self.create_latest_images(date = DataImporter.latest_date || Date.yesterday)
