@@ -31,13 +31,7 @@ class InsolationImporter < DataImporter
 
   # longitudes are positive degrees west in data import
   def self.import_insolation_data(response, date)
-    begin
-      if response.lines[0..5].to_s.include?("404")
-        raise StandardError.new "404 Not Found"
-      end
-    rescue => e
-      raise StandardError.new "Invalid response received from server"
-    end
+    raise StandardError.new "404 Not Found" if response.lines[0..5].to_s.include?("404")
 
     insols = []
     response.body.each_line do |line|
