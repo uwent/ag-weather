@@ -247,20 +247,14 @@ class DegreeDaysController < ApplicationController
   private
 
   def parse_model
-    model = params[:model]&.to_s
-    if model
-      if DegreeDay.model_names.include?(model)
-        @model = model
-      else
-        reject("Invalid model: '#{model}'. Must be one of #{DegreeDay.model_names.join(", ")}")
-      end
+    if dd_model
+      @model = dd_model
     else
       @model = DegreeDay.default_col
     end
   end
 
   def parse_model_or_base_upper
-    model = params[:model]
     @base = base
     @upper = upper
     if @upper && @upper < @base
@@ -270,12 +264,8 @@ class DegreeDaysController < ApplicationController
     @method = method
     @compute = params[:compute] == "true"
 
-    if @model
-      if DegreeDay.model_names.include?(model)
-        @model = model
-      else
-        reject("Invalid model: '#{model}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
-      end
+    if dd_model
+      @model = dd_model
     elsif @base
       implied_model = DegreeDay.find_model(@base, @upper, @units)
       @model = if DegreeDay.model_names.include?(implied_model)
@@ -322,6 +312,17 @@ class DegreeDaysController < ApplicationController
 
   def upper
     params[:upper].present? ? parse_float(params[:upper]) : nil
+  end
+
+  def dd_model
+    if params[:model].present?
+      model = params[:model].to_s
+      if DegreeDay.model_names.include? model
+        return model
+      else
+        reject("Invalid model: '#{model}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
+      end
+    end
   end
 
   def valid_methods

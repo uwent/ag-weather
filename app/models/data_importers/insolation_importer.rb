@@ -17,11 +17,9 @@ class InsolationImporter < DataImporter
 
   def self.fetch_day(date, **args)
     start_time = Time.now
-    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
     import.start(date)
-    url = "#{URL_BASE}.#{formatted_date(date)}"
-    Rails.logger.info "InsolationImporter :: GET #{url}"
-    response = HTTParty.get(url)
+    Rails.logger.info "#{name} :: Fetching insolation data for #{date}"
+    response = get_from_http(date)
     import_insolation_data(response, date)
     Rails.logger.info "#{name} :: Completed insolation load for #{date} in #{elapsed(start_time)}."
   rescue => e
@@ -29,10 +27,16 @@ class InsolationImporter < DataImporter
     import.fail(date, e)
   end
 
+  def self.get_from_http(date)
+    url = "#{URL_BASE}.#{formatted_date(date)}"
+    Rails.logger.info "InsolationImporter :: GET #{url}"
+    response = HTTParty.get(url)
+    raise StandardError.new "404 Not Found" if response.body.lines[0..5].to_s.include?("404")
+    response
+  end
+
   # longitudes are positive degrees west in data import
   def self.import_insolation_data(response, date)
-    raise StandardError.new "404 Not Found" if response.lines[0..5].to_s.include?("404")
-
     insols = []
     response.body.each_line do |line|
       val, lat, long = line.split

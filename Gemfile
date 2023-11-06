@@ -7,6 +7,7 @@ gem "activerecord-import" # bulk import
 gem "pg" # postgres
 gem "sassc-rails" # sass css
 gem "httparty"
+gem "net-ftp"
 gem "json"
 gem "whenever" # task scheduling
 gem "tzinfo" # timezone
