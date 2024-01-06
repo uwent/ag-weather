@@ -10,7 +10,7 @@ RSpec.describe WeatherController, type: :controller do
 
   let(:latest_date) { DataImport.latest_date }
   let(:end_date) { latest_date }
-  let(:start_date) { end_date - 1.week }
+  let(:start_date) { [end_date.beginning_of_year, end_date - 1.week].max }
   let(:dates) { start_date..end_date }
   let(:empty_date) { "2000-1-1".to_date }
 
@@ -64,6 +64,8 @@ RSpec.describe WeatherController, type: :controller do
 
         it "returns valid data" do
           get(:index, params:)
+
+          puts data
 
           expect(data.size).to eq(dates.count)
           day = data.first
@@ -297,7 +299,7 @@ RSpec.describe WeatherController, type: :controller do
         get(:freeze_grid)
 
         expect(data.size).to eq(grid_points)
-        expect(data["[45.0, -89.0]"]).to eq(8) # 8 days 1/day
+        expect(data["[45.0, -89.0]"]).to eq(dates.count)
       end
     end
 

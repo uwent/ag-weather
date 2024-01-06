@@ -10,7 +10,7 @@ RSpec.describe DegreeDaysController, type: :controller do
   let(:epsilon) { 1e-3 } # valid when responses are rounded to 4 digits
   let(:latest_date) { DataImport.latest_date }
   let(:end_date) { latest_date }
-  let(:start_date) { end_date - 1.week }
+  let(:start_date) { [end_date.beginning_of_year, end_date - 1.week].max }
   let(:dates) { start_date..end_date }
   let(:empty_date) { "2000-1-1".to_date }
 
@@ -338,14 +338,14 @@ RSpec.describe DegreeDaysController, type: :controller do
         get(:grid, params: {base: 32})
 
         expect(info["model"]).to eq("base 32F")
-        expect(data.first[1]).to eq(10.0 * 4) # 4 days 10/day
+        expect(data.first[1]).to eq(5.0 * dates.count) # 5 FDD per day
       end
 
       it "returns a specific degree day model in C" do
         get(:grid, params: {base: 10, units: "C"})
 
         expect(info["model"]).to eq("base 10C")
-        expect(data.first[1]).to eq(11.1111 * 4) # 4 days 10/day
+        expect(data.first[1]).to eq((5.0 / 9.0 * 10.0 * dates.count).round(4)) # 10 FDD per day
       end
     end
 

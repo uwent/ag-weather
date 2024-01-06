@@ -11,7 +11,7 @@ RSpec.describe PestForecastsController, type: :controller do
   let(:long) { -89.0 }
   let(:latest_date) { DataImport.latest_date }
   let(:end_date) { latest_date - 1.day }
-  let(:start_date) { latest_date - 1.week }
+  let(:start_date) { [end_date.beginning_of_year, end_date - 1.week].max }
   let(:dates) { start_date..latest_date }
   let(:empty_date) { "2000-1-1".to_date }
   let(:pest) { "potato_blight_dsv" }
@@ -259,7 +259,7 @@ RSpec.describe PestForecastsController, type: :controller do
 
         expect(data["[45.0, -89.0]"]).to eq({
           "avg" => 5.0,
-          "total" => 5.0 * 8
+          "total" => 5.0 * dates.count
         })
       end
     end
