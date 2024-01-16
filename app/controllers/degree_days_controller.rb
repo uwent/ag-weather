@@ -247,11 +247,7 @@ class DegreeDaysController < ApplicationController
   private
 
   def parse_model
-    if dd_model
-      @model = dd_model
-    else
-      @model = DegreeDay.default_col
-    end
+    @model = dd_model || DegreeDay.default_col
   end
 
   def parse_model_or_base_upper
@@ -318,7 +314,7 @@ class DegreeDaysController < ApplicationController
     if params[:model].present?
       model = params[:model].to_s
       if DegreeDay.model_names.include? model
-        return model
+        model
       else
         reject("Invalid model: '#{model}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
       end
