@@ -65,8 +65,6 @@ RSpec.describe WeatherController, type: :controller do
         it "returns valid data" do
           get(:index, params:)
 
-          puts data
-
           expect(data.size).to eq(dates.count)
           day = data.first
           expect(day["min_temp"]).to eq 50.0
