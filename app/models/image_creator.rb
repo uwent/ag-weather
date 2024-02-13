@@ -104,7 +104,7 @@ class ImageCreator
     Rails.logger.debug "ImageCreator >> imagemagick cmd: #{image_cmd}"
 
     success = system(image_cmd)
-    raise StandardError.new "ImageMagick execution failed for cmd: #{image_cmg}" unless success
+    raise StandardError.new "ImageMagick execution failed for cmd: #{image_cmd}" unless success
     FileUtils.rm_f(gnuplot_image)
     file
   end
