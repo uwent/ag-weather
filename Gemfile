@@ -11,6 +11,7 @@ gem "net-ftp"
 gem "json"
 gem "whenever" # task scheduling
 gem "tzinfo" # timezone
+gem "csv"
 
 group :development do
   gem "puma"
