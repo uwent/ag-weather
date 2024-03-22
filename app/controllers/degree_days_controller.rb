@@ -343,17 +343,13 @@ class DegreeDaysController < ApplicationController
   end
 
   def parse_models
-    val = params[:models]&.downcase
-    if val == "all"
-      valid_models
-    elsif val.present?
-      vals = val.split(",")
-      valid = vals & valid_models
-      invalid = vals - valid
-      reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}") unless invalid.empty?
-      valid
-    else
-      [DegreeDay.default_col.to_s]
-    end
+    return [DegreeDay.default_col.to_s] unless params[:models].present?
+    str = params[:models].to_s.gsub(/[^a-zA-Z0-9_,]/, '').downcase
+    return valid_models if str == "all"
+    vals = str.split(",")
+    valid = vals & valid_models
+    invalid = vals - valid
+    reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}") unless invalid.empty?
+    valid
   end
 end
