@@ -310,12 +310,11 @@ class PestForecastsController < ApplicationController
 
   def parse_pest
     return @pest = default_pest unless params[:pest].present?
-    pest_str = params[:pest].to_s.gsub(/[^a-zA-Z0-9_]/, '').downcase
-    if PestForecast.data_cols.include?(pest_str.to_sym)
-      @pest = pest_str
-    else
-      reject("Invalid pest name '#{pest_str}'. Must be one of #{PestForecast.data_cols.join(", ")}")
+    pest_str = sanitize_param_str(params[:pest])
+    if params[:pest] != pest_str || !PestForecast.data_cols.include?(pest_str.to_sym)
+      reject("Invalid pest name '#{params[:pest]}'. Must be one of #{PestForecast.data_cols.join(", ")}")
     end
+    @pest = pest_str
   end
 
   def default_pest

@@ -311,14 +311,12 @@ class DegreeDaysController < ApplicationController
   end
 
   def dd_model
-    if params[:model].present?
-      model = params[:model].to_s
-      if DegreeDay.model_names.include? model
-        model
-      else
-        reject("Invalid model: '#{model}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
-      end
+    return unless params[:model].present?
+    model_str = sanitize_param_str(params[:model])
+    if params[:model] != model_str || !DegreeDay.model_names.include?(model_str)
+      reject("Invalid model: '#{params[:model]}'. Must be one of #{DegreeDay.data_cols.join(", ")}")
     end
+    model_str
   end
 
   def valid_methods
@@ -342,14 +340,17 @@ class DegreeDaysController < ApplicationController
     DegreeDay.model_names
   end
 
+  # accepts multiple models separated by commas eg "dd_50,dd_50_86"
   def parse_models
     return [DegreeDay.default_col.to_s] unless params[:models].present?
-    str = params[:models].to_s.gsub(/[^a-zA-Z0-9_,]/, '').downcase
-    return valid_models if str == "all"
-    vals = str.split(",")
-    valid = vals & valid_models
-    invalid = vals - valid
-    reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}") unless invalid.empty?
+    model_str = sanitize_param_str(params[:models])
+    return valid_models if model_str == "all"
+    arr = model_str.split(",")
+    valid = arr & valid_models
+    invalid = arr - valid
+    unless invalid.empty?
+      reject("Invalid models '#{invalid.join(", ")}'. Valid models include #{valid_models.join(", ")}")
+    end
     valid
   end
 end

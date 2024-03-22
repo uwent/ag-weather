@@ -16,6 +16,11 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def sanitize_param_str(raw)
+    return unless raw
+    raw.to_s.downcase.gsub(/[^a-z0-9_,\.]/, '')
+  end
+
   def to_csv(data, headers = nil)
     CSV.generate do |csv|
       if headers
