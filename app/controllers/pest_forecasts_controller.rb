@@ -17,7 +17,7 @@ class PestForecastsController < ApplicationController
     pfs = PestForecast.where(@query).order(:date)
     if pfs.exists?
       pest_data = pfs.collect do |pf|
-        [pf.date, pf.send(@pest)]
+        [pf.date, pf.public_send(@pest)]
       end.to_h
       pest_data.default = 0
       weather = Weather.where(@query).order(:date)
