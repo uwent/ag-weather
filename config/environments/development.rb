@@ -8,6 +8,14 @@ Rails.application.configure do
   config.x.image.file_dir = "public/dev_image_dir"
   config.x.image.url_path = "/dev_image_dir"
 
+  # Logging configuration
+  require "dev_logger"
+  config.log_formatter = DevLogger.new("ag-weather")
+  config.log_level = :debug
+
+  # Log error messages when you accidentally call methods on nil.
+  config.whiny_nils = true
+
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
@@ -43,7 +51,6 @@ Rails.application.configure do
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
-
   config.action_mailer.perform_caching = false
   config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.perform_deliveries = true
@@ -80,13 +87,4 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
-
-  # Logging configuration
-  config.log_level = :debug
-
-  # Log error messages when you accidentally call methods on nil.
-  config.whiny_nils = true
-
-  # enable compression
-  config.middleware.insert_before ActionDispatch::Static, Rack::Deflater
 end

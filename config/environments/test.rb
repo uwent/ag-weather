@@ -8,6 +8,10 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Image generation and service configuration
+  config.x.image.temp_directory = "tmp/image_creator"
+  config.x.image.file_dir = "tmp/test_image_dir"
+
   # While tests run files are not watched, reloading is not necessary.
   config.enable_reloading = false
 
@@ -61,10 +65,6 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
-
-  # Image generation and service configuration
-  config.x.image.temp_directory = "tmp/image_creator"
-  config.x.image.file_dir = "tmp/test_image_dir"
 
   # Turn false under Spring and add config.action_view.cache_template_loading = true.
   config.cache_classes = false

@@ -32,8 +32,5 @@ module AgWeather
     config.x.image.temp_directory = "tmp"
     config.x.image.base_dir = "public"
     config.x.image.url_path = ""
-
-    require "log_formatter"
-    config.log_formatter = LogFormatter.new
   end
 end

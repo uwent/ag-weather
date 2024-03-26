@@ -1,5 +1,5 @@
 # custom color-coded logging
-class LogFormatter < Logger::Formatter
+class DevLogger < Logger::Formatter
   PAL = {
     black: "\u001b[30m",
     red: "\u001b[31m",
@@ -29,10 +29,13 @@ class LogFormatter < Logger::Formatter
     fatal: PAL[:red]
   }
 
+  def initialize(app_name = "dev")
+    @app = app_name
+  end
+
   def call(severity, time, progname, msg)
     sev = severity.to_sym.downcase
-    time = time.strftime("%Y-%m-%d %H:%M:%S")
     msg = msg&.truncate(500, omission: "...")
-    "#{time} #{CLR[sev]}[#{SEV[sev]}] #{msg}#{PAL[:reset]}\n"
+    "#{CLR[sev]}[#{@app} #{SEV[sev]}] #{msg}#{PAL[:reset]}\n"
   end
 end
