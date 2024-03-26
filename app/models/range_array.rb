@@ -12,8 +12,8 @@ class RangeArray
     @data = Array.new(number_of_points, default)
   end
 
-  def each(&block)
-    @data.compact.each(&block)
+  def each(&)
+    @data.compact.each(&)
   end
 
   def number_of_points

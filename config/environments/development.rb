@@ -84,6 +84,9 @@ Rails.application.configure do
   # Logging configuration
   config.log_level = :debug
 
+  # Log error messages when you accidentally call methods on nil.
+  config.whiny_nils = true
+
   # enable compression
   config.middleware.insert_before ActionDispatch::Static, Rack::Deflater
 end
