@@ -57,7 +57,7 @@ Rails.application.configure do
   # config.force_ssl = true
 
   # Log to STDOUT by default
-  config.logger = ActiveSupport::Logger.new($stdout)
+  # config.logger = ActiveSupport::Logger.new($stdout)
 
   # Prepend all log lines with the following tags.
   config.log_tags = [:request_id]
