@@ -1,5 +1,5 @@
 # custom color-coded logging
-class MyLogFormatter < ActiveSupport::Logger::SimpleFormatter
+class LogFormatter < Logger::Formatter
   PAL = {
     black: "\u001b[30m",
     red: "\u001b[31m",

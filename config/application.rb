@@ -33,7 +33,7 @@ module AgWeather
     config.x.image.base_dir = "public"
     config.x.image.url_path = ""
 
-    require "logging/log_formatter"
-    config.log_formatter = MyLogFormatter.new
+    require "log_formatter"
+    config.log_formatter = LogFormatter.new
   end
 end
