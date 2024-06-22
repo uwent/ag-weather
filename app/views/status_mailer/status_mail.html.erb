@@ -2,7 +2,6 @@
 <p><b><%= TZInfo::Timezone.get("US/Central").now %></b></p>
 <p>
   Host: <%= ENV["AG_WEATHER_HOST"] %><br>
-  Role: <%= ENV["SERVER_ROLE"] %><br>
   Env: <%= Rails.env %><br>
   Ruby: <%= RUBY_VERSION %><br>
   Rails: <%= Rails.version %>
