@@ -47,13 +47,14 @@ statuses=()
 echo
 for project in "${!deployments[@]}"; do
     IFS=';' read -r -a info <<< "${deployments[$project]}"
-    branch="${info[1]#branch:}"
+    branch="${info[0]#branch:}"
     
     for server in "${servers[@]}"; do
         echo "Deploying $project to $server..."
         cd ~/"code/$project" || { echo "Failed to change directory to $project"; exit; }
         
         if [ -n "$branch" ]; then
+            echo "Using BRANCH=${branch}"
             BRANCH="$branch" cap "$server" deploy
         else
             cap "$server" deploy
