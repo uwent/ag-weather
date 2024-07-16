@@ -24,18 +24,12 @@ set :env_path, '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, ' cd :path && PATH=:env_path:"$PATH" bundle exec rails runner -e :environment ":task" :output '
 
 # Daily data import task
+# delete old (> 1 month) images
+# download and compute fresh weather data
+# send status email
 every :day, at: "6:00am" do
-  runner "RunTasks.all"
-end
-
-# tries data import again, creates images, sends status email if there are anomalies
-every :day, at: "6:30am" do
-  runner "RunTasks.daily"
-end
-
-# Clean up old (>1 month) map images
-every :day do
   runner "RunTasks.purge_old_images(delete: true)"
+  runner "RunTasks.daily"
 end
 
 # Station data is deprecated
