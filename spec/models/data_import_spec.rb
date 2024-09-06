@@ -16,8 +16,7 @@ RSpec.describe DataImport do
     end
 
     it ".earliest_date should be DAYS_BACK_WINDOW days ago in central time" do
-      stub_const("ENV", {"DAYS_BACK_WINDOW" => 7})
-      expect(subject.earliest_date).to eq(date - 7)
+      expect(subject.earliest_date).to eq(date - subject::DAYS_BACK_WINDOW)
     end
   end
 
