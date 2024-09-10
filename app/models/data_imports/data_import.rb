@@ -1,5 +1,5 @@
 class DataImport < ApplicationRecord
-  DAYS_BACK_WINDOW = (ENV["DAYS_BACK_WINDOW"] || 7).to_i
+  DAYS_BACK_WINDOW = 10
 
   def self.import_types
     [
