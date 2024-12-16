@@ -82,7 +82,7 @@ RSpec.describe PrecipsController, type: :controller do
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to eq "param is missing or the value is empty: lat"
+        expect(json["message"]).to eq "param is missing or the value is empty or invalid: lat"
       end
 
       it "throws error on missing param: long" do
@@ -90,7 +90,7 @@ RSpec.describe PrecipsController, type: :controller do
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to eq "param is missing or the value is empty: long"
+        expect(json["message"]).to eq "param is missing or the value is empty or invalid: long"
       end
     end
   end

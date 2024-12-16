@@ -1,8 +1,8 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 7.1"
-gem "railties", "~> 7.1"
-gem "activesupport", "~> 7.1"
+gem "rails", "~> 8.0"
+gem "railties", "~> 8.0"
+gem "activesupport", "~> 8.0"
 gem "activerecord-import" # bulk import
 gem "pg" # postgres
 gem "sassc-rails" # sass css
