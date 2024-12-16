@@ -8,7 +8,7 @@ This project is to support the UW-Extension's Agricultural Weather Service. Incl
 
 ## Dependencies
 
-`Ruby`
+### Ruby
 
 ```bash
 # install rbenv
@@ -26,27 +26,42 @@ git -C "$(rbenv root)"/plugins/ruby-build pull
 git config --global url."https://github.com/".insteadOf git://github.com/
 
 # install ruby with rbenv
-rbenv install 3.3.5 # or latest version
+rbenv install 3.3.6 # or latest version
 
 # update bundler to latest
 gem install bundler
+
+# update gems...
+bundle update
+
+# OR if migrating to a new version of Ruby...
+rm Gemfile.lock
+bundle install
 ```
 
-`Postgres 15` and `gem pg`
+When upgrading Ruby versions, need to change the version number in the documentation above, in `.ruby-version`, and in `config/deploy.rb`.
+
+### Rails
+
+When upgrading to a new version of Rails, run the update task with `THOR_MERGE="code -d $1 $2" rails app:update`. This will use VSCode as the merge conflict tool.
+
+### Postgres
 
 ```bash
 # install postgres
-sudo apt -y install postgresql-15 postgresql-client-15 libpq-dev
+sudo apt -y install postgresql-16 postgresql-client-16 libpq-dev
 sudo service postgresql start
-
-# install gem pg
-gem install pg
 
 # Set postgres user password to 'password'
 sudo su - postgres
 psql -c "alter user postgres with password 'password'"
 exit
+
+# install gem pg
+gem install pg
 ```
+
+### System dependencies
 
 `Python` and `eccodes` for weather data [GRIB files](https://en.wikipedia.org/wiki/GRIB)
 
@@ -79,26 +94,10 @@ composite # confirm it works
 6. Start the server with `bundle exec rails s`
 7. Server will be listening on `localhost:8080`
 
-## Running Tests
+## Testing
 
-### Lint
-
-```bash
-# check code for style before commit
-bundle exec standardrb --fix
-```
-
-### RSpec
-
-```bash
-bundle exec rspec
-```
-
-### API Documentation
-
-```bash
-bundle exec rake dredd RAILS_ENV=test
-```
+- Lint code with `bin/standardrb`, apply fixes with `bin/standardrb --fix`
+- Run specs with `bin/rspec`
 
 ## Deployment
 
