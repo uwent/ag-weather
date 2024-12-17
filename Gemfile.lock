@@ -447,6 +447,7 @@ DEPENDENCIES
   letter_opener
   letter_opener_web
   net-ftp
+  ostruct
   pg
   pry-rails
   puma
