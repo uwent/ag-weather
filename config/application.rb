@@ -9,7 +9,7 @@ Bundler.require(*Rails.groups)
 module AgWeather
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.1
+    config.load_defaults 8.0
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
@@ -22,8 +22,8 @@ module AgWeather
     # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
+    # config.eager_load_paths << Rails.root.join("extras")
 
-    # config.eager_load = true
     config.autoload_paths << Rails.root.join("app/models/data_imports")
     config.autoload_paths << Rails.root.join("app/models/data_importers")
     config.autoload_paths << Rails.root.join("app/models/land_extents")

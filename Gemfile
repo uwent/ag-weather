@@ -1,8 +1,8 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 7.1"
-gem "railties", "~> 7.1"
-gem "activesupport", "~> 7.1"
+gem "rails", "~> 8.0"
+gem "railties", "~> 8.0"
+gem "activesupport", "~> 8.0"
 gem "activerecord-import" # bulk import
 gem "pg" # postgres
 gem "sassc-rails" # sass css
@@ -12,6 +12,7 @@ gem "json"
 gem "whenever" # task scheduling
 gem "tzinfo" # timezone
 gem "csv"
+gem "ostruct" # no longer a default gem as of 3.3.6
 
 group :development do
   gem "puma"

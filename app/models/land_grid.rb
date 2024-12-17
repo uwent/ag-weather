@@ -23,7 +23,6 @@ class LandGrid
     step = LandExtent.step,
     default: nil
   )
-
     raise TypeError, "minimum latitude must be less than maximum latitude" if min_lat >= max_lat
     raise TypeError, "minimum longitude must be less than maximum longitude" if min_long >= max_long
     raise TypeError, "step must be greater than 0" if step <= 0

@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe LandExtent do
   subject { LandExtent }
-  let(:lats) { BigDecimal("38")..BigDecimal("50") }
+  let(:lats) { BigDecimal(38)..BigDecimal(50) }
   let(:longs) { BigDecimal("-98")..BigDecimal("-82") }
   let(:step) { 0.1 }
 
