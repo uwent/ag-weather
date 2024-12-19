@@ -5,6 +5,7 @@ gem "railties", "~> 8.0"
 gem "activesupport", "~> 8.0"
 gem "activerecord-import" # bulk import
 gem "pg" # postgres
+gem "rswag" # swagger api docs
 gem "sassc-rails" # sass css
 gem "httparty"
 gem "net-ftp"
@@ -28,6 +29,7 @@ group :development do
   gem "activerecord-analyze" # query analysis
   gem "brakeman" # security analysis https://brakemanscanner.org/
   gem "bundler-audit" # patch-level verification
+  gem "solargraph" # code completion
 end
 
 group :development, :test do

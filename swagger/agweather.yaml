@@ -1,0 +1,644 @@
+openapi: 3.0.1
+info:
+  title: UW-Madison Agricultural Weather Service API
+  version: "1.0.0"
+  description: API for accessing agricultural weather data and forecasts
+
+servers:
+  - url: https://agweather.cals.wisc.edu/api
+  - url: https://dev.agweather.cals.wisc.edu/api
+  - url: http://localhost:8080
+
+components:
+  parameters:
+    # location params
+    lat:
+      name: lat
+      in: query
+      required: true
+      schema:
+        type: number
+        minimum: 38.0
+        maximum: 50.0
+        example: 45.0
+      description: Latitude of desired point, decimal degrees
+
+    long:
+      name: long
+      in: query
+      required: true
+      schema:
+        type: number
+        minimum: -98.0
+        maximum: -82.0
+        example: -90.0
+      description: Longitude of desired point, decimal degrees
+
+    lat_range:
+      name: lat_range
+      in: query
+      schema:
+        type: string
+        example: 45.0,50.0
+      description: restrict latitude range in response
+
+    long_range:
+      name: long_range
+      in: query
+      schema:
+        type: string
+        example: -90.0,-85.0
+      description: restrict longitude range in response
+
+    # date params
+    start_date:
+      name: start_date
+      in: query
+      schema:
+        type: string
+        format: date
+        example: "2024-01-01"
+        default: Start of year
+      description: Start of date range
+
+    end_date:
+      name: end_date
+      in: query
+      schema:
+        type: string
+        format: date
+        example: "2024-10-10"
+        default: Most recent data (usually yesterday)
+      description: End of date range
+
+    date:
+      name: date
+      in: query
+      schema:
+        type: string
+        format: date
+        example: "2024-01-01"
+        default: Most recent data (usually yesterday)
+      description: Single date for data, alias for end_date in some endpoints
+
+    # unit params
+    units:
+      name: units
+      in: query
+      schema:
+        type: string
+      description: units, allowable values depends on context
+
+    units__temperature:
+      name: units
+      in: query
+      schema:
+        type: string
+        enum: [C, c, F, f]
+        example: F
+        default: C
+      description: temperature units
+
+    units__precip:
+      name: units
+      in: query
+      schema:
+        type: string
+        enum: [mm, in]
+        default: mm
+        example: in
+      description: precipitation units
+
+    # degree day params
+    base:
+      name: base
+      in: query
+      schema:
+        type: number
+        example: 50
+      description: base temperature, Fahrenheit
+
+    upper:
+      name: upper
+      in: query
+      schema:
+        type: number
+        example: 86
+      description: upper temperature limit, Fahrenheit
+
+    method:
+      name: method
+      in: query
+      schema:
+        type: string
+        example: sine
+      description: degree day calculation method
+
+    # map params
+    scale:
+      name: scale
+      in: query
+      schema:
+        type: string
+        example: 0,100
+      description: min and max numeric scale range for map image, format e.g. 'min,max'
+
+    extent:
+      name: extent
+      in: query
+      schema:
+        type: string
+        example: wi
+      description: constains map extent to Wisconsin only if included
+
+    stat:
+      name: stat
+      in: query
+      schema:
+        type: string
+        enum: ["avg", "min", "max", "sum"]
+        example: sum
+      description: select a summary statistic when generating a summary across multiple dates
+
+  schemas:
+    # info components
+    statusInfo:
+      type: string
+      description: status message
+    latInfo:
+      type: number
+      description: latitude of point
+    longInfo:
+      type: number
+      description: longitude of point
+    latRangeInfo:
+      type: string
+      description: latitude range of grid
+    longRangeInfo:
+      type: string
+      description: longitude range of grid
+    startDateInfo:
+      type: string
+      format: date
+      description: start date of date range
+    endDateInfo:
+      type: string
+      format: date
+      description: end date of date range
+    dateInfo:
+      type: string
+      format: date
+      description: single date or alias for end date of date range
+    daysRequestedInfo:
+      type: integer
+      description: number of days requested based on the date range
+    daysReturnedInfo:
+      type: integer
+      description: actual number of dates found in database in the date range
+    baseInfo:
+      type: number
+      description: growing degree day base temperature
+    upperInfo:
+      type: number
+      description: growing degree day upper threshold temperature
+    methodInfo:
+      type: string
+      description: growing degree day calculation method
+    pestInfo:
+      type: string
+      description: name of the pest model requested and returned
+    minValueInfo:
+      type: number
+      description: minimum value when returning single values instead of objects
+    maxValueInfo:
+      type: number
+      description: maximum value when returning single values instead of objects
+    totalInfo:
+      type: number
+      description: total value when returning single values instead of objects
+    gridPointsInfo:
+      type: integer
+      description: number of grid points returned
+    computeTimeInfo:
+      type: number
+    unitsInfoString:
+      type: string
+      description: unit requested and returned
+    unitsInfoObject:
+      type: object
+      description: object provided when multiple units are referenced in the data
+      properties:
+        temp:
+          type: string
+        pressure:
+          type: string
+        rh:
+          type: string
+
+    # Info schemas
+    commonIndexInfo:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/statusInfo"
+        lat:
+          $ref: "#/components/schemas/latInfo"
+        long:
+          $ref: "#/components/schemas/longInfo"
+        start_date:
+          $ref: "#/components/schemas/startDateInfo"
+        end_date:
+          $ref: "#/components/schemas/endDateInfo"
+        days_requested:
+          $ref: "#/components/schemas/daysRequestedInfo"
+        days_returned:
+          $ref: "#/components/schemas/daysReturnedInfo"
+        units:
+          oneOf:
+            - $ref: "#/components/schemas/unitsInfoString"
+            - $ref: "#/components/schemas/unitsInfoObject"
+        compute_time:
+          $ref: "#/components/schemas/computeTimeInfo"
+
+    commonGridInfo:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/statusInfo"
+        date:
+          $ref: "#/components/schemas/dateInfo"
+        days_requested:
+          $ref: "#/components/schemas/daysRequestedInfo"
+        lat_range:
+          $ref: "#/components/schemas/latRangeInfo"
+        long_range:
+          $ref: "#/components/schemas/longRangeInfo"
+        units:
+          oneOf:
+            - $ref: "#/components/schemas/unitsInfoString"
+            - $ref: "#/components/schemas/unitsInfoObject"
+        compute_time:
+          $ref: "#/components/schemas/computeTimeInfo"
+
+    degreeDaysInfo:
+      type: object
+      properties:
+        base:
+          $ref: "#/components/schemas/baseInfo"
+        upper:
+          $ref: "#/components/schemas/upperInfo"
+        method:
+          $ref: "#/components/schemas/methodInfo"
+
+    numericSummaryInfo:
+      type: object
+      properties:
+        min_value:
+          $ref: "#/components/schemas/minValueInfo"
+        max_value:
+          $ref: "#/components/schemas/maxValueInfo"
+        total:
+          $ref: "#/components/schemas/totalInfo"
+
+    # Data models
+    WeatherData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        min_temp:
+          type: number
+        max_temp:
+          type: number
+        avg_temp:
+          type: number
+        dew_point:
+          type: number
+        vapor_pressure:
+          type: number
+        min_rh:
+          type: number
+        max_rh:
+          type: number
+        avg_rh:
+          type: number
+        hours_rh_over_90:
+          type: number
+        avg_temp_rh_over_90:
+          type: number
+        frost:
+          type: boolean
+        freezing:
+          type: boolean
+
+    DegreeDayData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        min_temp:
+          type: number
+        max_temp:
+          type: number
+        avg_temp:
+          type: number
+        value:
+          type: number
+        cumulative_value:
+          type: number
+
+  # Responses
+  responses:
+    # /{endpoint}/map
+    commonMap200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                type: object
+                properties:
+                  status:
+                    $ref: "#/components/schemas/statusInfo"
+                  args:
+                    type: object
+                    description: lists the arguments passed to the map maker
+                  compute_time:
+                    $ref: "#/components/schemas/computeTimeInfo"
+              filename:
+                type: string
+                description: image filename
+              url:
+                type: string
+                description: image url
+
+    # /{endpoint}/info
+    commonInfo200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data_cols:
+                type: array
+                items:
+                  type: string
+              lat_range:
+                type: array
+                items:
+                  type: number
+              long_range:
+                type: array
+                items:
+                  type: number
+              date_range:
+                type: array
+                items:
+                  type: string
+                  format: date
+              expected_days:
+                type: integer
+              actual_days:
+                type: integer
+              missing_days:
+                type: array
+                items:
+                  type: string
+                  format: date
+              compute_time:
+                type: number
+
+    # /weather
+    weatherIndex200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                $ref: "#/components/schemas/commonIndexInfo"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeatherData"
+
+    # /weather/grid
+    weatherGrid200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonGridInfo"
+                  - $ref: "#/components/schemas/unitsInfoObject"
+              data:
+                type: object
+                description: A grid of weather data objects, keyed based on the [lat, lng] coordinate array of the grid point.
+                properties:
+                  "[LAT, LNG]":
+                    $ref: "#/components/schemas/WeatherData"
+
+    weatherFreezeGrid200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonGridInfo"
+                  - $ref: "#/components/schemas/unitsInfoString"
+              data:
+                type: object
+                description: A grid of values, keyed based on the [lat, lng] coordinate array of the grid point.
+                properties:
+                  "[LAT, LNG]":
+                    type: integer
+
+    ## /precips
+    precipsIndex200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonIndexInfo"
+                  - $ref: "#/components/schemas/numericSummaryInfo"
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                    value:
+                      type: number
+                    cumulative_value:
+                      type: number
+
+    precipsGrid200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonGridInfo"
+                  - $ref: "#/components/schemas/unitsInfoString"
+              data:
+                type: object
+                description: A grid of values, keyed based on the [lat, lng] coordinate array of the grid point.
+                properties:
+                  "[LAT, LNG]":
+                    type: number
+
+# Endpoints
+paths:
+  ## WEATHER ##
+  /weather:
+    get:
+      summary: Get weather data for a point across a date range
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units__temperature"
+      responses:
+        "200":
+          $ref: "#/components/responses/weatherIndex200"
+
+  /weather/grid:
+    get:
+      summary: Get weather data for a range of points for a date
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/units__temperature"
+      responses:
+        "200":
+          $ref: "#/components/responses/weatherGrid200"
+
+  /weather/freeze_grid:
+    get:
+      summary: Get grid of number of freezing days in date range
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/weatherFreezeGrid200"
+
+  /weather/map:
+    get:
+      summary: Generates a map image and returns the URL
+      parameters:
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /weather/info:
+    get:
+      summary: Information about the weather endpoint and the state of the weather database
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+  /precips:
+    get:
+      summary: Get precipitation data for a point across a date range
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/precipsIndex200"
+
+  /precips/grid:
+    get:
+      summary: Get weather data for a range of points for a date
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/units__temperature"
+      responses:
+        "200":
+          $ref: "#/components/responses/precipsGrid200"
+
+  /precips/map:
+    get:
+      summary: Generates a map image and returns the URL
+      parameters:
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /precips/info:
+    get:
+      summary: Information about the weather endpoint and the state of the weather database
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+  /degree-days:
+    get:
+      summary: List degree days for location
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/base"
+        - $ref: "#/components/parameters/upper"
+        - $ref: "#/components/parameters/method"
+        - $ref: "#/components/parameters/units__temperature"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  info:
+                    allOf:
+                      - $ref: "#/components/schemas/commonIndexInfo"
+                      - $ref: "#/components/schemas/degreeDaysInfo"
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DegreeDayData"
