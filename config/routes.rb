@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
   resources :degree_days, only: :index do
@@ -62,6 +60,8 @@ Rails.application.routes.draw do
 
   root to: "application#index"
 
+  mount Rswag::Ui::Engine => "#{ENV["AG_WEATHER_BASE_URL"]}/api-docs"
+  mount Rswag::Api::Engine => "#{ENV["AG_WEATHER_BASE_URL"]}/api-docs"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   get "*path", to: redirect("/") unless Rails.env.development?
