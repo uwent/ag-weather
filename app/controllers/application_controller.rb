@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
-    redirect_to url_for("/docs")
+    redirect_to compute_asset_path("/docs")
   end
 
   private
