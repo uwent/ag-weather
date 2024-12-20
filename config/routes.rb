@@ -60,8 +60,9 @@ Rails.application.routes.draw do
 
   root to: "application#index"
 
-  mount Rswag::Ui::Engine => "#{ENV["AG_WEATHER_BASE_URL"]}/api-docs"
-  mount Rswag::Api::Engine => "#{ENV["AG_WEATHER_BASE_URL"]}/api-docs"
+  api_docs_path = Rails.env.production? ? "/api/docs" : "/docs"
+  mount Rswag::Ui::Engine => api_docs_path
+  mount Rswag::Api::Engine => api_docs_path
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   get "*path", to: redirect("/") unless Rails.env.development?
