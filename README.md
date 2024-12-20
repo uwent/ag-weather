@@ -113,4 +113,4 @@ Then run the following commands from the main branch to deploy:
 
 ## Endpoints
 
-Endpoints are summarized in [our API Blueprint](apiary.apib) file.
+Endpoints are described in [our API spec](swagger/agweather.yaml) file. View the swagger documentation at [/docs/index.html](https://agweather.cals.wisc.edu/api/docs/index.html)

@@ -154,27 +154,28 @@ RSpec.describe PestForecastsController, type: :controller do
     end
   end
 
-  describe "GET /pvy" do
-    let(:lat) { 45.0 }
-    let(:long) { -89.0 }
-    let(:params) { {lat:, long:} }
+  # endpoint is deprecated
+  # describe "GET /pvy" do
+  #   let(:lat) { 45.0 }
+  #   let(:long) { -89.0 }
+  #   let(:params) { {lat:, long:} }
 
-    before do
-      FactoryBot.create(:degree_day, date: latest_date, latitude: lat, longitude: long, dd_39p2_86: 1)
-    end
+  #   before do
+  #     FactoryBot.create(:degree_day, date: latest_date, latitude: lat, longitude: long, dd_39p2_86: 1)
+  #   end
 
-    it "is okay" do
-      get(:pvy, params:)
+  #   it "is okay" do
+  #     get(:pvy, params:)
 
-      expect(response).to have_http_status(:ok)
-    end
+  #     expect(response).to have_http_status(:ok)
+  #   end
 
-    it "has the correct response structure" do
-      get(:pvy, params:)
+  #   it "has the correct response structure" do
+  #     get(:pvy, params:)
 
-      expect(json.keys).to eq(%w[info current_dds future_dds data forecast])
-    end
-  end
+  #     expect(json.keys).to eq(%w[info current_dds future_dds data forecast])
+  #   end
+  # end
 
   describe "GET /grid" do
     let(:latitudes) { [45.0, 45.1] }

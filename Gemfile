@@ -5,6 +5,7 @@ gem "railties", "~> 8.0"
 gem "activesupport", "~> 8.0"
 gem "activerecord-import" # bulk import
 gem "pg" # postgres
+gem "rswag" # swagger api docs
 gem "sassc-rails" # sass css
 gem "httparty"
 gem "net-ftp"

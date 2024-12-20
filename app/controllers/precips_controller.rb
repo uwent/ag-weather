@@ -85,6 +85,13 @@ class PrecipsController < ApplicationController
   end
 
   # GET: create map and return url to it
+  # params:
+  #   date or end_date - optional, default yesterday
+  #   start_date - optional, default 1st of year
+  #   units - optional, 'mm' or 'in'
+  #   scale - optional, 'min,max' for image scalebar
+  #   extent - optional, 'wi' for Wisconsin only
+  #   stat - optional, summarization statistic, must be sum, min, max, avg
 
   def map
     parse_date_or_dates || default_single_date

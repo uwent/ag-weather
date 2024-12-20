@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
+  root to: "application#index"
+
   resources :degree_days, only: :index do
     collection do
       get "grid"
@@ -38,7 +40,7 @@ Rails.application.routes.draw do
     collection do
       get "grid"
       get "map"
-      get "pvy"
+      # get "pvy"
       get "vegpath"
       get "info"
     end
@@ -58,9 +60,9 @@ Rails.application.routes.draw do
   # resources :station_observations, only: [:index]
   # resources :stations, only: [:index]
 
-  root to: "application#index"
-
+  # docs_path = File.join(Rails.application.config.relative_url_root.to_s, "docs")
+  mount Rswag::Ui::Engine => "/docs"
+  mount Rswag::Api::Engine => "/docs"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
-  get "*path", to: redirect("/") unless Rails.env.development?
 end
