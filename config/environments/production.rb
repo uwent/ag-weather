@@ -3,6 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  config.relative_url_root = "/api"
+  
   # Image generation and service configuration
   config.x.image.temp_directory = "tmp/image_creator"
   config.x.image.file_dir = "/home/deploy/ag-weather/shared/image_dir"

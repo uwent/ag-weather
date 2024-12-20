@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
+    # redirect_to "#{ENV["AG_WEATHER_BASE_URL"]}/docs"
     redirect_to "/docs"
   end
 

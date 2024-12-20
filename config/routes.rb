@@ -58,12 +58,14 @@ Rails.application.routes.draw do
   # resources :station_observations, only: [:index]
   # resources :stations, only: [:index]
 
-  root to: "application#index"
-
-  api_docs_path = Rails.env.production? ? "/api/docs" : "/docs"
-  mount Rswag::Ui::Engine => api_docs_path
-  mount Rswag::Api::Engine => api_docs_path
+  # api_docs_path = "#{ENV["AG_WEATHER_BASE_URL"]}/docs"
+  # mount Rswag::Ui::Engine => api_docs_path
+  # mount Rswag::Api::Engine => api_docs_path
+  mount Rswag::Ui::Engine => '/docs'
+  mount Rswag::Api::Engine => '/docs'
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
-  get "*path", to: redirect("/") unless Rails.env.development?
+  root to: "application#index"
+
+  get "*unmatched" => redirect("/")
 end
