@@ -1,4 +1,4 @@
-require 'swagger_helper'
+require "swagger_helper"
 
 # RSpec.describe 'weather', type: :request do
 

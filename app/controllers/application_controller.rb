@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
-    redirect_to compute_asset_path("/docs")
+    redirect_to File.join(Rails.application.config.relative_url_root.to_s, "docs")
   end
 
   private
