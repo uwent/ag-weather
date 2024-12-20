@@ -58,11 +58,9 @@ Rails.application.routes.draw do
   # resources :station_observations, only: [:index]
   # resources :stations, only: [:index]
 
-  # api_docs_path = "#{ENV["AG_WEATHER_BASE_URL"]}/docs"
-  # mount Rswag::Ui::Engine => api_docs_path
-  # mount Rswag::Api::Engine => api_docs_path
-  mount Rswag::Ui::Engine => '/docs'
-  mount Rswag::Api::Engine => '/docs'
+  docs_path = File.join(Rails.application.config.relative_url_root.to_s, "docs")
+  mount Rswag::Ui::Engine => docs_path
+  mount Rswag::Api::Engine => docs_path
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   root to: "application#index"

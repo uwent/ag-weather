@@ -12,8 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
-    # redirect_to "#{ENV["AG_WEATHER_BASE_URL"]}/docs"
-    redirect_to "/docs"
+    redirect_to File.join(Rails.application.config.relative_url_root.to_s, "docs")
   end
 
   private

@@ -8,7 +8,7 @@ Rswag::Ui.configure do |c|
   # (under openapi_root) as JSON or YAML endpoints, then the list below should
   # correspond to the relative paths for those endpoints.
 
-  c.swagger_endpoint '/docs/agweather.yaml', 'API Documentation'
+  c.swagger_endpoint File.join(Rails.application.config.relative_url_root.to_s, "docs", "agweather.yaml"), 'API Documentation'
 
   # Add Basic Auth in case your API is private
   # c.basic_auth_enabled = true
