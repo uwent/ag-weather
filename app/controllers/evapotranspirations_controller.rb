@@ -155,9 +155,9 @@ class EvapotranspirationsController < ApplicationController
   # params:
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
-  #   units - optional, 'F' or 'C'
+  #   units - optional, 'in' (default) or 'mm'
   #   scale - optional, 'min,max' for image scalebar
-  #   extent - optional, omit or 'wi' for Wisconsin only
+  #   extent - optional, 'wi' for Wisconsin only
   #   stat - optional, summarization statistic, must be sum, min, max, avg
 
   def map

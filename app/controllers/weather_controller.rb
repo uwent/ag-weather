@@ -120,7 +120,6 @@ class WeatherController < ApplicationController
   #   scale - optional, 'min,max' for image scalebar
   #   extent - optional, omit or 'wi' for Wisconsin only
   #   stat - optional, summarization statistic, must be sum, min, max, avg
-  #   model - optional, which degree day column to render, default 'dd_50'
 
   def map
     parse_date_or_dates || default_single_date

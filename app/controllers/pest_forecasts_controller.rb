@@ -59,7 +59,7 @@ class PestForecastsController < ApplicationController
 
   # GET: returns grid of pest data for dates
   # params:
-  #   pest (required)
+  #   pest (required) - name of the pest data column
   #   start_date - default 1st of year
   #   end_date - default yesterday
   #   lat_range - min,max - default whole grid
@@ -105,82 +105,81 @@ class PestForecastsController < ApplicationController
   end
 
   # GET: returns pvy model data for dates at lat/long point
-  # used by PVY predictor app, leave as is
   # params:
   #   lat (required)
   #   long (required)
   #   end_date (optional, default today)
 
-  def pvy
-    params.require([:lat, :long])
+  # def pvy
+  #   params.require([:lat, :long])
 
-    start_date = end_date.beginning_of_year
-    days_requested = (start_date..end_date).count
-    days_returned = 0
-    status = "OK"
-    data = []
-    forecast = []
+  #   start_date = end_date.beginning_of_year
+  #   days_requested = (start_date..end_date).count
+  #   days_returned = 0
+  #   status = "OK"
+  #   data = []
+  #   forecast = []
 
-    dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: long)
-      .select(:date, :latitude, :longitude, :dd_39p2_86).order(:date)
+  #   dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: long)
+  #     .select(:date, :latitude, :longitude, :dd_39p2_86).order(:date)
 
-    if dds.exists?
-      cum_dd = 0
-      data = dds.collect do |dd|
-        value = dd.dd_39p2_86
-        cum_dd += value
-        days_returned += 1
-        {
-          date: dd.date.to_s,
-          dd: value.round(1),
-          cum_dd: cum_dd.round(1)
-        }
-      end
+  #   if dds.exists?
+  #     cum_dd = 0
+  #     data = dds.collect do |dd|
+  #       value = dd.dd_39p2_86
+  #       cum_dd += value
+  #       days_returned += 1
+  #       {
+  #         date: dd.date.to_s,
+  #         dd: value.round(1),
+  #         cum_dd: cum_dd.round(1)
+  #       }
+  #     end
 
-      status = "missing data" if days_returned < days_requested - 2
-      max_value = data.map { |day| day[:cum_dd] }.max
+  #     status = "missing data" if days_returned < days_requested - 2
+  #     max_value = data.map { |day| day[:cum_dd] }.max
 
-      # 7-day forecast using last 7 day average
-      last_7 = data.last(7).map { |day| day[:dd] }.compact
-      last_7_avg = last_7.sum / last_7.count
+  #     # 7-day forecast using last 7 day average
+  #     last_7 = data.last(7).map { |day| day[:dd] }.compact
+  #     last_7_avg = last_7.sum / last_7.count
 
-      cum_dd = max_value
-      forecast = 1.upto(7).collect do |day|
-        cum_dd += last_7_avg
-        {
-          date: (end_date + day.days).to_s,
-          dd: last_7_avg.round(1),
-          cum_dd: cum_dd.round(1)
-        }
-      end
+  #     cum_dd = max_value
+  #     forecast = 1.upto(7).collect do |day|
+  #       cum_dd += last_7_avg
+  #       {
+  #         date: (end_date + day.days).to_s,
+  #         dd: last_7_avg.round(1),
+  #         cum_dd: cum_dd.round(1)
+  #       }
+  #     end
 
-      forecast_value = forecast.map { |day| day[:cum_dd] }.max
-    else
-      status = "no data"
-    end
+  #     forecast_value = forecast.map { |day| day[:cum_dd] }.max
+  #   else
+  #     status = "no data"
+  #   end
 
-    info = {
-      model: "PVY DD model (base 39.2F, upper 86F)",
-      lat: lat.to_f.round(1),
-      long: long.to_f.round(1),
-      start_date:,
-      end_date:,
-      days_requested:,
-      days_returned: days_returned,
-      status:,
-      compute_time: Time.current - @start_time
-    }
+  #   info = {
+  #     model: "PVY DD model (base 39.2F, upper 86F)",
+  #     lat: lat.to_f.round(1),
+  #     long: long.to_f.round(1),
+  #     start_date:,
+  #     end_date:,
+  #     days_requested:,
+  #     days_returned: days_returned,
+  #     status:,
+  #     compute_time: Time.current - @start_time
+  #   }
 
-    response = {
-      info:,
-      current_dds: max_value,
-      future_dds: forecast_value,
-      data: data.last(7),
-      forecast:
-    }
+  #   response = {
+  #     info:,
+  #     current_dds: max_value,
+  #     future_dds: forecast_value,
+  #     data: data.last(7),
+  #     forecast:
+  #   }
 
-    render json: response
-  end
+  #   render json: response
+  # end
 
   # GET: returns array of weather and pest info for vegetable pathology website charts
   # params:
@@ -265,7 +264,7 @@ class PestForecastsController < ApplicationController
   #   scale - optional, 'min,max' for image scalebar
   #   extent - optional, omit or 'wi' for Wisconsin only
   #   stat - optional, summarization statistic, must be sum, min, max, avg
-  #   pest - optional, which degree day column to render, default 'potato_blight_dsv'
+  #   pest - optional, which pest forecasts column to render, default 'potato_blight_dsv'
 
   def map
     parse_date_or_dates || default_date_range

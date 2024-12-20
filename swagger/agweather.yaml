@@ -2,7 +2,19 @@ openapi: 3.0.1
 info:
   title: UW-Madison Agricultural Weather Service API
   version: "1.0.0"
-  description: API for accessing agricultural weather data and forecasts
+  description: >
+    <p>
+      API for accessing agricultural weather data and forecasts. <a href='https://github.com/uwent/ag-weather' target=_blank>View respository on Github</a>.
+    </p>
+    <p>
+      Powers the following related websites and services:
+      <ul>
+        <li>AgWeather website - <a href='https://agweather.cals.wisc.edu/' target=_blank>Visit site</a> - <a href='https://github.com/uwent/soils-ag-wx' target=_blank>Github repository</a></li>
+        <li>Vegetable Disease and Insect Forecasting Network (VDIFN) - <a href='https://agweather.cals.wisc.edu/vdifn'>Visit site</a> - <a href='https://github.com/uwent/ag-vdifn'>Github repository</a></li>
+        <li>Wisconsin Irrigation Scheduling Program (WISP) - <a href='https://wisp.cals.wisc.edu/' target=_blank>Visit site</a> - <a href='https://github.com/uwent/wisp' target=_blank>Github repository</a></li>
+        <li>Alfalfa Weather and Cutting Tool (R Shiny app) - <a href='https://connect.doit.wisc.edu/alfalfa-tool/' target=_blank>View app</a> - <a href='https://github.com/bzbradford/alfalfa-tool' target=_blank>Github repository</a></li>
+      </ul>
+    </p>
 
 servers:
   - url: https://agweather.cals.wisc.edu/api
@@ -89,12 +101,12 @@ components:
         type: string
       description: units, allowable values depends on context
 
-    units__temperature:
+    units__weather:
       name: units
       in: query
       schema:
         type: string
-        enum: [C, c, F, f]
+        enum: [C, F]
         example: F
         default: C
       description: temperature units
@@ -109,7 +121,63 @@ components:
         example: in
       description: precipitation units
 
-    # degree day params
+    units__et:
+      name: units
+      in: query
+      schema:
+        type: string
+        enum: [in, mm]
+        default: in
+        example: mm
+      description: potential evapotranspiration units
+
+    units__insolation:
+      name: units
+      in: query
+      schema:
+        type: string
+        enum: [MJ, KWh]
+        default: MJ
+        example: KWh
+      description: solar insolation units
+
+    units__degree_days:
+      name: units
+      in: query
+      schema:
+        type: string
+        enum: [F, C]
+        example: F
+        default: F
+      description: temperature units
+
+    # model param
+    model__degree_days:
+      name: model
+      in: query
+      schema:
+        type: string
+        example: dd_50_86
+      description: name of the degree day data column
+
+    models__degree_days:
+      name: models
+      in: query
+      schema:
+        type: string
+        example: dd_41,dd_50_86
+      description: comma-separated names of columns from the degree days table
+
+    pest:
+      name: model
+      in: query
+      required: true
+      schema:
+        type: string
+        example: potato_blight_dsv
+      description: name of the pest model data column
+
+    # degree days
     base:
       name: base
       in: query
@@ -133,6 +201,13 @@ components:
         type: string
         example: sine
       description: degree day calculation method
+
+    compute:
+      name: compute
+      in: query
+      schema:
+        type: boolean
+      description: use 'true' to compute degree days for a custom model
 
     # map params
     scale:
@@ -165,65 +240,85 @@ components:
     statusInfo:
       type: string
       description: status message
+
     latInfo:
       type: number
       description: latitude of point
+
     longInfo:
       type: number
       description: longitude of point
+
     latRangeInfo:
       type: string
       description: latitude range of grid
+
     longRangeInfo:
       type: string
       description: longitude range of grid
+
     startDateInfo:
       type: string
       format: date
       description: start date of date range
+
     endDateInfo:
       type: string
       format: date
       description: end date of date range
+
     dateInfo:
       type: string
       format: date
       description: single date or alias for end date of date range
+
     daysRequestedInfo:
       type: integer
       description: number of days requested based on the date range
+
     daysReturnedInfo:
       type: integer
       description: actual number of dates found in database in the date range
+
     baseInfo:
       type: number
       description: growing degree day base temperature
+
     upperInfo:
       type: number
       description: growing degree day upper threshold temperature
+
     methodInfo:
       type: string
       description: growing degree day calculation method
+
     pestInfo:
       type: string
       description: name of the pest model requested and returned
+
     minValueInfo:
       type: number
       description: minimum value when returning single values instead of objects
+
     maxValueInfo:
       type: number
       description: maximum value when returning single values instead of objects
+
     totalInfo:
       type: number
       description: total value when returning single values instead of objects
+
     gridPointsInfo:
       type: integer
       description: number of grid points returned
+
     computeTimeInfo:
       type: number
+
     unitsInfoString:
       type: string
       description: unit requested and returned
+
     unitsInfoObject:
       type: object
       description: object provided when multiple units are referenced in the data
@@ -349,6 +444,58 @@ components:
         cumulative_value:
           type: number
 
+    PestForecastsData:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        min_temp:
+          type: number
+        max_temp:
+          type: number
+        avg_temp:
+          type: number
+        avg_temp_hi_rh:
+          type: number
+        value:
+          type: number
+        cumulative_value:
+          type: number
+
+    PestForecastsVegpathData:
+      type: object
+      properties:
+        Lat:
+          type: number
+        Long:
+          type: number
+        Date:
+          type: string
+          format: date
+        DOY:
+          type: integer
+        MinTempF:
+          type: number
+        MaxTempF:
+          type: number
+        AvgTempF:
+          type: number
+        PrecipIn:
+          type: number
+        InsolationKWh:
+          type: number
+        EvapotranspirationIn:
+          type: number
+        DSV:
+          type: integer
+        CumDSV:
+          type: integer
+        PDay:
+          type: number
+        CumPDay:
+          type: number
+
   # Responses
   responses:
     # /{endpoint}/map
@@ -427,6 +574,7 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/WeatherData"
+        text/csv: {}
 
     # /weather/grid
     weatherGrid200:
@@ -446,7 +594,9 @@ components:
                 properties:
                   "[LAT, LNG]":
                     $ref: "#/components/schemas/WeatherData"
+        text/csv: {}
 
+    # /weather/freeze_grid
     weatherFreezeGrid200:
       description: Success
       content:
@@ -465,8 +615,8 @@ components:
                   "[LAT, LNG]":
                     type: integer
 
-    ## /precips
-    precipsIndex200:
+    # /precips, /evapotranspirations, /insolations
+    simpleIndex200:
       description: Success
       content:
         application/json:
@@ -488,8 +638,10 @@ components:
                       type: number
                     cumulative_value:
                       type: number
+        text/csv: {}
 
-    precipsGrid200:
+    # /precips/grid, /evapotranspirations/grid, /insolations/grid
+    simpleGrid200:
       description: Success
       content:
         application/json:
@@ -506,19 +658,131 @@ components:
                 properties:
                   "[LAT, LNG]":
                     type: number
+        text/csv: {}
+
+    # /degree-days
+    degreeDaysIndex200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonIndexInfo"
+                  - $ref: "#/components/schemas/degreeDaysInfo"
+                  - $ref: "#/components/schemas/numericSummaryInfo"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DegreeDayData"
+
+    degreeDaysDDTable200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonIndexInfo"
+                  - $ref: "#/components/schemas/degreeDaysInfo"
+                properties:
+                  models:
+                    type: array
+                    description: list of the degree day model columns requested and returned
+                    items:
+                      type: string
+              data:
+                type: object
+                description: hash map of daily min/max temps and degree day model values. Dates are used as key names.
+                properties:
+                  YYYY-MM-DD:
+                    type: object
+                    properties:
+                      min_temp:
+                        type: number
+                      max_temp:
+                        type: number
+                      MODEL_NAME:
+                        type: number
+
+    # /pest_forecasts
+    pestForecastsIndex200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonIndexInfo"
+                  - $ref: "#/components/schemas/numericSummaryInfo"
+                properties:
+                  pest:
+                    type: string
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PestForecastsData"
+        text/csv: {}
+
+    pestForecastsGrid200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              info:
+                allOf:
+                  - $ref: "#/components/schemas/commonGridInfo"
+                  - $ref: "#/components/schemas/numericSummaryInfo"
+              data:
+                type: object
+                description: A grid of objects, keyed based on the [lat, lng] coordinate array of the grid point.
+                properties:
+                  "[LAT, LNG]":
+                    type: object
+                    properties:
+                      total:
+                        type: number
+                      avg:
+                        type: number
+        text/csv: {}
+
+    pestForecastsVegpath200:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PestForecastsVegpathData"
 
 # Endpoints
 paths:
-  ## WEATHER ##
   /weather:
     get:
       summary: Get weather data for a point across a date range
+      tags:
+        - Weather
+        - Point data
+      description: >
+        lat - required, decimal latitude<br>
+        long - required, decimal longitude<br>
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - temperature units, either 'C' (default) or 'F'
       parameters:
         - $ref: "#/components/parameters/lat"
         - $ref: "#/components/parameters/long"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
-        - $ref: "#/components/parameters/units__temperature"
+        - $ref: "#/components/parameters/units__weather"
       responses:
         "200":
           $ref: "#/components/responses/weatherIndex200"
@@ -526,11 +790,19 @@ paths:
   /weather/grid:
     get:
       summary: Get weather data for a range of points for a date
+      tags:
+        - Weather
+        - Gridded data
+      description: >
+        date - default most recent data<br>
+        lat_range - latitude range, default entire grid<br>
+        long_range - longitude range, default entire grid<br>
+        units - temperature units, either 'C' (default) or 'F'
       parameters:
         - $ref: "#/components/parameters/lat_range"
         - $ref: "#/components/parameters/long_range"
         - $ref: "#/components/parameters/date"
-        - $ref: "#/components/parameters/units__temperature"
+        - $ref: "#/components/parameters/units__weather"
       responses:
         "200":
           $ref: "#/components/responses/weatherGrid200"
@@ -538,6 +810,14 @@ paths:
   /weather/freeze_grid:
     get:
       summary: Get grid of number of freezing days in date range
+      tags:
+        - Weather
+        - Gridded data
+      description: >
+        date or end_date - default yesterday. Use date for single day<br>
+        start_date - default 1 week ago<br>
+        lat_range - min,max - default whole grid<br>
+        long_range - min,max - default whole grid
       parameters:
         - $ref: "#/components/parameters/lat_range"
         - $ref: "#/components/parameters/long_range"
@@ -550,14 +830,24 @@ paths:
   /weather/map:
     get:
       summary: Generates a map image and returns the URL
+      tags:
+        - Weather
+        - Map images
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, 'F' or 'C'<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, omit or 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg
       parameters:
-        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/units"
         - $ref: "#/components/parameters/scale"
         - $ref: "#/components/parameters/extent"
         - $ref: "#/components/parameters/stat"
-
       responses:
         "200":
           $ref: "#/components/responses/commonMap200"
@@ -565,6 +855,9 @@ paths:
   /weather/info:
     get:
       summary: Information about the weather endpoint and the state of the weather database
+      tags:
+        - Weather
+        - Endpoint information
       responses:
         "200":
           $ref: "#/components/responses/commonInfo200"
@@ -572,6 +865,15 @@ paths:
   /precips:
     get:
       summary: Get precipitation data for a point across a date range
+      tags:
+        - Precipitation
+        - Point data
+      description: >
+        lat - required, point latitude<br>
+        long - required, point longitude<br>
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional either "mm" (default) or "in"
       parameters:
         - $ref: "#/components/parameters/lat"
         - $ref: "#/components/parameters/long"
@@ -579,27 +881,46 @@ paths:
         - $ref: "#/components/parameters/end_date"
       responses:
         "200":
-          $ref: "#/components/responses/precipsIndex200"
+          $ref: "#/components/responses/simpleIndex200"
 
   /precips/grid:
     get:
       summary: Get weather data for a range of points for a date
+      tags:
+        - Precipitation
+        - Gridded data
+      description: >
+        date or end_date - defaults to most recent data<br>
+        start_date - optional, provides a sum across dates if given<br>
+        lat_range - optional, constrain latitudes i.e. '45,50'<br>
+        long_range - optional, constrain longitudes i.e. '-89,-85'<br>
+        units - optional, either 'mm' (default) or 'in'
       parameters:
         - $ref: "#/components/parameters/lat_range"
         - $ref: "#/components/parameters/long_range"
         - $ref: "#/components/parameters/date"
-        - $ref: "#/components/parameters/units__temperature"
+        - $ref: "#/components/parameters/units__precip"
       responses:
         "200":
-          $ref: "#/components/responses/precipsGrid200"
+          $ref: "#/components/responses/simpleGrid200"
 
   /precips/map:
     get:
       summary: Generates a map image and returns the URL
+      tags:
+        - Precipitation
+        - Map images
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, 'mm' (default) or 'in'<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg
       parameters:
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
-        - $ref: "#/components/parameters/units"
+        - $ref: "#/components/parameters/units__precip"
         - $ref: "#/components/parameters/scale"
         - $ref: "#/components/parameters/extent"
         - $ref: "#/components/parameters/stat"
@@ -610,35 +931,408 @@ paths:
   /precips/info:
     get:
       summary: Information about the weather endpoint and the state of the weather database
+      tags:
+        - Precipitation
+        - Endpoint information
       responses:
         "200":
           $ref: "#/components/responses/commonInfo200"
 
-  /degree-days:
+  /evapotranspirations:
     get:
-      summary: List degree days for location
+      summary: Get precipitation data for a point across a date range
+      tags:
+        - Evapotranspiration
+        - Point data
+      description: >
+        lat - required, point latitude<br>
+        long - required, point longitude<br>
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, either 'in' (default) or 'mm'
       parameters:
         - $ref: "#/components/parameters/lat"
         - $ref: "#/components/parameters/long"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/simpleIndex200"
+
+  /evapotranspirations/grid:
+    get:
+      summary: Get weather data for a range of points for a date
+      tags:
+        - Evapotranspiration
+        - Gridded data
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default first of year if end_date provided<br>
+        lat_range - optional, default full extent, format min,max<br>
+        long_range - optional, default full extent, format min,max<br>
+        units - 'in' (default) or 'mm'<br>
+        et_method - if 'adjusted', uses new coefficients
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/units__et"
+      responses:
+        "200":
+          $ref: "#/components/responses/simpleGrid200"
+
+  /evapotranspirations/map:
+    get:
+      summary: Generates a map image and returns the URL
+      tags:
+        - Evapotranspiration
+        - Map images
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, 'in' (default) or 'mm'<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg
+      parameters:
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /evapotranspirations/info:
+    get:
+      summary: Information about the weather endpoint and the state of the weather database
+      tags:
+        - Evapotranspiration
+        - Endpoint information
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+  /insolations:
+    get:
+      summary: Get precipitation data for a point across a date range
+      tags:
+        - Insolation
+        - Point data
+      description: >
+        lat - required, point latitude<br>
+        long - required, point longitude<br>
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, either 'MJ' (default) or 'KWh'
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/simpleIndex200"
+
+  /insolations/grid:
+    get:
+      summary: Get weather data for a range of points for a date
+      tags:
+        - Insolation
+        - Gridded data
+      description: >
+        date or end_date - default yesterday<br>
+        start_date - optional, provides a sum or other statistic across dates if given<br>
+        lat_range - optional, constrain latitudes i.e. '45,50'<br>
+        long_range - optional, constrain longitudes i.e. '-89,-85'<br>
+        units - optional, either 'MJ' (default) or 'KWh'
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/units__insolation"
+      responses:
+        "200":
+          $ref: "#/components/responses/simpleGrid200"
+
+  /insolations/map:
+    get:
+      summary: Generates a map image and returns the URL
+      tags:
+        - Insolation
+        - Map images
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        units - optional, 'MJ' (default) or 'KWh'<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg
+      parameters:
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /insolations/info:
+    get:
+      summary: Information about the weather endpoint and the state of the weather database
+      tags:
+        - Insolation
+        - Endpoint information
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+  /degree_days:
+    get:
+      summary: List degree days for location
+      tags:
+        - Degree days
+        - Point data
+      description: >
+        lat - required, decimal latitude<br>
+        long - required, decimal longitude<br>
+        date or end_date - optional, default 1st of year. Use date for single day<br>
+        start_date - optional, default 1st of year<br>
+        Must specify one of:<br>
+          model - name of degree day model column (default dd_50_86)<br>
+        OR<br>
+          base - required, default 50F<br>
+          upper - optional, default none<br>
+          method - default sine<br>
+        units - default F
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/model__degree_days"
         - $ref: "#/components/parameters/base"
         - $ref: "#/components/parameters/upper"
         - $ref: "#/components/parameters/method"
-        - $ref: "#/components/parameters/units__temperature"
+        - $ref: "#/components/parameters/units__degree_days"
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  info:
-                    allOf:
-                      - $ref: "#/components/schemas/commonIndexInfo"
-                      - $ref: "#/components/schemas/degreeDaysInfo"
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/DegreeDayData"
+          $ref: "#/components/responses/degreeDaysIndex200"
+
+  /degree_days/grid:
+    get:
+      summary: Get degree-day grid for date range. Will either return pre-calculated degree day accumulations or compute new ones
+      tags:
+        - Degree days
+        - Gridded data
+      description: >
+        lat_range (min,max) - default full extent<br>
+        long_range (min,max) - default full extent<br>
+        start_date - default first of year<br>
+        end_date - default today<br>
+        Must specify one of:<br>
+          model - name of degree day model column (default dd_50_86)<br>
+        OR<br>
+          base - default 50F, required<br>
+          upper - default 86F, optional<br>
+        units - 'F' (default) or 'C' degree days<br>
+        compute=true - force computation of a custom degree day model grid (takes at least 25s)
+      parameters:
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/model__degree_days"
+        - $ref: "#/components/parameters/base"
+        - $ref: "#/components/parameters/upper"
+        - $ref: "#/components/parameters/units__degree_days"
+        - $ref: "#/components/parameters/compute"
+      responses:
+        "200":
+          $ref: "#/components/responses/simpleGrid200"
+
+  /degree_days/map:
+    get:
+      summary: Generates a map image and returns the URL
+      tags:
+        - Degree days
+        - Map images
+      description: >
+        start_date - optional, default 1st of year<br>
+        date or end_date - optional, default yesterday<br>
+        units - optional, 'F' or 'C'<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, omit or 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg<br>
+        model - optional, which degree day column to render, default 'dd_50_86'
+      parameters:
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/units__degree_days"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+        - $ref: "#/components/parameters/model__degree_days"
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /degree_days/dd_table:
+    get:
+      summary: Returns weather and degree day accumulations since Jan 1 of present year
+      tags:
+        - Degree days
+        - Custom endpoints
+      description: >
+        lat: latitude, decimal degrees (required)<br>
+        long: longitude, decimal degrees (required)<br>
+        start_date - default 1st of year<br>
+        end_date - default yesterday<br>
+        models: comma-separated degree day model names from degree_days table - default dd_50_86
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/models__degree_days"
+      responses:
+        "200":
+          $ref: "#/components/responses/degreeDaysDDTable200"
+
+  /degree_days/info:
+    get:
+      summary: Information about the degree_days endpoint and the state of the degree_days database
+      tags:
+        - Degree days
+        - Endpoint information
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+  /pest_forecasts:
+    get:
+      summary: Returns pest data for dates at lat/long point
+      tags:
+        - Pest forecasts
+        - Point data
+      description: >
+        lat - required, decimal latitude<br>
+        long - required, decimal longitude<br>
+        start_date - optional, default 1st of year<br>
+        date or end_date - optional, default yesterday<br>
+        pest - required, column name of pest data
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/pest"
+      responses:
+        "200":
+          $ref: "#/components/responses/pestForecastsIndex200"
+
+  /pest_forecasts/grid:
+    get:
+      summary: Get degree-day grid for date range. Will either return pre-calculated degree day accumulations or compute new ones
+      tags:
+        - Pest forecasts
+        - Gridded data
+      description: >
+        pest (required) - name of the pest data column<br>
+        start_date - default 1st of year<br>
+        end_date - default yesterday<br>
+        lat_range - min,max - default whole grid<br>
+        long_range - min,max - default whole grid
+      parameters:
+        - $ref: "#/components/parameters/pest"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/lat_range"
+        - $ref: "#/components/parameters/long_range"
+      responses:
+        "200":
+          $ref: "#/components/responses/pestForecastsGrid200"
+
+  /pest_forecasts/vegpath:
+    get:
+      summary: Returns array of weather and pest info for vegetable pathology website charts
+      tags:
+        - Pest forecasts
+        - Custom endpoints
+      description: >
+        lat - required, decimal latitude of location<br>
+        long - required, decimal longitude of location<br>
+        start_date - optional, default May 1
+      parameters:
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/start_date"
+      responses:
+        "200":
+          $ref: "#/components/responses/pestForecastsVegpath200"
+
+  /pest_forecasts/map:
+    get:
+      summary: Generates a map image and returns the URL
+      tags:
+        - Pest forecasts
+        - Map images
+      description: >
+        date or end_date - optional, default yesterday<br>
+        start_date - optional, default 1st of year<br>
+        scale - optional, 'min,max' for image scalebar<br>
+        extent - optional, omit or 'wi' for Wisconsin only<br>
+        stat - optional, summarization statistic, must be sum, min, max, avg<br>
+        pest - optional, which pest forecasts column to render, default 'potato_blight_dsv'
+      parameters:
+        - $ref: "#/components/parameters/date"
+        - $ref: "#/components/parameters/end_date"
+        - $ref: "#/components/parameters/start_date"
+        - $ref: "#/components/parameters/scale"
+        - $ref: "#/components/parameters/extent"
+        - $ref: "#/components/parameters/stat"
+        - $ref: "#/components/parameters/pest"
+      responses:
+        "200":
+          $ref: "#/components/responses/commonMap200"
+
+  /pest_forecasts/info:
+    get:
+      summary: Information about the pest_forecasts endpoint and the state of the pest_forecasts database
+      tags:
+        - Pest forecasts
+        - Endpoint information
+      responses:
+        "200":
+          $ref: "#/components/responses/commonInfo200"
+
+tags:
+  - name: Weather
+    description: Temperature, relative humidity, etc sourced from NOAA URMA grids
+  - name: Precipitation
+    description: Precipitation data sourced from NOAA URMA grids
+  - name: Evapotranspiration
+    description: Potential evapotranspiration calculated from weather and solar insolation
+  - name: Insolation
+    description: Solar insolation data sourced from UW-AOS
+  - name: Degree days
+    description: Growing degree-day models calculated from weather
+  - name: Pest forecasts
+    description: Vegetable disease models calculated from weather
+  - name: Point data
+    description: Endpoints providing data for individual points
+  - name: Gridded data
+    description: Endpoints returning entire data grids
+  - name: Map images
+    description: Endpoints for generating map images
+  - name: Custom endpoints
+    description: Endpoints for specific use cases
+  - name: Endpoint information
+    description: Endpoints that describe each database table

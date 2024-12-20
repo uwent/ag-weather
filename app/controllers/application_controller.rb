@@ -12,6 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
+    redirect_to "/api-docs"
   end
 
   private

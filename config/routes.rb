@@ -40,7 +40,7 @@ Rails.application.routes.draw do
     collection do
       get "grid"
       get "map"
-      get "pvy"
+      # get "pvy"
       get "vegpath"
       get "info"
     end

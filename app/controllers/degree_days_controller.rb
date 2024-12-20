@@ -11,7 +11,7 @@ class DegreeDaysController < ApplicationController
   #     base - required, default 50F
   #     upper - optional, default none
   #     method - default sine
-  #   units - default F
+  #   units - either 'F' (default) or 'C'
 
   def index
     parse_date_or_dates || default_date_range
@@ -164,7 +164,7 @@ class DegreeDaysController < ApplicationController
   #   long: longitude, decimal degrees (required)
   #   start_date - default 1st of year
   #   end_date - default yesterday
-  #   models: comma-separated degree day model names from pest_forecasts table - default dd_50_86
+  #   models: comma-separated degree day model names from degree_days table - default dd_50_86
 
   def dd_table
     params.require([:lat, :long])
