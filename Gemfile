@@ -29,7 +29,6 @@ group :development do
   gem "activerecord-analyze" # query analysis
   gem "brakeman" # security analysis https://brakemanscanner.org/
   gem "bundler-audit" # patch-level verification
-  gem "solargraph" # code completion
 end
 
 group :development, :test do
