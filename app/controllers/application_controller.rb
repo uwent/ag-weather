@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
   end
 
   def index
-    redirect_to "/docs"
+    redirect_to url_for("/docs")
   end
 
   private
