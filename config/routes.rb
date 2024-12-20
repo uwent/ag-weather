@@ -58,12 +58,12 @@ Rails.application.routes.draw do
   # resources :station_observations, only: [:index]
   # resources :stations, only: [:index]
 
-  docs_path = File.join(Rails.application.config.relative_url_root.to_s, "docs")
-  mount Rswag::Ui::Engine => docs_path
-  mount Rswag::Api::Engine => docs_path
+  # docs_path = File.join(Rails.application.config.relative_url_root.to_s, "docs")
+  mount Rswag::Ui::Engine => "/docs"
+  mount Rswag::Api::Engine => "/docs"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   root to: "application#index"
 
-  get "*unmatched" => redirect("/")
+  get "*unmatched" => redirect("application#index")
 end
