@@ -1,14 +1,14 @@
 class EvapotranspirationsController < ApplicationController
-  # GET: returns ets for lat, long, date range
+  # GET: returns ets for lat, lng, date range
   # params:
   #   lat - required, point latitude
-  #   long - required, point longitude
+  #   lng - required, point longitude
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, either 'in' (default) or 'mm'
 
   def index
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
     @method = params[:method]
@@ -76,7 +76,7 @@ class EvapotranspirationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = @info unless params[:headers] == "false"
-        filename = "et data for #{lat}, #{long}.csv"
+        filename = "et data for #{lat}, #{lng}.csv"
         send_data(to_csv(@data, headers), filename:)
       end
     end
@@ -87,7 +87,7 @@ class EvapotranspirationsController < ApplicationController
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default first of year if end_date provided
   #   lat_range - optional, default full extent, format min,max
-  #   long_range - optional, default full extent, format min,max
+  #   lng_range - optional, default full extent, format min,max
   #   units - 'in' (default) or 'mm'
   #   et_method - if 'adjusted', uses new coefficients
 
@@ -106,8 +106,8 @@ class EvapotranspirationsController < ApplicationController
       if weather.empty? && insols.empty?
         @status = "no data"
       else
-        LandExtent.each_point do |lat, long|
-          key = [lat, long]
+        LandExtent.each_point do |lat, lng|
+          key = [lat, lng]
           value = if weather[key].nil? || insols[key].nil?
             0.0
           else

@@ -2,16 +2,16 @@ class WeatherController < ApplicationController
   OPENWEATHER_KEY = ENV["OPENWEATHER_KEY"]
   WEATHERAPI_KEY = ENV["WEATHERAPI_KEY"]
 
-  # GET: returns weather data for lat, long, date range
+  # GET: returns weather data for lat, lng, date range
   # params:
   #   lat - required, decimal latitude
-  #   long - required, decimal longitude
+  #   lng - required, decimal longitude
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
   #   units - temperature units, either 'C' (default) or 'F'
 
   def index
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
 
@@ -38,7 +38,7 @@ class WeatherController < ApplicationController
       format.json { render json: response }
       format.csv do
         @headers = @info unless params[:headers] == "false"
-        filename = "weather data (#{@units}) at #{lat}, #{long}.csv"
+        filename = "weather data (#{@units}) at #{lat}, #{lng}.csv"
         send_data(to_csv(@data, @headers), filename:)
       end
     end
@@ -48,7 +48,7 @@ class WeatherController < ApplicationController
   # params:
   #   date - default most recent data
   #   lat_range - latitude range, default entire grid
-  #   long_range - longitude range, default entire grid
+  #   lng_range - longitude range, default entire grid
   #   units - temperature units, either 'C' (default) or 'F'
 
   def grid
@@ -95,7 +95,7 @@ class WeatherController < ApplicationController
   #   date or end_date - default yesterday. Use date for single day
   #   start_date - default 1 week ago
   #   lat_range - min,max - default whole grid
-  #   long_range - min,max - default whole grid
+  #   lng_range - min,max - default whole grid
 
   def freeze_grid
     parse_date_or_dates || default_one_week
@@ -155,17 +155,17 @@ class WeatherController < ApplicationController
   # GET: 5-day forecast from openweather
   # params:
   #   lat (required)
-  #   long (required)
+  #   lng (required)
   # units:
   #   temp: C
   #   rain: mm
 
   def forecast
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
 
     start_time = Time.now
     lat = params[:lat]
-    lon = params[:long]
+    lon = params[:lng]
     url = "https://api.openweathermap.org/data/2.5/forecast"
     query = {lat:, lon:, units: "imperial", appid: OPENWEATHER_KEY}
 
@@ -245,7 +245,7 @@ class WeatherController < ApplicationController
 
     render json: {
       lat: lat,
-      long: long,
+      lng: lng,
       status: "OK",
       units: {
         temp: "F",
@@ -261,24 +261,24 @@ class WeatherController < ApplicationController
   # GET: 7-day hourly forecast from National Weather Service
   # params:
   #   lat (required)
-  #   long (required)
+  #   lng (required)
 
   def forecast_nws
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
 
     start_time = Time.current
     lat = params[:lat]
-    long = params[:long]
+    lng = params[:lng]
 
     # get grid info
-    grid_url = "https://api.weather.gov/points/#{lat},#{long}"
+    grid_url = "https://api.weather.gov/points/#{lat},#{lng}"
     grid_res = JSON.parse(HTTParty.get(grid_url), symbolize_names: true)
-    reject("Unable to get forecast for #{lat}, #{long}: #{grid_res[:detail]}") unless grid_res[:properties]
+    reject("Unable to get forecast for #{lat}, #{lng}: #{grid_res[:detail]}") unless grid_res[:properties]
 
     # get forecast
     forecast_url = grid_res[:properties][:forecastHourly]
     forecast_res = JSON.parse(HTTParty.get(forecast_url), symbolize_names: true)
-    reject("Unable to get forecast for #{lat}, #{long}: #{forecast_res[:detail]}") unless forecast_res[:properties]
+    reject("Unable to get forecast for #{lat}, #{lng}: #{forecast_res[:detail]}") unless forecast_res[:properties]
     forecasts = forecast_res[:properties][:periods]
 
     if params[:raw] == "true"
@@ -303,7 +303,7 @@ class WeatherController < ApplicationController
 
     render json: {
       lat:,
-      long:,
+      lng:,
       start_date: days.keys.first,
       end_date: days.keys.last,
       days: days.size,

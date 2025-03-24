@@ -3,7 +3,7 @@ class WiExtent < LandExtent
     42.4..47.2
   end
 
-  def self.long_range
+  def self.lng_range
     -93.0..-86.7
   end
 end

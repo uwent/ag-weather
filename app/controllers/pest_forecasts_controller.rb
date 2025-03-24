@@ -1,14 +1,14 @@
 class PestForecastsController < ApplicationController
-  # GET: returns pest data for dates at lat/long point
+  # GET: returns pest data for dates at lat/lng point
   # params:
   #   pest - required, column name of pest data
   #   lat - required, decimal latitude
-  #   long - required, decimal longitude
+  #   lng - required, decimal longitude
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
 
   def index
-    params.require([:pest, :lat, :long])
+    params.require([:pest, :lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
     parse_pest
@@ -51,7 +51,7 @@ class PestForecastsController < ApplicationController
       format.json { render json: response }
       format.csv do
         @headers = @info unless params[:headers] == "false"
-        filename = "point details for #{@pest} at #{lat}, #{long}.csv"
+        filename = "point details for #{@pest} at #{lat}, #{lng}.csv"
         send_data(to_csv(@data, @headers), filename:)
       end
     end
@@ -63,7 +63,7 @@ class PestForecastsController < ApplicationController
   #   start_date - default 1st of year
   #   end_date - default yesterday
   #   lat_range - min,max - default whole grid
-  #   long_range - min,max - default whole grid
+  #   lng_range - min,max - default whole grid
 
   def grid
     params.require(:pest)
@@ -104,14 +104,14 @@ class PestForecastsController < ApplicationController
     end
   end
 
-  # GET: returns pvy model data for dates at lat/long point
+  # GET: returns pvy model data for dates at lat/lng point
   # params:
   #   lat (required)
-  #   long (required)
+  #   lng (required)
   #   end_date (optional, default today)
 
   # def pvy
-  #   params.require([:lat, :long])
+  #   params.require([:lat, :lng])
 
   #   start_date = end_date.beginning_of_year
   #   days_requested = (start_date..end_date).count
@@ -120,7 +120,7 @@ class PestForecastsController < ApplicationController
   #   data = []
   #   forecast = []
 
-  #   dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: long)
+  #   dds = DegreeDay.where(date: start_date..end_date, latitude: lat, longitude: lng)
   #     .select(:date, :latitude, :longitude, :dd_39p2_86).order(:date)
 
   #   if dds.exists?
@@ -161,7 +161,7 @@ class PestForecastsController < ApplicationController
   #   info = {
   #     model: "PVY DD model (base 39.2F, upper 86F)",
   #     lat: lat.to_f.round(1),
-  #     long: long.to_f.round(1),
+  #     lng: lng.to_f.round(1),
   #     start_date:,
   #     end_date:,
   #     days_requested:,
@@ -184,13 +184,13 @@ class PestForecastsController < ApplicationController
   # GET: returns array of weather and pest info for vegetable pathology website charts
   # params:
   #   lat - required, decimal latitude of location
-  #   long - required, decimal longitude of location
+  #   lng - required, decimal longitude of location
   #   start_date - optional, default May 1
 
   def vegpath
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     @lat = lat
-    @long = long
+    @lng = lng
     @end_date = parse_date(params[:date], default: default_date)
 
     # at least 1 month lookback, pinning at May 1
@@ -202,7 +202,7 @@ class PestForecastsController < ApplicationController
     @date_range = @start_date..@end_date
     query = {
       latitude: @lat,
-      longitude: @long,
+      longitude: @lng,
       date: @date_range
     }
 
@@ -212,7 +212,7 @@ class PestForecastsController < ApplicationController
     @date_range.each do |date|
       data[date] = {
         Lat: lat,
-        Long: long,
+        Long: lng,
         Date: date,
         DOY: date.yday
       }

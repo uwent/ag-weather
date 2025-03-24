@@ -34,43 +34,43 @@ RSpec.describe WeatherDay do
 
   context "can access day's weather data" do
     let(:lat) { 45.0 }
-    let(:long) { -89.0 }
+    let(:lng) { -89.0 }
     let(:wh1) { WeatherHour.new }
     let(:wh2) { WeatherHour.new }
 
     it "gets all temperatures at a latitude/longitude pair" do
-      wh1.store(lat, long, 290.15, "2t") # should find
-      wh1.store(lat + 1, long, 291.15, "2t") # should not find, wrong lat
-      wh2.store(lat, long, 292.15, "2t") # should find
-      wh2.store(lat, long, 293.15, "2d") # should not find, wrong key
+      wh1.store(lat, lng, 290.15, "2t") # should find
+      wh1.store(lat + 1, lng, 291.15, "2t") # should not find, wrong lat
+      wh2.store(lat, lng, 292.15, "2t") # should find
+      wh2.store(lat, lng, 293.15, "2d") # should not find, wrong key
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
 
-      temps = weather_day.observations_at(lat, long).map(&:temperature)
+      temps = weather_day.observations_at(lat, lng).map(&:temperature)
       expect(temps).to contain_exactly(17.0, 19.0)
     end
 
     it "gets all dew points at a latitude/longitude pair" do
-      wh1.store(lat, long, 274.15, "2d") # should find
-      wh1.store(lat + 1, long, 276.15, "2d") # should not find, wrong lat
-      wh2.store(lat, long, 275.15, "2d") # should find
-      wh2.store(lat, long, 277.15, "2t") # should not find, wrong key
+      wh1.store(lat, lng, 274.15, "2d") # should find
+      wh1.store(lat + 1, lng, 276.15, "2d") # should not find, wrong lat
+      wh2.store(lat, lng, 275.15, "2d") # should find
+      wh2.store(lat, lng, 277.15, "2t") # should not find, wrong key
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
 
-      dew_points = weather_day.observations_at(lat, long).map(&:dew_point)
+      dew_points = weather_day.observations_at(lat, lng).map(&:dew_point)
       expect(dew_points).to contain_exactly(1.0, 2.0)
     end
 
     it "gets all humidities at a latitude/longitude pair" do
-      wh1.store(lat, long, 280.0, "2t")
-      wh1.store(lat, long, 280.0, "2d")
-      wh2.store(lat, long, 290.0, "2t")
-      wh2.store(lat, long, 280.0, "2d")
+      wh1.store(lat, lng, 280.0, "2t")
+      wh1.store(lat, lng, 280.0, "2d")
+      wh2.store(lat, lng, 290.0, "2t")
+      wh2.store(lat, lng, 280.0, "2d")
       weather_day.add_data_from_weather_hour(wh1)
       weather_day.add_data_from_weather_hour(wh2)
 
-      humidities = weather_day.observations_at(lat, long).map(&:relative_humidity)
+      humidities = weather_day.observations_at(lat, lng).map(&:relative_humidity)
       expect(humidities.size).to eq(2)
       expect(humidities[0]).to eq(100.0)
       expect(humidities[1]).to be_within(epsilon).of(51.662830)

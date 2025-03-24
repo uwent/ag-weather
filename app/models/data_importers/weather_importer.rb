@@ -51,12 +51,12 @@ class WeatherImporter < DataImporter
   def self.persist_day_to_db(date, day)
     weather = []
 
-    LandExtent.each_point do |lat, long|
-      observations = day.observations_at(lat, long) || next
+    LandExtent.each_point do |lat, lng|
+      observations = day.observations_at(lat, lng) || next
       w = Weather.new_from_observations(observations)
       w.date = date
       w.latitude = lat
-      w.longitude = long
+      w.longitude = lng
       weather << w
     end
 

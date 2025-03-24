@@ -6,18 +6,18 @@ RSpec.describe InsolationsController, type: :controller do
   let(:json) { JSON.parse(response.body) }
 
   let(:lat) { 45.0 }
-  let(:long) { -89.0 }
+  let(:lng) { -89.0 }
   let(:end_date) { DataImport.latest_date }
   let(:start_date) { end_date - 1.week }
   let(:dates) { start_date..end_date }
   let(:empty_date) { "2000-01-01" }
 
   describe "GET /index" do
-    let(:params) { {lat:, long:, start_date:, end_date:} }
+    let(:params) { {lat:, lng:, start_date:, end_date:} }
 
     before do
       dates.each do |date|
-        FactoryBot.create(:insolation, latitude: lat, longitude: long, date:)
+        FactoryBot.create(:insolation, latitude: lat, longitude: lng, date:)
         import_class.succeed(date)
       end
     end
@@ -58,14 +58,14 @@ RSpec.describe InsolationsController, type: :controller do
         expect(json["info"]["end_date"]).to eq(DataImport.latest_date.to_s)
       end
 
-      it "rounds lat and long to the nearest 0.1 degree" do
+      it "rounds lat and lng to the nearest 0.1 degree" do
         lat = 43.015
-        long = -89.49
-        params.update({lat:, long:})
+        lng = -89.49
+        params.update({lat:, lng:})
         get(:index, params:)
 
         expect(json["info"]["lat"]).to eq(lat.round(1))
-        expect(json["info"]["long"]).to eq(long.round(1))
+        expect(json["info"]["lng"]).to eq(lng.round(1))
       end
 
       it "can return a csv" do
@@ -85,12 +85,12 @@ RSpec.describe InsolationsController, type: :controller do
         expect(json["message"]).to eq "param is missing or the value is empty or invalid: lat"
       end
 
-      it "throws error on missing param: long" do
-        params.delete(:long)
+      it "throws error on missing param: lng" do
+        params.delete(:lng)
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to eq "param is missing or the value is empty or invalid: long"
+        expect(json["message"]).to eq "param is missing or the value is empty or invalid: lng"
       end
     end
   end

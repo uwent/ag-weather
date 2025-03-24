@@ -2,7 +2,7 @@ class DegreeDaysController < ApplicationController
   # GET: returns weather and computed degree days for point
   # params:
   #   lat - required, decimal latitude
-  #   long - required, decimal longitude
+  #   lng - required, decimal longitude
   #   date or end_date - optional, default 1st of year. Use date for single day
   #   start_date - optional, default 1st of year
   #   Must specify one of:
@@ -52,7 +52,7 @@ class DegreeDaysController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = @info unless params[:headers] == "false"
-        filename = "#{@model_text} degree day data for #{lat}, #{long}.csv"
+        filename = "#{@model_text} degree day data for #{lat}, #{lng}.csv"
         send_data(to_csv(@data, headers), filename:)
       end
     end
@@ -70,7 +70,7 @@ class DegreeDaysController < ApplicationController
   #   start_date - default first of year
   #   end_date - default today
   #   lat_range (min,max) - default full extent
-  #   long_range (min,max) - default full extent
+  #   lng_range (min,max) - default full extent
   #   compute=true - force computation of a custom degree day model grid (takes at least 25s)
 
   def grid
@@ -161,13 +161,13 @@ class DegreeDaysController < ApplicationController
   # GET: Returns weather and degree day accumulations since Jan 1 of present year
   # params:
   #   lat: latitude, decimal degrees (required)
-  #   long: longitude, decimal degrees (required)
+  #   lng: longitude, decimal degrees (required)
   #   start_date - default 1st of year
   #   end_date - default yesterday
   #   models: comma-separated degree day model names from degree_days table - default dd_50_86
 
   def dd_table
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
 
     status = "OK"
     total = 0
@@ -177,7 +177,7 @@ class DegreeDaysController < ApplicationController
     dates = start_date..end_date
     @units = units
     models = parse_models
-    query = {date: dates, latitude: lat, longitude: long}
+    query = {date: dates, latitude: lat, longitude: lng}
 
     weather = Weather.where(query).select(:date, :min_temp, :max_temp).order(:date)
     dds = DegreeDay.where(query).order(:date)
@@ -221,7 +221,7 @@ class DegreeDaysController < ApplicationController
     info = {
       status:,
       lat:,
-      long:,
+      lng:,
       start_date:,
       end_date:,
       days_requested:,

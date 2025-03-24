@@ -3,38 +3,38 @@ require "rails_helper"
 RSpec.describe LandExtent do
   subject { LandExtent }
   let(:lats) { BigDecimal(38)..BigDecimal(50) }
-  let(:longs) { BigDecimal("-98")..BigDecimal("-82") }
+  let(:lngs) { BigDecimal("-98")..BigDecimal("-82") }
   let(:step) { 0.1 }
 
   describe "basic elements" do
     it "has a valid extent" do
       expect(subject.min_lat < subject.max_lat).to be true
-      expect(subject.min_long < subject.max_long).to be true
+      expect(subject.min_lng < subject.max_lng).to be true
     end
 
     it "has correct default values" do
       expect(subject.lat_range).to eq lats
-      expect(subject.long_range).to eq longs
+      expect(subject.lng_range).to eq lngs
       expect(subject.step).to eq step
     end
 
-    it "has correct values for lat/long min/max" do
+    it "has correct values for lat/lng min/max" do
       expect(subject.min_lat).to eq lats.min
       expect(subject.max_lat).to eq lats.max
-      expect(subject.min_long).to eq longs.min
-      expect(subject.max_long).to eq longs.max
+      expect(subject.min_lng).to eq lngs.min
+      expect(subject.max_lng).to eq lngs.max
     end
 
     it "has the correct range definitions" do
       expect(subject.min_lat).to eq subject.lat_range.min
       expect(subject.max_lat).to eq subject.lat_range.max
-      expect(subject.min_long).to eq subject.long_range.min
-      expect(subject.max_long).to eq subject.long_range.max
+      expect(subject.min_lng).to eq subject.lng_range.min
+      expect(subject.max_lng).to eq subject.lng_range.max
     end
 
     it "creates enumerables with step" do
       expect(subject.latitudes).to eq subject.lat_range.step(step)
-      expect(subject.longitudes).to eq subject.long_range.step(step)
+      expect(subject.longitudes).to eq subject.lng_range.step(step)
     end
 
     it "computes the correct number of points" do
@@ -44,16 +44,16 @@ RSpec.describe LandExtent do
 
   describe ".inside?" do
     it "returns true when point is inside extent" do
-      expect(subject.inside?(lats.min, longs.min)).to be true
-      expect(subject.inside?(lats.min, longs.max)).to be true
-      expect(subject.inside?(lats.max, longs.min)).to be true
-      expect(subject.inside?(lats.max, longs.max)).to be true
+      expect(subject.inside?(lats.min, lngs.min)).to be true
+      expect(subject.inside?(lats.min, lngs.max)).to be true
+      expect(subject.inside?(lats.max, lngs.min)).to be true
+      expect(subject.inside?(lats.max, lngs.max)).to be true
       expect(subject.inside?(45, -89)).to be true
     end
 
     it "returns false when point is outside extent" do
-      expect(subject.inside?(lats.min - 1, longs.min - 1)).to be false
-      expect(subject.inside?(lats.max + 1, longs.max + 1)).to be false
+      expect(subject.inside?(lats.min - 1, lngs.min - 1)).to be false
+      expect(subject.inside?(lats.max + 1, lngs.max + 1)).to be false
     end
   end
 
@@ -73,11 +73,11 @@ RSpec.describe LandExtent do
         .to yield_control.exactly(subject.num_points).times
     end
 
-    it "returns values for lat and long" do
+    it "returns values for lat and lng" do
       expected_args = []
       lats.step(step).each do |lat|
-        longs.step(step).each do |long|
-          expected_args << [lat, long]
+        lngs.step(step).each do |lng|
+          expected_args << [lat, lng]
         end
       end
       expect { |block| subject.each_point(&block) }

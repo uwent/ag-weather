@@ -121,7 +121,7 @@ module ImageMethods
     data = cumulative_hash_grid(start_date:, end_date:, units:, col:, stat:, extent: land_extent)
 
     # get actual date range
-    point = where(date: start_date..end_date, latitude: land_extent.min_lat, longitude: land_extent.min_long)
+    point = where(date: start_date..end_date, latitude: land_extent.min_lat, longitude: land_extent.min_lng)
     start_date = point.minimum(:date) || start_date
     end_date = point.maximum(:date) || end_date
 

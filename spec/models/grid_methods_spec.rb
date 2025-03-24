@@ -11,8 +11,8 @@ RSpec.describe GridMethods, type: :module do
     # create valid grid
     dates.each do |date|
       latitudes.each do |lat|
-        longitudes.each do |long|
-          subject.create(latitude: lat, longitude: long, date:, insolation: 1.0)
+        longitudes.each do |lng|
+          subject.create(latitude: lat, longitude: lng, date:, insolation: 1.0)
         end
       end
     end
@@ -37,7 +37,7 @@ RSpec.describe GridMethods, type: :module do
 
     it { expect(extent.keys).to match([:latitude, :longitude]) }
 
-    it "returns lat and long extents of data" do
+    it "returns lat and lng extents of data" do
       expect(extent[:latitude]).to eq [1.0, latitudes.last.to_f]
       expect(extent[:longitude]).to eq [longitudes.first.to_f, 1.0]
     end

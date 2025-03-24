@@ -1,14 +1,14 @@
 class InsolationsController < ApplicationController
-  # GET: returns insols for lat, long, date range
+  # GET: returns insols for lat, lng, date range
   # params:
   #   lat - required, point latitude
-  #   long - required, point longitude
+  #   lng - required, point longitude
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, either 'MJ' (default) or 'KWh'
 
   def index
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
     cumulative_value = 0
@@ -37,7 +37,7 @@ class InsolationsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = @info unless params[:headers] == "false"
-        filename = "insol data (#{@units}) for #{lat}, #{long}.csv"
+        filename = "insol data (#{@units}) for #{lat}, #{lng}.csv"
         send_data(to_csv(@data, headers), filename:)
       end
     end
@@ -48,7 +48,7 @@ class InsolationsController < ApplicationController
   #   date or end_date - default yesterday
   #   start_date - optional, provides a sum or other statistic across dates if given
   #   lat_range - optional, constrain latitudes i.e. '45,50'
-  #   long_range - optional, constrain longitudes i.e. '-89,-85'
+  #   lng_range - optional, constrain longitudes i.e. '-89,-85'
   #   units - optional, either 'MJ' (default) or 'KWh'
 
   def grid

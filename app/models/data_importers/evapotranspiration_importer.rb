@@ -22,9 +22,9 @@ class EvapotranspirationImporter < DataImporter
     insols = Insolation.hash_grid(date:)
     ets = []
 
-    LandExtent.each_point do |lat, long|
-      w = weather[lat, long]
-      i = insols[[lat, long]]
+    LandExtent.each_point do |lat, lng|
+      w = weather[lat, lng]
+      i = insols[[lat, lng]]
       next unless w && i
 
       value = EvapotranspirationCalculator.et(
@@ -37,7 +37,7 @@ class EvapotranspirationImporter < DataImporter
       ets << Evapotranspiration.new(
         date:,
         latitude: lat,
-        longitude: long,
+        longitude: lng,
         potential_et: value
       )
     end

@@ -35,8 +35,8 @@ components:
         example: 45.0
       description: Latitude of desired point, decimal degrees
 
-    long:
-      name: long
+    lng:
+      name: lng
       in: query
       required: true
       schema:
@@ -54,8 +54,8 @@ components:
         example: 45.0,50.0
       description: restrict latitude range in response
 
-    long_range:
-      name: long_range
+    lng_range:
+      name: lng_range
       in: query
       schema:
         type: string
@@ -245,7 +245,7 @@ components:
       type: number
       description: latitude of point
 
-    longInfo:
+    lngInfo:
       type: number
       description: longitude of point
 
@@ -253,7 +253,7 @@ components:
       type: string
       description: latitude range of grid
 
-    longRangeInfo:
+    lngRangeInfo:
       type: string
       description: longitude range of grid
 
@@ -338,8 +338,8 @@ components:
           $ref: "#/components/schemas/statusInfo"
         lat:
           $ref: "#/components/schemas/latInfo"
-        long:
-          $ref: "#/components/schemas/longInfo"
+        lng:
+          $ref: "#/components/schemas/lngInfo"
         start_date:
           $ref: "#/components/schemas/startDateInfo"
         end_date:
@@ -366,8 +366,8 @@ components:
           $ref: "#/components/schemas/daysRequestedInfo"
         lat_range:
           $ref: "#/components/schemas/latRangeInfo"
-        long_range:
-          $ref: "#/components/schemas/longRangeInfo"
+        lng_range:
+          $ref: "#/components/schemas/lngRangeInfo"
         units:
           oneOf:
             - $ref: "#/components/schemas/unitsInfoString"
@@ -539,7 +539,7 @@ components:
                 type: array
                 items:
                   type: number
-              long_range:
+              lng_range:
                 type: array
                 items:
                   type: number
@@ -773,13 +773,13 @@ paths:
         - Point data
       description: >
         lat - required, decimal latitude<br>
-        long - required, decimal longitude<br>
+        lng - required, decimal longitude<br>
         date or end_date - optional, default yesterday<br>
         start_date - optional, default 1st of year<br>
         units - temperature units, either 'C' (default) or 'F'
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
         - $ref: "#/components/parameters/units__weather"
@@ -796,11 +796,11 @@ paths:
       description: >
         date - default most recent data<br>
         lat_range - latitude range, default entire grid<br>
-        long_range - longitude range, default entire grid<br>
+        lng_range - longitude range, default entire grid<br>
         units - temperature units, either 'C' (default) or 'F'
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/units__weather"
       responses:
@@ -817,10 +817,10 @@ paths:
         date or end_date - default yesterday. Use date for single day<br>
         start_date - default 1 week ago<br>
         lat_range - min,max - default whole grid<br>
-        long_range - min,max - default whole grid
+        lng_range - min,max - default whole grid
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
       responses:
@@ -870,13 +870,13 @@ paths:
         - Point data
       description: >
         lat - required, point latitude<br>
-        long - required, point longitude<br>
+        lng - required, point longitude<br>
         date or end_date - optional, default yesterday<br>
         start_date - optional, default 1st of year<br>
         units - optional either "mm" (default) or "in"
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
       responses:
@@ -893,11 +893,11 @@ paths:
         date or end_date - defaults to most recent data<br>
         start_date - optional, provides a sum across dates if given<br>
         lat_range - optional, constrain latitudes i.e. '45,50'<br>
-        long_range - optional, constrain longitudes i.e. '-89,-85'<br>
+        lng_range - optional, constrain longitudes i.e. '-89,-85'<br>
         units - optional, either 'mm' (default) or 'in'
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/units__precip"
       responses:
@@ -946,13 +946,13 @@ paths:
         - Point data
       description: >
         lat - required, point latitude<br>
-        long - required, point longitude<br>
+        lng - required, point longitude<br>
         date or end_date - optional, default yesterday<br>
         start_date - optional, default 1st of year<br>
         units - optional, either 'in' (default) or 'mm'
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
       responses:
@@ -969,12 +969,12 @@ paths:
         date or end_date - optional, default yesterday<br>
         start_date - optional, default first of year if end_date provided<br>
         lat_range - optional, default full extent, format min,max<br>
-        long_range - optional, default full extent, format min,max<br>
+        lng_range - optional, default full extent, format min,max<br>
         units - 'in' (default) or 'mm'<br>
         et_method - if 'adjusted', uses new coefficients
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/units__et"
       responses:
@@ -1023,13 +1023,13 @@ paths:
         - Point data
       description: >
         lat - required, point latitude<br>
-        long - required, point longitude<br>
+        lng - required, point longitude<br>
         date or end_date - optional, default yesterday<br>
         start_date - optional, default 1st of year<br>
         units - optional, either 'MJ' (default) or 'KWh'
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
       responses:
@@ -1046,11 +1046,11 @@ paths:
         date or end_date - default yesterday<br>
         start_date - optional, provides a sum or other statistic across dates if given<br>
         lat_range - optional, constrain latitudes i.e. '45,50'<br>
-        long_range - optional, constrain longitudes i.e. '-89,-85'<br>
+        lng_range - optional, constrain longitudes i.e. '-89,-85'<br>
         units - optional, either 'MJ' (default) or 'KWh'
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/units__insolation"
       responses:
@@ -1099,7 +1099,7 @@ paths:
         - Point data
       description: >
         lat - required, decimal latitude<br>
-        long - required, decimal longitude<br>
+        lng - required, decimal longitude<br>
         date or end_date - optional, default 1st of year. Use date for single day<br>
         start_date - optional, default 1st of year<br>
         Must specify one of:<br>
@@ -1111,7 +1111,7 @@ paths:
         units - default F
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
@@ -1132,7 +1132,7 @@ paths:
         - Gridded data
       description: >
         lat_range (min,max) - default full extent<br>
-        long_range (min,max) - default full extent<br>
+        lng_range (min,max) - default full extent<br>
         start_date - default first of year<br>
         end_date - default today<br>
         Must specify one of:<br>
@@ -1144,7 +1144,7 @@ paths:
         compute=true - force computation of a custom degree day model grid (takes at least 25s)
       parameters:
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
         - $ref: "#/components/parameters/model__degree_days"
@@ -1191,13 +1191,13 @@ paths:
         - Custom endpoints
       description: >
         lat: latitude, decimal degrees (required)<br>
-        long: longitude, decimal degrees (required)<br>
+        lng: longitude, decimal degrees (required)<br>
         start_date - default 1st of year<br>
         end_date - default yesterday<br>
         models: comma-separated degree day model names from degree_days table - default dd_50_86
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
         - $ref: "#/components/parameters/models__degree_days"
@@ -1217,19 +1217,19 @@ paths:
 
   /pest_forecasts:
     get:
-      summary: Returns pest data for dates at lat/long point
+      summary: Returns pest data for dates at lat/lng point
       tags:
         - Pest forecasts
         - Point data
       description: >
         lat - required, decimal latitude<br>
-        long - required, decimal longitude<br>
+        lng - required, decimal longitude<br>
         start_date - optional, default 1st of year<br>
         date or end_date - optional, default yesterday<br>
         pest - required, column name of pest data
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/date"
         - $ref: "#/components/parameters/end_date"
@@ -1249,13 +1249,13 @@ paths:
         start_date - default 1st of year<br>
         end_date - default yesterday<br>
         lat_range - min,max - default whole grid<br>
-        long_range - min,max - default whole grid
+        lng_range - min,max - default whole grid
       parameters:
         - $ref: "#/components/parameters/pest"
         - $ref: "#/components/parameters/start_date"
         - $ref: "#/components/parameters/end_date"
         - $ref: "#/components/parameters/lat_range"
-        - $ref: "#/components/parameters/long_range"
+        - $ref: "#/components/parameters/lng_range"
       responses:
         "200":
           $ref: "#/components/responses/pestForecastsGrid200"
@@ -1268,11 +1268,11 @@ paths:
         - Custom endpoints
       description: >
         lat - required, decimal latitude of location<br>
-        long - required, decimal longitude of location<br>
+        lng - required, decimal longitude of location<br>
         start_date - optional, default May 1
       parameters:
         - $ref: "#/components/parameters/lat"
-        - $ref: "#/components/parameters/long"
+        - $ref: "#/components/parameters/lng"
         - $ref: "#/components/parameters/start_date"
       responses:
         "200":
