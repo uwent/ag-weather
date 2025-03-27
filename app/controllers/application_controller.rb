@@ -47,7 +47,7 @@ class ApplicationController < ActionController::Base
     {
       data_cols: t.data_cols,
       lat_range: t.lat_range,
-      long_range: t.long_range,
+      lng_range: t.lng_range,
       date_range: t.date_range,
       expected_days: all_dates.size,
       actual_days: actual_dates.size,
@@ -133,16 +133,16 @@ class ApplicationController < ActionController::Base
     check_lat(parse_float(params[:lat], digits: 1))
   end
 
-  def long
-    check_long(parse_float(params[:long], digits: 1))
+  def lng
+    check_lng(parse_float(params[:lng], digits: 1))
   end
 
   def check_lat(val)
     val.in?(LandExtent.lat_range) ? val : reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.lat_range}")
   end
 
-  def check_long(val)
-    val.in?(LandExtent.long_range) ? val : reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.long_range}")
+  def check_lng(val)
+    val.in?(LandExtent.lng_range) ? val : reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.lng_range}")
   end
 
   def lat_range
@@ -156,9 +156,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def long_range
-    param = params[:long_range]
-    range = LandExtent.long_range
+  def lng_range
+    param = params[:lng_range]
+    range = LandExtent.lng_range
     if param.present?
       coords = parse_coords(param)
       coords.in?(range) ? coords : reject("Invalid longitude range '#{param}'. Must be formatted as e.g. -89.0,-85.5 and in range #{range}")
@@ -249,13 +249,13 @@ class ApplicationController < ActionController::Base
   ## SHARED METHODS ##
 
   def index_params
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     @days_requested = @dates&.count || 1
     @lat = lat.to_f
-    @long = long.to_f
+    @lng = lng.to_f
     @units = units
     @units_text = units_text
-    @query = {date: @dates || @date, latitude: @lat, longitude: @long}
+    @query = {date: @dates || @date, latitude: @lat, longitude: @lng}
     @data = []
   end
 
@@ -263,7 +263,7 @@ class ApplicationController < ActionController::Base
     {
       status: @status || "OK",
       lat: @lat,
-      long: @long,
+      lng: @lng,
       date: @date,
       start_date: @start_date,
       end_date: @end_date,
@@ -283,12 +283,12 @@ class ApplicationController < ActionController::Base
 
   def grid_params
     @lat_range = lat_range
-    @long_range = long_range
+    @lng_range = lng_range
     @days_requested = @dates&.count || 1
     @units = units
     @units_text = units_text
     @stat = stat
-    @query = {date: @dates || @date, latitude: @lat_range, longitude: @long_range}
+    @query = {date: @dates || @date, latitude: @lat_range, longitude: @lng_range}
     @data = {}
   end
 
@@ -300,7 +300,7 @@ class ApplicationController < ActionController::Base
       end_date: @end_date,
       days_requested: @days_requested,
       lat_range: "#{@lat_range&.min},#{@lat_range&.max}",
-      long_range: "#{@long_range&.min},#{@long_range&.max}",
+      lng_range: "#{@lng_range&.min},#{@lng_range&.max}",
       grid_points: @data&.size,
       model: @model_text,
       pest: @pest,

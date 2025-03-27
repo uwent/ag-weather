@@ -16,13 +16,13 @@ RSpec.describe DegreeDaysController, type: :controller do
 
   describe "GET /index" do
     let(:lat) { 45.0 }
-    let(:long) { -89.0 }
-    let(:params) { {lat:, long:} }
+    let(:lng) { -89.0 }
+    let(:params) { {lat:, lng:} }
 
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: lng, min_temp: 10.0, max_temp: 30.0)
       end
     end
 
@@ -110,30 +110,30 @@ RSpec.describe DegreeDaysController, type: :controller do
         end
 
         it "gives error if latitude outside range" do
-          get(:index, params: {lat: 10, long:})
+          get(:index, params: {lat: 10, lng:})
 
           expect(json["message"]).to include("Invalid latitude")
         end
 
         it "requires longitude param" do
-          params.delete(:long)
+          params.delete(:lng)
           get(:index, params:)
 
           expect(response).to have_http_status(:bad_request)
-          expect(json["message"]).to match("long")
+          expect(json["message"]).to match("lng")
         end
 
         it "gives error if longitude outside range" do
-          get(:index, params: {lat:, long: 10})
+          get(:index, params: {lat:, lng: 10})
 
           expect(json["message"]).to include("Invalid longitude")
         end
 
-        it "rounds lat and long to the nearest 0.1 degree" do
-          get(:index, params: {lat: 45.123, long: -89.789})
+        it "rounds lat and lng to the nearest 0.1 degree" do
+          get(:index, params: {lat: 45.123, lng: -89.789})
 
           expect(info["lat"]).to eq(45.1)
-          expect(info["long"]).to eq(-89.8)
+          expect(info["lng"]).to eq(-89.8)
           expect(data).to be_empty
         end
 
@@ -156,21 +156,21 @@ RSpec.describe DegreeDaysController, type: :controller do
 
   describe "GET /dd_table" do
     let(:lat) { 45.0 }
-    let(:long) { -89.0 }
+    let(:lng) { -89.0 }
     let(:params) {
-      {lat:, long:, start_date:, end_date:, models: "dd_32,dd_50_86"}
+      {lat:, lng:, start_date:, end_date:, models: "dd_32,dd_50_86"}
     }
 
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
-        FactoryBot.create(:degree_day, date:, latitude: lat, longitude: long, dd_32: 5.0, dd_50: 10.0, dd_50_86: 10.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: lng, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:degree_day, date:, latitude: lat, longitude: lng, dd_32: 5.0, dd_50: 10.0, dd_50_86: 10.0)
       end
     end
 
     it "is okay" do
-      get(:dd_table, params: {lat:, long:})
+      get(:dd_table, params: {lat:, lng:})
 
       expect(response).to have_http_status(:ok)
     end
@@ -186,13 +186,13 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(data[start_date.to_s].keys).to eq(%w[min_temp max_temp dd_32 dd_50_86])
       end
 
-      it "rounds lat and long to the nearest 0.1 degree" do
+      it "rounds lat and lng to the nearest 0.1 degree" do
         params[:lat] = 45.123
-        params[:long] = -89.789
+        params[:lng] = -89.789
         get(:dd_table, params:)
 
         expect(info["lat"]).to eq(45.1)
-        expect(info["long"]).to eq(-89.8)
+        expect(info["lng"]).to eq(-89.8)
       end
 
       it "returns valid data when units are C" do
@@ -240,12 +240,12 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(json["message"]).to match("lat")
       end
 
-      it "raises error on missing long param" do
-        params.delete(:long)
+      it "raises error on missing lng param" do
+        params.delete(:lng)
         get(:dd_table, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to match("long")
+        expect(json["message"]).to match("lng")
       end
 
       it "raises error on invalid models" do
@@ -296,7 +296,7 @@ RSpec.describe DegreeDaysController, type: :controller do
           "start_date" => latest_date.beginning_of_year.to_s,
           "end_date" => latest_date.to_s,
           "lat_range" => "38.0,50.0",
-          "long_range" => "-98.0,-82.0",
+          "lng_range" => "-98.0,-82.0",
           "model" => "base 50F",
           "units" => "Fahrenheit degree days"
         }
@@ -327,10 +327,10 @@ RSpec.describe DegreeDaysController, type: :controller do
         expect(data.size).to eq(longitudes.count)
       end
 
-      it "can restrict long range" do
-        get(:grid, params: {long_range: "-89,-89"})
+      it "can restrict lng range" do
+        get(:grid, params: {lng_range: "-89,-89"})
 
-        expect(info["long_range"]).to eq("-89.0,-89.0")
+        expect(info["lng_range"]).to eq("-89.0,-89.0")
         expect(data.size).to eq(latitudes.count)
       end
 
@@ -358,7 +358,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it "rejects invalid longitude range" do
-        get(:grid, params: {long_range: "foo"})
+        get(:grid, params: {lng_range: "foo"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range 'foo'")
@@ -372,7 +372,7 @@ RSpec.describe DegreeDaysController, type: :controller do
       end
 
       it "rejects longitude range outside of valid extents" do
-        get(:grid, params: {long_range: "1,100"})
+        get(:grid, params: {lng_range: "1,100"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range '1,100'")

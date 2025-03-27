@@ -79,8 +79,8 @@ class PrecipImporter < DataImporter
 
     daily_grid = {}
     hourly_grids.each do |grid|
-      LandExtent.each_point do |lat, long|
-        key = [lat, long]
+      LandExtent.each_point do |lat, lng|
+        key = [lat, lng]
         daily_grid[key] ||= 0.0
         daily_grid[key] += grid[key] || 0.0
       end
@@ -98,13 +98,13 @@ class PrecipImporter < DataImporter
     # collect all precips and assign them to a grid point
     grid = {}
     stdout.each do |line|
-      lat, long, precip = line.split
+      lat, lng, precip = line.split
       lat = lat.to_f.round(1)
-      long = (long.to_f - 360.0).round(1)
-      next unless LandExtent.inside?(lat, long)
+      lng = (lng.to_f - 360.0).round(1)
+      next unless LandExtent.inside?(lat, lng)
       precip = precip.to_f
       precip = 0 if precip < 0
-      key = [lat, long]
+      key = [lat, lng]
       grid[key] ||= []
       grid[key] << precip
     end

@@ -38,12 +38,12 @@ module GridMethods
     [minimum(:latitude), maximum(:latitude)]
   end
 
-  def long_range
+  def lng_range
     [minimum(:longitude), maximum(:longitude)]
   end
 
   def extent
-    {latitude: lat_range, longitude: long_range}
+    {latitude: lat_range, longitude: lng_range}
   end
 
   def grid_summarize(sql = nil)
@@ -57,14 +57,14 @@ module GridMethods
     check_grid(grid)
 
     all_for_date(date).each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless grid.inside?(lat, long)
-      grid[lat, long] = point
+      lat, lng = point.latitude, point.longitude
+      next unless grid.inside?(lat, lng)
+      grid[lat, lng] = point
     end
     grid
   end
 
-  # creates a hash keyed by [lat, long] with a column value at each key
+  # creates a hash keyed by [lat, lng] with a column value at each key
   def hash_grid(
     date:,
     col: default_col,
@@ -76,15 +76,15 @@ module GridMethods
 
     grid = {}
     where(date:).each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless extent.inside?(lat, long)
+      lat, lng = point.latitude, point.longitude
+      next unless extent.inside?(lat, lng)
       value = point.send(col)
-      grid[[lat, long]] = units ? convert(value:, col:, units:) : value
+      grid[[lat, lng]] = units ? convert(value:, col:, units:) : value
     end
     grid
   end
 
-  # creates a hash keyed by [lat, long] with a summarized value at each key
+  # creates a hash keyed by [lat, lng] with a summarized value at each key
   def cumulative_hash_grid(
     col: default_col,
     start_date: latest_date.beginning_of_year,
@@ -100,10 +100,10 @@ module GridMethods
     grid = {}
     data = where(date: start_date..end_date).grid_summarize("#{stat}(#{col}) as value")
     data.each do |point|
-      lat, long = point.latitude, point.longitude
-      next unless extent.inside?(lat, long)
+      lat, lng = point.latitude, point.longitude
+      next unless extent.inside?(lat, lng)
       value = point.value
-      grid[[lat, long]] = units ? convert(value:, col:, units:) : value
+      grid[[lat, lng]] = units ? convert(value:, col:, units:) : value
     end
     grid
   end

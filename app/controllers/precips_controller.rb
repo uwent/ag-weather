@@ -1,14 +1,14 @@
 class PrecipsController < ApplicationController
-  # GET: returns precips for lat, long, date range
+  # GET: returns precips for lat, lng, date range
   # params:
   #   lat - required, point latitude
-  #   long - required, point longitude
+  #   lng - required, point longitude
   #   date or end_date - optional, default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional either "mm" (default) or "in"
 
   def index
-    params.require([:lat, :long])
+    params.require([:lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
     cumulative_value = 0
@@ -40,7 +40,7 @@ class PrecipsController < ApplicationController
       format.json { render json: response }
       format.csv do
         headers = @info unless params[:headers] == "false"
-        filename = "precip data (#{@units}) for #{lat}, #{long}.csv"
+        filename = "precip data (#{@units}) for #{lat}, #{lng}.csv"
         send_data(to_csv(@data, headers), filename:)
       end
     end
@@ -51,7 +51,7 @@ class PrecipsController < ApplicationController
   #   date or end_date - defaults to most recent data
   #   start_date - optional, provides a sum across dates if given
   #   lat_range - optional, constrain latitudes i.e. '45,50'
-  #   long_range - optional, constrain longitudes i.e. '-89,-85'
+  #   lng_range - optional, constrain longitudes i.e. '-89,-85'
   #   units - optional, either 'mm' (default) or 'in'
 
   def grid

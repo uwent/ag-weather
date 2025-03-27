@@ -8,7 +8,7 @@ RSpec.describe PestForecastsController, type: :controller do
   let(:data) { json["data"] }
 
   let(:lat) { 45.0 }
-  let(:long) { -89.0 }
+  let(:lng) { -89.0 }
   let(:latest_date) { DataImport.latest_date }
   let(:end_date) { latest_date - 1.day }
   let(:start_date) { [end_date.beginning_of_year, end_date - 1.week].max }
@@ -17,7 +17,7 @@ RSpec.describe PestForecastsController, type: :controller do
   let(:pest) { "potato_blight_dsv" }
 
   describe "GET /index" do
-    let(:params) { {lat:, long:, pest:} }
+    let(:params) { {lat:, lng:, pest:} }
 
     before do
       dates.each do |date|
@@ -107,11 +107,11 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       it "requires longitude param" do
-        params.delete(:long)
+        params.delete(:lng)
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to match("long")
+        expect(json["message"]).to match("lng")
       end
 
       it "gives error if latitude outside range" do
@@ -122,19 +122,19 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       it "gives error if longitude outside range" do
-        params[:long] = 10
+        params[:lng] = 10
         get(:index, params:)
 
         expect(json["message"]).to include("Invalid longitude")
       end
 
-      it "rounds lat and long to the nearest 0.1 degree" do
+      it "rounds lat and lng to the nearest 0.1 degree" do
         params[:lat] = 45.123
-        params[:long] = -89.789
+        params[:lng] = -89.789
         get(:index, params:)
 
         expect(info["lat"]).to eq(45.1)
-        expect(info["long"]).to eq(-89.8)
+        expect(info["lng"]).to eq(-89.8)
         expect(data).to be_empty
       end
 
@@ -153,29 +153,6 @@ RSpec.describe PestForecastsController, type: :controller do
       end
     end
   end
-
-  # endpoint is deprecated
-  # describe "GET /pvy" do
-  #   let(:lat) { 45.0 }
-  #   let(:long) { -89.0 }
-  #   let(:params) { {lat:, long:} }
-
-  #   before do
-  #     FactoryBot.create(:degree_day, date: latest_date, latitude: lat, longitude: long, dd_39p2_86: 1)
-  #   end
-
-  #   it "is okay" do
-  #     get(:pvy, params:)
-
-  #     expect(response).to have_http_status(:ok)
-  #   end
-
-  #   it "has the correct response structure" do
-  #     get(:pvy, params:)
-
-  #     expect(json.keys).to eq(%w[info current_dds future_dds data forecast])
-  #   end
-  # end
 
   describe "GET /grid" do
     let(:latitudes) { [45.0, 45.1] }
@@ -216,7 +193,7 @@ RSpec.describe PestForecastsController, type: :controller do
           "start_date" => latest_date.beginning_of_year.to_s,
           "end_date" => latest_date.to_s,
           "lat_range" => "38.0,50.0",
-          "long_range" => "-98.0,-82.0"
+          "lng_range" => "-98.0,-82.0"
         }
         defaults.each do |k, v|
           expect(info[k]).to eq(v)
@@ -246,11 +223,11 @@ RSpec.describe PestForecastsController, type: :controller do
         expect(data.size).to eq(longitudes.count)
       end
 
-      it "can restrict long range" do
-        params[:long_range] = "-89,-89"
+      it "can restrict lng range" do
+        params[:lng_range] = "-89,-89"
         get(:grid, params:)
 
-        expect(info["long_range"]).to eq("-89.0,-89.0")
+        expect(info["lng_range"]).to eq("-89.0,-89.0")
         expect(data.size).to eq(latitudes.count)
       end
 
@@ -275,7 +252,7 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       it "rejects invalid longitude range" do
-        params[:long_range] = "foo"
+        params[:lng_range] = "foo"
         get(:grid, params:)
 
         expect(response).to have_http_status(:bad_request)
@@ -291,7 +268,7 @@ RSpec.describe PestForecastsController, type: :controller do
       end
 
       it "rejects longitude range outside of valid extents" do
-        params[:long_range] = "1,100"
+        params[:lng_range] = "1,100"
         get(:grid, params:)
 
         expect(response).to have_http_status(:bad_request)

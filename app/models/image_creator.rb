@@ -39,9 +39,9 @@ class ImageCreator
 
     scale ||= [nil, nil]
     # get params from data
-    lats = data.keys.map { |lat, long| lat }.uniq
-    longs = data.keys.map { |lat, long| long }.uniq
-    extents = [longs.min, longs.max, lats.min, lats.max]
+    lats = data.keys.map { |lat, lng| lat }.uniq
+    lngs = data.keys.map { |lat, lng| lng }.uniq
+    extents = [lngs.min, lngs.max, lats.min, lats.max]
     data_min = data.values.min.round(3)
     data_max = data.values.max.round(3)
     auto_min, auto_max = get_min_max(data_min, data_max)
@@ -73,10 +73,10 @@ class ImageCreator
     last_lat = latitudes.min
     File.open(data_filename, "w") do |file|
       grid.each do |key, value|
-        lat, long = key
+        lat, lng = key
         # blank line for gnuplot when latitude changes
         file.puts unless lat == last_lat
-        file.puts "#{lat} #{long} #{value.round(3)}" unless value.nil?
+        file.puts "#{lat} #{lng} #{value.round(3)}" unless value.nil?
         last_lat = lat
       end
     end

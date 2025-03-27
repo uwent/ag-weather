@@ -2,9 +2,9 @@ class Reading
   attr_accessor :latitude, :longitude, :value
   R = 6371 # Radius of Earth (average)
 
-  def initialize(lat, long, val)
+  def initialize(lat, lng, val)
     @latitude = lat
-    @longitude = long
+    @longitude = lng
     @value = val
   end
 
@@ -16,8 +16,8 @@ class Reading
   # Equirectangular Approximation.
   # Reference: www.movable-type.co.uk/scripts/latlong.html
   #            (The more complex formula are there as well)
-  def distance(other_lat, other_long)
-    x = (to_radians(@longitude) - to_radians(other_long)) * Math.cos((to_radians(@latitude) + to_radians(other_lat)) / 2)
+  def distance(other_lat, other_lng)
+    x = (to_radians(@longitude) - to_radians(other_lng)) * Math.cos((to_radians(@latitude) + to_radians(other_lat)) / 2)
     y = (to_radians(@latitude) - to_radians(other_lat))
     Math.sqrt(x * x + y * y) * R
   end

@@ -39,10 +39,10 @@ class InsolationImporter < DataImporter
   def self.import_insolation_data(response, date)
     insols = []
     response.body.each_line do |line|
-      val, lat, long = line.split
+      val, lat, lng = line.split
       insolation = val.to_f / 100.0
       latitude = lat.to_f
-      longitude = long.to_f * -1
+      longitude = lng.to_f * -1
       next if insolation < 0
       next unless LandExtent.inside?(latitude, longitude)
       insols << Insolation.new(date:, latitude:, longitude:, insolation:)

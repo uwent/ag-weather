@@ -5,8 +5,8 @@ class WeatherHour
 
   def initialize
     @data = {}
-    LandExtent.each_point do |lat, long|
-      @data[[lat, long]] = {
+    LandExtent.each_point do |lat, lng|
+      @data[[lat, lng]] = {
         temperatures: [],
         dew_points: []
       }
@@ -20,20 +20,20 @@ class WeatherHour
     Rails.logger.debug "RTMA grib cmd >> #{cmd}"
     _, stdout, _ = Open3.popen3(cmd)
     stdout.each do |line|
-      lat, long, value, type = line.split
-      long = long.to_f - 360.0
-      store(lat, long, value, type)
+      lat, lng, value, type = line.split
+      lng = lng.to_f - 360.0
+      store(lat, lng, value, type)
     end
     Rails.logger.debug "WeatherHour :: Grib file read in #{DataImporter.elapsed(start_time)}"
   end
 
-  def store(lat, long, value, type)
+  def store(lat, lng, value, type)
     return if value.nil?
     return unless (key = data_key(type))
     lat = lat.to_f.round(1)
-    long = long.to_f.round(1)
-    return unless @data[[lat, long]]
-    @data[[lat, long]][key] << value.to_f
+    lng = lng.to_f.round(1)
+    return unless @data[[lat, lng]]
+    @data[[lat, lng]][key] << value.to_f
   end
 
   def data_key(type)
@@ -41,15 +41,15 @@ class WeatherHour
     :dew_points if type == "2d"
   end
 
-  # averages all temperatures assigned to the lat/long cell
-  def temperature_at(lat, long)
-    vals = @data[[lat, long]][:temperatures]
+  # averages all temperatures assigned to the lat/lng cell
+  def temperature_at(lat, lng)
+    vals = @data[[lat, lng]][:temperatures]
     (vals.size > 0) ? vals.sum(0.0) / vals.size : nil
   end
 
-  # averages all dewpoints assigned to the lat/long cell
-  def dew_point_at(lat, long)
-    vals = @data[[lat, long]][:dew_points]
+  # averages all dewpoints assigned to the lat/lng cell
+  def dew_point_at(lat, lng)
+    vals = @data[[lat, lng]][:dew_points]
     (vals.size > 0) ? vals.sum(0.0) / vals.size : nil
   end
 end

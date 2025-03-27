@@ -201,9 +201,9 @@ module RunTasks
       return
     end
     puts date.strftime + " - ready - recalculating..."
-    LandExtent.each_point do |lat, long|
-      next if weather[lat, long].nil?
-      forecasts << PestForecast.new_from_weather(weather[lat, long])
+    LandExtent.each_point do |lat, lng|
+      next if weather[lat, lng].nil?
+      forecasts << PestForecast.new_from_weather(weather[lat, lng])
     end
     PestForecast.transaction do
       PestForecast.where(date:).delete_all

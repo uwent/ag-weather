@@ -16,20 +16,20 @@ RSpec.describe WeatherController, type: :controller do
 
   describe "GET /index" do
     let(:lat) { 45.0 }
-    let(:long) { -89.0 }
-    let(:params) { {lat:, long:} }
+    let(:lng) { -89.0 }
+    let(:params) { {lat:, lng:} }
 
     # create point data
     before do
       dates.each do |date|
-        FactoryBot.create(:weather, date:, latitude: lat, longitude: long, min_temp: 10.0, max_temp: 30.0)
+        FactoryBot.create(:weather, date:, latitude: lat, longitude: lng, min_temp: 10.0, max_temp: 30.0)
       end
     end
 
     context "when request is valid" do
       context "with minimum params" do
         it "is okay" do
-          get(:index, params: {lat:, long:})
+          get(:index, params: {lat:, lng:})
 
           expect(response).to have_http_status(:ok)
         end
@@ -95,30 +95,30 @@ RSpec.describe WeatherController, type: :controller do
         end
 
         it "gives error if latitude outside range" do
-          get(:index, params: {lat: 10, long:})
+          get(:index, params: {lat: 10, lng:})
 
           expect(json["message"]).to include("Invalid latitude")
         end
 
         it "requires longitude param" do
-          params.delete(:long)
+          params.delete(:lng)
           get(:index, params:)
 
           expect(response).to have_http_status(:bad_request)
-          expect(json["message"]).to match("long")
+          expect(json["message"]).to match("lng")
         end
 
         it "gives error if longitude outside range" do
-          get(:index, params: {lat:, long: 10})
+          get(:index, params: {lat:, lng: 10})
 
           expect(json["message"]).to include("Invalid longitude")
         end
 
-        it "rounds lat and long to the nearest 0.1 degree" do
-          get(:index, params: {lat: 45.123, long: -89.789})
+        it "rounds lat and lng to the nearest 0.1 degree" do
+          get(:index, params: {lat: 45.123, lng: -89.789})
 
           expect(info["lat"]).to eq(45.1)
-          expect(info["long"]).to eq(-89.8)
+          expect(info["lng"]).to eq(-89.8)
           expect(data).to be_empty
         end
 
@@ -167,7 +167,7 @@ RSpec.describe WeatherController, type: :controller do
         defaults = {
           "date" => latest_date.to_s,
           "lat_range" => "38.0,50.0",
-          "long_range" => "-98.0,-82.0",
+          "lng_range" => "-98.0,-82.0",
           "units" => {
             "temp" => "F",
             "pressure" => "kPa",
@@ -201,10 +201,10 @@ RSpec.describe WeatherController, type: :controller do
         expect(data.size).to eq(longitudes.count)
       end
 
-      it "can restrict long range" do
-        get(:grid, params: {long_range: "-89,-89"})
+      it "can restrict lng range" do
+        get(:grid, params: {lng_range: "-89,-89"})
 
-        expect(info["long_range"]).to eq("-89.0,-89.0")
+        expect(info["lng_range"]).to eq("-89.0,-89.0")
         expect(data.size).to eq(latitudes.count)
       end
     end
@@ -218,7 +218,7 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it "rejects invalid longitude range" do
-        get(:grid, params: {long_range: "foo"})
+        get(:grid, params: {lng_range: "foo"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range 'foo'")
@@ -232,7 +232,7 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it "rejects longitude range outside of valid extents" do
-        get(:grid, params: {long_range: "1,100"})
+        get(:grid, params: {lng_range: "1,100"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range '1,100'")
@@ -285,7 +285,7 @@ RSpec.describe WeatherController, type: :controller do
           "start_date" => (latest_date - 1.week).to_s,
           "end_date" => latest_date.to_s,
           "lat_range" => "38.0,50.0",
-          "long_range" => "-98.0,-82.0",
+          "lng_range" => "-98.0,-82.0",
           "units" => "freezing days"
         }
         defaults.each do |k, v|
@@ -309,10 +309,10 @@ RSpec.describe WeatherController, type: :controller do
         expect(data.size).to eq(longitudes.count)
       end
 
-      it "can restrict long range" do
-        get(:freeze_grid, params: {long_range: "-89,-89"})
+      it "can restrict lng range" do
+        get(:freeze_grid, params: {lng_range: "-89,-89"})
 
-        expect(info["long_range"]).to eq("-89.0,-89.0")
+        expect(info["lng_range"]).to eq("-89.0,-89.0")
         expect(data.size).to eq(latitudes.count)
       end
     end
@@ -326,7 +326,7 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it "rejects invalid longitude range" do
-        get(:freeze_grid, params: {long_range: "foo"})
+        get(:freeze_grid, params: {lng_range: "foo"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range 'foo'")
@@ -340,7 +340,7 @@ RSpec.describe WeatherController, type: :controller do
       end
 
       it "rejects longitude range outside of valid extents" do
-        get(:freeze_grid, params: {long_range: "1,100"})
+        get(:freeze_grid, params: {lng_range: "1,100"})
 
         expect(response).to have_http_status(:bad_request)
         expect(json["message"]).to match("Invalid longitude range '1,100'")

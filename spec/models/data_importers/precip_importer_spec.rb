@@ -93,7 +93,7 @@ RSpec.describe PrecipImporter do
         expect(subject.load_from("dir")).to be_an Hash
       end
 
-      it "should have a key for each lat/long point" do
+      it "should have a key for each lat/lng point" do
         expect(subject.load_from("dir").keys.size).to eq(LandExtent.num_points)
       end
 

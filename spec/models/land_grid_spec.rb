@@ -31,29 +31,29 @@ RSpec.describe LandGrid, type: :model do
   context "closest_point" do
     let(:min_lat) { 10.0 }
     let(:max_lat) { 15.0 }
-    let(:min_long) { 0.0 }
-    let(:max_long) { 5.0 }
+    let(:min_lng) { 0.0 }
+    let(:max_lng) { 5.0 }
     let(:step) { 1.0 }
-    let(:land_grid) { LandGrid.new(min_lat, max_lat, min_long, max_long, step) }
+    let(:land_grid) { LandGrid.new(min_lat, max_lat, min_lng, max_lng, step) }
 
     it "should find a point passed in if coincides with a defined point" do
       expect(land_grid.closest_point(11, 4)).to eq [11.0, 4.0]
     end
 
     it "should give the minimum latitude if passed lower value" do
-      expect(land_grid.closest_point(min_lat - 1, min_long)).to eq [min_lat, min_long]
+      expect(land_grid.closest_point(min_lat - 1, min_lng)).to eq [min_lat, min_lng]
     end
 
     it "should give the maximum latitude if passed higher value" do
-      expect(land_grid.closest_point(max_lat + 1, min_long)).to eq [max_lat, min_long]
+      expect(land_grid.closest_point(max_lat + 1, min_lng)).to eq [max_lat, min_lng]
     end
 
     it "should give the minimum longitude if passed lower value" do
-      expect(land_grid.closest_point(min_lat, min_long - 1)).to eq [min_lat, min_long]
+      expect(land_grid.closest_point(min_lat, min_lng - 1)).to eq [min_lat, min_lng]
     end
 
     it "should give the maximum latitude if passed higher value" do
-      expect(land_grid.closest_point(max_lat, max_long + 1)).to eq [max_lat, max_long]
+      expect(land_grid.closest_point(max_lat, max_lng + 1)).to eq [max_lat, max_lng]
     end
   end
 
@@ -66,8 +66,8 @@ RSpec.describe LandGrid, type: :model do
 
     it "yields to each value stored in land grid" do
       (1.0..2.0).step(0.5) do |lat|
-        (3.0..4.0).step(0.5) do |long|
-          land_grid[lat, long] = 17
+        (3.0..4.0).step(0.5) do |lng|
+          land_grid[lat, lng] = 17
         end
       end
       expect { |b| land_grid.each(&b) }.to yield_control.exactly(9).times

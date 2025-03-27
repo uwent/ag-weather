@@ -3,8 +3,8 @@ class WeatherDay
 
   def initialize
     @data = {}
-    LandExtent.each_point do |lat, long|
-      @data[[lat, long]] = []
+    LandExtent.each_point do |lat, lng|
+      @data[[lat, lng]] = []
     end
   end
 
@@ -25,14 +25,14 @@ class WeatherDay
 
   # assumes the data passed in is in Kelvin
   def add_data_from_weather_hour(wh)
-    LandExtent.each_point do |lat, long|
-      temp = wh.temperature_at(lat, long)
-      dew_point = wh.dew_point_at(lat, long)
-      @data[[lat, long]] << WeatherObservation.new(temp, dew_point)
+    LandExtent.each_point do |lat, lng|
+      temp = wh.temperature_at(lat, lng)
+      dew_point = wh.dew_point_at(lat, lng)
+      @data[[lat, lng]] << WeatherObservation.new(temp, dew_point)
     end
   end
 
-  def observations_at(lat, long)
-    @data[[lat, long]]
+  def observations_at(lat, lng)
+    @data[[lat, lng]]
   end
 end

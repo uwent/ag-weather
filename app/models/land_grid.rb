@@ -12,26 +12,26 @@ class LandGrid
   end
 
   def self.wi_grid
-    new(WiExtent.min_lat, WiExtent.max_lat, WiExtent.min_long, WiExtent.max_long, WiExtent.step)
+    new(WiExtent.min_lat, WiExtent.max_lat, WiExtent.min_lng, WiExtent.max_lng, WiExtent.step)
   end
 
   def initialize(
     min_lat = LandExtent.min_lat,
     max_lat = LandExtent.max_lat,
-    min_long = LandExtent.min_long,
-    max_long = LandExtent.max_long,
+    min_lng = LandExtent.min_lng,
+    max_lng = LandExtent.max_lng,
     step = LandExtent.step,
     default: nil
   )
     raise TypeError, "minimum latitude must be less than maximum latitude" if min_lat >= max_lat
-    raise TypeError, "minimum longitude must be less than maximum longitude" if min_long >= max_long
+    raise TypeError, "minimum longitude must be less than maximum longitude" if min_lng >= max_lng
     raise TypeError, "step must be greater than 0" if step <= 0
-    raise TypeError, "step must be less than latitude difference and longitude difference" if step > max_lat - min_lat || step > max_long - min_long
+    raise TypeError, "step must be less than latitude difference and longitude difference" if step > max_lat - min_lat || step > max_lng - min_lng
 
     @min_latitude = min_lat
     @max_latitude = max_lat
-    @min_longitude = min_long
-    @max_longitude = max_long
+    @min_longitude = min_lng
+    @max_longitude = max_lng
     @step = step
     @data = create_grid(default)
   end
@@ -49,8 +49,8 @@ class LandGrid
     [@min_longitude, @max_longitude, @min_latitude, @max_latitude]
   end
 
-  def inside?(lat, long)
-    (latitudes === lat) && (longitudes === long)
+  def inside?(lat, lng)
+    (latitudes === lat) && (longitudes === lng)
   end
 
   def empty?
@@ -75,23 +75,23 @@ class LandGrid
 
   def each_point
     latitudes.step(@step).each do |lat|
-      longitudes.step(@step).each do |long|
-        yield(lat, long)
+      longitudes.step(@step).each do |lng|
+        yield(lat, lng)
       end
     end
   end
 
-  def closest_point(lat, long)
+  def closest_point(lat, lng)
     lat = @data.closest_point(lat)
-    [lat, @data[lat].closest_point(long)]
+    [lat, @data[lat].closest_point(lng)]
   end
 
-  def [](lat, long)
-    @data[lat][long]
+  def [](lat, lng)
+    @data[lat][lng]
   end
 
-  def []=(lat, long, value)
-    @data[lat][long] = value
+  def []=(lat, lng, value)
+    @data[lat][lng] = value
   end
 
   private

@@ -13,11 +13,11 @@ class DataImport < ApplicationRecord
   end
 
   def self.latest_date
-    Time.now.in_time_zone("US/Central").yesterday.to_date
+    Time.now.in_time_zone("America/Chicago").yesterday.to_date
   end
 
   def self.earliest_date
-    Time.now.in_time_zone("US/Central").to_date - DAYS_BACK_WINDOW.days
+    Time.now.in_time_zone("America/Chicago").to_date - DAYS_BACK_WINDOW.days
   end
 
   def self.days_to_load
