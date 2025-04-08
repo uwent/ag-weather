@@ -1,6 +1,6 @@
 # Agricultural Weather API
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/uwent/ag-weather/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/uwent/ag-weather/tree/main)
+[![Tests](https://github.com/uwent/ag-weather/actions/workflows/test.yml/badge.svg)](https://github.com/uwent/ag-weather/actions/workflows/test.yml)
 
 ## Description
 
