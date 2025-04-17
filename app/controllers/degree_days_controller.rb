@@ -167,8 +167,6 @@ class DegreeDaysController < ApplicationController
   #   models: comma-separated degree day model names from degree_days table - default dd_50_86
 
   def dd_table
-    params.require([:lat, :lng])
-
     status = "OK"
     total = 0
     data = {}

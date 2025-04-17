@@ -8,7 +8,7 @@ class PestForecastsController < ApplicationController
   #   start_date - optional, default 1st of year
 
   def index
-    params.require([:pest, :lat, :lng])
+    params.require(:pest)
     parse_date_or_dates || default_date_range
     index_params
     parse_pest
@@ -188,7 +188,6 @@ class PestForecastsController < ApplicationController
   #   start_date - optional, default May 1
 
   def vegpath
-    # params.require([:lat, :long])
     @lat = lat
     @lng = lng
     @end_date = parse_date(params[:date], default: default_date)

@@ -129,18 +129,26 @@ class ApplicationController < ActionController::Base
     true
   end
 
+  # parsed latitude parameter
   def lat
-    check_lat(parse_float(params[:lat], digits: 1))
+    value = params[:lat] || params[:latitude]
+    value = parse_float(value, digits: 1)
+    check_lat(value)
   end
 
+  # parsed longitude parameter
   def lng
-    check_lng(parse_float(params[:lng] || params[:long], digits: 1))
+    value = params[:lng] || params[:long] || params[:longitude]
+    value = parse_float(value, digits: 1)
+    check_lng(value)
   end
 
+  # returns latitude or rejects if invalid
   def check_lat(val)
     val.in?(LandExtent.lat_range) ? val : reject("Invalid latitude '#{val}'. Must be in range #{LandExtent.lat_range}")
   end
 
+  # returns longitude or rejects if invalid
   def check_lng(val)
     val.in?(LandExtent.lng_range) ? val : reject("Invalid longitude '#{val}'. Must be in range #{LandExtent.lng_range}")
   end
@@ -249,10 +257,9 @@ class ApplicationController < ActionController::Base
   ## SHARED METHODS ##
 
   def index_params
-    params.require([:lat, :lng])
     @days_requested = @dates&.count || 1
-    @lat = lat.to_f
-    @lng = lng.to_f
+    @lat = lat
+    @lng = lng
     @units = units
     @units_text = units_text
     @query = {date: @dates || @date, latitude: @lat, longitude: @lng}

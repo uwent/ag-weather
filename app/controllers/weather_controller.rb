@@ -11,7 +11,6 @@ class WeatherController < ApplicationController
   #   units - temperature units, either 'C' (default) or 'F'
 
   def index
-    params.require([:lat, :lng])
     parse_date_or_dates || default_date_range
     index_params
 
@@ -164,8 +163,8 @@ class WeatherController < ApplicationController
     params.require([:lat, :lng])
 
     start_time = Time.now
-    lat = params[:lat]
-    lon = params[:lng]
+    lat = parse_float(params[:lat])
+    lon = parse_float(params[:lng])
     url = "https://api.openweathermap.org/data/2.5/forecast"
     query = {lat:, lon:, units: "imperial", appid: OPENWEATHER_KEY}
 
