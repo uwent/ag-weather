@@ -184,11 +184,11 @@ class PestForecastsController < ApplicationController
   # GET: returns array of weather and pest info for vegetable pathology website charts
   # params:
   #   lat - required, decimal latitude of location
-  #   lng - required, decimal longitude of location
+  #   lng or long - required, decimal longitude of location
   #   start_date - optional, default May 1
 
   def vegpath
-    params.require([:lat, :lng])
+    # params.require([:lat, :long])
     @lat = lat
     @lng = lng
     @end_date = parse_date(params[:date], default: default_date)

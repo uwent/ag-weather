@@ -134,7 +134,7 @@ class ApplicationController < ActionController::Base
   end
 
   def lng
-    check_lng(parse_float(params[:lng], digits: 1))
+    check_lng(parse_float(params[:lng] || params[:long], digits: 1))
   end
 
   def check_lat(val)
