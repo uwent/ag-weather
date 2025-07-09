@@ -14,6 +14,7 @@ gem "whenever" # task scheduling
 gem "tzinfo" # timezone
 gem "csv"
 gem "ostruct" # no longer a default gem as of 3.3.6
+gem "rack-attack" # rate limiting
 
 group :development do
   gem "puma"
