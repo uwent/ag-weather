@@ -99,9 +99,9 @@ class Rack::Attack
   end
 
   # Allow all local traffic
-  # safelist('allow from localhost') do |req|
-  #   ['127.0.0.1', '::1'].include?(req.ip)
-  # end
+  safelist('allow from localhost') do |req|
+    ['127.0.0.1', '::1'].include?(req.ip)
+  end
 
   # Allow requests from load balancers or CDNs (adjust IPs as needed)
   # safelist('allow from load balancer') do |req|
