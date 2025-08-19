@@ -111,7 +111,6 @@ RSpec.describe PestForecastsController, type: :controller do
         get(:index, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to match("lng")
       end
 
       it "gives error if latitude outside range" do

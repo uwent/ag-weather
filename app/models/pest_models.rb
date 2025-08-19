@@ -275,20 +275,20 @@ module PestModels
 
   # these conditions were read from the chart in the paper
   def botcast_dinfv(t, lw)
-    # dinfv = 0
     return 0 if lw <= 6
-    return 0 if t <= 6 || t >= 28
-    return 0 if lw <= 12 && t <= 9
-    return 0 if lw <= 15 && t >= 26
+    return 0 if t < 6 || t > 28
+    return 0 if lw <= 12 && t < 9
+    if (t <= 8)
+      return 0 if lw <= 12
+      return 1 if lw <= 22
+      return 2
+    end
+    return 0 if lw <= 15 && t >= 27
     return 0 if lw <= 7 && t >= 24
-    return 0 if (lw.in? 6...12) && (t.in? 9..15) && (lw - 12) < (9 - t)
-
-    # dinfv = 2
-    return 2 if lw >= 22 && t <= 7
     return 2 if lw >= 15 && t.in?(8..25)
-    return 2 if lw >= 13 && t.in?(11..16.5)
+    return 2 if lw >= 14 && t.in?(11..16.5)
     return 2 if lw >= 10 && t.in?(13.5..16.5)
-
+    return 0 if (lw - 12) < (9 - t)
     1
   end
 end

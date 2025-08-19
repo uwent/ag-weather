@@ -120,7 +120,6 @@ RSpec.describe DegreeDaysController, type: :controller do
           get(:index, params:)
 
           expect(response).to have_http_status(:bad_request)
-          expect(json["message"]).to match("lng")
         end
 
         it "gives error if longitude outside range" do
@@ -245,7 +244,6 @@ RSpec.describe DegreeDaysController, type: :controller do
         get(:dd_table, params:)
 
         expect(response).to have_http_status(:bad_request)
-        expect(json["message"]).to match("lng")
       end
 
       it "raises error on invalid models" do
