@@ -83,6 +83,7 @@ GEM
       sshkit (>= 1.6.1, != 1.7.0)
     ast (2.4.3)
     base64 (0.3.0)
+    bcrypt_pbkdf (1.1.1)
     benchmark (0.4.1)
     bigdecimal (3.3.1)
     bindex (0.8.1)
@@ -125,6 +126,7 @@ GEM
     diff-lcs (1.6.2)
     docile (1.4.1)
     drb (2.2.3)
+    ed25519 (1.4.0)
     erb (5.1.1)
     erubi (1.13.1)
     factory_bot (6.5.5)
@@ -476,6 +478,7 @@ DEPENDENCIES
   activerecord-analyze
   activerecord-import
   activesupport (~> 8.0)
+  bcrypt_pbkdf
   brakeman
   bundler-audit
   byebug
@@ -485,6 +488,7 @@ DEPENDENCIES
   capistrano-rbenv
   csv
   database_cleaner-active_record
+  ed25519
   factory_bot_rails
   guard-rspec
   httparty
