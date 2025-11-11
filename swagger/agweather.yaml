@@ -63,6 +63,16 @@ components:
       description: restrict longitude range in response
 
     # date params
+    date:
+      name: date
+      in: query
+      schema:
+        type: string
+        format: date
+        example: "2024-10-10"
+        default: Most recent data (usually yesterday)
+      description: Single date for data, alias for end_date in some endpoints
+    
     start_date:
       name: start_date
       in: query
@@ -82,16 +92,6 @@ components:
         example: "2024-10-10"
         default: Most recent data (usually yesterday)
       description: End of date range
-
-    date:
-      name: date
-      in: query
-      schema:
-        type: string
-        format: date
-        example: "2024-01-01"
-        default: Most recent data (usually yesterday)
-      description: Single date for data, alias for end_date in some endpoints
 
     # unit params
     units:

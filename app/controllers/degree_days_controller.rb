@@ -3,15 +3,15 @@ class DegreeDaysController < ApplicationController
   # params:
   #   lat - required, decimal latitude
   #   lng - required, decimal longitude
-  #   date or end_date - optional, default 1st of year. Use date for single day
+  #   date or end_date - default yesterday
   #   start_date - optional, default 1st of year
-  #   Must specify one of:
+  #   EITHER
   #     model - name of degree day model column (default dd_50_86)
   #   OR
   #     base - required, default 50F
   #     upper - optional, default none
   #     method - default sine
-  #   units - either 'F' (default) or 'C'
+  #   units - optional, either 'F' (default) or 'C'
 
   def index
     parse_date_or_dates || default_date_range
@@ -61,16 +61,16 @@ class DegreeDaysController < ApplicationController
   # GET: degree-day grid for date range
   # will either return pre-calculated degree day accumulations or compute new ones
   # params:
-  #   Must specify one of:
+  #   lat_range (min,max) - default full extent
+  #   lng_range (min,max) - default full extent
+  #   date or end_date - default yesterday
+  #   start_date - optional, default 1st of year
+  #   EITHER
   #     model - name of degree day model column (default dd_50_86)
   #   OR
   #     base - default 50F, required
   #     upper - default 86F, optional
   #   units - 'F' (default) or 'C' degree days
-  #   start_date - default first of year
-  #   end_date - default today
-  #   lat_range (min,max) - default full extent
-  #   lng_range (min,max) - default full extent
   #   compute=true - force computation of a custom degree day model grid (takes at least 25s)
 
   def grid
@@ -119,7 +119,7 @@ class DegreeDaysController < ApplicationController
 
   # GET: create map and return url to it
   # params:
-  #   date or end_date - optional, default yesterday
+  #   date or end_date - default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, 'F' or 'C'
   #   scale - optional, 'min,max' for image scalebar
