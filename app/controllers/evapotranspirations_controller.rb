@@ -3,7 +3,7 @@ class EvapotranspirationsController < ApplicationController
   # params:
   #   lat - required, point latitude
   #   lng - required, point longitude
-  #   date or end_date - optional, default yesterday
+  #   date or end_date - default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, either 'in' (default) or 'mm'
 
@@ -83,8 +83,8 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: return grid of all values for date
   # params:
-  #   date or end_date - optional, default yesterday
-  #   start_date - optional, default first of year if end_date provided
+  #   date or end_date - default yesterday
+  #   start_date - optional, default 1st of year
   #   lat_range - optional, default full extent, format min,max
   #   lng_range - optional, default full extent, format min,max
   #   units - 'in' (default) or 'mm'
@@ -152,7 +152,7 @@ class EvapotranspirationsController < ApplicationController
 
   # GET: create map and return url to it
   # params:
-  #   date or end_date - optional, default yesterday
+  #   date or end_date - default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, 'in' (default) or 'mm'
   #   scale - optional, 'min,max' for image scalebar

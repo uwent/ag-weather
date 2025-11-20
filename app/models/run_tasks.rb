@@ -29,6 +29,7 @@ module RunTasks
     images << create_insol_images(date)
     images << DegreeDay.create_cumulative_image(start_date: date.beginning_of_year, end_date: date)
     images << PestForecast.create_image(date:)
+    purge_old_images(delete: true)
     images
   end
 
@@ -157,7 +158,7 @@ module RunTasks
   end
 
   def self.purge_images(dir, age, delete)
-    files = Dir[dir + "/**/*"]
+    files = Dir[dir + "/**/*"].select { |f| File.file?(f) }
     del_count = keep_count = 0
     files.each do |file|
       modified = File.mtime(file)
@@ -170,8 +171,18 @@ module RunTasks
         puts file + " << keep"
       end
     end
+    
+    # Remove empty directories
+    if delete
+      Dir[dir + "/**/*"].select { |d| File.directory?(d) }.sort.reverse.each do |subdir|
+        Dir.rmdir(subdir) if Dir.empty?(subdir)
+      rescue SystemCallError
+        # Directory not empty or other error, skip it
+      end
+    end
+    
     puts "Keep: #{keep_count}, Delete: #{del_count}"
-    puts "Run with 'delete: true' to permanently delete image files." if delete == false
+    puts "Run with 'delete: true' to permanently delete image files." if (delete == false) && del_count.positive?
     del_count
   end
 

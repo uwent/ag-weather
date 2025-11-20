@@ -30,6 +30,8 @@ group :development do
   gem "activerecord-analyze" # query analysis
   gem "brakeman" # security analysis https://brakemanscanner.org/
   gem "bundler-audit" # patch-level verification
+  gem "ed25519" # for ssh keys
+  gem "bcrypt_pbkdf" # for ssh keys
 end
 
 group :development, :test do

@@ -3,7 +3,7 @@ class InsolationsController < ApplicationController
   # params:
   #   lat - required, point latitude
   #   lng - required, point longitude
-  #   date or end_date - optional, default yesterday
+  #   date or end_date - default yesterday
   #   start_date - optional, default 1st of year
   #   units - optional, either 'MJ' (default) or 'KWh'
 
