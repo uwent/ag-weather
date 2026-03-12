@@ -27,17 +27,18 @@ set :deploy_to, "/home/deploy/ag-weather"
 
 # Default value for linked_dirs is []
 # set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system')
-set :linked_dirs, %w[log tmp/pids tmp/cache tmp/sockets]
+set :linked_dirs, %w[log tmp/pids tmp/sockets public/assets]
 
 # Default value for default_env is {}
 # set :default_env, { path: '/opt/ruby/bin:$PATH' }
 
 # Default value for keep_releases is 5
-# set :keep_releases, 5
+set :keep_releases, 5
 
 # rbenv
 set :deploy_user, "deploy"
 set :rbenv_type, :user
+set :rbenv_ruby, File.read(".ruby-version").strip # set the rbenv_ruby to the same version as specified in .ruby-version
 
 namespace :deploy do
   desc "Restart application"
