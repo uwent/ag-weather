@@ -98,6 +98,7 @@ module PestModels
   end
 
   ## Cercospora ##
+  # based on Windels 1998 https://apsjournals.apsnet.org/doi/abs/10.1094/PDIS.1998.82.7.716
 
   # weather temp in C
   def compute_cercospora_div(weather)
