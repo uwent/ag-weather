@@ -72,7 +72,7 @@ components:
         example: "2024-10-10"
         default: Most recent data (usually yesterday)
       description: Single date for data, alias for end_date in some endpoints
-    
+
     start_date:
       name: start_date
       in: query
@@ -885,7 +885,7 @@ paths:
 
   /precips/grid:
     get:
-      summary: Get weather data for a range of points for a date
+      summary: Get precipitation data for a range of points for a date
       tags:
         - Precipitation
         - Gridded data
@@ -930,7 +930,7 @@ paths:
 
   /precips/info:
     get:
-      summary: Information about the weather endpoint and the state of the weather database
+      summary: Information about the precipitation endpoint and the state of the precipitation database
       tags:
         - Precipitation
         - Endpoint information
@@ -940,7 +940,7 @@ paths:
 
   /evapotranspirations:
     get:
-      summary: Get precipitation data for a point across a date range
+      summary: Get evapotranspiration data for a point across a date range
       tags:
         - Evapotranspiration
         - Point data
@@ -961,7 +961,7 @@ paths:
 
   /evapotranspirations/grid:
     get:
-      summary: Get weather data for a range of points for a date
+      summary: Get evapotranspiration data for a range of points for a date
       tags:
         - Evapotranspiration
         - Gridded data
@@ -1007,7 +1007,7 @@ paths:
 
   /evapotranspirations/info:
     get:
-      summary: Information about the weather endpoint and the state of the weather database
+      summary: Information about the evapotranspiration endpoint and the state of the evapotranspiration database
       tags:
         - Evapotranspiration
         - Endpoint information
@@ -1017,7 +1017,7 @@ paths:
 
   /insolations:
     get:
-      summary: Get precipitation data for a point across a date range
+      summary: Get solar insolation data for a point across a date range
       tags:
         - Insolation
         - Point data
@@ -1038,7 +1038,7 @@ paths:
 
   /insolations/grid:
     get:
-      summary: Get weather data for a range of points for a date
+      summary: Get solar insolation data for a range of points for a date
       tags:
         - Insolation
         - Gridded data
@@ -1083,7 +1083,7 @@ paths:
 
   /insolations/info:
     get:
-      summary: Information about the weather endpoint and the state of the weather database
+      summary: Information about the insolation endpoint and the state of the insolation database
       tags:
         - Insolation
         - Endpoint information

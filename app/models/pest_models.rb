@@ -279,7 +279,7 @@ module PestModels
     return 0 if lw <= 6
     return 0 if t < 6 || t > 28
     return 0 if lw <= 12 && t < 9
-    if (t <= 8)
+    if t <= 8
       return 0 if lw <= 12
       return 1 if lw <= 22
       return 2

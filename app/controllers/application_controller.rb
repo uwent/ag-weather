@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
 
   def sanitize_param_str(raw)
     return unless raw
-    raw.to_s.downcase.gsub(/[^a-z0-9_,\.]/, "")
+    raw.to_s.downcase.gsub(/[^a-z0-9_,.]/, "")
   end
 
   def to_csv(data, headers = nil)
@@ -40,22 +40,42 @@ class ApplicationController < ActionController::Base
 
   # for controller #info endpoints
   def get_info(t)
-    min_date = t.minimum(:date)
-    max_date = t.maximum(:date)
-    all_dates = (min_date..max_date).to_a
-    actual_dates = t.dates
-    {
-      data_cols: t.data_cols,
-      lat_range: t.lat_range,
-      lng_range: t.lng_range,
-      date_range: t.date_range,
-      expected_days: all_dates.size,
-      actual_days: actual_dates.size,
-      missing_days: all_dates - actual_dates,
-      compute_time: Time.current - @start_time
-    }
-  rescue
-    {message: "error"}
+    @start_time = Time.current
+    cache_key = "weather_db_health_#{t.table_name}"
+
+    # fetch the data (or the cached version)
+    data = Rails.cache.fetch(cache_key, expires_in: 24.hours) do
+      stats = t.select("MIN(date) as min_d, MAX(date) as max_d").take
+      return {message: "no data"} unless stats&.min_d
+
+      # fetch missing days and cast to date in SQL
+      missing_days_query = <<~SQL
+        SELECT all_days.day::date
+        FROM generate_series('#{stats.min_d}'::date, '#{stats.max_d}'::date, '1 day'::interval) AS all_days(day)
+        LEFT JOIN (SELECT DISTINCT date FROM #{t.table_name}) AS actual_days 
+        ON all_days.day = actual_days.date
+        WHERE actual_days.date IS NULL
+      SQL
+      missing_days = ActiveRecord::Base.connection.execute(missing_days_query).map { |r| r["day"].to_s }
+
+      expected_count = (stats.max_d - stats.min_d).to_i + 1
+
+      {
+        data_cols: t.data_cols,
+        lat_range: [t.minimum(:latitude), t.maximum(:latitude)],
+        lng_range: [t.minimum(:longitude), t.maximum(:longitude)],
+        date_range: [stats.min_d.to_s, stats.max_d.to_s],
+        expected_days: expected_count,
+        actual_days: expected_count - missing_days.size,
+        missing_days: missing_days
+      }
+    end
+
+    # add compute time to the data
+    data[:compute_time] = Time.current - @start_time
+    data
+  rescue => e
+    {message: "error", details: e.message}
   end
 
   ## PARSE PARAMS ##

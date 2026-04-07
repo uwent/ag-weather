@@ -64,5 +64,4 @@ Rails.application.routes.draw do
   mount Rswag::Ui::Engine => "/docs"
   mount Rswag::Api::Engine => "/docs"
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
-
 end

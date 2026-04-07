@@ -171,16 +171,16 @@ module RunTasks
         puts file + " << keep"
       end
     end
-    
+
     # Remove empty directories
     if delete
-      Dir[dir + "/**/*"].select { |d| File.directory?(d) }.sort.reverse.each do |subdir|
+      Dir[dir + "/**/*"].select { |d| File.directory?(d) }.sort.reverse_each do |subdir|
         Dir.rmdir(subdir) if Dir.empty?(subdir)
       rescue SystemCallError
         # Directory not empty or other error, skip it
       end
     end
-    
+
     puts "Keep: #{keep_count}, Delete: #{del_count}"
     puts "Run with 'delete: true' to permanently delete image files." if (delete == false) && del_count.positive?
     del_count
