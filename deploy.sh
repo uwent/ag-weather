@@ -1,5 +1,24 @@
 #!/bin/bash
 
+# unlock ssh keys — add each only if it isn't already in the agent
+ensure_key_loaded() {
+    local keyfile="$1"
+    local fp
+    fp=$(ssh-keygen -lf "$keyfile" 2>/dev/null | awk '{print $2}')
+    if [[ -z "$fp" ]]; then
+        echo "Could not read fingerprint for $keyfile"
+        exit 1
+    fi
+    # ssh-add -l lists loaded fingerprints in field 2; skip if already present
+    if ssh-add -l 2>/dev/null | awk '{print $2}' | grep -qxF "$fp"; then
+        return 0
+    fi
+    ssh-add "$keyfile" || { echo "Failed to add $keyfile"; exit 1; }
+}
+
+ensure_key_loaded ~/.ssh/id_rsa      # for server
+ensure_key_loaded ~/.ssh/id_ed25519  # for git
+
 declare -A deployments
 
 # Select deployment servers
