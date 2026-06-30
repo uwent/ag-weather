@@ -36,13 +36,9 @@ group :development do
 end
 
 group :development, :test do
-  gem "byebug"
   gem "factory_bot_rails"
-  gem "guard-rspec"
   gem "rspec_junit_formatter"
   gem "rspec-rails"
-  gem "spring"
-  gem "spring-commands-rspec"
 end
 
 group :test do

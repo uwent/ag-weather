@@ -31,8 +31,3 @@ every :day, at: "6:00am" do
   runner "RunTasks.purge_old_images(delete: true)"
   runner "RunTasks.daily"
 end
-
-# Station data is deprecated
-# every "*/5 * * * *" do
-#   runner "StationHourlyObservationImporter.check_for_file_and_load"
-# end
