@@ -24,10 +24,14 @@ set :env_path, '"$HOME/.rbenv/shims":"$HOME/.rbenv/bin"'
 job_type :runner, ' cd :path && PATH=:env_path:"$PATH" bundle exec rails runner -e :environment ":task" :output '
 
 # Daily data import task
-# delete old (> 1 month) images
-# download and compute fresh weather data
-# send status email
 every :day, at: "6:00am" do
-  runner "RunTasks.purge_old_images(delete: true)"
+  runner "RunTasks.all"
+end
+
+# try again, and this time also generate images
+# delete old (> 1 month) images
+# send status email
+every :day, at: "6:30am" do
   runner "RunTasks.daily"
+  runner "RunTasks.purge_old_images(delete: true)"
 end
