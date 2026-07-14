@@ -15,8 +15,9 @@ gem "whenever" # task scheduling
 gem "tzinfo" # timezone
 gem "csv"
 gem "ostruct" # no longer a default gem as of 3.3.6
-gem "rack-attack" # rate limiting
 gem "psych" # yaml parsing
+gem "rack-attack" # rate limiting
+gem "redis", "~> 5.0" # caching
 
 group :development do
   gem "puma"
