@@ -35,6 +35,7 @@ group :development do
   gem "bundler-audit" # patch-level verification
   gem "ed25519" # for ssh keys
   gem "bcrypt_pbkdf" # for ssh keys
+  gem "solargraph" # Ruby language server for code completion and static analysis
 end
 
 group :development, :test do
