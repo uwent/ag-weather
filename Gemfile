@@ -5,7 +5,8 @@ gem "railties", "~> 8.0"
 gem "activesupport", "~> 8.0"
 gem "activerecord-import" # bulk import
 gem "pg" # postgres
-gem "rswag" # swagger api docs
+gem "rswag-api" # swagger api docs
+gem "rswag-ui" # swagger ui
 gem "sassc-rails" # sass css
 gem "httparty"
 gem "net-ftp"
@@ -14,8 +15,9 @@ gem "whenever" # task scheduling
 gem "tzinfo" # timezone
 gem "csv"
 gem "ostruct" # no longer a default gem as of 3.3.6
-gem "rack-attack" # rate limiting
 gem "psych" # yaml parsing
+gem "rack-attack" # rate limiting
+gem "redis", "~> 5.0" # caching
 
 group :development do
   gem "puma"
@@ -33,16 +35,13 @@ group :development do
   gem "bundler-audit" # patch-level verification
   gem "ed25519" # for ssh keys
   gem "bcrypt_pbkdf" # for ssh keys
+  gem "solargraph" # Ruby language server for code completion and static analysis
 end
 
 group :development, :test do
-  gem "byebug"
   gem "factory_bot_rails"
-  gem "guard-rspec"
   gem "rspec_junit_formatter"
   gem "rspec-rails"
-  gem "spring"
-  gem "spring-commands-rspec"
 end
 
 group :test do
