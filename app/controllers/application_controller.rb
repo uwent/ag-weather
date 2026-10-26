@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   before_action { @start_time = Time.now }
+  around_action :cache_grid_response, if: -> { action_name.in?(%w[grid freeze_grid]) }
 
   rescue_from ActionController::ParameterMissing,
     ActionController::RoutingError,
@@ -16,6 +17,26 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  # Grid requests aggregate (days x ~19k points) rows and the same ones repeat all day, e.g. from
+  # VDIFN. A response only changes when an import runs or the default dates roll over, so both are
+  # part of the key.
+  def cache_grid_response
+    return yield unless request.get? && !request.format.csv?
+
+    key = [
+      "grid_response", request.path, request.format.to_s, request.query_parameters.sort,
+      Date.current, DataImport.maximum(:updated_at)
+    ]
+    if (cached = Rails.cache.read(key))
+      render body: cached[:body], content_type: cached[:content_type]
+    else
+      yield
+      if response.ok?
+        Rails.cache.write(key, {body: response.body, content_type: response.content_type}, expires_in: 12.hours)
+      end
+    end
+  end
 
   def sanitize_param_str(raw)
     return unless raw

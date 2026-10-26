@@ -298,6 +298,32 @@ RSpec.describe WeatherController, type: :controller do
         expect(data.size).to eq(grid_points)
         expect(data["[45.0, -89.0]"]).to eq(dates.count)
       end
+
+      context "with a cache store" do
+        before { allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new) }
+
+        it "serves a repeated request from the cache" do
+          get(:freeze_grid)
+          first_body = response.body
+          FactoryBot.create(:weather, date: latest_date, latitude: 46.0, longitude: -89.0, min_temp: -10.0)
+
+          get(:freeze_grid)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.media_type).to eq("application/json")
+          expect(response.body).to eq(first_body)
+        end
+
+        it "recomputes after a data import" do
+          get(:freeze_grid)
+          FactoryBot.create(:weather, date: latest_date, latitude: 46.0, longitude: -89.0, min_temp: -10.0)
+          WeatherDataImport.succeed(latest_date)
+
+          get(:freeze_grid)
+
+          expect(data.size).to eq(grid_points + 1)
+        end
+      end
     end
 
     context "with valid params" do
@@ -445,6 +471,49 @@ RSpec.describe WeatherController, type: :controller do
         expect(json["message"]).to eq "Invalid unit 'foo'. Must be one of F, C"
         expect(response.status).to eq 400
       end
+    end
+  end
+
+  describe "GET /forecast" do
+    let(:params) { {lat: 45.0, lng: -89.0} }
+    let(:forecast_time) { Time.current.beginning_of_hour + 1.day }
+    let(:openweather_response) do
+      {
+        "list" => [{
+          "dt" => forecast_time.to_i,
+          "main" => {"temp_min" => 50.0, "temp_max" => 60.0, "humidity" => 70},
+          "wind" => {"speed" => 5.0, "deg" => 180}
+        }]
+      }
+    end
+
+    before { allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new) }
+
+    it "reuses a location's forecast instead of calling OpenWeather again" do
+      expect(HTTParty).to receive(:get).once.with(anything, hash_including(timeout: 10))
+        .and_return(double(parsed_response: openweather_response))
+
+      2.times { get(:forecast, params:) }
+
+      expect(response).to have_http_status(:ok)
+      expect(json["status"]).to eq("OK")
+    end
+
+    it "does not cache an error from OpenWeather" do
+      expect(HTTParty).to receive(:get).twice
+        .and_return(double(parsed_response: {"cod" => 429, "message" => "rate limited"}))
+
+      2.times { get(:forecast, params:) }
+
+      expect(json["message"]).to eq("rate limited")
+    end
+
+    it "handles a non-JSON response" do
+      allow(HTTParty).to receive(:get).and_return(double(parsed_response: "<html>list</html>"))
+
+      get(:forecast, params:)
+
+      expect(json["message"]).to eq("unexpected response from OpenWeather")
     end
   end
 

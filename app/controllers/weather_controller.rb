@@ -168,7 +168,14 @@ class WeatherController < ApplicationController
     url = "https://api.openweathermap.org/data/2.5/forecast"
     query = {lat:, lon:, units: "imperial", appid: OPENWEATHER_KEY}
 
-    response = HTTParty.get(url, query:)
+    # the openweather API is rate limited to 60/min, so reuse a location's forecast for an hour
+    cache_key = ["openweather_forecast", lat, lon]
+    response = Rails.cache.read(cache_key)
+    unless response
+      response = HTTParty.get(url, query:, timeout: 10).parsed_response
+      response = {"message" => "unexpected response from OpenWeather"} unless response.is_a?(Hash)
+      Rails.cache.write(cache_key, response, expires_in: 1.hour) if response["list"]
+    end
     forecasts = response["list"]
 
     if forecasts.nil?
@@ -238,9 +245,6 @@ class WeatherController < ApplicationController
         hours: fcs.size * 3
       }
     end
-
-    # the openweather API is rate limited to 60/min
-    sleep(1.05) unless Rails.env.development?
 
     render json: {
       lat: lat,
