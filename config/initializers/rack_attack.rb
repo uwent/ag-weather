@@ -1,19 +1,9 @@
 # config/initializers/rack_attack.rb
 
-# requires env: REDIS_URL=redis://:YOUR_GENERATED_PASSWORD_HERE@127.0.0.1:6379/0
-
 class Rack::Attack
-  # Use Redis for caching
-  # Note: Ensure that the REDIS_URL environment variable is set before starting the application.
-  Rack::Attack.cache.store = if ENV["REDIS_URL"].present?
-    ActiveSupport::Cache::RedisCacheStore.new(
-      url: ENV["REDIS_URL"],
-      namespace: "rack_attack",
-      expires_in: 1.day
-    )
-  else
-    ActiveSupport::Cache::MemoryStore.new
-  end
+  # Keep throttle counters in a bounded in-process store. Otherwise Rack::Attack falls back to
+  # Rails.cache, and in a file store the per-second throttle keys pile up in tmp/cache forever.
+  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new(size: 32.megabytes)
 
   # Throttle requests per second per IP
   throttle("req/ip", limit: 50, period: 1.second) do |req|
