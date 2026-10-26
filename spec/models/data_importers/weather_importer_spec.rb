@@ -50,7 +50,7 @@ RSpec.describe WeatherImporter do
     it "should try to get a file for every hour" do
       expect(subject).to receive(:download_gribs).once
       expect(subject).to receive(:persist_day_to_db).once
-      expect(FileUtils).to receive(:rm_r).once
+      expect(FileUtils).to receive(:rm_r).with(subject.local_dir(date)).once
       subject.fetch_day(date)
     end
 

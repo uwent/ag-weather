@@ -1,5 +1,3 @@
-require "open3"
-
 class WeatherHour
   attr_reader :data
 
@@ -16,10 +14,8 @@ class WeatherHour
   # processes hourly weather grib files and pulls temperatures and dew points
   def load_from(filename)
     start_time = Time.current
-    cmd = "grib_get_data -w shortName=2t/2d -p shortName #{filename}"
-    Rails.logger.debug "RTMA grib cmd >> #{cmd}"
-    _, stdout, _ = Open3.popen3(cmd)
-    stdout.each do |line|
+    Rails.logger.debug "RTMA grib file >> #{filename}"
+    GribMethods.grib_get_data("-w", "shortName=2t/2d", "-p", "shortName", filename) do |line|
       lat, lng, value, type = line.split
       lng = lng.to_f - 360.0
       store(lat, lng, value, type)

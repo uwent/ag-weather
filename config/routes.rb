@@ -57,9 +57,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # resources :station_observations, only: [:index]
-  # resources :stations, only: [:index]
-
   # docs_path = File.join(Rails.application.config.relative_url_root.to_s, "docs")
   mount Rswag::Ui::Engine => "/docs"
   mount Rswag::Api::Engine => "/docs"

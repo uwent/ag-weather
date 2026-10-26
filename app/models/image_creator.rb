@@ -91,8 +91,12 @@ class ImageCreator
 
     success = system(gnuplot_cmd)
     raise StandardError.new("Gnuplot execution failed for cmd: #{gnuplot_cmd}") unless success
-    FileUtils.rm_f(datafile_name)
     temp_image
+  rescue
+    FileUtils.rm_f(temp_image)
+    raise
+  ensure
+    FileUtils.rm_f(datafile_name)
   end
 
   def self.run_composite(gnuplot_image:, file:, subdir: "")
@@ -105,7 +109,8 @@ class ImageCreator
 
     success = system(image_cmd)
     raise StandardError.new "ImageMagick execution failed for cmd: #{image_cmd}" unless success
-    FileUtils.rm_f(gnuplot_image)
     file
+  ensure
+    FileUtils.rm_f(gnuplot_image)
   end
 end

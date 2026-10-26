@@ -48,6 +48,49 @@ RSpec.describe GribMethods, type: :module do
     end
   end
 
+  describe ".grib_get_data" do
+    let(:stdin) { instance_double(IO, close: nil) }
+    let(:stdout) { StringIO.new("45.0 271.0 17.0 2t\n45.1 271.0 18.0 2t\n") }
+    let(:status) { instance_double(Process::Status, success?: true, exitstatus: 0) }
+    let(:wait_thr) { instance_double(Process::Waiter, value: status) }
+
+    it "runs grib_get_data without a shell, discarding stderr, and yields each line" do
+      expect(Open3).to receive(:popen2).with("grib_get_data", "-w", "shortName=tp", "file.grb2", err: File::NULL)
+        .and_yield(stdin, stdout, wait_thr)
+      lines = []
+      GribMethods.grib_get_data("-w", "shortName=tp", "file.grb2") { |line| lines << line }
+      expect(lines.size).to eq 2
+      expect(lines.first).to start_with("45.0 271.0 17.0")
+    end
+
+    it "waits for the process and logs a failed exit" do
+      allow(status).to receive_messages(success?: false, exitstatus: 1)
+      allow(Open3).to receive(:popen2).and_yield(stdin, StringIO.new, wait_thr)
+      expect(Rails.logger).to receive(:warn).with(/exited with status 1/)
+      GribMethods.grib_get_data("file.grb2") {}
+    end
+  end
+
+  describe ".purge_old_gribs" do
+    let(:tmp_dir) { Dir.mktmpdir }
+
+    before { stub_const("WeatherImporter::LOCAL_DIR", tmp_dir) }
+    after { FileUtils.rm_rf(tmp_dir) }
+
+    it "removes day folders older than the retry window and keeps the rest" do
+      old_dir = File.join(tmp_dir, (WeatherImporter.earliest_date - 1.day).to_formatted_s(:number))
+      recent_dir = File.join(tmp_dir, WeatherImporter.earliest_date.to_formatted_s(:number))
+      other_dir = File.join(tmp_dir, "notadate")
+      [old_dir, recent_dir, other_dir].each { |dir| FileUtils.mkdir_p(dir) }
+
+      WeatherImporter.purge_old_gribs
+
+      expect(Dir.exist?(old_dir)).to be false
+      expect(Dir.exist?(recent_dir)).to be true
+      expect(Dir.exist?(other_dir)).to be true
+    end
+  end
+
   describe ".fetch" do
     context "when no missing dates" do
       it "doesn't call fetch_day" do

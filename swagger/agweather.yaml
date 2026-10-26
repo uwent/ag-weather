@@ -202,13 +202,6 @@ components:
         example: sine
       description: degree day calculation method
 
-    compute:
-      name: compute
-      in: query
-      schema:
-        type: boolean
-      description: use 'true' to compute degree days for a custom model
-
     # map params
     scale:
       name: scale
@@ -1151,7 +1144,6 @@ paths:
         - $ref: "#/components/parameters/base"
         - $ref: "#/components/parameters/upper"
         - $ref: "#/components/parameters/units__degree_days"
-        - $ref: "#/components/parameters/compute"
       responses:
         "200":
           $ref: "#/components/responses/simpleGrid200"

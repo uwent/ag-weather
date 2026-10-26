@@ -59,7 +59,7 @@ class DegreeDaysController < ApplicationController
   end
 
   # GET: degree-day grid for date range
-  # will either return pre-calculated degree day accumulations or compute new ones
+  # returns pre-calculated degree day accumulations
   # params:
   #   lat_range (min,max) - default full extent
   #   lng_range (min,max) - default full extent
@@ -71,7 +71,6 @@ class DegreeDaysController < ApplicationController
   #     base - default 50F, required
   #     upper - default 86F, optional
   #   units - 'F' (default) or 'C' degree days
-  #   compute=true - force computation of a custom degree day model grid (takes at least 25s)
 
   def grid
     parse_date_or_dates || default_date_range
@@ -83,16 +82,8 @@ class DegreeDaysController < ApplicationController
     if dds.exists?
       if @model
         @data = dds.grid_summarize.sum(@model)
-      elsif @compute
-        @status = "calculated new degree day model"
-        weather = Weather.where(query)
-        @data = Hash.new(0)
-        weather.each do |w|
-          key = [w.latitude, w.longitude]
-          @data[key] += w.degree_days(base: @base, upper: @upper, in_f:)
-        end
       else
-        @status = "No matching pre-calculated degree-day model found, force with compute=true. Models include #{DegreeDay.data_cols.join(", ")}"
+        @status = "No matching pre-calculated degree-day model found. Models include #{DegreeDay.data_cols.join(", ")}"
       end
     else
       @status = "no data"
@@ -256,7 +247,6 @@ class DegreeDaysController < ApplicationController
     end
     @units = units
     @method = method
-    @compute = params[:compute] == "true"
 
     if dd_model
       @model = dd_model

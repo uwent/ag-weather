@@ -62,20 +62,22 @@ RSpec.describe WeatherHour do
   end
 
   context ".load_from" do
-    it "should call popen3" do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], [], []])
+    let(:args) { ["-w", "shortName=2t/2d", "-p", "shortName", "file.name"] }
+
+    it "should call grib_get_data" do
+      expect(GribMethods).to receive(:grib_get_data).once.with(*args)
       weather_hour.load_from("file.name")
     end
 
-    it "should read data in range from popen3" do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name").and_return([[], ["#{lat} #{lng + 360.0} 17.0 2t"], []])
+    it "should read data in range from grib_get_data" do
+      expect(GribMethods).to receive(:grib_get_data).once.with(*args).and_yield("#{lat} #{lng + 360.0} 17.0 2t")
       weather_hour.load_from("file.name")
       expect(weather_hour.temperature_at(lat, lng)).to eq 17.0
     end
 
     it "can handle an invalid data line" do
-      expect(Open3).to receive(:popen3).once.with("grib_get_data -w shortName=2t/2d -p shortName file.name")
-        .and_return([[], ["#{lat} #{lng + 360.0}"], []]) # missing value and key
+      expect(GribMethods).to receive(:grib_get_data).once.with(*args)
+        .and_yield("#{lat} #{lng + 360.0}") # missing value and key
       weather_hour.load_from("file.name")
       expect(weather_hour.temperature_at(lat, lng)).to be_nil
     end

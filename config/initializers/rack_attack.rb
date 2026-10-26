@@ -1,6 +1,10 @@
 # config/initializers/rack_attack.rb
 
 class Rack::Attack
+  # Keep throttle counters in a bounded in-process store. Otherwise Rack::Attack falls back to
+  # Rails.cache, and in a file store the per-second throttle keys pile up in tmp/cache forever.
+  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new(size: 32.megabytes)
+
   # Throttle requests per second per IP
   throttle("req/ip", limit: 50, period: 1.second) do |req|
     req.ip

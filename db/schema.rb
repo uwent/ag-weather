@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_212536) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_30_170103) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -121,23 +121,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_212536) do
     t.index ["date", "latitude", "longitude"], name: "index_precips_on_date_lat_long", unique: true
     t.index ["latitude", "longitude"], name: "index_precips_on_lat_long"
     t.index ["longitude"], name: "index_precips_on_longitude"
-  end
-
-  create_table "station_hourly_observations", force: :cascade do |t|
-    t.integer "hour"
-    t.float "max_temperature"
-    t.float "min_temperature"
-    t.date "reading_on"
-    t.float "relative_humidity"
-    t.integer "station_id"
-  end
-
-  create_table "stations", force: :cascade do |t|
-    t.datetime "created_at", default: -> { "now()" }, null: false
-    t.decimal "latitude", precision: 5, scale: 2, null: false
-    t.decimal "longitude", precision: 5, scale: 2, null: false
-    t.string "name", null: false
-    t.datetime "updated_at", default: -> { "now()" }, null: false
   end
 
   create_table "users", force: :cascade do |t|
