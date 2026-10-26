@@ -41,7 +41,7 @@ class WeatherImporter < DataImporter
     wd = WeatherDay.new
     wd.load_from(local_dir(date))
     persist_day_to_db(date, wd)
-    FileUtils.rm_r grib_dir unless keep_grib
+    FileUtils.rm_r(local_dir(date)) unless keep_grib
     Rails.logger.info "#{name} :: Completed weather load for #{date} in #{elapsed(start_time)}."
   rescue => e
     Rails.logger.error "#{name} :: Failed to import weather data for #{date}: #{e}"

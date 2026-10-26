@@ -109,6 +109,13 @@ RSpec.describe ImageCreator do
       allow(subject).to receive(:system).and_return false
       expect { subject.run_gnuplot(**args) }.to raise_error(StandardError)
     end
+
+    it "should delete temporary files on failure" do
+      allow(subject).to receive(:system).and_return false
+      expect(FileUtils).to receive(:rm_f).with(datafile_name)
+      expect(FileUtils).to receive(:rm_f).with(/\.png$/)
+      expect { subject.run_gnuplot(**args) }.to raise_error(StandardError)
+    end
   end
 
   describe ".run_composite" do
@@ -144,6 +151,12 @@ RSpec.describe ImageCreator do
 
     it "should raise error on failure" do
       allow(subject).to receive(:system).and_return false
+      expect { subject.run_composite(**args) }.to raise_error(StandardError)
+    end
+
+    it "should delete gnuplot image on failure" do
+      allow(subject).to receive(:system).and_return false
+      expect(FileUtils).to receive(:rm_f).with(gnuplot_image)
       expect { subject.run_composite(**args) }.to raise_error(StandardError)
     end
   end

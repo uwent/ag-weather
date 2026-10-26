@@ -8,6 +8,8 @@ module RunTasks
     InsolationImporter.fetch
     PrecipImporter.fetch
     WeatherImporter.fetch
+    PrecipImporter.purge_old_gribs
+    WeatherImporter.purge_old_gribs
 
     # calculate local data
     EvapotranspirationImporter.create_data
@@ -168,7 +170,6 @@ module RunTasks
         FileUtils.rm(file) if delete
       else
         keep_count += 1
-        puts file + " << keep"
       end
     end
 

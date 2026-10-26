@@ -91,13 +91,11 @@ class PrecipImporter < DataImporter
   end
 
   def self.load_grib(grib)
-    cmd = "grib_get_data -w shortName=tp #{grib}"
-    Rails.logger.info "PCP grib cmd >> #{cmd}"
-    _, stdout, _ = Open3.popen3(cmd)
+    Rails.logger.info "PCP grib file >> #{grib}"
 
     # collect all precips and assign them to a grid point
     grid = {}
-    stdout.each do |line|
+    GribMethods.grib_get_data("-w", "shortName=tp", grib) do |line|
       lat, lng, precip = line.split
       lat = lat.to_f.round(1)
       lng = (lng.to_f - 360.0).round(1)

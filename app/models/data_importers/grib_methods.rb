@@ -2,6 +2,17 @@ require "open-uri"
 require "open3"
 
 module GribMethods
+  # Yields each line of grib_get_data output. Stderr is discarded so a noisy failure can't fill its
+  # pipe and stall the child, and the block form of popen2 reaps the process when done.
+  def self.grib_get_data(*args, &)
+    Open3.popen2("grib_get_data", *args, err: File::NULL) do |stdin, stdout, wait_thr|
+      stdin.close
+      stdout.each_line(&)
+      status = wait_thr.value
+      Rails.logger.warn "grib_get_data #{args.join(" ")} exited with status #{status.exitstatus}" unless status.success?
+    end
+  end
+
   def grib_dir
     "/tmp/gribdata"
   end
@@ -47,6 +58,17 @@ module GribMethods
     end
 
     ActiveRecord::Base.logger.level = Rails.configuration.log_level
+  end
+
+  # Day folders from failed or partial runs are kept so a retry can reuse their files, but once a
+  # date falls outside the retry window nothing will load it again.
+  def purge_old_gribs
+    Dir["#{self::LOCAL_DIR}/*"].each do |dir|
+      date = Date.strptime(File.basename(dir), "%Y%m%d")
+      FileUtils.rm_r(dir) if date < earliest_date
+    rescue Date::Error
+      next
+    end
   end
 
   def download_gribs(date, force: false)
